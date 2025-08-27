@@ -36,5 +36,10 @@
       "name_required": "Name is required.",
       "specialty_required": "Specialty is required."
     }
+  },
+  "slots": {
+    "title": "Available time slots",
+    "select_date": "Select date",
+    "no_slots": "No slots available for this date."
   }
 }
