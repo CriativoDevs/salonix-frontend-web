@@ -13,5 +13,17 @@
   },
   "dashboard": {
     "welcome": "Welcome to the salon dashboard!"
+  },
+  "services": {
+    "title": "Salon services",
+    "name": "Service name",
+    "price": "Price (€)",
+    "duration": "Duration (minutes)",
+    "submit": "Add service",
+    "errors": {
+      "name_required": "Service name is required.",
+      "price_invalid": "Enter a valid price.",
+      "duration_invalid": "Enter a valid duration."
+    }
   }
 }

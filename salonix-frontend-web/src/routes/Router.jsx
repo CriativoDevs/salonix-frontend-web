@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
 import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Login';
+import Services from '../pages/Services';
 
 function Router() {
   return (
@@ -16,6 +17,14 @@ function Router() {
         }
       />
       {/* Redirecionamento padrão */}
+      <Route
+        path="/services"
+        element={
+          <PrivateRoute>
+            <Services />
+          </PrivateRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
