@@ -1,14 +1,17 @@
 {
   "hello": "Olá, mundo!",
   "login": {
-  "title": "Entrar no salão",
-  "email": "E-mail",
-  "password": "Senha",
-  "submit": "Entrar",
-  "errors": {
-    "email_required": "O e-mail é obrigatório.",
-    "email_invalid": "Formato de e-mail inválido.",
-    "password_required": "A senha é obrigatória."
+    "title": "Entrar no salão",
+    "email": "E-mail",
+    "password": "Senha",
+    "submit": "Entrar",
+    "errors": {
+      "email_required": "O e-mail é obrigatório.",
+      "email_invalid": "Formato de e-mail inválido.",
+      "password_required": "A senha é obrigatória."
+    }
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo ao painel do salão!"
   }
-}
 }
