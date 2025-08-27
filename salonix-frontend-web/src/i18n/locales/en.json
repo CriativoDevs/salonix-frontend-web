@@ -41,5 +41,13 @@
     "title": "Available time slots",
     "select_date": "Select date",
     "no_slots": "No slots available for this date."
+  },
+  "bookings": {
+    "title": "Bookings",
+    "client": "Client",
+    "service": "Service",
+    "professional": "Professional",
+    "datetime": "Date & Time",
+    "empty": "No bookings found."
   }
 }
