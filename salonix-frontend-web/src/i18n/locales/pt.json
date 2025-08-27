@@ -25,5 +25,16 @@
       "price_invalid": "Informe um preço válido.",
       "duration_invalid": "Informe uma duração válida."
     }
+  },
+  "professionals": {
+    "title": "Profissionais do salão",
+    "name": "Nome",
+    "specialty": "Especialidade",
+    "phone": "Telefone (opcional)",
+    "submit": "Adicionar profissional",
+    "errors": {
+      "name_required": "O nome é obrigatório.",
+      "specialty_required": "A especialidade é obrigatória."
+    }
   }
 }
