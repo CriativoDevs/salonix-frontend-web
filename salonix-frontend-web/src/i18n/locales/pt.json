@@ -36,5 +36,10 @@
       "name_required": "O nome é obrigatório.",
       "specialty_required": "A especialidade é obrigatória."
     }
+  },
+  "slots": {
+    "title": "Horários disponíveis",
+    "select_date": "Selecionar data",
+    "no_slots": "Nenhum horário disponível para essa data."
   }
 }
