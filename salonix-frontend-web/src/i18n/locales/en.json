@@ -49,5 +49,10 @@
     "professional": "Professional",
     "datetime": "Date & Time",
     "empty": "No bookings found."
+  },
+  "profile": {
+    "title": "Salon profile",
+    "no_logo": "No logo",
+    "address": "Address"
   }
 }

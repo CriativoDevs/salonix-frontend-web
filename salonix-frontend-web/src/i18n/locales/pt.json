@@ -49,5 +49,10 @@
     "professional": "Profissional",
     "datetime": "Data e hora",
     "empty": "Nenhum agendamento encontrado."
+  },
+  "profile": {
+    "title": "Perfil do salão",
+    "no_logo": "Sem logo",
+    "address": "Endereço"
   }
 }
