@@ -1,13 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { login } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 function Login() {
-  console.log('Renderizando Login.jsx');
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { setIsAuthenticated } = useAuth(); // garante atualização do contexto
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
 
   const validate = () => {
     const newErrors = {};
@@ -19,12 +24,20 @@ function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    // TODO: integrar com API de autenticação
-    console.log('Login submit:', { email, password });
+    try {
+      const data = await login(email, password);
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+      setIsAuthenticated(true);
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      setApiError(t('login.errors.invalid_credentials'));
+    }
   };
 
   return (
@@ -34,6 +47,10 @@ function Login() {
         className="bg-white p-6 rounded shadow-md w-full max-w-sm space-y-4"
       >
         <h1 className="text-xl font-bold text-center">{t('login.title')}</h1>
+
+        {apiError && (
+          <p className="text-sm text-red-500 text-center">{apiError}</p>
+        )}
 
         <div>
           <label className="block text-sm mb-1">{t('login.email')}</label>
