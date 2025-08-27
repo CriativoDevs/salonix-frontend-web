@@ -41,5 +41,13 @@
     "title": "Horários disponíveis",
     "select_date": "Selecionar data",
     "no_slots": "Nenhum horário disponível para essa data."
+  },
+  "bookings": {
+    "title": "Agendamentos",
+    "client": "Cliente",
+    "service": "Serviço",
+    "professional": "Profissional",
+    "datetime": "Data e hora",
+    "empty": "Nenhum agendamento encontrado."
   }
 }

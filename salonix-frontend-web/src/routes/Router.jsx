@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import Services from '../pages/Services';
 import Professionals from '../pages/Professionals';
 import AvailableSlots from '../pages/AvailableSlots';
+import Bookings from '../pages/Bookings';
 
 function Router() {
   return (
@@ -40,6 +41,14 @@ function Router() {
         element={
           <PrivateRoute>
             <AvailableSlots />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/bookings"
+        element={
+          <PrivateRoute>
+            <Bookings />
           </PrivateRoute>
         }
       />
