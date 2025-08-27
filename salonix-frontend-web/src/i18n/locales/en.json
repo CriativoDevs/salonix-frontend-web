@@ -25,5 +25,16 @@
       "price_invalid": "Enter a valid price.",
       "duration_invalid": "Enter a valid duration."
     }
+  },
+  "professionals": {
+    "title": "Salon professionals",
+    "name": "Name",
+    "specialty": "Specialty",
+    "phone": "Phone (optional)",
+    "submit": "Add professional",
+    "errors": {
+      "name_required": "Name is required.",
+      "specialty_required": "Specialty is required."
+    }
   }
 }

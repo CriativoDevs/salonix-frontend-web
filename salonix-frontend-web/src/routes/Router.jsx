@@ -3,6 +3,7 @@ import PrivateRoute from './PrivateRoute';
 import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Login';
 import Services from '../pages/Services';
+import Professionals from '../pages/Professionals';
 
 function Router() {
   return (
@@ -22,6 +23,14 @@ function Router() {
         element={
           <PrivateRoute>
             <Services />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/profissionals"
+        element={
+          <PrivateRoute>
+            <Professionals />
           </PrivateRoute>
         }
       />
