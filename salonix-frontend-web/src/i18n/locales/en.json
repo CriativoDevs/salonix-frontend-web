@@ -1,3 +1,14 @@
 {
-  "hello": "Hello, world!"
+  "hello": "Hello, world!",
+  "login": {
+  "title": "Sign in to the salon",
+  "email": "Email",
+  "password": "Password",
+  "submit": "Sign In",
+  "errors": {
+    "email_required": "Email is required.",
+    "email_invalid": "Invalid email format.",
+    "password_required": "Password is required."
+  }
+}
 }
