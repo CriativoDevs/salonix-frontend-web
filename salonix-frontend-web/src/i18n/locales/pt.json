@@ -13,5 +13,17 @@
   },
   "dashboard": {
     "welcome": "Bem-vindo ao painel do salão!"
+  },
+  "services": {
+    "title": "Serviços do salão",
+    "name": "Nome do serviço",
+    "price": "Preço (€)",
+    "duration": "Duração (minutos)",
+    "submit": "Adicionar serviço",
+    "errors": {
+      "name_required": "O nome do serviço é obrigatório.",
+      "price_invalid": "Informe um preço válido.",
+      "duration_invalid": "Informe uma duração válida."
+    }
   }
 }
