@@ -1,82 +1,121 @@
-# 🏪 Salonix Frontend Web
+# 🏪 Salonix Frontend Web (FEW)
 
-Sistema de gerenciamento completo para salões de beleza, desenvolvido em React com foco em usabilidade e design responsivo.
+**Plataforma de agendamento para salões de beleza** - Painel web para profissionais e donos gerenciarem agenda, serviços e acompanharem relatórios.
 
-## ✨ Características
+[![React](https://img.shields.io/badge/React-18.3.1-blue.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.2.0-purple.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-38B2AC.svg)](https://tailwindcss.com/)
+[![i18n](https://img.shields.io/badge/i18n-PT%2FEN-green.svg)](https://www.i18next.com/)
 
-- **🎨 Interface Moderna**: Design limpo e responsivo com Tailwind CSS
-- **🌍 Internacionalização**: Suporte completo para português e inglês
-- **📱 Responsivo**: Funciona perfeitamente em desktop, tablet e mobile
-- **🔐 Autenticação**: Sistema completo de login, cadastro e recuperação de senha
-- **⚡ Performance**: Desenvolvido com Vite para máxima velocidade
-- **🧪 Testes**: Configuração Jest para testes automatizados
+## 🎯 Visão Geral do Produto
 
-## 🚀 Funcionalidades
+**Salonix** é uma plataforma completa de agendamento para salões de beleza e profissionais autônomos, composta por:
+
+- **🏠 Frontend Web (FEW)** - Painel administrativo para profissionais/donos
+- **📱 Mobile App (MOB)** - Aplicativo para clientes finais
+- **⚙️ Backend (BE)** - API Django REST Framework
+
+### 👥 Público-Alvo
+
+| Usuário | Acesso | Funcionalidades |
+|---------|--------|-----------------|
+| **Clientes** | App Mobile | Agendamentos, histórico, feedback |
+| **Profissionais/Donos** | Frontend Web | Gestão de agenda, serviços, relatórios |
+| **Admin Interno** | Django Admin | Manutenção e suporte |
+
+## 🏗️ Arquitetura do Sistema
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend Web  │    │   Mobile App    │    │     Backend     │
+│   (React SPA)   │◄──►│ (React Native)  │◄──►│  (Django API)   │
+│                 │    │                 │    │                 │
+│ • Dashboard     │    │ • Agendamentos  │    │ • Autenticação  │
+│ • Gestão        │    │ • Serviços      │    │ • Relatórios    │
+│ • Relatórios    │    │ • Feedback      │    │ • Cache Redis   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
 ### 🔐 Autenticação
-- **Login**: Acesso ao sistema
-- **Cadastro**: Criação de nova conta
-- **Recuperação de Senha**: Sistema de reset via email
+- **JWT Tokens** via `/api/users/token/`
+- **Feature Flags** para controle de acesso
+- **Autorização** por escopo de usuário
 
-### 📊 Dashboard
-- **Métricas**: Agendamentos, receita, clientes e ocupação
-- **Ações Rápidas**: Acesso direto às funcionalidades principais
-- **Próximos Agendamentos**: Visão geral dos compromissos
+## ✨ Funcionalidades do Frontend Web
+
+### 🔐 Autenticação e Sessão
+- **Login/Logout** com JWT
+- **Cadastro** de novos usuários
+- **Recuperação** de senha
+- **Sessões** persistentes
+
+### 📅 Gestão de Agenda
+- **Slots disponíveis** - Configuração de horários
+- **Agendamentos** - Visualização e gestão
+- **Confirmações** - Status e notificações
+- **Cancelamentos** - Políticas e permissões
 
 ### 👥 Gestão de Profissionais
-- **Cadastro**: Adicionar novos profissionais
-- **Especialidades**: Definição de áreas de atuação
-- **Contatos**: Informações de contato
+- **Cadastro** de profissionais
+- **Especialidades** e áreas de atuação
+- **Contatos** e informações
+- **Permissões** e níveis de acesso
 
-### 🎯 Serviços
-- **Cadastro**: Criação de novos serviços
-- **Preços**: Definição de valores
-- **Duração**: Tempo estimado para cada serviço
+### 🎯 Gestão de Serviços
+- **Cadastro** de serviços
+- **Preços** e duração
+- **Categorias** e descrições
+- **Disponibilidade** por profissional
 
-### 📅 Agendamentos
-- **Visualização**: Lista completa de compromissos
-- **Detalhes**: Cliente, serviço, profissional e horário
-- **Gestão**: Controle total dos agendamentos
+### 📊 Relatórios e Analytics
+- **Overview** - Métricas gerais
+- **Top Services** - Serviços mais populares
+- **Receita** - Análise por período
+- **Exportação CSV** - Dados para análise externa
 
-### ⏰ Horários Disponíveis
-- **Configuração**: Definição de slots disponíveis
-- **Seleção de Data**: Escolha de datas específicas
-- **Visualização**: Horários organizados por dia
-
-### 💬 Chat
-- **Conversas**: Lista de chats com clientes
-- **Mensagens**: Sistema de comunicação em tempo real
-- **Notificações**: Indicadores de mensagens não lidas
-
-### ⭐ Feedback
-- **Avaliações**: Sistema de 1 a 5 estrelas
-- **Categorias**: Organização por tipo de feedback
-- **Anônimo**: Opção de envio anônimo
+### 💬 Comunicação
+- **Chat interno** - Comunicação com clientes
+- **Feedback** - Sistema de avaliações
+- **Notificações** - Alertas e lembretes
 
 ### ⚙️ Configurações
-- **Geral**: Informações básicas do negócio
-- **Notificações**: Preferências de comunicação
-- **Horários**: Configuração de funcionamento
-- **Agendamentos**: Duração e intervalos
+- **Perfil do negócio** - Informações básicas
+- **Horários** - Configuração de funcionamento
+- **Notificações** - Preferências de comunicação
+- **Integrações** - APIs e webhooks
 
-## 🛠️ Tecnologias
+## 🛠️ Stack Tecnológica
 
-- **Frontend**: React 18 + Vite
-- **Estilização**: Tailwind CSS
-- **Roteamento**: React Router DOM
-- **Internacionalização**: i18next + react-i18next
-- **Ícones**: Lucide React
-- **Testes**: Jest + Testing Library
-- **Linting**: ESLint + Prettier
-- **Build**: Vite
+### Frontend
+- **React 18** - Biblioteca principal
+- **Vite** - Build tool e dev server
+- **React Router** - Navegação SPA
+- **Tailwind CSS** - Framework de estilos
+- **Lucide React** - Ícones
 
-## 📦 Instalação
+### Estado e Dados
+- **React Hooks** - Gerenciamento de estado
+- **Context API** - Estado global
+- **Axios** - Cliente HTTP
+
+### Internacionalização
+- **i18next** - Framework de i18n
+- **react-i18next** - Integração React
+- **PT/EN** - Português e Inglês
+
+### Qualidade
+- **ESLint** - Linting de código
+- **Prettier** - Formatação
+- **Jest** - Testes unitários
+
+## 📦 Instalação e Configuração
 
 ### Pré-requisitos
-- Node.js 18+ 
-- npm ou yarn
+- **Node.js** 18+
+- **npm** ou **yarn**
+- **Backend** rodando (para desenvolvimento)
 
-### Passos
+### Passos de Instalação
 
 1. **Clone o repositório**
 ```bash
@@ -89,219 +128,312 @@ cd salonix-frontend-web
 npm install
 ```
 
-3. **Execute o projeto**
+3. **Configure as variáveis de ambiente**
+```bash
+cp .env.example .env.local
+# Edite .env.local com suas configurações
+```
+
+4. **Execute o projeto**
 ```bash
 npm run dev
 ```
 
-4. **Acesse no navegador**
+5. **Acesse no navegador**
 ```
 http://localhost:5173
 ```
 
-## 🎯 Scripts Disponíveis
+## 🔧 Scripts Disponíveis
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Inicia o servidor de desenvolvimento |
-| `npm run build` | Gera build de produção |
-| `npm run preview` | Preview do build de produção |
-| `npm run lint` | Executa o linter (ESLint) |
-| `npm run test` | Executa os testes (Jest) |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run preview` | Preview do build |
+| `npm run lint` | Verificação de código |
+| `npm run test` | Execução de testes |
+
+## 🌍 Configuração de Ambientes
+
+### Desenvolvimento (.env.local)
+```env
+VITE_API_URL=http://localhost:8000
+VITE_APP_NAME=Salonix Dev
+VITE_DEBUG=true
+```
+
+### Staging
+```env
+VITE_API_URL=https://api-staging.salonix.com
+VITE_APP_NAME=Salonix Staging
+VITE_DEBUG=false
+```
+
+### Produção
+```env
+VITE_API_URL=https://api.salonix.com
+VITE_APP_NAME=Salonix
+VITE_DEBUG=false
+```
 
 ## 📁 Estrutura do Projeto
 
 ```
 src/
 ├── api/                    # APIs e configurações HTTP
+│   ├── auth.js            # Autenticação JWT
+│   └── client.js          # Cliente Axios configurado
 ├── components/            # Componentes reutilizáveis
 │   ├── ui/               # Componentes de interface
+│   │   ├── FormButton.jsx
+│   │   ├── FormInput.jsx
+│   │   ├── Card.jsx
+│   │   └── ...
 │   └── icons/            # Ícones customizados
-├── contexts/              # Contextos React (Auth)
+├── contexts/              # Contextos React
+│   ├── AuthContext.jsx   # Contexto de autenticação
+│   └── AuthContextInstance.js
 ├── hooks/                 # Hooks customizados
-├── i18n/                  # Configuração de internacionalização
-│   └── locales/          # Arquivos de tradução (PT/EN)
+│   └── useAuth.js        # Hook de autenticação
+├── i18n/                  # Internacionalização
+│   ├── index.js          # Configuração i18next
+│   └── locales/          # Traduções PT/EN
 ├── layouts/               # Layouts das páginas
+│   ├── AuthLayout.jsx    # Layout de autenticação
+│   └── FullPageLayout.jsx # Layout principal
 ├── pages/                 # Páginas da aplicação
+│   ├── Dashboard.jsx     # Dashboard principal
+│   ├── Services.jsx      # Gestão de serviços
+│   ├── Professionals.jsx # Gestão de profissionais
+│   ├── Bookings.jsx      # Gestão de agendamentos
+│   ├── Chat.jsx          # Sistema de chat
+│   ├── Feedback.jsx      # Sistema de feedback
+│   ├── Settings.jsx      # Configurações
+│   └── ...
 ├── routes/                # Configuração de rotas
+│   ├── Router.jsx        # Roteador principal
+│   └── PrivateRoute.jsx  # Proteção de rotas
 ├── styles/                # Estilos globais
+│   └── index.css         # Tailwind e customizações
 └── utils/                 # Utilitários e helpers
+    └── validators.js     # Validações de formulário
 ```
+
+## 🔐 Sistema de Autenticação
+
+### JWT Integration
+- **Login** via `/api/users/token/`
+- **Refresh tokens** automático
+- **Interceptors** para requisições autenticadas
+- **Logout** com limpeza de estado
+
+### Feature Flags
+- **Controle de acesso** por funcionalidade
+- **Relatórios** - `reports_enabled`
+- **Chat** - `chat_enabled`
+- **Feedback** - `feedback_enabled`
+
+### Rotas Protegidas
+- Todas as páginas internas requerem autenticação
+- **Redirecionamento** automático para `/login`
+- **Persistência** de sessão
+
+## 📱 Responsividade e UX
+
+### Design System
+- **Componentes consistentes** com Tailwind CSS
+- **Variantes padronizadas** (primary, success, warning, danger)
+- **Espaçamentos** e tipografia consistentes
+- **Cores** e estados visuais unificados
+
+### Breakpoints
+- **Mobile**: < 640px
+- **Tablet**: 640px - 1024px
+- **Desktop**: > 1024px
+
+### Navegação
+- **Header** responsivo com menu hamburger
+- **Mobile nav** com navegação inferior
+- **Breadcrumbs** para navegação hierárquica
 
 ## 🌍 Internacionalização
 
-O projeto suporta **português** e **inglês** através do i18next:
+### Idiomas Suportados
+- **Português (PT)** - Idioma padrão
+- **Inglês (EN)** - Idioma alternativo
 
-- **Português (PT)**: Idioma padrão
-- **Inglês (EN)**: Idioma alternativo
-
-### Adicionando Novas Traduções
-
-1. **Arquivo PT**: `src/i18n/locales/pt.json`
-2. **Arquivo EN**: `src/i18n/locales/en.json`
+### Estrutura de Traduções
+```json
+{
+  "nav": {
+    "home": "Início",
+    "services": "Serviços"
+  },
+  "auth": {
+    "login": "Entrar",
+    "register": "Cadastrar"
+  }
+}
+```
 
 ### Uso nos Componentes
-
 ```jsx
 import { useTranslation } from 'react-i18next';
 
 function MeuComponente() {
   const { t } = useTranslation();
-  
-  return <h1>{t('minha.chave.traducao')}</h1>;
+  return <h1>{t('nav.home')}</h1>;
 }
 ```
 
-## 🎨 Componentes UI
+## 🔌 Integração com Backend
 
-### Componentes Principais
-- **Container**: Layout responsivo centralizado
-- **FormButton**: Botões com variantes (primary, success, warning, danger)
-- **FormInput**: Campos de entrada padronizados
-- **Card**: Containers de conteúdo
-- **PageHeader**: Cabeçalhos de página
+### API Endpoints
+- **Base URL** configurável por ambiente
+- **Autenticação** via headers JWT
+- **Rate limiting** com retry/backoff
+- **Error handling** padronizado
 
-### Variantes de Botões
-```jsx
-<FormButton variant="primary">Primário</FormButton>
-<FormButton variant="success">Sucesso</FormButton>
-<FormButton variant="warning">Aviso</FormButton>
-<FormButton variant="danger">Perigo</FormButton>
-<FormButton variant="outline">Contorno</FormButton>
-```
+### Relatórios
+- **Respeito aos rate limits** do backend
+- **Paginação** com headers customizados
+- **Download CSV** com progress indicators
+- **Cache** e invalidação
 
-## 🔐 Sistema de Autenticação
+### Tratamento de Erros
+- **401** - Token inválido/expirado
+- **403** - Feature flag desabilitada
+- **429** - Rate limit excedido
+- **500** - Erro interno do servidor
 
-### Contexto de Auth
-- **AuthContext**: Gerenciamento global do estado de autenticação
-- **useAuth**: Hook para acessar dados de autenticação
-- **PrivateRoute**: Proteção de rotas privadas
+## 🧪 Testes e Qualidade
 
-### Rotas Protegidas
-Todas as páginas internas são protegidas e redirecionam para `/login` se não autenticado.
+### Testes Unitários
+- **Jest** como framework principal
+- **Testing Library** para componentes
+- **Mocks** para APIs externas
+- **Coverage** mínimo de 80%
 
-## 📱 Responsividade
+### Linting e Formatação
+- **ESLint** para qualidade de código
+- **Prettier** para formatação
+- **Husky** para pre-commit hooks
+- **CI/CD** com GitHub Actions
 
-### Breakpoints
-- **Mobile**: < 640px
-- **Tablet**: 640px - 1024px  
-- **Desktop**: > 1024px
-
-### Navegação
-- **Desktop**: Header horizontal completo
-- **Mobile**: Navegação inferior com ícones
-
-## 🧪 Testes
-
-### Executar Testes
-```bash
-npm run test
-```
-
-### Configuração
-- **Jest**: Framework de testes
-- **Testing Library**: Utilitários para testes de componentes
-- **jsdom**: Ambiente DOM para testes
-
-## 🚀 Deploy
+## 🚀 Deploy e Produção
 
 ### Build de Produção
 ```bash
 npm run build
+# Gera pasta dist/ com arquivos otimizados
 ```
 
-### Arquivos Gerados
-- `dist/`: Pasta com arquivos otimizados
-- `index.html`: Arquivo principal
-- `assets/`: CSS, JS e outros recursos
+### Deploy Options
+- **Vercel** - Deploy automático
+- **Netlify** - Deploy com preview
+- **AWS S3 + CloudFront** - Deploy estático
+- **Docker** - Containerização
 
-## 🔧 Configuração
+### Variáveis de Produção
+- **DEBUG=false** - Desabilita logs de debug
+- **API_URL** - URL da API de produção
+- **ANALYTICS** - Chaves de analytics
 
-### Variáveis de Ambiente
-Crie um arquivo `.env.local` na raiz:
+## 📊 Monitoramento e Analytics
 
-```env
-VITE_API_URL=http://localhost:8000
-VITE_APP_NAME=Salonix
-```
+### Métricas de Performance
+- **Core Web Vitals** - LCP, FID, CLS
+- **Lighthouse** - Score de performance
+- **Bundle Analyzer** - Tamanho dos bundles
 
-### Tailwind CSS
-- **Configuração**: `tailwind.config.js`
-- **Cores**: Sistema de cores personalizado
-- **Componentes**: Classes utilitárias customizadas
+### Error Tracking
+- **Sentry** - Rastreamento de erros
+- **Logs** estruturados
+- **User feedback** automático
 
-## 📝 Convenções de Código
+## 🔒 Segurança
 
-### Nomenclatura
-- **Componentes**: PascalCase (`UserProfile.jsx`)
-- **Arquivos**: PascalCase para componentes, camelCase para utilitários
-- **Funções**: camelCase (`handleSubmit`)
-- **Constantes**: UPPER_SNAKE_CASE (`MAX_RETRY_COUNT`)
+### Boas Práticas
+- **HTTPS** obrigatório em produção
+- **CORS** configurado corretamente
+- **XSS Protection** via React
+- **CSRF Protection** via tokens
 
-### Estrutura de Componentes
-```jsx
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+### Dados Sensíveis
+- **Nunca** commitar secrets no Git
+- **Variáveis de ambiente** para configurações
+- **Rotação** de chaves JWT
 
-function MeuComponente({ prop1, prop2 }) {
-  const { t } = useTranslation();
-  
-  // Hooks
-  // Estados
-  // Funções
-  // Render
-  
-  return <div>Conteúdo</div>;
-}
+## 🗺️ Roadmap
 
-export default MeuComponente;
-```
+### MVP (Concluído ✅)
+- [x] Sistema de autenticação
+- [x] Gestão de serviços e profissionais
+- [x] Sistema de agendamentos
+- [x] Dashboard básico
+- [x] Chat e feedback
+- [x] Configurações do negócio
 
-## 🐛 Troubleshooting
+### Pós-MVP 🚀
+- [ ] **Relatórios avançados** - Gráficos e dashboards
+- [ ] **Notificações push** - Integração com mobile
+- [ ] **Multi-tenant** - Suporte a múltiplos salões
+- [ ] **Integrações** - WhatsApp, SMS, email
+- [ ] **Analytics** - Métricas de negócio
+- [ ] **PWA** - Progressive Web App
 
-### Problemas Comuns
-
-**Erro de Porta**
-```bash
-# Se a porta 5173 estiver ocupada
-npm run dev -- --port 3000
-```
-
-**Dependências Corrompidas**
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-**Build Falhando**
-```bash
-npm run build --verbose
-```
+### Futuro 🔮
+- [ ] **AI/ML** - Recomendações inteligentes
+- [ ] **AR/VR** - Visualização de serviços
+- [ ] **Marketplace** - Conectando clientes e profissionais
+- [ ] **Pagamentos** - Integração com gateways
 
 ## 🤝 Contribuição
 
+### Como Contribuir
 1. **Fork** o projeto
-2. **Crie** uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
+2. **Crie** uma branch para sua feature
+3. **Commit** suas mudanças
+4. **Push** para a branch
 5. **Abra** um Pull Request
 
-## 📄 Licença
+### Padrões de Código
+- **ESLint** para qualidade
+- **Prettier** para formatação
+- **Conventional Commits** para mensagens
+- **Testes** para novas funcionalidades
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+## 📚 Documentação Adicional
+
+- **API Docs** - [Backend Repository](link-para-backend)
+- **Mobile App** - [Mobile Repository](link-para-mobile)
+- **Design System** - [Figma](link-para-figma)
+- **Deploy Guide** - [Wiki](link-para-wiki)
 
 ## 👥 Equipe
 
-- **Desenvolvimento**: Equipe Salonix
-- **Design**: UX/UI Team
-- **QA**: Quality Assurance Team
+**Criativo Devs** - Equipe de desenvolvimento apaixonada por criar soluções inovadoras e funcionais.
+
+- **Pablo** - Desenvolvedor Full Stack & UX/UI
+- **Claude** - Assistente de Desenvolvimento
+
+### 🎯 Nossa Missão
+Transformar ideias em realidade através de código limpo, design intuitivo e soluções que fazem a diferença.
 
 ## 📞 Suporte
 
-- **Email**: suporte@salonix.com
-- **Documentação**: [docs.salonix.com](https://docs.salonix.com)
-- **Issues**: [GitHub Issues](https://github.com/salonix/issues)
+- **Issues** - [GitHub Issues](link-para-issues)
+- **Documentação** - [Wiki](link-para-wiki)
+- **Email** - contato@criativodevs.com
+- **Discord** - [Comunidade](link-para-discord)
+
+## 📄 Licença
+
+Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
 **Salonix Frontend Web** - Transformando a gestão de salões de beleza 🚀
+
+*Desenvolvido com ❤️ pela equipe Criativo Devs*
