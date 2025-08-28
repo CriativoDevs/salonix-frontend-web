@@ -1,18 +1,67 @@
 {
   "hello": "Olá, mundo!",
   "login": {
-    "title": "Entrar no salão",
+    "title": "Entrar",
+    "subtitle": "Acesse sua conta",
     "email": "E-mail",
+    "email_placeholder": "Insira seu email",
+    "password_placeholder": "Insira sua senha",
     "password": "Senha",
     "submit": "Entrar",
+    "forgot_password": "Esqueceu a senha?",
+    "signup": "Cadastre-se",
+    "no_account": "Ainda não tem conta?",
+    "register": "Cadastre-se",
     "errors": {
-      "email_required": "O e-mail é obrigatório.",
-      "email_invalid": "Formato de e-mail inválido.",
-      "password_required": "A senha é obrigatória."
+      "email_required": "E-mail é obrigatório",
+      "email_invalid": "E-mail inválido",
+      "password_required": "Senha é obrigatória",
+      "invalid_credentials": "E-mail ou senha incorretos"
+    }
+  },
+  "auth": {
+    "name": "Nome completo",
+    "email": "E-mail",
+    "password": "Senha",
+    "confirm_password": "Confirmar senha",
+    "phone": "Telefone",
+    "register": "Cadastrar",
+    "already_have_account": "Já tem uma conta?",
+    "login": "Entrar",
+    "forgot_password": "Esqueci a senha",
+    "forgot_password_description": "Digite seu e-mail para receber um link de recuperação",
+    "email_placeholder": "seu@email.com",
+    "send_reset_link": "Enviar link de recuperação",
+    "remember_password": "Lembrou sua senha?",
+    "password_reset_sent": "Link enviado!",
+    "password_reset_instructions": "Verifique seu e-mail para redefinir sua senha",
+    "back_to_login": "Voltar ao login",
+    "errors": {
+      "name_required": "Nome é obrigatório",
+      "email_required": "E-mail é obrigatório",
+      "password_required": "Senha é obrigatória",
+      "password_mismatch": "As senhas não coincidem",
+      "phone_required": "Telefone é obrigatório"
     }
   },
   "dashboard": {
-    "welcome": "Bem-vindo ao painel do salão!"
+    "welcome": "Bem-vindo ao painel do salão!",
+    "title": "Dashboard",
+    "subtitle": "Resumo do seu negócio",
+    "stats": {
+      "bookings": "Agendamentos (hoje)",
+      "revenue": "Receita (mês)",
+      "clients": "Clientes",
+      "util": "Ocupação"
+    },
+    "upcoming": "Próximos agendamentos",
+    "no_upcoming": "Sem agendamentos nas próximas horas",
+    "create_first": "Crie um novo agendamento ou abra horários disponíveis.",
+    "new_booking": "Novo agendamento",
+    "quick_actions": "Ações rápidas",
+    "add_slot": "Abrir horários",
+    "add_professional": "Adicionar profissional",
+    "add_service": "Cadastrar serviço"
   },
   "services": {
     "title": "Serviços do salão",
@@ -54,5 +103,86 @@
     "title": "Perfil do salão",
     "no_logo": "Sem logo",
     "address": "Endereço"
+  },
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Comunicação com clientes",
+    "conversations": "Conversas",
+    "type_message": "Digite sua mensagem...",
+    "send": "Enviar",
+    "select_conversation": "Selecione uma conversa para começar"
+  },
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Avaliações e sugestões dos clientes",
+    "rating": "Avaliação",
+    "rating_1": "Muito ruim",
+    "rating_2": "Ruim",
+    "rating_3": "Regular",
+    "rating_4": "Bom",
+    "rating_5": "Excelente",
+    "category": "Categoria",
+    "select_category": "Selecione uma categoria",
+    "categories": {
+      "service_quality": "Qualidade do serviço",
+      "professional_behavior": "Comportamento profissional",
+      "facility_cleanliness": "Limpeza do estabelecimento",
+      "appointment_scheduling": "Agendamento de horários",
+      "pricing": "Preços",
+      "other": "Outro"
+    },
+    "message": "Mensagem",
+    "message_placeholder": "Conte-nos sobre sua experiência...",
+    "anonymous": "Enviar anonimamente",
+    "submit": "Enviar feedback",
+    "thank_you": "Obrigado!",
+    "submission_success": "Seu feedback foi enviado com sucesso.",
+    "submit_another": "Enviar outro feedback"
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Gerencie as configurações do seu negócio",
+    "tabs": {
+      "general": "Geral",
+      "notifications": "Notificações",
+      "business": "Negócio"
+    },
+    "business_name": "Nome do negócio",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "address": "Endereço",
+    "working_hours": "Horário de funcionamento",
+    "days": {
+      "monday": "Segunda",
+      "tuesday": "Terça",
+      "wednesday": "Quarta",
+      "thursday": "Quinta",
+      "friday": "Sexta",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    },
+    "appointment_duration": "Duração do agendamento",
+    "buffer_time": "Tempo de intervalo",
+    "notifications": {
+      "emailNotifications": "Notificações por e-mail",
+      "emailNotifications_description": "Receber notificações por e-mail",
+      "smsNotifications": "Notificações por SMS",
+      "smsNotifications_description": "Receber notificações por SMS",
+      "appointmentReminders": "Lembretes de agendamento",
+      "appointmentReminders_description": "Lembretes automáticos de agendamentos",
+      "marketingEmails": "E-mails de marketing",
+      "marketingEmails_description": "Receber e-mails promocionais"
+    },
+    "save": "Salvar"
+  },
+  "nav": {
+    "home": "Início",
+    "slots": "Horários",
+    "profile": "Perfil",
+    "chat": "Chat",
+    "feedback": "Feedback",
+    "settings": "Configurações",
+    "more": "Mais",
+    "close": "Fechar"
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FullPageLayout from '../layouts/FullPageLayout';
 
 function Profile() {
   const { t } = useTranslation();
@@ -8,40 +9,45 @@ function Profile() {
     name: 'Salão Elegante',
     phone: '+351 912 345 678',
     address: 'Rua das Flores, 123, Porto',
-    logo: '', // pode usar URL ou manter vazio
+    logo: '',
   });
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-gray-50">
-      <div className="max-w-xl mx-auto bg-white p-6 rounded shadow space-y-4">
-        <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
+    <FullPageLayout>
+      <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+          {t('profile.title')}
+        </h1>
 
-        <div className="flex items-center space-x-4">
-          <div className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div className="h-20 w-20 overflow-hidden rounded-full bg-gray-200">
             {profile.logo ? (
               <img
                 src={profile.logo}
                 alt="Logo"
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             ) : (
-              <div className="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+              <div className="flex h-full w-full items-center justify-center text-sm text-gray-500">
                 {t('profile.no_logo')}
               </div>
             )}
           </div>
+
           <div>
-            <p className="font-semibold text-lg">{profile.name}</p>
+            <p className="text-lg font-semibold text-gray-900">
+              {profile.name}
+            </p>
             <p className="text-sm text-gray-600">{profile.phone}</p>
           </div>
         </div>
 
-        <div>
+        <div className="mt-4">
           <p className="text-sm text-gray-500">{t('profile.address')}</p>
-          <p className="text-base">{profile.address}</p>
+          <p className="text-base text-gray-800">{profile.address}</p>
         </div>
       </div>
-    </div>
+    </FullPageLayout>
   );
 }
 

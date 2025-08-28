@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FullPageLayout from '../layouts/FullPageLayout';
+import Card from '../components/ui/Card';
+import Label from '../components/ui/Label';
 
 function AvailableSlots() {
   const { t } = useTranslation();
@@ -10,20 +13,21 @@ function AvailableSlots() {
   };
 
   const [selectedDate, setSelectedDate] = useState('2025-08-28');
-
   const slots = mockSlots[selectedDate] || [];
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-gray-50">
-      <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">{t('slots.title')}</h1>
+    <FullPageLayout>
+      <Card className="p-6">
+        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+          {t('slots.title')}
+        </h1>
 
-        <div className="mb-4">
-          <label className="block text-sm mb-1">{t('slots.select_date')}</label>
+        <div className="mb-4 form-light">
+          <Label className="mb-1 block">{t('slots.select_date')}</Label>
           <select
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            className="w-full"
           >
             {Object.keys(mockSlots).map((date) => (
               <option key={date} value={date}>
@@ -34,21 +38,22 @@ function AvailableSlots() {
         </div>
 
         {slots.length > 0 ? (
-          <ul className="grid grid-cols-2 gap-2">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {slots.map((time) => (
               <li
                 key={time}
-                className="border px-3 py-2 rounded bg-green-100 text-center"
+                className="rounded-lg bg-white px-3 py-2 text-center text-sm font-medium
+                           text-gray-800 ring-1 ring-brand-border hover:bg-brand-light"
               >
                 {time}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-600">{t('slots.no_slots')}</p>
+          <p className="text-sm text-gray-700">{t('slots.no_slots')}</p>
         )}
-      </div>
-    </div>
+      </Card>
+    </FullPageLayout>
   );
 }
 

@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { login } from '../api/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import AuthLayout from '../layouts/AuthLayout';
+import FormInput from '../components/ui/FormInput';
+import FormButton from '../components/ui/FormButton';
 
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth(); // garante atualização do contexto
+  const { setIsAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +22,7 @@ function Login() {
     if (!email) newErrors.email = t('login.errors.email_required');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = t('login.errors.email_invalid');
+
     if (!password) newErrors.password = t('login.errors.password_required');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -41,51 +45,50 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-6 rounded shadow-md w-full max-w-sm space-y-4"
-      >
-        <h1 className="text-xl font-bold text-center">{t('login.title')}</h1>
+    <AuthLayout>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          {t('login.title')}
+        </h1>
 
         {apiError && (
           <p className="text-sm text-red-500 text-center">{apiError}</p>
         )}
 
-        <div>
-          <label className="block text-sm mb-1">{t('login.email')}</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-          />
-          {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
-          )}
+        <FormInput
+          type="email"
+          label={t('login.email')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('login.email_placeholder')}
+          error={errors.email}
+        />
+
+        <FormInput
+          type="password"
+          label={t('login.password')}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder={t('login.password_placeholder')}
+          error={errors.password}
+        />
+
+        <div className="text-right text-sm">
+          <Link to="/forgot-password" className="text-brand hover:underline">
+            {t('login.forgot_password')}
+          </Link>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">{t('login.password')}</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500 mt-1">{errors.password}</p>
-          )}
-        </div>
+        <FormButton type="submit">{t('login.submit')}</FormButton>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
-        >
-          {t('login.submit')}
-        </button>
+        <div className="mt-4 text-sm text-center">
+          {t('login.no_account')}{' '}
+          <Link to="/register" className="text-brand hover:underline">
+            {t('login.register')}
+          </Link>
+        </div>
       </form>
-    </div>
+    </AuthLayout>
   );
 }
 

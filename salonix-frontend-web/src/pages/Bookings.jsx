@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FullPageLayout from '../layouts/FullPageLayout';
 
 function Bookings() {
   const { t } = useTranslation();
@@ -22,38 +23,51 @@ function Bookings() {
   ]);
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-gray-50">
-      <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">{t('bookings.title')}</h1>
+    <FullPageLayout>
+      <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+          {t('bookings.title')}
+        </h1>
 
         {bookings.length > 0 ? (
           <ul className="space-y-4">
             {bookings.map((b) => (
               <li
                 key={b.id}
-                className="border rounded p-4 bg-gray-100 space-y-1"
+                className="rounded-lg border border-gray-200 bg-white p-4"
               >
-                <p>
-                  <strong>{t('bookings.client')}:</strong> {b.client}
+                <p className="text-gray-800">
+                  <strong className="text-gray-900">
+                    {t('bookings.client')}:
+                  </strong>{' '}
+                  {b.client}
                 </p>
-                <p>
-                  <strong>{t('bookings.service')}:</strong> {b.service}
+                <p className="text-gray-800">
+                  <strong className="text-gray-900">
+                    {t('bookings.service')}:
+                  </strong>{' '}
+                  {b.service}
                 </p>
-                <p>
-                  <strong>{t('bookings.professional')}:</strong>{' '}
+                <p className="text-gray-800">
+                  <strong className="text-gray-900">
+                    {t('bookings.professional')}:
+                  </strong>{' '}
                   {b.professional}
                 </p>
-                <p>
-                  <strong>{t('bookings.datetime')}:</strong> {b.datetime}
+                <p className="text-gray-800">
+                  <strong className="text-gray-900">
+                    {t('bookings.datetime')}:
+                  </strong>{' '}
+                  {b.datetime}
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-gray-600">{t('bookings.empty')}</p>
+          <p className="text-gray-700">{t('bookings.empty')}</p>
         )}
       </div>
-    </div>
+    </FullPageLayout>
   );
 }
 

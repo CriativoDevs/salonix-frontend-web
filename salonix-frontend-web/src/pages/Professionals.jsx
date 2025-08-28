@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FullPageLayout from '../layouts/FullPageLayout';
 import ProfessionalForm from '../components/ProfessionalForm';
 
 function Professionals() {
@@ -7,33 +8,41 @@ function Professionals() {
   const [list, setList] = useState([]);
 
   const handleAdd = (professional) => {
-    setList([professional, ...list]);
+    setList((prev) => [professional, ...prev]);
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 bg-gray-50">
-      <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4">{t('professionals.title')}</h1>
-        <ProfessionalForm onAdd={handleAdd} />
+    <FullPageLayout>
+      <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+          {t('professionals.title')}
+        </h1>
+
+        <div className="form-light">
+          <ProfessionalForm onAdd={handleAdd} />
+        </div>
 
         {list.length > 0 && (
-          <ul className="mt-6 space-y-2">
-            {list.map((p) => (
+          <ul className="mt-6 divide-y divide-gray-100">
+            {list.map((p, idx) => (
               <li
-                key={p.id}
-                className="border rounded px-4 py-2 bg-gray-100 flex flex-col"
+                key={p.id ?? idx}
+                className="flex items-start justify-between gap-3 py-3"
               >
-                <span className="font-semibold">{p.name}</span>
-                <span className="text-sm">{p.specialty}</span>
-                {p.phone && (
-                  <span className="text-sm text-gray-600">{p.phone}</span>
-                )}
+                <div>
+                  <div className="font-medium text-gray-900">{p.name}</div>
+                  <div className="text-sm text-gray-600">{p.specialty}</div>
+                  {p.phone && (
+                    <div className="text-sm text-gray-500">{p.phone}</div>
+                  )}
+                </div>
+                {/* Espaço para ações: Editar/Apagar (warning/danger) quando necessário */}
               </li>
             ))}
           </ul>
         )}
       </div>
-    </div>
+    </FullPageLayout>
   );
 }
 

@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base limpa e consistente */
+@layer base {
+  html, body, #root {
+    @apply h-full bg-gray-50 text-gray-900;
+  }
+}
+
+/* Utilitário leve p/ formularios claros */
+@layer utilities {
+  .form-light input[type="text"],
+  .form-light input[type="email"],
+  .form-light input[type="tel"],
+  .form-light input[type="number"],
+  .form-light input[type="password"],
+  .form-light select,
+  .form-light textarea {
+    @apply bg-white text-gray-900 placeholder-gray-400 border border-gray-200 rounded-lg px-3 py-2
+           focus:outline-none focus:ring-2 focus:ring-brand-primary;
+  }
+}
