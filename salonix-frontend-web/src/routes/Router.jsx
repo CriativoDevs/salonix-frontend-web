@@ -2,16 +2,24 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
 import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Login';
+import Register from '../pages/Register';
+import ForgotPassword from '../pages/ForgotPassword';
 import Services from '../pages/Services';
 import Professionals from '../pages/Professionals';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
 import Profile from '../pages/Profile';
+import Chat from '../pages/Chat';
+import Feedback from '../pages/Feedback';
+import Settings from '../pages/Settings';
 
 function Router() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+
       <Route
         path="/dashboard"
         element={
@@ -20,7 +28,7 @@ function Router() {
           </PrivateRoute>
         }
       />
-      {/* Redirecionamento padrão */}
+
       <Route
         path="/services"
         element={
@@ -29,14 +37,16 @@ function Router() {
           </PrivateRoute>
         }
       />
+
       <Route
-        path="/profissionals"
+        path="/professionals"
         element={
           <PrivateRoute>
             <Professionals />
           </PrivateRoute>
         }
       />
+
       <Route
         path="/slots"
         element={
@@ -45,6 +55,7 @@ function Router() {
           </PrivateRoute>
         }
       />
+
       <Route
         path="/bookings"
         element={
@@ -53,6 +64,7 @@ function Router() {
           </PrivateRoute>
         }
       />
+
       <Route
         path="/profile"
         element={
@@ -61,6 +73,34 @@ function Router() {
           </PrivateRoute>
         }
       />
+
+      <Route
+        path="/chat"
+        element={
+          <PrivateRoute>
+            <Chat />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/feedback"
+        element={
+          <PrivateRoute>
+            <Feedback />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <Settings />
+          </PrivateRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

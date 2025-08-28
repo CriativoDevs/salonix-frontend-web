@@ -1,18 +1,67 @@
 {
   "hello": "Hello, world!",
   "login": {
-    "title": "Sign in to the salon",
+    "title": "Sign in",
+    "subtitle": "Sign in to your account",
+    "email": "Email address",
+    "email_placeholder": "Insert your email",
+    "password_placeholder": "Insert your password",
+    "password": "Password",
+    "submit": "Sign in",
+    "forgot_password": "Forgot password?",
+    "no_account": "Don't have an account?",
+    "signup": "Sign up",
+    "register": "Sign up",
+    "errors": {
+      "email_required": "Email is required",
+      "email_invalid": "Email is invalid",
+      "password_required": "Password is required",
+      "invalid_credentials": "Invalid email or password"
+    }
+  },
+  "auth": {
+    "name": "Full name",
     "email": "Email",
     "password": "Password",
-    "submit": "Sign In",
+    "confirm_password": "Confirm password",
+    "phone": "Phone",
+    "register": "Register",
+    "already_have_account": "Already have an account?",
+    "login": "Sign in",
+    "forgot_password": "Forgot password",
+    "forgot_password_description": "Enter your email to receive a recovery link",
+    "email_placeholder": "your@email.com",
+    "send_reset_link": "Send recovery link",
+    "remember_password": "Remembered your password?",
+    "password_reset_sent": "Link sent!",
+    "password_reset_instructions": "Check your email to reset your password",
+    "back_to_login": "Back to login",
     "errors": {
-      "email_required": "Email is required.",
-      "email_invalid": "Invalid email format.",
-      "password_required": "Password is required."
+      "name_required": "Name is required",
+      "email_required": "Email is required",
+      "password_required": "Password is required",
+      "password_mismatch": "Passwords don't match",
+      "phone_required": "Phone is required"
     }
   },
   "dashboard": {
-    "welcome": "Welcome to the salon dashboard!"
+    "welcome": "Welcome to the salon dashboard!",
+    "title": "Dashboard",
+    "subtitle": "Summary of your business",
+    "stats": {
+      "bookings": "Bookings (today)",
+      "revenue": "Revenue (month)",
+      "clients": "Clients",
+      "util": "Utilization"
+    },
+    "upcoming": "Upcoming bookings",
+    "no_upcoming": "No bookings in the next few hours",
+    "create_first": "Create a new booking or open available slots.",
+    "new_booking": "New booking",
+    "quick_actions": "Quick actions",
+    "add_slot": "Open slots",
+    "add_professional": "Add professional",
+    "add_service": "Register service"
   },
   "services": {
     "title": "Salon services",
@@ -54,5 +103,86 @@
     "title": "Salon profile",
     "no_logo": "No logo",
     "address": "Address"
+  },
+  "chat": {
+    "title": "Chat",
+    "subtitle": "Communication with clients",
+    "conversations": "Conversations",
+    "type_message": "Type your message...",
+    "send": "Send",
+    "select_conversation": "Select a conversation to start"
+  },
+  "feedback": {
+    "title": "Feedback",
+    "subtitle": "Client ratings and suggestions",
+    "rating": "Rating",
+    "rating_1": "Very poor",
+    "rating_2": "Poor",
+    "rating_3": "Fair",
+    "rating_4": "Good",
+    "rating_5": "Excellent",
+    "category": "Category",
+    "select_category": "Select a category",
+    "categories": {
+      "service_quality": "Service quality",
+      "professional_behavior": "Professional behavior",
+      "facility_cleanliness": "Facility cleanliness",
+      "appointment_scheduling": "Appointment scheduling",
+      "pricing": "Pricing",
+      "other": "Other"
+    },
+    "message": "Message",
+    "message_placeholder": "Tell us about your experience...",
+    "anonymous": "Send anonymously",
+    "submit": "Submit feedback",
+    "thank_you": "Thank you!",
+    "submission_success": "Your feedback has been submitted successfully.",
+    "submit_another": "Submit another feedback"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your business settings",
+    "tabs": {
+      "general": "General",
+      "notifications": "Notifications",
+      "business": "Business"
+    },
+    "business_name": "Business name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "working_hours": "Working hours",
+    "days": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "appointment_duration": "Appointment duration",
+    "buffer_time": "Buffer time",
+    "notifications": {
+      "emailNotifications": "Email notifications",
+      "emailNotifications_description": "Receive email notifications",
+      "smsNotifications": "SMS notifications",
+      "smsNotifications_description": "Receive SMS notifications",
+      "appointmentReminders": "Appointment reminders",
+      "appointmentReminders_description": "Automatic appointment reminders",
+      "marketingEmails": "Marketing emails",
+      "marketingEmails_description": "Receive promotional emails"
+    },
+    "save": "Save"
+  },
+  "nav": {
+    "home": "Home",
+    "slots": "Slots",
+    "profile": "Profile",
+    "chat": "Chat",
+    "feedback": "Feedback",
+    "settings": "Settings",
+    "more": "More",
+    "close": "Close"
   }
 }

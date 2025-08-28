@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import FormButton from './ui/FormButton';
 
 function ProfessionalForm({ onAdd }) {
   const { t } = useTranslation();
@@ -61,12 +62,9 @@ function ProfessionalForm({ onAdd }) {
         />
       </div>
 
-      <button
-        type="submit"
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
-      >
+      <FormButton type="submit" variant="success" className="w-full">
         {t('professionals.submit')}
-      </button>
+      </FormButton>
     </form>
   );
 }
