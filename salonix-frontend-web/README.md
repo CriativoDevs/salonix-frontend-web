@@ -425,7 +425,7 @@ Transformar ideias em realidade através de código limpo, design intuitivo e so
 
 - **Issues** - [GitHub Issues](link-para-issues)
 - **Documentação** - [Wiki](link-para-wiki)
-- **Email** - contato@criativodevs.com
+- **Email** - criativodes@gmail.com
 - **Discord** - [Comunidade](link-para-discord)
 
 ## 📄 Licença
