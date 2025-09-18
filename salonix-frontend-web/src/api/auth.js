@@ -5,12 +5,22 @@ export async function login(email, password) {
     email,
     password,
   });
-  return response.data; // Esperado: { access, refresh }
+  return response.data; // { access, refresh }
 }
 
 export async function refreshToken(refresh) {
   const response = await client.post('users/token/refresh/', {
     refresh,
   });
-  return response.data; // Esperado: { access }
+  return response.data; // { access }
+}
+
+export async function registerUser(payload) {
+  const response = await client.post('users/register/', payload);
+  return response.data;
+}
+
+export async function fetchFeatureFlags() {
+  const response = await client.get('users/me/features/');
+  return response.data;
 }

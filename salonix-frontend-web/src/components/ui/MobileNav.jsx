@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
@@ -11,9 +11,12 @@ import {
   StarIcon,
   SettingsIcon,
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 function MobileNav() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Links principais (sempre visíveis)
@@ -31,6 +34,12 @@ function MobileNav() {
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -110,12 +119,20 @@ function MobileNav() {
             })}
           </div>
 
-          <button
-            onClick={toggleMenu}
-            className="w-full py-3 text-sm text-gray-500 hover:text-gray-700 transition-colors border-t border-gray-100 pt-4"
-          >
-            {t('nav.close')}
-          </button>
+          <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">
+            <button
+              onClick={handleLogout}
+              className="w-full rounded-lg bg-rose-50 py-3 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-100"
+            >
+              {t('nav.logout', 'Sair')}
+            </button>
+            <button
+              onClick={toggleMenu}
+              className="w-full py-3 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {t('nav.close')}
+            </button>
+          </div>
         </div>
       </div>
     </>

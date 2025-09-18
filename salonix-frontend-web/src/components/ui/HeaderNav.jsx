@@ -1,13 +1,16 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageCircleIcon, StarIcon, SettingsIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // Links principais (sempre visíveis)
   const mainLinks = [
@@ -76,7 +79,18 @@ export default function HeaderNav() {
             />
           </nav>
 
-          <div className="w-6" />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                navigate('/login', { replace: true });
+              }}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+            >
+              {t('nav.logout', 'Sair')}
+            </button>
+          </div>
         </div>
       </Container>
     </header>

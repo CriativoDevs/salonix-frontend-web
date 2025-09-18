@@ -1,21 +1,26 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { login } from '../api/auth';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
+import ErrorPopup from '../components/ui/ErrorPopup';
+import { useAuth } from '../hooks/useAuth';
 
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
+  const { login, authError, isLoading, isAuthenticated, clearAuthError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [popupError, setPopupError] = useState(null);
+
+  if (!isLoading && isAuthenticated) {
+    navigate('/dashboard', { replace: true });
+  }
 
   const validate = () => {
     const newErrors = {};
@@ -31,29 +36,33 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
+    setSubmitting(true);
+    setPopupError(null);
+    clearAuthError();
     try {
-      const data = await login(email, password);
-      localStorage.setItem('access_token', data.access);
-      localStorage.setItem('refresh_token', data.refresh);
-      setIsAuthenticated(true);
-      navigate('/dashboard');
+      await login({ email, password });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
-      console.error('Login error:', err);
-      setApiError(t('login.errors.invalid_credentials'));
+      setPopupError(err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  const handleCloseError = () => {
+    setPopupError(null);
+    clearAuthError();
+  };
+
+  const activeError = popupError || authError;
+
   return (
     <AuthLayout>
+      <ErrorPopup error={activeError} onClose={handleCloseError} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <h1 className="text-2xl font-bold text-center text-gray-800">
           {t('login.title')}
         </h1>
-
-        {apiError && (
-          <p className="text-sm text-red-500 text-center">{apiError}</p>
-        )}
 
         <FormInput
           type="email"
@@ -79,7 +88,9 @@ function Login() {
           </Link>
         </div>
 
-        <FormButton type="submit">{t('login.submit')}</FormButton>
+        <FormButton type="submit" disabled={submitting}>
+          {submitting ? t('common.loading') : t('login.submit')}
+        </FormButton>
 
         <div className="mt-4 text-sm text-center">
           {t('login.no_account')}{' '}
