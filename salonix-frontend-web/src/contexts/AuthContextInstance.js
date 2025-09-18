@@ -1,3 +1,11 @@
 import { createContext } from 'react';
 
-export const AuthContext = createContext({ isAuthenticated: true });
+export const AuthContext = createContext({
+  isAuthenticated: false,
+  isLoading: true,
+  user: null,
+  featureFlags: null,
+  login: async () => {},
+  logout: () => {},
+  clearAuthError: () => {},
+});

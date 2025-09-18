@@ -20,6 +20,10 @@
     }
   },
   "auth": {
+    "register_title": "Crie sua conta",
+    "username": "Nome de usuário",
+    "salon_name": "Nome da empresa",
+    "phone_number": "Telefone da empresa",
     "name": "Nome completo",
     "email": "E-mail",
     "password": "Senha",
@@ -41,7 +45,8 @@
       "email_required": "E-mail é obrigatório",
       "password_required": "Senha é obrigatória",
       "password_mismatch": "As senhas não coincidem",
-      "phone_required": "Telefone é obrigatório"
+      "phone_required": "Telefone é obrigatório",
+      "username_required": "Nome de usuário é obrigatório"
     }
   },
   "dashboard": {
@@ -183,6 +188,7 @@
     "feedback": "Feedback",
     "settings": "Configurações",
     "more": "Mais",
-    "close": "Fechar"
+    "close": "Fechar",
+    "logout": "Sair"
   }
 }

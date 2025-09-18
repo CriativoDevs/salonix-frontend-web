@@ -1,112 +1,133 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
+import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
+import ErrorPopup from '../components/ui/ErrorPopup';
+import { registerUser } from '../api/auth';
+import { parseApiError } from '../utils/apiError';
 
 function Register() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phone: '',
+    salon_name: '',
+    phone_number: '',
   });
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors = {};
-    if (!form.name) newErrors.name = t('auth.errors.name_required');
+    if (!form.username) newErrors.username = t('auth.errors.username_required');
     if (!form.email) newErrors.email = t('auth.errors.email_required');
     if (!form.password) newErrors.password = t('auth.errors.password_required');
     if (form.password !== form.confirmPassword) {
       newErrors.confirmPassword = t('auth.errors.password_mismatch');
     }
-    if (!form.phone) newErrors.phone = t('auth.errors.phone_required');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    // TODO: implementar lógica de cadastro
-    console.log('Cadastro:', form);
+    setSubmitting(true);
+    setApiError(null);
+
+    try {
+      await registerUser({
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        salon_name: form.salon_name,
+        phone_number: form.phone_number,
+      });
+      navigate('/login', { replace: true });
+    } catch (err) {
+      const parsed = parseApiError(err, t('auth.errors.register_failed'));
+      setApiError(parsed);
+
+      if (parsed.details && !Array.isArray(parsed.details) && typeof parsed.details === 'object') {
+        const fieldErrors = Object.entries(parsed.details).reduce(
+          (acc, [field, messages]) => ({
+            ...acc,
+            [field]: Array.isArray(messages) ? messages[0] : String(messages),
+          }),
+          {}
+        );
+        setErrors(fieldErrors);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCloseError = () => {
+    setApiError(null);
   };
 
   return (
     <AuthLayout>
+      <ErrorPopup error={apiError} onClose={handleCloseError} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm mb-1">{t('auth.name')}</label>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
-        </div>
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          {t('auth.register_title')}
+        </h1>
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.email')}</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.email && (
-            <p className="text-sm text-red-500">{errors.email}</p>
-          )}
-        </div>
+        <FormInput
+          label={t('auth.username')}
+          value={form.username}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+          error={errors.username}
+        />
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.password')}</label>
-          <input
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500">{errors.password}</p>
-          )}
-        </div>
+        <FormInput
+          type="email"
+          label={t('auth.email')}
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          error={errors.email}
+        />
 
-        <div>
-          <label className="block text-sm mb-1">
-            {t('auth.confirm_password')}
-          </label>
-          <input
-            type="password"
-            value={form.confirmPassword}
-            onChange={(e) =>
-              setForm({ ...form, confirmPassword: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-500">{errors.confirmPassword}</p>
-          )}
-        </div>
+        <FormInput
+          type="password"
+          label={t('auth.password')}
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          error={errors.password}
+        />
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.phone')}</label>
-          <input
-            type="tel"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full border px-3 py-2 rounded"
-          />
-          {errors.phone && (
-            <p className="text-sm text-red-500">{errors.phone}</p>
-          )}
-        </div>
+        <FormInput
+          type="password"
+          label={t('auth.confirm_password')}
+          value={form.confirmPassword}
+          onChange={(e) =>
+            setForm({ ...form, confirmPassword: e.target.value })
+          }
+          error={errors.confirmPassword}
+        />
 
-        <FormButton type="submit" variant="primary" className="w-full">
-          {t('auth.register')}
+        <FormInput
+          label={t('auth.salon_name')}
+          value={form.salon_name}
+          onChange={(e) => setForm({ ...form, salon_name: e.target.value })}
+        />
+
+        <FormInput
+          label={t('auth.phone_number')}
+          value={form.phone_number}
+          onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+        />
+
+        <FormButton type="submit" variant="primary" className="w-full" disabled={submitting}>
+          {submitting ? t('common.loading') : t('auth.register')}
         </FormButton>
 
         <div className="text-center text-sm">
