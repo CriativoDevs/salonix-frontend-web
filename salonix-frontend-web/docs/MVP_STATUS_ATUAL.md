@@ -7,10 +7,13 @@
   - Armazenamento de tokens (session + local storage) e refresh automático.
   - Tratamento uniforme de erros com popup mostrando `code`, `message` e `X-Request-ID`.
   - Logout disponível em desktop/mobile.
+- **FEW-207 – Landing page institucional**
+  - Página pública `/` com hero, diferenciais, planos e CTA de login/registro.
+  - Conteúdo direcionado ao mercado PT com destaque para Criativo Devs.
+  - Estrutura pronta para SEO básico e evolução multilíngue.
 
 ## 🏗️ Em Andamento / Planejado Próximo
 
-- **Landing page institucional (FEW-207)** – apresentar produto, planos e CTA.
 - **Wizard de seleção de planos (FEW-208)** – escolha de plano/trial imediatamente após registro.
 - **Onboarding guiado (FEW-209)** – checklist dos passos iniciais do salão.
 - **Hardening de segurança no front (FEW-210)** – lockout, CAPTCHA, políticas UX.

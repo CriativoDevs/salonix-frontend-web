@@ -26,3 +26,17 @@
 3. Adicione insights para o produto ou integrações cruzadas (ex.: dependências do backend).
 
 > Manter este arquivo atualizado facilita revisar o histórico técnico sem caçar PRs antigas.
+
+## Landing page institucional (FEW-207)
+
+- **Contexto**: Criar presença pública para TimelyOne com conteúdo autorizado em `docs/LANDING-CONTENT.md`.
+- **Principais componentes**:
+  - `src/pages/Landing.jsx` – página completa com hero, diferenciais, planos, audiências e CTA.
+  - Atualização de `src/routes/Router.jsx` para expor rota `/` e direcionar desconhecidos.
+- **Características**:
+  - Layout responsivo com Tailwind, foco em conversão (CTA "Registar", "Entrar").
+  - Secção de planos baseada nos preços definidos (Free Trial, Starter, Pro, White-label).
+  - Se utilizador já autenticado aceder `/`, redireciona para `/dashboard`.
+- **Próximos incrementos sugeridos**:
+  - Adicionar seletor de idioma real e integrar analytics.
+  - Carregar conteúdo de ficheiro JSON/Markdown para facilitar atualizações sem deploy.
