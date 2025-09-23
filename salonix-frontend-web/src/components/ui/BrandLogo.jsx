@@ -6,10 +6,19 @@ export default function BrandLogo({
   variant = 'stacked',
   size = 56,
   className = '',
-  iconClassName = 'text-gray-900', // <- padrão visível em fundo branco
+  logoUrl = null,
+  iconClassName = 'text-brand-primary',
   textClassName = 'text-xl font-semibold tracking-wide text-gray-800',
 }) {
-  const Icon = (
+  const Icon = logoUrl ? (
+    <img
+      src={logoUrl}
+      alt={`${name} logo`}
+      width={size}
+      height={size}
+      className="h-auto w-auto max-h-14 object-contain"
+    />
+  ) : (
     <svg
       width={size}
       height={size}

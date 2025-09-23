@@ -40,3 +40,21 @@
 - **Próximos incrementos sugeridos**:
   - Adicionar seletor de idioma real e integrar analytics.
   - Carregar conteúdo de ficheiro JSON/Markdown para facilitar atualizações sem deploy.
+
+## Theming e Feature Flags por Tenant (FEW-202)
+
+- **Contexto**: Consumir `/api/users/tenant/meta/` para identificar tenant, expor feature flags e preencher dados no front sem depender de mocks.
+- **Componentes novos**:
+  - `src/contexts/TenantContext.jsx` – Provider global com resolução de slug e carregamento de meta/flags.
+  - `src/hooks/useTenant.js` – Hook de conveniência para consumir o contexto.
+  - `src/api/tenant.js` – Cliente Axios dedicado ao endpoint de meta.
+  - `src/utils/tenant.js` – Helper para resolver slug (query, env, subdomínio) e valores padrão.
+- **Atualizações principais**:
+  - `App.jsx` envolve a aplicação com `<TenantProvider>` (antes do `<AuthProvider>`).
+  - `Settings.jsx` mostra o plano vigente, módulos e canais ativos, além de pré-preencher dados cadastrais.
+  - Mantido o branding institucional na landing/login para evitar regressões visuais.
+- **Testes adicionados**:
+  - `src/utils/__tests__/tenant.test.js` cobre a resolução de slug.
+- **Notas**:
+  - Caso o backend esteja indisponível, caímos em `DEFAULT_TENANT_META` e o título volta para “TimelyOne”.
+  - Próximo passo natural: usar o contexto para condicionar seções (ex.: esconder módulos premium).

@@ -12,12 +12,17 @@ import {
   SettingsIcon,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTenant } from '../../hooks/useTenant';
+import BrandLogo from './BrandLogo';
 
 function MobileNav() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { tenant, branding } = useTenant();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const displayName = tenant?.name || 'TimelyOne';
 
   // Links principais (sempre visíveis)
   const mainLinks = [
@@ -98,7 +103,16 @@ function MobileNav() {
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="mb-6 space-y-4">
+            <BrandLogo
+              variant="inline"
+              size={28}
+              textClassName="text-base font-semibold text-gray-900"
+              name={displayName}
+              logoUrl={branding?.logoUrl}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
             {expandedLinks.map(({ to, icon: IconComponent, label }) => {
               const Icon = IconComponent;
               return (
@@ -117,6 +131,7 @@ function MobileNav() {
                 </NavLink>
               );
             })}
+          </div>
           </div>
 
           <div className="mt-4 border-t border-gray-100 pt-4 space-y-2">

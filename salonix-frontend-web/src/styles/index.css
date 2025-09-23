@@ -4,6 +4,15 @@
 
 /* Base limpa e consistente */
 @layer base {
+  :root {
+    --brand-primary: #6b7280;
+    --brand-on-primary: #ffffff;
+    --brand-surface: #f3f4f6;
+    --brand-on-surface: #1f2937;
+    --brand-accent: #4b5563;
+    --brand-border: #d1d5db;
+  }
+
   html, body, #root {
     @apply h-full bg-gray-50 text-gray-900;
   }

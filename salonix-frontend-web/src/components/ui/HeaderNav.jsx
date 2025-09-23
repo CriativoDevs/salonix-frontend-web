@@ -6,11 +6,15 @@ import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
 import { useAuth } from '../../hooks/useAuth';
+import { useTenant } from '../../hooks/useTenant';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { tenant, branding } = useTenant();
+
+  const displayName = tenant?.name || 'TimelyOne';
 
   // Links principais (sempre visíveis)
   const mainLinks = [
@@ -52,6 +56,8 @@ export default function HeaderNav() {
             variant="inline"
             size={22}
             textClassName="text-base font-semibold text-gray-900"
+            name={displayName}
+            logoUrl={branding?.logoUrl}
           />
 
           <nav className="flex items-center gap-1">
