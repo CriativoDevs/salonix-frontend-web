@@ -3,9 +3,12 @@ import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
+import { useTenant } from '../hooks/useTenant';
+import { describeFeatureRequirement } from '../constants/tenantFeatures';
 
 function Chat() {
   const { t } = useTranslation();
+  const { flags, plan } = useTenant();
   const [selectedChat, setSelectedChat] = useState(null);
   const [message, setMessage] = useState('');
 
@@ -33,6 +36,11 @@ function Chat() {
       unread: 1,
     },
   ];
+
+  const webPushEnabled = flags?.enableWebPush !== false;
+  const webPushRequirement = !webPushEnabled
+    ? describeFeatureRequirement('enableWebPush', plan?.name)
+    : null;
 
   const messages = selectedChat
     ? [
@@ -75,6 +83,21 @@ function Chat() {
   return (
     <FullPageLayout>
       <PageHeader title={t('chat.title')} subtitle={t('chat.subtitle')} />
+
+      {!webPushEnabled ? (
+        <Card className="px-4 py-3">
+          <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+            <strong>{webPushRequirement?.label || t('chat.webpush_locked', 'Web Push indisponível')}</strong>
+            <p className="mt-1">
+              {webPushRequirement?.description ||
+                t(
+                  'chat.webpush_locked_description',
+                  'Atualize o plano para enviar notificações e mensagens automáticas.'
+                )}
+            </p>
+          </div>
+        </Card>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Lista de chats */}
@@ -171,7 +194,7 @@ function Chat() {
                   <button
                     type="submit"
                     disabled={!message.trim()}
-                    className="bg-brand-500 text-white px-4 py-2 rounded-lg hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-accent disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t('chat.send')}
                   </button>

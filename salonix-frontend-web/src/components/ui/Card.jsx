@@ -1,6 +1,8 @@
-function Card({ children }) {
+function Card({ children, className = '' }) {
   return (
-    <div className="bg-brand-light border border-brand-border rounded-md p-4 shadow-sm">
+    <div
+      className={`bg-brand-light border border-brand-border rounded-md shadow-sm ${className}`.trim()}
+    >
       {children}
     </div>
   );
