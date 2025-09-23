@@ -17,10 +17,12 @@ const TAB_ITEMS = [
   { id: 'business', label: 'settings.tabs.business', icon: '🏢' },
 ];
 
-const FEATURE_LIST = Object.entries(TENANT_FEATURE_REQUIREMENTS).map(([key, value]) => ({
-  key,
-  ...value,
-}));
+const FEATURE_LIST = Object.entries(TENANT_FEATURE_REQUIREMENTS).map(
+  ([key, value]) => ({
+    key,
+    ...value,
+  })
+);
 
 function buildInitialSettings(profile, channels) {
   const safeProfile = { ...DEFAULT_TENANT_META.profile, ...(profile || {}) };
@@ -47,15 +49,24 @@ function buildInitialSettings(profile, channels) {
         ...(safeProfile.workingHours || {}),
       },
       appointmentDuration:
-        safeProfile.appointmentDuration ?? DEFAULT_TENANT_META.profile.appointmentDuration,
-      bufferTime: safeProfile.bufferTime ?? DEFAULT_TENANT_META.profile.bufferTime,
+        safeProfile.appointmentDuration ??
+        DEFAULT_TENANT_META.profile.appointmentDuration,
+      bufferTime:
+        safeProfile.bufferTime ?? DEFAULT_TENANT_META.profile.bufferTime,
     },
   };
 }
 
 function Settings() {
   const { t } = useTranslation();
-  const { plan, modules, channels, flags, profile, loading: tenantLoading } = useTenant();
+  const {
+    plan,
+    modules,
+    channels,
+    flags,
+    profile,
+    loading: tenantLoading,
+  } = useTenant();
   const [activeTab, setActiveTab] = useState('general');
 
   const initialSettings = useMemo(
@@ -79,7 +90,10 @@ function Settings() {
     return [];
   }, [modules, plan]);
 
-  const channelEntries = useMemo(() => Object.entries(channels || {}), [channels]);
+  const channelEntries = useMemo(
+    () => Object.entries(channels || {}),
+    [channels]
+  );
   const activeFeatures = useMemo(
     () => FEATURE_LIST.filter(({ key }) => flags?.[key]),
     [flags]
@@ -133,7 +147,10 @@ function Settings() {
             </ul>
           ) : (
             <p className="mt-2 text-sm text-gray-500">
-              {t('settings.plan_modules_empty', 'Nenhum módulo adicional definido para este plano.')}
+              {t(
+                'settings.plan_modules_empty',
+                'Nenhum módulo adicional definido para este plano.'
+              )}
             </p>
           )}
         </div>
@@ -146,13 +163,17 @@ function Settings() {
             <ul className="mt-2 space-y-1 text-sm text-gray-600">
               {channelEntries.map(([channelKey, enabled]) => (
                 <li key={channelKey} className={enabled ? '' : 'text-gray-400'}>
-                  • {channelKey.toUpperCase()} {enabled ? '— ativo' : '— indisponível'}
+                  • {channelKey.toUpperCase()}{' '}
+                  {enabled ? '— ativo' : '— indisponível'}
                 </li>
               ))}
             </ul>
           ) : (
             <p className="mt-2 text-sm text-gray-500">
-              {t('settings.plan_channels_empty', 'Sem informações de canais para este tenant.')}
+              {t(
+                'settings.plan_channels_empty',
+                'Sem informações de canais para este tenant.'
+              )}
             </p>
           )}
         </div>
@@ -324,76 +345,78 @@ function Settings() {
           {t('settings.working_hours')}
         </h4>
         <div className="space-y-3">
-          {Object.entries(settings.business.workingHours).map(([day, hours]) => (
-            <div key={day} className="flex items-center space-x-4">
-              <div className="w-24">
-                <span className="text-sm font-medium text-gray-900">
-                  {t(`settings.days.${day}`)}
-                </span>
-              </div>
-
-              <input
-                type="checkbox"
-                checked={!hours.closed}
-                onChange={(e) =>
-                  setSettings({
-                    ...settings,
-                    business: {
-                      ...settings.business,
-                      workingHours: {
-                        ...settings.business.workingHours,
-                        [day]: { ...hours, closed: !e.target.checked },
-                      },
-                    },
-                  })
-                }
-                disabled={tenantLoading}
-                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-              />
-
-              {!hours.closed && (
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="time"
-                    value={hours.open}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: {
-                          ...settings.business,
-                          workingHours: {
-                            ...settings.business.workingHours,
-                            [day]: { ...hours, open: e.target.value },
-                          },
-                        },
-                      })
-                    }
-                    disabled={tenantLoading}
-                    className="rounded border border-gray-300 px-2 py-1 text-sm"
-                  />
-                  <span className="text-gray-500">-</span>
-                  <input
-                    type="time"
-                    value={hours.close}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        business: {
-                          ...settings.business,
-                          workingHours: {
-                            ...settings.business.workingHours,
-                            [day]: { ...hours, close: e.target.value },
-                          },
-                        },
-                      })
-                    }
-                    disabled={tenantLoading}
-                    className="rounded border border-gray-300 px-2 py-1 text-sm"
-                  />
+          {Object.entries(settings.business.workingHours).map(
+            ([day, hours]) => (
+              <div key={day} className="flex items-center space-x-4">
+                <div className="w-24">
+                  <span className="text-sm font-medium text-gray-900">
+                    {t(`settings.days.${day}`)}
+                  </span>
                 </div>
-              )}
-            </div>
-          ))}
+
+                <input
+                  type="checkbox"
+                  checked={!hours.closed}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      business: {
+                        ...settings.business,
+                        workingHours: {
+                          ...settings.business.workingHours,
+                          [day]: { ...hours, closed: !e.target.checked },
+                        },
+                      },
+                    })
+                  }
+                  disabled={tenantLoading}
+                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                />
+
+                {!hours.closed && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="time"
+                      value={hours.open}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          business: {
+                            ...settings.business,
+                            workingHours: {
+                              ...settings.business.workingHours,
+                              [day]: { ...hours, open: e.target.value },
+                            },
+                          },
+                        })
+                      }
+                      disabled={tenantLoading}
+                      className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    />
+                    <span className="text-gray-500">-</span>
+                    <input
+                      type="time"
+                      value={hours.close}
+                      onChange={(e) =>
+                        setSettings({
+                          ...settings,
+                          business: {
+                            ...settings.business,
+                            workingHours: {
+                              ...settings.business.workingHours,
+                              [day]: { ...hours, close: e.target.value },
+                            },
+                          },
+                        })
+                      }
+                      disabled={tenantLoading}
+                      className="rounded border border-gray-300 px-2 py-1 text-sm"
+                    />
+                  </div>
+                )}
+              </div>
+            )
+          )}
         </div>
       </div>
 
@@ -454,10 +477,7 @@ function Settings() {
 
   return (
     <FullPageLayout>
-      <PageHeader
-        title={t('settings.title')}
-        subtitle={t('settings.subtitle')}
-      >
+      <PageHeader title={t('settings.title')} subtitle={t('settings.subtitle')}>
         {plan?.name ? (
           <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-gray-700">
             {t('settings.plan_badge', 'Plano')}: {plan.name}

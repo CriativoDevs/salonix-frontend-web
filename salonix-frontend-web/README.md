@@ -74,7 +74,7 @@
 - **Exportação CSV** - Dados para análise externa
 
 ### 💬 Comunicação
-- **Chat interno** - Comunicação com clientes
+- **Chat interno** - Comunicação com clientes *(requer flag `enableWebPush`; caso desativada, exibimos callout de upgrade)*
 - **Feedback** - Sistema de avaliações
 - **Notificações** - Alertas e lembretes
 
@@ -224,9 +224,17 @@ src/
 
 ### JWT Integration
 - **Login** via `/api/users/token/`
+- **Register** devolve bloco `tenant` com `slug`, `plan`, `flags`
 - **Refresh tokens** automático
 - **Interceptors** para requisições autenticadas
 - **Logout** com limpeza de estado
+
+### Bootstrap do Tenant
+- **Slug controlado pelo BE**: nunca gerar slug no FE.
+- **Register/Login** retornam `tenant.slug` → persistido no AuthContext.
+- **GET /api/users/me/tenant/** usado quando apenas o refresh token está presente.
+- **TenantProvider** recebe slug do Auth antes de tentar resolver por query/host.
+- **Smokes** usam senha padrão `Smoke@123` (override via `SMOKE_USER_PASSWORD`) para validar branding.
 
 ### Feature Flags
 - **Controle de acesso** por funcionalidade

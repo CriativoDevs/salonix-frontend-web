@@ -58,3 +58,16 @@
 - **Notas**:
   - Caso o backend esteja indisponível, caímos em `DEFAULT_TENANT_META` e o título volta para “TimelyOne”.
   - Próximo passo natural: usar o contexto para condicionar seções (ex.: esconder módulos premium).
+
+## Slug e bootstrap do tenant (FEW-213/FEW-214)
+
+- **Contexto**: Backend passa a devolver `tenant.slug` (mais bloco mínimo de meta) nos endpoints de registro/login, além de expor `GET /api/users/me/tenant/` para bootstrap apenas com refresh token.
+- **Principais componentes** (planeado para próxima iteração):
+  - `src/contexts/AuthContext.jsx` – guardar `tenantSlug`/meta rápida logo após register/login e quando bootstrap roda com refresh.
+  - `src/contexts/TenantContext.jsx` – aceitar slug vindo do Auth antes de tentar resolver query/host.
+  - `src/pages/Register.jsx` – consumir payload com slug e encaminhar para dashboard já tematizado.
+- **Decisões**:
+  - Slug é sempre gerado pelo BE; FEW apenas persiste e injeta no provider.
+  - Seeds/smokes terão senha padrão (documentada) para que possamos validar branding com dados conhecidos.
+- **Pendências**:
+  - Ajustar smokes e docs após BE-233/BE-234/BE-235 concluídos.
