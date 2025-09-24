@@ -15,6 +15,10 @@ import {
   resolveTenantSlug,
   sanitizeTenantSlug,
 } from '../utils/tenant';
+import {
+  getStoredTenantSlug,
+  storeTenantSlug,
+} from '../utils/tenantStorage';
 
 const defaultContextValue = {
   slug: DEFAULT_TENANT_SLUG,
@@ -36,7 +40,11 @@ const defaultContextValue = {
 const TenantContext = createContext(defaultContextValue);
 
 export function TenantProvider({ children }) {
-  const [slug, setSlug] = useState(() => resolveTenantSlug());
+  const [slug, setSlug] = useState(() => {
+    const stored = getStoredTenantSlug();
+    if (stored) return stored;
+    return resolveTenantSlug();
+  });
   const [tenant, setTenant] = useState(DEFAULT_TENANT_META);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -114,6 +122,7 @@ export function TenantProvider({ children }) {
       setSlug(merged.slug);
       setError(null);
       setLoading(false);
+      storeTenantSlug(merged.slug);
       loadTenant(merged.slug, { silent: true });
       if (!slugChanged) {
         skipNextLoadRef.current = false;
@@ -130,11 +139,13 @@ export function TenantProvider({ children }) {
       }
 
       if (sanitized === slug) {
+        storeTenantSlug(sanitized);
         loadTenant(sanitized, { silent: true });
         return;
       }
 
       skipNextLoadRef.current = false;
+      storeTenantSlug(sanitized);
       setSlug(sanitized);
     },
     [loadTenant, slug]

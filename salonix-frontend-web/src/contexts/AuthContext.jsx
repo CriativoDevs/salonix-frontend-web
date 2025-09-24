@@ -16,6 +16,7 @@ import {
 import { parseApiError, hasActionableError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
+import { clearStoredTenantSlug, storeTenantSlug } from '../utils/tenantStorage';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
     setTenantInfo(null);
     setTenantSlug(DEFAULT_TENANT_META.slug);
+    clearStoredTenantSlug();
   }, [setTenantSlug]);
 
   const handleLogout = useCallback(() => {
@@ -59,16 +61,28 @@ export const AuthProvider = ({ children }) => {
       const tenant = await fetchTenantBootstrap();
       if (tenant?.slug) {
         applyTenantBootstrap(tenant);
+        storeTenantSlug(tenant.slug);
         setTenantInfo(tenant);
+        return true;
       }
     } catch (error) {
       const status = error?.response?.status;
       if (status === 404 || status === 403) {
         setTenantInfo(null);
         setTenantSlug(DEFAULT_TENANT_META.slug);
+        clearStoredTenantSlug();
+        const friendlyError = parseApiError(
+          error,
+          'Sua conta não possui um salão associado. Contacte o suporte.'
+        );
+        setAuthError(friendlyError);
+        clearTokens();
+        resetState();
+        return false;
       }
     }
-  }, [applyTenantBootstrap, setTenantSlug]);
+    return true;
+  }, [applyTenantBootstrap, setTenantSlug, resetState]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -83,8 +97,10 @@ export const AuthProvider = ({ children }) => {
         if (access) {
           setAccessToken(access);
           setIsAuthenticated(true);
-          await loadTenantBootstrap();
-          await loadFeatureFlags();
+          const tenantLoaded = await loadTenantBootstrap();
+          if (tenantLoaded) {
+            await loadFeatureFlags();
+          }
         }
       } catch {
         clearTokens();
@@ -110,10 +126,12 @@ export const AuthProvider = ({ children }) => {
         }
         if (tenant?.slug) {
           applyTenantBootstrap(tenant);
+          storeTenantSlug(tenant.slug);
           setTenantInfo(tenant);
         } else {
           setTenantInfo(null);
           setTenantSlug(DEFAULT_TENANT_META.slug);
+          clearStoredTenantSlug();
         }
         setIsAuthenticated(true);
         await loadFeatureFlags();
