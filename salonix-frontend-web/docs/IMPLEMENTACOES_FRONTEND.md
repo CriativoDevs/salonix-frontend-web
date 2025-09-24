@@ -61,13 +61,13 @@
 
 ## Slug e bootstrap do tenant (FEW-213/FEW-214)
 
-- **Contexto**: Backend passa a devolver `tenant.slug` (mais bloco mínimo de meta) nos endpoints de registro/login, além de expor `GET /api/users/me/tenant/` para bootstrap apenas com refresh token.
-- **Principais componentes** (planeado para próxima iteração):
-  - `src/contexts/AuthContext.jsx` – guardar `tenantSlug`/meta rápida logo após register/login e quando bootstrap roda com refresh.
-  - `src/contexts/TenantContext.jsx` – aceitar slug vindo do Auth antes de tentar resolver query/host.
-  - `src/pages/Register.jsx` – consumir payload com slug e encaminhar para dashboard já tematizado.
+- **Contexto**: Com o backend devolvendo o bloco `tenant` nos fluxos de auth e expondo `/api/users/me/tenant/`, o FEW precisa garantir que o slug/meta sejam persistidos imediatamente para aplicar branding sem depender de querystring.
+- **Principais componentes**:
+  - `src/contexts/AuthContext.jsx` agora hidrata o `TenantProvider` após login, refresh ou registro (`fetchTenantBootstrap`) e expõe `tenant` no contexto global.
+  - `src/contexts/TenantContext.jsx` ganhou `applyTenantBootstrap`, permitindo receber meta pré-carregada antes do fetch oficial, além de respeitar o slug vindo do Auth.
+  - `src/pages/Register.jsx` aplica o slug/meta retornados pelo registro antes de redirecionar para o login.
 - **Decisões**:
-  - Slug é sempre gerado pelo BE; FEW apenas persiste e injeta no provider.
-  - Seeds/smokes terão senha padrão (documentada) para que possamos validar branding com dados conhecidos.
+  - Bootstrap com refresh busca `/users/me/tenant/` silenciosamente e repassa meta ao provider para evitar flashes sem branding.
+  - Ao sair da sessão, o slug volta para `DEFAULT_TENANT_META.slug`, mantendo o login com tema institucional.
 - **Pendências**:
-  - Ajustar smokes e docs após BE-233/BE-234/BE-235 concluídos.
+  - Ajustar a Landing/Login para aplicar tema mesmo sem autenticação (quando fizer sentido de UX) e documentar smoke tests no FEW-215.

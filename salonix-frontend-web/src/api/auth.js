@@ -5,7 +5,7 @@ export async function login(email, password) {
     email,
     password,
   });
-  return response.data; // { access, refresh }
+  return response.data; // { access, refresh, tenant }
 }
 
 export async function refreshToken(refresh) {
@@ -22,5 +22,10 @@ export async function registerUser(payload) {
 
 export async function fetchFeatureFlags() {
   const response = await client.get('users/me/features/');
+  return response.data;
+}
+
+export async function fetchTenantBootstrap() {
+  const response = await client.get('users/me/tenant/');
   return response.data;
 }

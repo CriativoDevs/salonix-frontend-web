@@ -6,8 +6,13 @@ const runtimeDefaultSlug = (() => {
     }
   }
 
-  if (typeof process !== 'undefined' && process?.env?.VITE_DEFAULT_TENANT_SLUG) {
-    return process.env.VITE_DEFAULT_TENANT_SLUG;
+  if (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_DEFAULT_TENANT_SLUG) {
+    return import.meta.env.VITE_DEFAULT_TENANT_SLUG;
+  }
+
+  const globalProcess = typeof globalThis !== 'undefined' ? globalThis.process : undefined;
+  if (globalProcess?.env?.VITE_DEFAULT_TENANT_SLUG) {
+    return globalProcess.env.VITE_DEFAULT_TENANT_SLUG;
   }
 
   return 'timelyone';
@@ -127,7 +132,7 @@ export function extractSlugFromQuery(search) {
     const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
     const slug = params.get('tenant');
     return sanitizeTenantSlug(slug);
-  } catch (error) {
+  } catch {
     return '';
   }
 }
@@ -150,7 +155,7 @@ export function extractSlugFromHost(hostname) {
     return '';
   }
 
-  const [first, second, ...rest] = filteredParts;
+  const [first, second] = filteredParts;
 
   if (second === 'localhost') {
     return sanitizeTenantSlug(first);

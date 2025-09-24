@@ -7,10 +7,12 @@ import FormButton from '../components/ui/FormButton';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { registerUser } from '../api/auth';
 import { parseApiError } from '../utils/apiError';
+import { useTenant } from '../hooks/useTenant';
 
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { applyTenantBootstrap } = useTenant();
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -42,13 +44,16 @@ function Register() {
     setApiError(null);
 
     try {
-      await registerUser({
+      const response = await registerUser({
         username: form.username,
         email: form.email,
         password: form.password,
         salon_name: form.salon_name,
         phone_number: form.phone_number,
       });
+      if (response?.tenant?.slug) {
+        applyTenantBootstrap(response.tenant);
+      }
       navigate('/login', { replace: true });
     } catch (err) {
       const parsed = parseApiError(err, t('auth.errors.register_failed'));

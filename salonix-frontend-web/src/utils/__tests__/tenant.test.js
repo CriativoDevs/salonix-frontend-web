@@ -1,3 +1,5 @@
+/* eslint-env jest */
+
 import {
   DEFAULT_TENANT_META,
   DEFAULT_TENANT_SLUG,

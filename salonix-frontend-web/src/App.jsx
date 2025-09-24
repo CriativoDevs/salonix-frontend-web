@@ -123,8 +123,8 @@ function TenantThemeManager() {
         return;
       }
 
-      const name = targetBranding.appName || tenant?.name || DEFAULT_TENANT_META.branding.appName;
-      const shortName = targetBranding.shortName || name;
+      const name = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      const shortName = targetBranding.shortName || tenant?.name || name;
       const themeColor = targetBranding.themeColor || targetTheme.primary;
       const backgroundColor = targetBranding.backgroundColor || targetTheme.surface;
 
@@ -169,13 +169,16 @@ function TenantThemeManager() {
     const appleCapableMeta = ensureMetaTag('apple-mobile-web-app-capable');
 
     if (isAuthenticated) {
-      document.title =
-        targetBranding.appName || tenant?.name || DEFAULT_TENANT_META.branding.appName;
+      const tenantTitle = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      document.title = tenantTitle;
       themeColorMeta.setAttribute('content', targetBranding.themeColor || targetTheme.primary);
-      appleWebAppTitleMeta.setAttribute('content', targetBranding.shortName || targetBranding.appName);
+      appleWebAppTitleMeta.setAttribute(
+        'content',
+        targetBranding.shortName || tenant?.name || tenantTitle
+      );
       appleCapableMeta.setAttribute('content', 'yes');
     } else {
-      document.title = originalAssetsRef.current?.title || document.title;
+      document.title = DEFAULT_TENANT_META.branding.appName;
       if (originalAssetsRef.current?.themeColor) {
         themeColorMeta.setAttribute('content', originalAssetsRef.current.themeColor);
       } else {
