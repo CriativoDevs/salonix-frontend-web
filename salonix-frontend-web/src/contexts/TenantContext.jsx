@@ -30,6 +30,7 @@ const defaultContextValue = {
   error: null,
   refetch: async () => DEFAULT_TENANT_META,
   setTenantSlug: () => {},
+  applyTenantBootstrap: () => {},
 };
 
 const TenantContext = createContext(defaultContextValue);
@@ -40,9 +41,10 @@ export function TenantProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const abortController = useRef(null);
+  const skipNextLoadRef = useRef(false);
 
   const loadTenant = useCallback(
-    async (targetSlug) => {
+    async (targetSlug, { silent = false } = {}) => {
       const sanitizedSlug = sanitizeTenantSlug(targetSlug) || DEFAULT_TENANT_SLUG;
 
       if (abortController.current) {
@@ -52,8 +54,10 @@ export function TenantProvider({ children }) {
       const controller = new AbortController();
       abortController.current = controller;
 
-      setLoading(true);
-      setError(null);
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
 
       try {
         const response = await fetchTenantMeta(sanitizedSlug, {
@@ -76,10 +80,13 @@ export function TenantProvider({ children }) {
         );
 
         setError(parsedError);
-        const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
-        setTenant(fallbackMeta);
-        setSlug(sanitizedSlug);
-        return fallbackMeta;
+        if (!silent) {
+          const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
+          setTenant(fallbackMeta);
+          setSlug(sanitizedSlug);
+          return fallbackMeta;
+        }
+        return DEFAULT_TENANT_META;
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -89,18 +96,60 @@ export function TenantProvider({ children }) {
     []
   );
 
+  const applyTenantBootstrap = useCallback(
+    (bootstrapMeta) => {
+      if (!bootstrapMeta || typeof bootstrapMeta !== 'object') {
+        return;
+      }
+
+      const sanitizedSlug = sanitizeTenantSlug(bootstrapMeta.slug);
+      if (!sanitizedSlug) {
+        return;
+      }
+
+      const merged = mergeTenantMeta(bootstrapMeta, sanitizedSlug);
+      const slugChanged = merged.slug !== slug;
+      skipNextLoadRef.current = slugChanged;
+      setTenant(merged);
+      setSlug(merged.slug);
+      setError(null);
+      setLoading(false);
+      loadTenant(merged.slug, { silent: true });
+      if (!slugChanged) {
+        skipNextLoadRef.current = false;
+      }
+    },
+    [loadTenant, slug]
+  );
+
   const updateSlug = useCallback(
     (nextSlug) => {
       const sanitized = sanitizeTenantSlug(nextSlug);
-      if (!sanitized || sanitized === slug) {
+      if (!sanitized) {
         return;
       }
-      loadTenant(sanitized);
+
+      if (sanitized === slug) {
+        loadTenant(sanitized, { silent: true });
+        return;
+      }
+
+      skipNextLoadRef.current = false;
+      setSlug(sanitized);
     },
     [loadTenant, slug]
   );
 
   useEffect(() => {
+    if (skipNextLoadRef.current) {
+      skipNextLoadRef.current = false;
+      return () => {
+        if (abortController.current) {
+          abortController.current.abort();
+        }
+      };
+    }
+
     loadTenant(slug);
 
     return () => {
@@ -125,8 +174,9 @@ export function TenantProvider({ children }) {
       error,
       refetch: () => loadTenant(slug),
       setTenantSlug: updateSlug,
+      applyTenantBootstrap,
     };
-  }, [slug, tenant, loading, error, loadTenant, updateSlug]);
+  }, [slug, tenant, loading, error, loadTenant, updateSlug, applyTenantBootstrap]);
 
   return (
     <TenantContext.Provider value={contextValue}>
