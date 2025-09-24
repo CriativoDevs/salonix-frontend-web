@@ -234,7 +234,7 @@ src/
 - **Register/Login** retornam `tenant.slug` → persistido no AuthContext.
 - **GET /api/users/me/tenant/** usado quando apenas o refresh token está presente.
 - **TenantProvider** recebe slug do Auth antes de tentar resolver por query/host.
-- **Smokes** usam senha padrão `Smoke@123` (override via `SMOKE_USER_PASSWORD`) para validar branding.
+- **Smokes**: use `npm run smoke` para validar auth/bootstrap com as seeds. Por padrão, o script usa `BASE_URL=http://localhost:8000/api/`, `LOGIN_EMAIL=pro_smoke@demo.local` e `SMOKE_USER_PASSWORD=Smoke@123` (sobreponha via env).
 
 ### Feature Flags
 - **Controle de acesso** por funcionalidade
