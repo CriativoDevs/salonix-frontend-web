@@ -60,6 +60,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const tenant = await fetchTenantBootstrap();
       if (tenant?.slug) {
+        console.log('[Auth] loadTenantBootstrap OK. slug=', tenant.slug);
         applyTenantBootstrap(tenant);
         storeTenantSlug(tenant.slug);
         setTenantInfo(tenant);
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const status = error?.response?.status;
       if (status === 404 || status === 403) {
+        console.warn('[Auth] loadTenantBootstrap: user has no tenant or forbidden. status=', status);
         setTenantInfo(null);
         setTenantSlug(DEFAULT_TENANT_META.slug);
         clearStoredTenantSlug();
@@ -80,6 +82,7 @@ export const AuthProvider = ({ children }) => {
         resetState();
         return false;
       }
+      console.warn('[Auth] loadTenantBootstrap error:', error);
     }
     return true;
   }, [applyTenantBootstrap, setTenantSlug, resetState]);
@@ -103,6 +106,7 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch {
+        console.warn('[Auth] refresh token flow failed, clearing tokens');
         clearTokens();
         resetState();
       } finally {
@@ -125,6 +129,7 @@ export const AuthProvider = ({ children }) => {
           setRefreshToken(refresh);
         }
         if (tenant?.slug) {
+          console.log('[Auth] login payload included tenant. slug=', tenant.slug);
           applyTenantBootstrap(tenant);
           storeTenantSlug(tenant.slug);
           setTenantInfo(tenant);
@@ -136,6 +141,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         await loadFeatureFlags();
       } catch (error) {
+        console.warn('[Auth] login request failed:', error);
         const parsedError = parseApiError(error, 'Erro ao autenticar.');
         setAuthError(parsedError);
         throw parsedError;

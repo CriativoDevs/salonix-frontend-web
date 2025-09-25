@@ -71,3 +71,13 @@
   - Ao sair da sessão, o slug volta para `DEFAULT_TENANT_META.slug`, mantendo o login com tema institucional.
 - **Pendências**:
   - Ajustar a Landing/Login para aplicar tema mesmo sem autenticação (quando fizer sentido de UX) e documentar smoke tests no FEW-215.
+## Wizard de Planos / Checkout (FEW-208)
+
+- Contexto: preparar UI do wizard de planos e integração com checkout, com suporte a modo mock enquanto o backend de billing (BE-210) não está disponível.
+- Componentes:
+  - `src/pages/Plans.jsx` – seleção de plano (basic/standard/pro) e botão de checkout.
+  - `src/api/billing.js` – `createCheckoutSession(plan)` chama `payments/checkout/session/` ou simula quando `VITE_BILLING_MOCK=true`.
+  - Rota protegida `/plans` adicionada no `Router.jsx`.
+- Notas:
+  - Em dev, defina `VITE_BILLING_MOCK=true` para simular redirecionamento (`/checkout/mock?plan=...`).
+  - Em produção, a API deve devolver `{ checkout_url }`.

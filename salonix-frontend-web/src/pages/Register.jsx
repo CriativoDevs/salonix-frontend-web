@@ -8,11 +8,16 @@ import ErrorPopup from '../components/ui/ErrorPopup';
 import { registerUser } from '../api/auth';
 import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
+import { useAuth } from '../hooks/useAuth';
+import { trace } from '../utils/debug';
+import { schedulePostAuthRedirect, consumePostAuthRedirect, clearPostAuthRedirect } from '../utils/navigation';
+import { getEnvFlag } from '../utils/env';
 
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { applyTenantBootstrap } = useTenant();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -42,6 +47,7 @@ function Register() {
     if (!validate()) return;
     setSubmitting(true);
     setApiError(null);
+    trace('register:submit');
 
     try {
       const response = await registerUser({
@@ -51,10 +57,26 @@ function Register() {
         salon_name: form.salon_name,
         phone_number: form.phone_number,
       });
+      trace('register:success', response?.tenant);
       if (response?.tenant?.slug) {
         applyTenantBootstrap(response.tenant);
       }
-      navigate('/login', { replace: true });
+      const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
+      try {
+        trace('register:auto-login:start');
+        schedulePostAuthRedirect('/plans');
+        await login({ email: form.email, password: form.password });
+        const scheduledTarget = consumePostAuthRedirect();
+        const target = scheduledTarget || (enablePlans ? '/plans' : '/dashboard');
+        trace('register:auto-login:success', target);
+        navigate(target, { replace: true });
+      } catch {
+        // Se auto-login falhar por qualquer motivo, segue fluxo antigo
+        trace('register:auto-login:fail');
+        clearPostAuthRedirect();
+        setApiError({ message: 'Auto-login falhou após registo. Por favor, autentique-se.' });
+        navigate('/login', { replace: true });
+      }
     } catch (err) {
       const parsed = parseApiError(err, t('auth.errors.register_failed'));
       setApiError(parsed);

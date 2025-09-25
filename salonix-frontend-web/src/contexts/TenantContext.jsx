@@ -82,6 +82,17 @@ export function TenantProvider({ children }) {
           return DEFAULT_TENANT_META;
         }
 
+        const status = err?.response?.status;
+        if (status === 400 || status === 404) {
+          if (!silent) {
+            const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
+            setTenant(fallbackMeta);
+            setSlug(sanitizedSlug);
+            return fallbackMeta;
+          }
+          return DEFAULT_TENANT_META;
+        }
+
         const parsedError = parseApiError(
           err,
           'Não foi possível carregar os dados do salão.'

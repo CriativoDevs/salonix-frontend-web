@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
@@ -6,6 +6,8 @@ import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
+import { consumePostAuthRedirect } from '../utils/navigation';
+import { getEnvFlag } from '../utils/env';
 
 function Login() {
   const { t } = useTranslation();
@@ -18,9 +20,16 @@ function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [popupError, setPopupError] = useState(null);
 
-  if (!isLoading && isAuthenticated) {
-    navigate('/dashboard', { replace: true });
-  }
+  const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
+
+  useEffect(() => {
+    console.log('[Login] enablePlans=', enablePlans, 'isLoading=', isLoading, 'isAuthenticated=', isAuthenticated);
+    if (!isLoading && isAuthenticated) {
+      const scheduled = consumePostAuthRedirect();
+      const target = scheduled || (enablePlans ? '/plans' : '/dashboard');
+      navigate(target, { replace: true });
+    }
+  }, [isLoading, isAuthenticated, enablePlans, navigate]);
 
   const validate = () => {
     const newErrors = {};
@@ -40,9 +49,10 @@ function Login() {
     setPopupError(null);
     clearAuthError();
     try {
+      console.log('[Login] Attempting login');
       await login({ email, password });
-      navigate('/dashboard', { replace: true });
     } catch (err) {
+      console.warn('[Login] Login failed', err);
       setPopupError(err);
     } finally {
       setSubmitting(false);
