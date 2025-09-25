@@ -228,6 +228,7 @@ src/
 - **Refresh tokens** automático
 - **Interceptors** para requisições autenticadas
 - **Logout** com limpeza de estado
+- Opcional: defina `VITE_PLAN_WIZARD_AFTER_LOGIN=true` para redirecionar o utilizador à página de planos (`/plans`) após login.
 
 ### Bootstrap do Tenant
 - **Slug controlado pelo BE**: nunca gerar slug no FE.

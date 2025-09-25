@@ -1,3 +1,5 @@
+import { getEnvVar } from './env';
+
 const runtimeDefaultSlug = (() => {
   if (typeof globalThis !== 'undefined') {
     const globalSlug = globalThis.__DEFAULT_TENANT_SLUG__;
@@ -6,13 +8,9 @@ const runtimeDefaultSlug = (() => {
     }
   }
 
-  if (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_DEFAULT_TENANT_SLUG) {
-    return import.meta.env.VITE_DEFAULT_TENANT_SLUG;
-  }
-
-  const globalProcess = typeof globalThis !== 'undefined' ? globalThis.process : undefined;
-  if (globalProcess?.env?.VITE_DEFAULT_TENANT_SLUG) {
-    return globalProcess.env.VITE_DEFAULT_TENANT_SLUG;
+  const configuredSlug = getEnvVar('VITE_DEFAULT_TENANT_SLUG');
+  if (configuredSlug) {
+    return configuredSlug;
   }
 
   return 'timelyone';

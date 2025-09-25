@@ -13,6 +13,8 @@ import Profile from '../pages/Profile';
 import Chat from '../pages/Chat';
 import Feedback from '../pages/Feedback';
 import Settings from '../pages/Settings';
+import Plans from '../pages/Plans';
+import PlanCheckoutMock from '../pages/PlanCheckoutMock';
 
 function Router() {
   return (
@@ -99,6 +101,24 @@ function Router() {
         element={
           <PrivateRoute>
             <Settings />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/plans"
+        element={
+          <PrivateRoute>
+            <Plans />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/checkout/mock"
+        element={
+          <PrivateRoute>
+            <PlanCheckoutMock />
           </PrivateRoute>
         }
       />
