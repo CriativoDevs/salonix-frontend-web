@@ -1,10 +1,15 @@
 import client from './client';
 
-export async function login(email, password) {
-  const response = await client.post('users/token/', {
-    email,
-    password,
-  });
+export async function login(email, password, { captchaBypassToken } = {}) {
+  const headers = {};
+  if (captchaBypassToken) {
+    headers['X-Captcha-Token'] = captchaBypassToken;
+  }
+  const response = await client.post(
+    'users/token/',
+    { email, password },
+    { headers }
+  );
   return response.data; // { access, refresh, tenant }
 }
 
@@ -15,8 +20,12 @@ export async function refreshToken(refresh) {
   return response.data; // { access }
 }
 
-export async function registerUser(payload) {
-  const response = await client.post('users/register/', payload);
+export async function registerUser(payload, { captchaBypassToken } = {}) {
+  const headers = {};
+  if (captchaBypassToken) {
+    headers['X-Captcha-Token'] = captchaBypassToken;
+  }
+  const response = await client.post('users/register/', payload, { headers });
   return response.data;
 }
 

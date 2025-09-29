@@ -8,6 +8,7 @@ import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
 import { consumePostAuthRedirect } from '../utils/navigation';
 import { getEnvFlag } from '../utils/env';
+import CaptchaGate from '../components/security/CaptchaGate';
 
 function Login() {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ function Login() {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [popupError, setPopupError] = useState(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
 
@@ -50,7 +52,9 @@ function Login() {
     clearAuthError();
     try {
       console.log('[Login] Attempting login');
-      await login({ email, password });
+      const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
+      const token = bypass || captchaToken || undefined;
+      await login({ email, password, captchaToken: token });
     } catch (err) {
       console.warn('[Login] Login failed', err);
       setPopupError(err);
@@ -98,9 +102,11 @@ function Login() {
           </Link>
         </div>
 
-        <FormButton type="submit" disabled={submitting}>
-          {submitting ? t('common.loading') : t('login.submit')}
-        </FormButton>
+      <FormButton type="submit" disabled={submitting}>
+        {submitting ? t('common.loading') : t('login.submit')}
+      </FormButton>
+
+        <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="mt-4 text-sm text-center">
           {t('login.no_account')}{' '}

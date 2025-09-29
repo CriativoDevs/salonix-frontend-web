@@ -12,6 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 import { trace } from '../utils/debug';
 import { schedulePostAuthRedirect, consumePostAuthRedirect, clearPostAuthRedirect } from '../utils/navigation';
 import { getEnvFlag } from '../utils/env';
+import CaptchaGate from '../components/security/CaptchaGate';
 
 function Register() {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ function Register() {
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const validate = () => {
     const newErrors = {};
@@ -56,7 +58,7 @@ function Register() {
         password: form.password,
         salon_name: form.salon_name,
         phone_number: form.phone_number,
-      });
+      }, { captchaBypassToken: import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || captchaToken || undefined });
       trace('register:success', response?.tenant);
       if (response?.tenant?.slug) {
         applyTenantBootstrap(response.tenant);
@@ -156,6 +158,8 @@ function Register() {
         <FormButton type="submit" variant="primary" className="w-full" disabled={submitting}>
           {submitting ? t('common.loading') : t('auth.register')}
         </FormButton>
+
+        <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="text-center text-sm">
           <span className="text-gray-600">

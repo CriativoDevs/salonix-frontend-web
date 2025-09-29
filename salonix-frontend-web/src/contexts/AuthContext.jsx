@@ -121,7 +121,10 @@ export const AuthProvider = ({ children }) => {
     async ({ email, password }) => {
       setAuthError(null);
       try {
-        const { access, refresh, tenant } = await loginRequest(email, password);
+        const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
+        const { access, refresh, tenant } = await loginRequest(email, password, {
+          captchaBypassToken: bypass,
+        });
         if (access) {
           setAccessToken(access);
         }
