@@ -35,7 +35,7 @@ function ResetPassword() {
       const { confirmPasswordReset } = await import('../api/auth');
       await confirmPasswordReset(uid, token, password);
       setDone(true);
-    } catch (err) {
+    } catch {
       setError(t('auth.errors.reset_failed'));
     }
   };
@@ -115,4 +115,3 @@ function ResetPassword() {
 }
 
 export default ResetPassword;
-

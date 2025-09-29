@@ -14,11 +14,22 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
     };
   }
 
-  const message =
-    apiError?.message ||
-    response?.data?.detail ||
-    fallbackMessage;
+  // Rate limit handling (429)
+  if (response?.status === 429) {
+    const retryAfter = Number(response?.headers?.['retry-after'] || 0);
+    const seconds = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
+    const msg = seconds
+      ? `Muitas tentativas. Tente novamente em ${seconds}s.`
+      : 'Muitas tentativas. Tente novamente em instantes.';
+    return {
+      message: msg,
+      code: 'RATE_LIMITED',
+      details: null,
+      requestId,
+    };
+  }
 
+  const message = apiError?.message || response?.data?.detail || fallbackMessage;
   const details = apiError?.details ?? response?.data?.errors ?? null;
   const code = apiError?.code || null;
 

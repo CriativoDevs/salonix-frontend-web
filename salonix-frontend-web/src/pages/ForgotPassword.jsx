@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import FormButton from '../components/ui/FormButton';
+import CaptchaGate from '../components/security/CaptchaGate';
 
 function ForgotPassword() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +23,10 @@ function ForgotPassword() {
       const { requestPasswordReset } = await import('../api/auth');
       const resetUrl = `${window.location.origin}/reset-password`;
       const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
-      await requestPasswordReset(email, resetUrl, bypass);
+      await requestPasswordReset(email, resetUrl, bypass || captchaToken || undefined);
       setIsSubmitted(true);
       setError('');
-    } catch (err) {
+    } catch {
       // Mesmo em erro, backend retorna neutro; aqui exibimos genérico
       setIsSubmitted(true);
       setError('');
@@ -97,6 +99,8 @@ function ForgotPassword() {
         <FormButton type="submit" variant="primary" className="w-full">
           {t('auth.send_reset_link')}
         </FormButton>
+
+        <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="text-center text-sm">
           <span className="text-gray-600">{t('auth.remember_password')} </span>
