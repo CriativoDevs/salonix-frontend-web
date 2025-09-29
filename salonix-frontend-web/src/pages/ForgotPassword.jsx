@@ -10,17 +10,25 @@ function ForgotPassword() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) {
       setError(t('auth.errors.email_required'));
       return;
     }
 
-    // TODO: implementar lógica de recuperação de senha
-    console.log('Recuperar senha para:', email);
-    setIsSubmitted(true);
-    setError('');
+    try {
+      const { requestPasswordReset } = await import('../api/auth');
+      const resetUrl = `${window.location.origin}/reset-password`;
+      const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
+      await requestPasswordReset(email, resetUrl, bypass);
+      setIsSubmitted(true);
+      setError('');
+    } catch (err) {
+      // Mesmo em erro, backend retorna neutro; aqui exibimos genérico
+      setIsSubmitted(true);
+      setError('');
+    }
   };
 
   if (isSubmitted) {

@@ -68,6 +68,16 @@ export function TenantProvider({ children }) {
       }
 
       try {
+        // Guard: evitar chamada se não houver slug válido ou se estivermos no slug runtime default
+        if (!sanitizedSlug || sanitizedSlug === DEFAULT_TENANT_SLUG) {
+          const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug || DEFAULT_TENANT_SLUG };
+          if (!controller.signal.aborted) {
+            setTenant(fallbackMeta);
+            setSlug(fallbackMeta.slug);
+          }
+          return fallbackMeta;
+        }
+
         const response = await fetchTenantMeta(sanitizedSlug, {
           signal: controller.signal,
         });
