@@ -36,6 +36,12 @@
     "forgot_password_description": "Digite seu e-mail para receber um link de recuperação",
     "email_placeholder": "seu@email.com",
     "send_reset_link": "Enviar link de recuperação",
+    "reset_password": "Redefinir senha",
+    "reset_password_description": "Defina uma nova senha para sua conta",
+    "new_password": "Nova senha",
+    "update_password": "Atualizar senha",
+    "password_updated": "Senha atualizada com sucesso",
+    "back_to_forgot": "Voltar para recuperação",
     "remember_password": "Lembrou sua senha?",
     "password_reset_sent": "Link enviado!",
     "password_reset_instructions": "Verifique seu e-mail para redefinir sua senha",
@@ -43,10 +49,15 @@
     "errors": {
       "name_required": "Nome é obrigatório",
       "email_required": "E-mail é obrigatório",
+      "email_invalid": "E-mail inválido",
       "password_required": "Senha é obrigatória",
       "password_mismatch": "As senhas não coincidem",
       "phone_required": "Telefone é obrigatório",
-      "username_required": "Nome de usuário é obrigatório"
+      "username_required": "Nome de usuário é obrigatório",
+      "invalid_credentials": "E-mail ou senha incorretos",
+      "invalid_link": "Link inválido ou expirado",
+      "weak_password": "A senha deve ter pelo menos 8 caracteres",
+      "reset_failed": "Não foi possível redefinir a senha. Tente novamente."
     }
   },
   "dashboard": {
