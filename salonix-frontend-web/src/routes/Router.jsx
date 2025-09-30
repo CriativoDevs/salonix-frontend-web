@@ -11,8 +11,7 @@ import Professionals from '../pages/Professionals';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
 import Profile from '../pages/Profile';
-import Chat from '../pages/Chat';
-import Feedback from '../pages/Feedback';
+// Chat e Feedback desativados até backend estar pronto
 import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
 import PlanCheckoutMock from '../pages/PlanCheckoutMock';
@@ -80,23 +79,26 @@ function Router() {
         }
       />
 
-      <Route
-        path="/chat"
-        element={
-          <PrivateRoute>
-            <Chat />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/feedback"
-        element={
-          <PrivateRoute>
-            <Feedback />
-          </PrivateRoute>
-        }
-      />
+      {false && (
+        <Route
+          path="/chat"
+          element={
+            <PrivateRoute>
+              <div />
+            </PrivateRoute>
+          }
+        />
+      )}
+      {false && (
+        <Route
+          path="/feedback"
+          element={
+            <PrivateRoute>
+              <div />
+            </PrivateRoute>
+          }
+        />
+      )}
 
       <Route
         path="/settings"

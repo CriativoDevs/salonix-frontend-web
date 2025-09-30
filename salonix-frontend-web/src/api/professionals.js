@@ -25,3 +25,18 @@ export async function createProfessional({ name, specialty, phone, slug }) {
   const { data } = await client.post('professionals/', payload, { headers });
   return data;
 }
+
+export async function updateProfessional(id, { name, bio, is_active }) {
+  const payload = {
+    ...(name != null ? { name: String(name).trim() } : {}),
+    ...(bio != null ? { bio: String(bio) } : {}),
+    ...(is_active != null ? { is_active: Boolean(is_active) } : {}),
+  };
+  const { data } = await client.patch(`professionals/${id}/`, payload);
+  return data;
+}
+
+export async function deleteProfessional(id) {
+  const { status } = await client.delete(`professionals/${id}/`);
+  return status === 204;
+}
