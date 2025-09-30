@@ -158,9 +158,15 @@ http://localhost:5173
 
 ### Desenvolvimento (.env.local)
 ```env
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=http://localhost:8000/api/
 VITE_APP_NAME=Salonix Dev
 VITE_DEBUG=true
+# Bypass de captcha em dev (opcional)
+VITE_CAPTCHA_BYPASS_TOKEN=dev-bypass
+# Captcha provider (produção): turnstile | hcaptcha | builtin
+# VITE_CAPTCHA_PROVIDER=turnstile
+# VITE_TURNSTILE_SITEKEY=...  # se usar turnstile
+# VITE_HCAPTCHA_SITEKEY=...   # se usar hcaptcha
 ```
 
 ### Staging
@@ -238,6 +244,21 @@ src/
 - **Smokes**: use `npm run smoke` para validar auth/bootstrap com as seeds. Por padrão, o script usa `BASE_URL=http://localhost:8000/api/`, `LOGIN_EMAIL=pro_smoke@demo.local` e `SMOKE_USER_PASSWORD=Smoke@123` (sobreponha via env).
 
 ### Feature Flags
+
+## 🔒 Hardening & CaptchaGate
+
+- CaptchaGate integrado em Login, Registro e “Esqueci minha senha”.
+- Modos suportados:
+  - `turnstile` (Cloudflare) e `hcaptcha` (carregam script do provider e emitem token)
+  - `builtin` (checkbox simples para UX; não é proteção real)
+  - `bypass` (dev): se `VITE_CAPTCHA_BYPASS_TOKEN` estiver definido, não renderiza widget e envia o token de bypass no header `X-Captcha-Token`.
+- Tratamento de 429 (rate limit): mensagem amigável usando `Retry-After` quando disponível.
+
+## 🔑 Recuperação de Senha
+
+- “Esqueci minha senha”: envia `POST /users/password/reset/` com e‑mail (e captcha quando ativo).
+- “Redefinir senha”: abre `/reset-password?uid=...&token=...` e envia `POST /users/password/reset/confirm/`.
+- Em dev, o backend loga “Password reset link (dev): ...” com a URL completa.
 - **Controle de acesso** por funcionalidade
 - **Relatórios** - `reports_enabled`
 - **Chat** - `chat_enabled`

@@ -19,6 +19,18 @@
   - Necessidade futura de proteger rotas adicionais com roles (depende do BE-212).
   - Hook `useAuth` expõe `clearAuthError` para resets controlados.
 
+### Hardening (FEW-231)
+
+- **Contexto**: Alinhar com o BE-212 para reduzir abuso nos endpoints públicos.
+- **Implementações**:
+  - `CaptchaGate` em Login/Registro/Forgot com modos `turnstile`/`hcaptcha`/`builtin` e bypass em dev (`VITE_CAPTCHA_BYPASS_TOKEN`).
+  - Envio do token de captcha no header `X-Captcha-Token`.
+  - Tratamento de 429 (Rate Limit) baseado no header `Retry-After` (mensagem amigável).
+- **Env (FE)**:
+  - `VITE_CAPTCHA_BYPASS_TOKEN` – token para dev
+  - `VITE_CAPTCHA_PROVIDER` – `turnstile | hcaptcha | builtin`
+  - `VITE_TURNSTILE_SITEKEY` / `VITE_HCAPTCHA_SITEKEY`
+
 ## Como documentar próximas features
 
 1. Crie uma subseção com identificador da issue (ex: `## Landing Page (FEW-207)`).
