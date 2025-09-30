@@ -1,14 +1,40 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import ServiceForm from '../components/ServiceForm';
+import { fetchServices, createService } from '../api/services';
+import { parseApiError } from '../utils/apiError';
+import { useTenant } from '../hooks/useTenant';
 
 function Services() {
   const { t } = useTranslation();
+  const { slug } = useTenant();
   const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleAddService = (newService) => {
-    setServices((prev) => [newService, ...prev]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchServices(slug)
+      .then((data) => {
+        if (!cancelled) setServices(data);
+      })
+      .catch((e) => !cancelled && setError(parseApiError(e, t('common.load_error'))))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, t]);
+
+  const handleAddService = async (newService) => {
+    try {
+      const created = await createService({ ...newService, slug });
+      setServices((prev) => [created, ...prev]);
+    } catch (e) {
+      setError(parseApiError(e, t('common.save_error', 'Falha ao salvar.')));
+    }
   };
 
   return (
@@ -22,7 +48,13 @@ function Services() {
           <ServiceForm onAdd={handleAddService} />
         </div>
 
-        {services.length > 0 && (
+        {loading && (
+          <p className="mt-4 text-sm text-gray-600">{t('common.loading')}</p>
+        )}
+        {error && (
+          <p className="mt-4 text-sm text-red-600">{error.message}</p>
+        )}
+        {!loading && !error && services.length > 0 && (
           <ul className="mt-6 space-y-2">
             {services.map((service) => (
               <li
@@ -33,11 +65,14 @@ function Services() {
                   {service.name}
                 </span>
                 <span className="text-gray-600">
-                  €{service.price} · {service.duration}min
+                  €{service.price_eur ?? service.price} · {service.duration_minutes ?? service.duration}min
                 </span>
               </li>
             ))}
           </ul>
+        )}
+        {!loading && !error && services.length === 0 && (
+          <p className="mt-4 text-sm text-gray-600">{t('common.empty_list', 'Nenhum serviço cadastrado.')}</p>
         )}
       </div>
     </FullPageLayout>
