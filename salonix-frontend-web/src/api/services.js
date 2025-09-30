@@ -24,3 +24,20 @@ export async function createService({ name, price, duration, slug }) {
   const { data } = await client.post('services/', payload, { headers });
   return data;
 }
+
+export async function updateService(id, { name, price_eur, duration_minutes }) {
+  const payload = {
+    ...(name != null ? { name: String(name).trim() } : {}),
+    ...(price_eur != null ? { price_eur: String(price_eur) } : {}),
+    ...(duration_minutes != null
+      ? { duration_minutes: Number.parseInt(duration_minutes, 10) || 0 }
+      : {}),
+  };
+  const { data } = await client.patch(`services/${id}/`, payload);
+  return data;
+}
+
+export async function deleteService(id) {
+  const { status } = await client.delete(`services/${id}/`);
+  return status === 204;
+}

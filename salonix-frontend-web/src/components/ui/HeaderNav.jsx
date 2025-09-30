@@ -27,16 +27,7 @@ export default function HeaderNav() {
 
   // Links do menu hamburger (novas funcionalidades)
   const dropdownItems = [
-    {
-      to: '/chat',
-      label: t('nav.chat'),
-      icon: MessageCircleIcon,
-    },
-    {
-      to: '/feedback',
-      label: t('nav.feedback'),
-      icon: StarIcon,
-    },
+    // Chat e Feedback desativados por enquanto
     {
       to: '/settings',
       label: t('nav.settings'),
