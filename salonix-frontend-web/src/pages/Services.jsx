@@ -141,10 +141,10 @@ function Services() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => startEdit(service)} className="rounded px-3 py-1 text-white" style={{ backgroundColor: '#1D29CF' }}>
+                      <button onClick={() => startEdit(service)} className="text-sm font-medium text-[#1D29CF] hover:underline">
                         {t('common.edit', 'Editar')}
                       </button>
-                      <button disabled={busyId === service.id} onClick={() => removeService(service.id)} className="rounded px-3 py-1 text-white disabled:opacity-50" style={{ backgroundColor: '#CF3B1D' }}>
+                      <button disabled={busyId === service.id} onClick={() => removeService(service.id)} className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50">
                         {t('common.delete', 'Excluir')}
                       </button>
                     </div>

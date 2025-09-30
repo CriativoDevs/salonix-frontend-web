@@ -125,10 +125,10 @@ function Professionals() {
                       {p.bio && <div className="text-sm text-gray-600">{p.bio}</div>}
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => startEdit(p)} className="rounded px-3 py-1 text-white" style={{ backgroundColor: '#1D29CF' }}>
+                      <button onClick={() => startEdit(p)} className="text-sm font-medium text-[#1D29CF] hover:underline">
                         {t('common.edit', 'Editar')}
                       </button>
-                      <button disabled={busyId === p.id} onClick={() => removeItem(p.id)} className="rounded px-3 py-1 text-white disabled:opacity-50" style={{ backgroundColor: '#CF3B1D' }}>
+                      <button disabled={busyId === p.id} onClick={() => removeItem(p.id)} className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50">
                         {t('common.delete', 'Excluir')}
                       </button>
                     </div>
