@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Card from '../components/ui/Card';
@@ -27,8 +27,8 @@ function AvailableSlots() {
       .then((data) => {
         if (cancelled) return;
         setProfessionals(data);
-        if (data?.length && !selectedProfessional) {
-          setSelectedProfessional(String(data[0].id));
+        if (data?.length) {
+          setSelectedProfessional((prev) => prev || String(data[0].id));
         }
       })
       .catch((e) => !cancelled && setError(parseApiError(e, t('common.load_error'))));
@@ -37,19 +37,26 @@ function AvailableSlots() {
     };
   }, [slug, t]);
 
-  useEffect(() => {
-    if (!selectedProfessional) return;
-    let cancelled = false;
+  const loadSlots = useCallback(async () => {
+    if (!selectedProfessional) {
+      setSlotItems([]);
+      return;
+    }
     setLoading(true);
     setError(null);
-    fetchSlots({ professionalId: selectedProfessional, slug })
-      .then((data) => !cancelled && setSlotItems(data))
-      .catch((e) => !cancelled && setError(parseApiError(e, t('common.load_error'))))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
+    try {
+      const data = await fetchSlots({ professionalId: selectedProfessional, slug });
+      setSlotItems(data);
+    } catch (e) {
+      setError(parseApiError(e, t('common.load_error')));
+    } finally {
+      setLoading(false);
+    }
   }, [selectedProfessional, slug, t]);
+
+  useEffect(() => {
+    loadSlots();
+  }, [loadSlots]);
 
   const dates = useMemo(() => {
     const set = new Set(
@@ -76,15 +83,6 @@ function AvailableSlots() {
 
   const fmtDate = (d) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
   const fmtTime = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-  const formatRange = (startStr, endStr) => {
-    const sd = parseBackendDate(startStr);
-    const ed = parseBackendDate(endStr);
-    if (!sd || !ed) return startStr; // fallback simples
-    const sameDay = sd.getFullYear() === ed.getFullYear() && sd.getMonth() === ed.getMonth() && sd.getDate() === ed.getDate();
-    if (sameDay) return `${fmtDate(sd)}, ${fmtTime(sd)}–${fmtTime(ed)}`;
-    return `${fmtDate(sd)}, ${fmtTime(sd)} – ${fmtDate(ed)}, ${fmtTime(ed)}`;
-  };
-
   const formatDateOnly = (startStr) => {
     const sd = parseBackendDate(startStr);
     return sd ? fmtDate(sd) : startStr;
@@ -134,7 +132,7 @@ function AvailableSlots() {
         endTime: endISO,
         slug,
       });
-      setSlotItems((prev) => [created, ...prev]);
+      await loadSlots();
       setForm({ date: created.start_time.slice(0,10), sh: '09', sm: '00', eh: '10', em: '00' });
       // Atualiza lista por profissional/data
       setSelectedDate(created.start_time.slice(0, 10));
@@ -145,14 +143,16 @@ function AvailableSlots() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm(t('common.confirm_delete', 'Confirmar exclusão?'))) return;
+  const handleDelete = async (slot) => {
+    const msg = `${formatDateOnly(slot.start_time)} — ${formatTimeRangeOnly(slot.start_time, slot.end_time)}`;
+    if (!window.confirm(t('common.confirm_delete', 'Confirmar exclusão?') + `\n${msg}`)) return;
     try {
-      setBusyId(id);
-      await deleteSlot(id, { slug });
-      setSlotItems((prev) => prev.filter((s) => s.id !== id));
+      setBusyId(slot.id);
+      const ok = await deleteSlot(slot.id, { slug });
+      if (ok) await loadSlots();
     } catch (e2) {
       setError(parseApiError(e2, t('common.delete_error', 'Falha ao excluir slot.')));
+      await loadSlots();
     } finally {
       setBusyId(null);
     }
@@ -272,7 +272,7 @@ function AvailableSlots() {
                   </div>
                   <button
                     disabled={busyId === slot.id}
-                    onClick={() => handleDelete(slot.id)}
+                    onClick={() => handleDelete(slot)}
                     className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50"
                   >
                     {t('common.delete', 'Excluir')}
