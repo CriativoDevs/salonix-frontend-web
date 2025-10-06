@@ -79,27 +79,6 @@ function Router() {
         }
       />
 
-      {false && (
-        <Route
-          path="/chat"
-          element={
-            <PrivateRoute>
-              <div />
-            </PrivateRoute>
-          }
-        />
-      )}
-      {false && (
-        <Route
-          path="/feedback"
-          element={
-            <PrivateRoute>
-              <div />
-            </PrivateRoute>
-          }
-        />
-      )}
-
       <Route
         path="/settings"
         element={
