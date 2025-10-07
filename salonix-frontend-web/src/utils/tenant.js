@@ -18,6 +18,14 @@ const runtimeDefaultSlug = (() => {
 
 const envDefaultSlug = String(runtimeDefaultSlug).toLowerCase();
 
+export const PLAN_NAME_BY_TIER = {
+  starter: 'Starter',
+  basic: 'Basic',
+  standard: 'Standard',
+  pro: 'Pro',
+  enterprise: 'Enterprise',
+};
+
 const API_BASE_URL = (() => {
   const configured = getEnvVar('VITE_API_URL');
   try {
@@ -37,6 +45,7 @@ export const DEFAULT_TENANT_META = {
     name: 'Starter',
     features: ['pwa_admin'],
     tier: 'starter',
+    addons: [],
   },
   theme: {
     primary: '#6B7280',
@@ -63,6 +72,13 @@ export const DEFAULT_TENANT_META = {
     enableCustomerPwa: false,
     enableWebPush: false,
     enableReports: true,
+    enableAdminPwa: true,
+    enableNativeAdmin: false,
+    enableNativeClient: false,
+    enableMobilePush: false,
+    enableSms: false,
+    enableWhatsapp: false,
+    planTier: 'starter',
   },
   modules: [],
   channels: {
@@ -70,6 +86,8 @@ export const DEFAULT_TENANT_META = {
     sms: false,
     whatsapp: false,
     push: false,
+    push_web: false,
+    push_mobile: false,
   },
   profile: {
     businessName: 'TimelyOne',
@@ -194,19 +212,32 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
 
   const metaSlug = sanitizeTenantSlug(rawMeta.slug) || slug;
 
+  const rawFeatureFlags = rawMeta.feature_flags || rawMeta.flags;
+  const normalizedFlags = normalizeFlags(rawFeatureFlags, DEFAULT_TENANT_META.flags);
+
   return {
     ...DEFAULT_TENANT_META,
     ...rawMeta,
     slug: metaSlug,
-    plan: normalizePlan(rawMeta.plan, rawMeta.plan_tier, DEFAULT_TENANT_META.plan),
+    plan: normalizePlan(
+      rawMeta.plan,
+      rawMeta.plan_tier || normalizedFlags.planTier,
+      DEFAULT_TENANT_META.plan
+    ),
     theme: normalizeTheme(rawMeta.theme, DEFAULT_TENANT_META.theme),
     branding: normalizeBranding(rawMeta.branding, rawMeta, DEFAULT_TENANT_META.branding),
-    flags: {
-      ...DEFAULT_TENANT_META.flags,
-      ...(rawMeta.flags || {}),
-    },
-    modules: Array.isArray(rawMeta.modules) ? rawMeta.modules : DEFAULT_TENANT_META.modules,
-    channels: normalizeChannels(rawMeta.channels, DEFAULT_TENANT_META.channels),
+    flags: normalizedFlags,
+    featureFlagsRaw: rawFeatureFlags || null,
+    modules: normalizeModules(
+      rawMeta.modules,
+      rawFeatureFlags,
+      DEFAULT_TENANT_META.modules
+    ),
+    channels: normalizeChannels(
+      rawMeta.channels,
+      DEFAULT_TENANT_META.channels,
+      rawFeatureFlags
+    ),
     profile: normalizeProfile(rawMeta.profile, DEFAULT_TENANT_META.profile),
   };
 }
@@ -220,6 +251,18 @@ function normalizePlan(plan, fallbackTier, fallbackPlan) {
   const tier = plan?.tier || plan?.code || fallbackTier || fallbackPlan.tier;
   base.code = tier || base.code;
   base.tier = tier || base.tier;
+  if (plan?.name && typeof plan.name === 'string') {
+    base.name = plan.name;
+  } else if (tier && PLAN_NAME_BY_TIER[tier]) {
+    base.name = PLAN_NAME_BY_TIER[tier];
+  } else if (tier && typeof tier === 'string') {
+    base.name = tier.charAt(0).toUpperCase() + tier.slice(1);
+  }
+  if (Array.isArray(plan?.addons)) {
+    base.addons = plan.addons;
+  } else if (!Array.isArray(base.addons)) {
+    base.addons = [];
+  }
   return base;
 }
 
@@ -293,15 +336,33 @@ function normalizeBranding(brandingBlock, rawMeta, fallback) {
   return result;
 }
 
-function normalizeChannels(channels, fallback) {
-  if (!channels || typeof channels !== 'object') {
-    return fallback;
+function normalizeChannels(channels, fallback, featureFlags) {
+  const base = {
+    ...fallback,
+  };
+
+  if (channels && typeof channels === 'object') {
+    Object.assign(base, channels);
   }
 
-  return {
-    ...fallback,
-    ...channels,
-  };
+  const notifications = featureFlags?.notifications;
+  if (notifications && typeof notifications === 'object') {
+    if ('push_web' in notifications) {
+      base.push_web = Boolean(notifications.push_web);
+    }
+    if ('push_mobile' in notifications) {
+      base.push_mobile = Boolean(notifications.push_mobile);
+    }
+    if ('sms' in notifications) {
+      base.sms = Boolean(notifications.sms);
+    }
+    if ('whatsapp' in notifications) {
+      base.whatsapp = Boolean(notifications.whatsapp);
+    }
+    base.push = Boolean(base.push_web || base.push_mobile);
+  }
+
+  return base;
 }
 
 function normalizeProfile(profile, fallback) {
@@ -313,4 +374,95 @@ function normalizeProfile(profile, fallback) {
     ...fallback,
     ...profile,
   };
+}
+
+function normalizeFlags(featureFlags, fallback) {
+  const base = {
+    ...fallback,
+  };
+
+  if (!featureFlags || typeof featureFlags !== 'object') {
+    return base;
+  }
+
+  if (featureFlags.plan_tier || featureFlags.planTier) {
+    base.planTier = featureFlags.plan_tier || featureFlags.planTier;
+  }
+
+  const mergedModules = {
+    ...(featureFlags.modules || {}),
+    reports_enabled: featureFlags.reports_enabled,
+    pwa_admin_enabled: featureFlags.pwa_admin_enabled,
+    pwa_client_enabled: featureFlags.pwa_client_enabled,
+    rn_admin_enabled: featureFlags.rn_admin_enabled,
+    rn_client_enabled: featureFlags.rn_client_enabled,
+  };
+
+  const mergedNotifications = {
+    ...(featureFlags.notifications || {}),
+    push_web: featureFlags.push_web_enabled,
+    push_mobile: featureFlags.push_mobile_enabled,
+    sms: featureFlags.sms_enabled,
+    whatsapp: featureFlags.whatsapp_enabled,
+  };
+
+  if ('reports_enabled' in mergedModules) {
+    base.enableReports = Boolean(mergedModules.reports_enabled);
+  }
+  if ('pwa_admin_enabled' in mergedModules) {
+    base.enableAdminPwa = Boolean(mergedModules.pwa_admin_enabled);
+  }
+  if ('pwa_client_enabled' in mergedModules) {
+    base.enableCustomerPwa = Boolean(mergedModules.pwa_client_enabled);
+  }
+  if ('rn_admin_enabled' in mergedModules) {
+    base.enableNativeAdmin = Boolean(mergedModules.rn_admin_enabled);
+  }
+  if ('rn_client_enabled' in mergedModules) {
+    base.enableNativeClient = Boolean(mergedModules.rn_client_enabled);
+  }
+  if ('push_web' in mergedNotifications) {
+    base.enableWebPush = Boolean(mergedNotifications.push_web);
+  }
+  if ('push_mobile' in mergedNotifications) {
+    base.enableMobilePush = Boolean(mergedNotifications.push_mobile);
+  }
+  if ('sms' in mergedNotifications) {
+    base.enableSms = Boolean(mergedNotifications.sms);
+  }
+  if ('whatsapp' in mergedNotifications) {
+    base.enableWhatsapp = Boolean(mergedNotifications.whatsapp);
+  }
+
+  return base;
+}
+
+function normalizeModules(modules, featureFlags, fallback) {
+  if (Array.isArray(modules) && modules.length > 0) {
+    return modules;
+  }
+
+  const moduleMap = [];
+  const source = featureFlags?.modules;
+  if (source && typeof source === 'object') {
+    if (source.reports_enabled) moduleMap.push('reports');
+    if (source.pwa_admin_enabled) moduleMap.push('pwa_admin');
+    if (source.pwa_client_enabled) moduleMap.push('pwa_client');
+    if (source.rn_admin_enabled) moduleMap.push('rn_admin');
+    if (source.rn_client_enabled) moduleMap.push('rn_client');
+  }
+
+  if (Array.isArray(featureFlags?.addons_enabled)) {
+    for (const addon of featureFlags.addons_enabled) {
+      if (typeof addon === 'string' && !moduleMap.includes(addon)) {
+        moduleMap.push(addon);
+      }
+    }
+  }
+
+  if (moduleMap.length > 0) {
+    return moduleMap;
+  }
+
+  return Array.isArray(fallback) ? fallback : [];
 }

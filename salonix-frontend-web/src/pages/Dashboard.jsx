@@ -7,6 +7,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import { describeFeatureRequirement } from '../constants/tenantFeatures';
+import { resolvePlanName } from '../utils/tenantPlan';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function Dashboard() {
     return `${profile.businessName} • ${t('dashboard.subtitle', 'Resumo do seu negócio')}`;
   }, [profile?.businessName, t]);
 
-  const planName = plan?.name;
+  const planName = resolvePlanName(plan);
   const reportsEnabled = flags?.enableReports !== false;
   const reportsRequirement = !reportsEnabled
     ? describeFeatureRequirement('enableReports', planName)
@@ -31,13 +32,7 @@ export default function Dashboard() {
       <PageHeader
         title={t('dashboard.title', 'Dashboard')}
         subtitle={businessSummary}
-      >
-        {planName ? (
-          <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground">
-            {t('settings.plan_badge', 'Plano')}: {planName}
-          </span>
-        ) : null}
-      </PageHeader>
+      />
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
