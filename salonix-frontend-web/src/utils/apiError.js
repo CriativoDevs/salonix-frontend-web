@@ -14,7 +14,6 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
     };
   }
 
-  // Rate limit handling (429)
   if (response?.status === 429) {
     const retryAfter = Number(response?.headers?.['retry-after'] || 0);
     const seconds = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
@@ -27,6 +26,61 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
       details: null,
       requestId,
     };
+  }
+
+  if (response?.status === 400) {
+    const payload = response?.data;
+    const candidateMessages = [];
+
+    if (payload && typeof payload === 'object') {
+      ['logo', 'logo_url', 'logoUrl'].forEach((key) => {
+        const value = payload[key];
+        if (typeof value === 'string') {
+          candidateMessages.push(value);
+        } else if (Array.isArray(value)) {
+          value.forEach((item) => {
+            if (typeof item === 'string') {
+              candidateMessages.push(item);
+            }
+          });
+        }
+      });
+    }
+
+    if (typeof payload === 'string') {
+      candidateMessages.push(payload);
+    } else if (payload && typeof payload === 'object') {
+      if (typeof payload.detail === 'string') {
+        candidateMessages.push(payload.detail);
+      }
+      if (apiError?.message) {
+        candidateMessages.push(apiError.message);
+      }
+      Object.values(payload).forEach((value) => {
+        if (typeof value === 'string') {
+          candidateMessages.push(value);
+        } else if (Array.isArray(value)) {
+          value.forEach((item) => {
+            if (typeof item === 'string') {
+              candidateMessages.push(item);
+            }
+          });
+        }
+      });
+    }
+
+    const limitMessage = candidateMessages.find((msg) =>
+      typeof msg === 'string' && msg.toLowerCase().includes('mb')
+    );
+
+    if (limitMessage) {
+      return {
+        message: limitMessage,
+        code: apiError?.code || null,
+        details: apiError?.details ?? response?.data?.errors ?? null,
+        requestId,
+      };
+    }
   }
 
   const message = apiError?.message || response?.data?.detail || fallbackMessage;

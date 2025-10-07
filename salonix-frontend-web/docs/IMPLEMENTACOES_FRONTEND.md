@@ -69,7 +69,17 @@
   - `src/utils/__tests__/tenant.test.js` cobre a resolução de slug.
 - **Notas**:
   - Caso o backend esteja indisponível, caímos em `DEFAULT_TENANT_META` e o título volta para “TimelyOne”.
-  - Próximo passo natural: usar o contexto para condicionar seções (ex.: esconder módulos premium).
+- Próximo passo natural: usar o contexto para condicionar seções (ex.: esconder módulos premium).
+
+## Settings / Branding (FEW-240)
+
+- **Status**: em andamento. Aba "Branding" lê metadados reais do tenant e permite salvar cores/logo. Preview normaliza caminhos relativos (`/media/...`) e trata erros de upload (limite 2MB, URL inválida).
+- **Faltando**:
+  - Backend ainda não remove o arquivo de logo ao receber `logo_url` vazio (`BE-BUG` aberto). O front exibe aviso e mantém logo padrão até correção.
+  - Outras abas (Geral/Notificações/Negócio) ainda usam placeholders e aguardam endpoints dedicados.
+- **Observações**:
+  - Tema parcial aplicado: navbar, cards principais e botões usam a paleta do tenant; restante do layout permanece no estilo padrão até concluirmos o redesign.
+  - Documentação/issue atualizada para acompanhar bug do logo (FEW-BUG).
 
 ## Slug e bootstrap do tenant (FEW-213/FEW-214)
 

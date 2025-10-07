@@ -160,8 +160,8 @@ function AvailableSlots() {
 
   return (
     <FullPageLayout>
-      <Card className="p-6">
-        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+      <Card className="p-6 text-brand-surfaceForeground">
+        <h1 className="mb-4 text-2xl font-semibold text-brand-surfaceForeground">
           {t('slots.title')}
         </h1>
 
@@ -262,13 +262,12 @@ function AvailableSlots() {
             {filteredSlots.map((slot) => (
               <li
                 key={slot.id}
-                className="rounded-lg bg-white px-3 py-2 text-center text-sm font-medium
-                           text-gray-800 ring-1 ring-brand-border hover:bg-brand-light"
+                className="rounded-lg bg-brand-surface px-3 py-2 text-center text-sm font-medium text-brand-surfaceForeground ring-1 ring-brand-border hover:bg-brand-light"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-left">
-                    <div className="text-gray-900">{formatDateOnly(slot.start_time)}</div>
-                    <div style={{ fontVariantNumeric: 'tabular-nums' }} className="font-mono text-gray-700">{formatTimeRangeOnly(slot.start_time, slot.end_time)}</div>
+                    <div className="text-brand-surfaceForeground">{formatDateOnly(slot.start_time)}</div>
+                    <div style={{ fontVariantNumeric: 'tabular-nums' }} className="font-mono text-brand-surfaceForeground/80">{formatTimeRangeOnly(slot.start_time, slot.end_time)}</div>
                   </div>
                   <button
                     disabled={busyId === slot.id}

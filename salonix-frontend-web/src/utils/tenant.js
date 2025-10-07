@@ -18,6 +18,15 @@ const runtimeDefaultSlug = (() => {
 
 const envDefaultSlug = String(runtimeDefaultSlug).toLowerCase();
 
+const API_BASE_URL = (() => {
+  const configured = getEnvVar('VITE_API_URL');
+  try {
+    return new URL(configured || 'http://localhost:8000/api/');
+  } catch {
+    return new URL('http://localhost:8000/api/');
+  }
+})();
+
 export const DEFAULT_TENANT_SLUG = sanitizeTenantSlug(envDefaultSlug) || 'timelyone';
 
 export const DEFAULT_TENANT_META = {
@@ -27,6 +36,7 @@ export const DEFAULT_TENANT_META = {
     code: 'starter',
     name: 'Starter',
     features: ['pwa_admin'],
+    tier: 'starter',
   },
   theme: {
     primary: '#6B7280',
@@ -46,6 +56,8 @@ export const DEFAULT_TENANT_META = {
     backgroundColor: '#FFFFFF',
     splashScreens: [],
     icons: [],
+    primaryColor: '#6B7280',
+    secondaryColor: '#1F2937',
   },
   flags: {
     enableCustomerPwa: false,
@@ -166,6 +178,15 @@ export function extractSlugFromHost(hostname) {
   return sanitizeTenantSlug(first);
 }
 
+export function resolveTenantAssetUrl(source) {
+  if (!source || typeof source !== 'string') return '';
+  try {
+    return new URL(source, API_BASE_URL).toString();
+  } catch {
+    return source;
+  }
+}
+
 export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
   if (!rawMeta || typeof rawMeta !== 'object') {
     return { ...DEFAULT_TENANT_META, slug };
@@ -177,9 +198,9 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
     ...DEFAULT_TENANT_META,
     ...rawMeta,
     slug: metaSlug,
-    plan: normalizePlan(rawMeta.plan, DEFAULT_TENANT_META.plan),
+    plan: normalizePlan(rawMeta.plan, rawMeta.plan_tier, DEFAULT_TENANT_META.plan),
     theme: normalizeTheme(rawMeta.theme, DEFAULT_TENANT_META.theme),
-    branding: normalizeBranding(rawMeta.branding, DEFAULT_TENANT_META.branding),
+    branding: normalizeBranding(rawMeta.branding, rawMeta, DEFAULT_TENANT_META.branding),
     flags: {
       ...DEFAULT_TENANT_META.flags,
       ...(rawMeta.flags || {}),
@@ -190,16 +211,16 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
   };
 }
 
-function normalizePlan(plan, fallback) {
-  if (!plan || typeof plan !== 'object') {
-    return fallback;
+function normalizePlan(plan, fallbackTier, fallbackPlan) {
+  const base = { ...fallbackPlan };
+  if (plan && typeof plan === 'object') {
+    Object.assign(base, plan);
   }
 
-  return {
-    ...fallback,
-    ...plan,
-    code: sanitizeTenantSlug(plan.code) || fallback.code,
-  };
+  const tier = plan?.tier || plan?.code || fallbackTier || fallbackPlan.tier;
+  base.code = tier || base.code;
+  base.tier = tier || base.tier;
+  return base;
 }
 
 function normalizeTheme(theme, fallback) {
@@ -213,19 +234,63 @@ function normalizeTheme(theme, fallback) {
   };
 }
 
-function normalizeBranding(branding, fallback) {
-  if (!branding || typeof branding !== 'object') {
-    return fallback;
+function normalizeBranding(brandingBlock, rawMeta, fallback) {
+  const brandingSource = {
+    ...(typeof brandingBlock === 'object' && brandingBlock ? brandingBlock : {}),
+    logo_url: rawMeta?.logo_url ?? brandingBlock?.logo_url ?? brandingBlock?.logoUrl,
+    favicon_url: rawMeta?.favicon_url ?? brandingBlock?.favicon_url ?? brandingBlock?.faviconUrl,
+    apple_touch_icon_url:
+      rawMeta?.apple_touch_icon_url ?? brandingBlock?.apple_touch_icon_url ?? brandingBlock?.appleTouchIconUrl,
+    primary_color: rawMeta?.primary_color ?? brandingBlock?.primary_color ?? brandingBlock?.primaryColor,
+    secondary_color: rawMeta?.secondary_color ?? brandingBlock?.secondary_color ?? brandingBlock?.secondaryColor,
+    theme_color: rawMeta?.theme_color ?? brandingBlock?.theme_color ?? brandingBlock?.themeColor,
+    background_color:
+      rawMeta?.background_color ?? brandingBlock?.background_color ?? brandingBlock?.backgroundColor,
+    app_name: rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
+    short_name: rawMeta?.short_name ?? brandingBlock?.short_name ?? brandingBlock?.shortName,
+    splash_screens: rawMeta?.splash_screens ?? brandingBlock?.splash_screens ?? brandingBlock?.splashScreens,
+    icon_set: rawMeta?.icon_set ?? brandingBlock?.icon_set ?? brandingBlock?.icons,
+  };
+
+  const result = {
+    ...fallback,
+  };
+
+  if (brandingSource.logo_url !== undefined) {
+    result.logoUrl = brandingSource.logo_url || null;
+  }
+  if (brandingSource.favicon_url !== undefined) {
+    result.faviconUrl = brandingSource.favicon_url || null;
+  }
+  if (brandingSource.apple_touch_icon_url !== undefined) {
+    result.appleTouchIconUrl = brandingSource.apple_touch_icon_url || null;
+  }
+  if (brandingSource.primary_color) {
+    result.primaryColor = brandingSource.primary_color;
+  }
+  if (brandingSource.secondary_color) {
+    result.secondaryColor = brandingSource.secondary_color;
+  }
+  if (brandingSource.theme_color) {
+    result.themeColor = brandingSource.theme_color;
+  }
+  if (brandingSource.background_color) {
+    result.backgroundColor = brandingSource.background_color;
+  }
+  if (brandingSource.app_name) {
+    result.appName = brandingSource.app_name;
+  }
+  if (brandingSource.short_name) {
+    result.shortName = brandingSource.short_name;
+  }
+  if (Array.isArray(brandingSource.splash_screens)) {
+    result.splashScreens = brandingSource.splash_screens;
+  }
+  if (Array.isArray(brandingSource.icon_set)) {
+    result.icons = brandingSource.icon_set;
   }
 
-  return {
-    ...fallback,
-    ...branding,
-    splashScreens: Array.isArray(branding.splashScreens)
-      ? branding.splashScreens
-      : fallback.splashScreens,
-    icons: Array.isArray(branding.icons) ? branding.icons : fallback.icons,
-  };
+  return result;
 }
 
 function normalizeChannels(channels, fallback) {

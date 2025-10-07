@@ -97,6 +97,7 @@
     "specialty": "Especialidade",
     "phone": "Telefone (opcional)",
     "submit": "Adicionar profissional",
+    "no_bio": "Sem descrição",
     "errors": {
       "name_required": "O nome é obrigatório.",
       "specialty_required": "A especialidade é obrigatória."
@@ -160,9 +161,12 @@
     "subtitle": "Gerencie as configurações do seu negócio",
     "tabs": {
       "general": "Geral",
+      "branding": "Branding",
       "notifications": "Notificações",
       "business": "Negócio"
     },
+    "coming_soon": "Em breve",
+    "coming_soon_hint": "Integração disponível em breve.",
     "business_name": "Nome do negócio",
     "email": "E-mail",
     "phone": "Telefone",
@@ -189,7 +193,18 @@
       "marketingEmails": "E-mails de marketing",
       "marketingEmails_description": "Receber e-mails promocionais"
     },
-    "save": "Salvar"
+    "save": "Salvar",
+    "branding": {
+      "primary_color": "Cor primária",
+      "secondary_color": "Cor secundária",
+      "logo_helper": "Logo",
+      "logo_url": "URL do logo",
+      "logo_info": "PNG, JPG ou SVG até 2MB. Enviar um arquivo substitui a URL do logo.",
+      "no_logo": "Nenhum logo definido.",
+      "preview_alt": "Pré-visualização do logo",
+      "logo_file": "Arquivo de logo",
+      "saved": "Branding atualizado com sucesso."
+    }
   },
   "nav": {
     "home": "Início",
@@ -201,5 +216,9 @@
     "more": "Mais",
     "close": "Fechar",
     "logout": "Sair"
+  },
+  "common": {
+    "saving": "Salvando...",
+    "save_error": "Falha ao salvar. Tente novamente."
   }
 }
