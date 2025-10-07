@@ -14,7 +14,9 @@
   }
 
   html, body, #root {
-    @apply h-full bg-gray-50 text-gray-900;
+    height: 100%;
+    background-color: var(--brand-surface, #f3f4f6);
+    color: var(--brand-on-surface, #1f2937);
   }
 }
 

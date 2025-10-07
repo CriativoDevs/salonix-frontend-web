@@ -77,8 +77,8 @@ function Professionals() {
 
   return (
     <FullPageLayout>
-      <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h1 className="mb-4 text-2xl font-semibold text-gray-900">
+      <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
+        <h1 className="mb-4 text-2xl font-semibold text-brand-surfaceForeground">
           {t('professionals.title')}
         </h1>
 
@@ -93,49 +93,60 @@ function Professionals() {
           <p className="mt-4 text-sm text-red-600">{error.message}</p>
         )}
         {!loading && !error && list.length > 0 && (
-          <ul className="mt-6 divide-y divide-gray-100">
-            {list.map((p, idx) => (
-              <li key={p.id ?? idx} className="py-3">
-                {editingId === p.id ? (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <input
-                      className="w-full border px-2 py-1 rounded"
-                      value={editingForm.name}
-                      onChange={(e) => setEditingForm({ ...editingForm, name: e.target.value })}
-                    />
-                    <input
-                      className="w-full border px-2 py-1 rounded"
-                      value={editingForm.bio}
-                      onChange={(e) => setEditingForm({ ...editingForm, bio: e.target.value })}
-                      placeholder={t('professionals.specialty', 'Bio/Especialidade')}
-                    />
-                    <div className="sm:col-span-2 flex gap-2 mt-2">
-                      <button disabled={busyId === p.id} onClick={saveEdit} className="rounded bg-emerald-600 px-3 py-1 text-white disabled:opacity-50">
-                        {t('common.save', 'Salvar')}
-                      </button>
-                      <button onClick={cancelEdit} className="rounded bg-gray-200 px-3 py-1">
-                        {t('common.cancel', 'Cancelar')}
-                      </button>
+          <ul className="mt-6 space-y-3">
+            {list.map((p, idx) => {
+              const displayBio = p.bio && p.bio.trim() ? p.bio : t('professionals.no_bio');
+              return (
+                <li
+                  key={p.id ?? idx}
+                  className="flex items-start justify-between gap-4 rounded-lg border border-brand-border bg-brand-surface px-4 py-3 shadow-sm"
+                >
+                  {editingId === p.id ? (
+                    <div className="grid flex-1 gap-2 sm:grid-cols-2">
+                      <input
+                        className="w-full rounded border border-brand-border px-2 py-1"
+                        value={editingForm.name}
+                        onChange={(e) => setEditingForm({ ...editingForm, name: e.target.value })}
+                      />
+                      <input
+                        className="w-full rounded border border-brand-border px-2 py-1"
+                        value={editingForm.bio}
+                        onChange={(e) => setEditingForm({ ...editingForm, bio: e.target.value })}
+                        placeholder={t('professionals.specialty', 'Bio/Especialidade')}
+                      />
+                      <div className="sm:col-span-2 flex gap-2">
+                        <button
+                          disabled={busyId === p.id}
+                          onClick={saveEdit}
+                          className="rounded bg-brand-primary px-3 py-1 text-white transition hover:bg-brand-accent disabled:opacity-50"
+                        >
+                          {t('common.save', 'Salvar')}
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="rounded bg-brand-light px-3 py-1 text-brand-surfaceForeground hover:bg-brand-light/80"
+                        >
+                          {t('common.cancel', 'Cancelar')}
+                        </button>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="flex-1 space-y-1">
+                      <div className="font-medium text-brand-surfaceForeground">{p.name}</div>
+                      <div className="text-sm text-brand-surfaceForeground/80">{displayBio}</div>
+                    </div>
+                  )}
+                  <div className="flex shrink-0 gap-2">
+                    <button onClick={() => startEdit(p)} className="text-sm font-medium text-[#1D29CF] hover:underline">
+                      {t('common.edit', 'Editar')}
+                    </button>
+                    <button disabled={busyId === p.id} onClick={() => removeItem(p.id)} className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50">
+                      {t('common.delete', 'Excluir')}
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-medium text-gray-900">{p.name}</div>
-                      {p.bio && <div className="text-sm text-gray-600">{p.bio}</div>}
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => startEdit(p)} className="text-sm font-medium text-[#1D29CF] hover:underline">
-                        {t('common.edit', 'Editar')}
-                      </button>
-                      <button disabled={busyId === p.id} onClick={() => removeItem(p.id)} className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50">
-                        {t('common.delete', 'Excluir')}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
         {!loading && !error && list.length === 0 && (

@@ -23,7 +23,7 @@ function DropdownMenu({ items, trigger, className = '' }) {
     <div className={`relative ${className}`} ref={dropdownRef}>
       <button
         onClick={toggleDropdown}
-        className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-all duration-200 hover:text-gray-900"
+        className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium text-brand-surfaceForeground/70 transition-all duration-200 hover:bg-brand-light hover:text-brand-surfaceForeground"
       >
         {trigger}
         <ChevronDownIcon
@@ -33,7 +33,7 @@ function DropdownMenu({ items, trigger, className = '' }) {
 
       {/* Dropdown com animação */}
       <div
-        className={`absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 z-50 transition-all duration-200 transform origin-top-right ${
+        className={`absolute right-0 mt-2 w-56 rounded-xl bg-brand-surface text-brand-surfaceForeground shadow-xl ring-1 ring-brand-border z-50 transition-all duration-200 transform origin-top-right ${
           isOpen
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
@@ -46,10 +46,10 @@ function DropdownMenu({ items, trigger, className = '' }) {
               to={item.to}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-150 hover:text-gray-900 group ${
+                `flex items-center px-4 py-3 text-sm transition-all duration-150 group ${
                   isActive
-                    ? 'bg-brand-50 text-brand-700 border-r-2 border-brand-500'
-                    : ''
+                    ? 'bg-brand-light text-brand-surfaceForeground border-r-2 border-brand-primary'
+                    : 'text-brand-surfaceForeground/80 hover:bg-brand-light hover:text-brand-surfaceForeground'
                 }`
               }
               style={{

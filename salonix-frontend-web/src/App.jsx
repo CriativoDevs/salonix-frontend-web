@@ -48,6 +48,16 @@ function TenantThemeManager() {
       ? branding || DEFAULT_TENANT_META.branding
       : DEFAULT_TENANT_META.branding;
 
+    const effectiveTheme = { ...targetTheme };
+    if (targetBranding?.primaryColor) {
+      effectiveTheme.primary = targetBranding.primaryColor;
+      effectiveTheme.accent = targetBranding.primaryColor;
+      effectiveTheme.border = targetBranding.primaryColor;
+    }
+    if (targetBranding?.secondaryColor) {
+      effectiveTheme.surfaceForeground = targetBranding.secondaryColor;
+    }
+
     if (!originalAssetsRef.current) {
       const favicon = document.querySelector('link[rel="icon"]');
       const manifest = document.querySelector('link[rel="manifest"]');
@@ -62,7 +72,7 @@ function TenantThemeManager() {
     }
 
     Object.entries(THEME_VARIABLES).forEach(([key, cssVar]) => {
-      const value = targetTheme?.[key] || DEFAULT_TENANT_META.theme[key];
+      const value = effectiveTheme?.[key] || DEFAULT_TENANT_META.theme[key];
       root.style.setProperty(cssVar, value);
     });
 
@@ -125,8 +135,8 @@ function TenantThemeManager() {
 
       const name = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
       const shortName = targetBranding.shortName || tenant?.name || name;
-      const themeColor = targetBranding.themeColor || targetTheme.primary;
-      const backgroundColor = targetBranding.backgroundColor || targetTheme.surface;
+      const themeColor = targetBranding.themeColor || effectiveTheme.primary;
+      const backgroundColor = targetBranding.backgroundColor || effectiveTheme.surface;
 
       const manifestPayload = {
         name,
@@ -171,7 +181,7 @@ function TenantThemeManager() {
     if (isAuthenticated) {
       const tenantTitle = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
       document.title = tenantTitle;
-      themeColorMeta.setAttribute('content', targetBranding.themeColor || targetTheme.primary);
+      themeColorMeta.setAttribute('content', targetBranding.themeColor || effectiveTheme.primary);
       appleWebAppTitleMeta.setAttribute(
         'content',
         targetBranding.shortName || tenant?.name || tenantTitle

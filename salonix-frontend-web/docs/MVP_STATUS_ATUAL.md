@@ -1,22 +1,20 @@
-# 🚦 Status Atual do MVP – Frontend Web (FEW)
+# 🚦 Status Atual do MVP – Frontend Web (FEW) – Outubro 2025
 
-## ✅ Concluído
+## ✅ Concluído / Estável
 
-- **FEW-201 – Autenticação real com backend**
-  - Login/Register integrados aos endpoints `users/token/` e `users/register/`.
-  - Armazenamento de tokens (session + local storage) e refresh automático.
-  - Tratamento uniforme de erros com popup mostrando `code`, `message` e `X-Request-ID`.
-  - Logout disponível em desktop/mobile.
-- **FEW-207 – Landing page institucional**
-  - Página pública `/` com hero, diferenciais, planos e CTA de login/registro.
-  - Conteúdo direcionado ao mercado PT com destaque para Criativo Devs.
-  - Estrutura pronta para SEO básico e evolução multilíngue.
+- **FEW-201 – Autenticação real com backend** (login/register/refresh/logout + tratamento de erros).
+- **FEW-207 – Landing page institucional** (conteúdo PT, CTA, base SEO).
+- **FEW-230/231 – Fluxo completo de recuperação de senha + captcha/429.**
+- **FEW-241b – Horários disponíveis** (CRUD de slots integrado ao BE).
+- **FEW-240 (parcial)** – Settings lê branding/plan/modules reais: badge única no Settings, cores/logo via PATCH, módulos refletem benefícios do plano (ex.: PWA Cliente sempre em Standard+).
 
-## 🏗️ Em Andamento / Planejado Próximo
+## 🏗️ Em Andamento / Próximo
 
-- **Wizard de seleção de planos (FEW-208)** – escolha de plano/trial imediatamente após registro.
-- **Onboarding guiado (FEW-209)** – checklist dos passos iniciais do salão.
-- **Hardening de segurança no front (FEW-210)** – lockout, CAPTCHA, políticas UX.
+- **FEW-240 – concluir**: permitir copy final, mensagens de bloqueio por plano, preferências de tema (depende do BE-270).
+- **FEW-241a/242** – CRUD profissionais/serviços/agendamentos com backend (painel 100% real).
+- **FEW-208/209** – wizard de planos + onboarding guiado após registro.
+- **FEW-244/245** – paywall real + UX de 429 refinada.
+- **FEW-246** – documentação CaptchaGate/envs.
 
 ## 🧭 Meta do MVP
 
@@ -24,6 +22,9 @@ Entregar uma experiência self-service para proprietários de negócio em Portug
 1. Descobrir o produto pela landing.
 2. Registar, escolher plano/trial e configurar empresa via onboarding.
 3. Operar agenda e relatórios com segurança e feedback apropriado.
+4. Consumir recursos condizentes com o plano (paywall real + canais/ligações ao BE).
+
+Status atual: fluxo 1 e 3 funcionam; os passos 2 e 4 ainda dependem de tasks abertas (wizard, paywall, comunicações reais no BE).
 
 ## 📈 Indicadores de controle sugeridos
 
@@ -32,3 +33,5 @@ Entregar uma experiência self-service para proprietários de negócio em Portug
 - Erros de autenticação por causa (credencial, lockout, captcha, backend).
 
 > Atualize esta página sempre que uma entrega impactar diretamente a jornada do usuário ou a proposta de valor do MVP.
+> Atualize todos os documentos dentro dos projetos (FEW e BE).
+> Mantenha as respostas curtas, sem puxar saco e opine.

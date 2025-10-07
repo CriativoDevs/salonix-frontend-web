@@ -30,6 +30,7 @@ const defaultContextValue = {
   branding: DEFAULT_TENANT_META.branding,
   channels: DEFAULT_TENANT_META.channels,
   profile: DEFAULT_TENANT_META.profile,
+  featureFlagsRaw: null,
   loading: true,
   error: null,
   refetch: async () => DEFAULT_TENANT_META,
@@ -68,9 +69,8 @@ export function TenantProvider({ children }) {
       }
 
       try {
-        // Guard: evitar chamada se não houver slug válido ou se estivermos no slug runtime default
-        if (!sanitizedSlug || sanitizedSlug === DEFAULT_TENANT_SLUG) {
-          const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug || DEFAULT_TENANT_SLUG };
+        if (!sanitizedSlug) {
+          const fallbackMeta = { ...DEFAULT_TENANT_META, slug: DEFAULT_TENANT_SLUG };
           if (!controller.signal.aborted) {
             setTenant(fallbackMeta);
             setSlug(fallbackMeta.slug);
@@ -202,6 +202,7 @@ export function TenantProvider({ children }) {
       branding: tenant.branding || DEFAULT_TENANT_META.branding,
       channels: tenant.channels || DEFAULT_TENANT_META.channels,
       profile: tenant.profile || DEFAULT_TENANT_META.profile,
+      featureFlagsRaw: tenant.featureFlagsRaw || null,
       loading,
       error,
       refetch: () => loadTenant(slug),

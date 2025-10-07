@@ -1,17 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
 import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
-import { DEFAULT_TENANT_META } from '../utils/tenant';
+import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
+import { parseApiError } from '../utils/apiError';
+import { fetchTenantMeta, updateTenantBranding } from '../api/tenant';
+import { fetchTenantBootstrap } from '../api/auth';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
 } from '../constants/tenantFeatures';
+import {
+  resolvePlanModules,
+  resolvePlanName,
+  resolvePlanTier,
+  comparePlanTiers,
+} from '../utils/tenantPlan';
 
 const TAB_ITEMS = [
+  { id: 'branding', label: 'settings.tabs.branding', icon: '🎨' },
   { id: 'general', label: 'settings.tabs.general', icon: '⚙️' },
   { id: 'notifications', label: 'settings.tabs.notifications', icon: '🔔' },
   { id: 'business', label: 'settings.tabs.business', icon: '🏢' },
@@ -24,9 +34,48 @@ const FEATURE_LIST = Object.entries(TENANT_FEATURE_REQUIREMENTS).map(
   })
 );
 
-function buildInitialSettings(profile, channels) {
+const MODULE_CONFIG = {
+  reports: {
+    label: 'Relatórios avançados',
+    flagKey: 'enableReports',
+    rawKey: 'reports_enabled',
+  },
+  pwa_admin: {
+    label: 'Painel administrativo (PWA)',
+    flagKey: 'enableAdminPwa',
+    rawKey: 'pwa_admin_enabled',
+  },
+  pwa_client: {
+    label: 'PWA Cliente',
+    flagKey: 'enableCustomerPwa',
+    rawKey: 'pwa_client_enabled',
+  },
+  rn_admin: {
+    label: 'App Admin (React Native)',
+    flagKey: 'enableNativeAdmin',
+    rawKey: 'rn_admin_enabled',
+  },
+  rn_client: {
+    label: 'App Cliente (React Native)',
+    flagKey: 'enableNativeClient',
+    rawKey: 'rn_client_enabled',
+  },
+};
+
+const resolveModuleLabel = (moduleKey) => MODULE_CONFIG[moduleKey]?.label || moduleKey;
+
+const CHANNEL_CONFIG = [
+  { key: 'email', defaultLabel: 'Email' },
+  { key: 'sms', defaultLabel: 'SMS' },
+  { key: 'whatsapp', defaultLabel: 'WhatsApp' },
+  { key: 'push_web', defaultLabel: 'Web Push' },
+  { key: 'push_mobile', defaultLabel: 'Mobile Push' },
+];
+
+function buildInitialSettings(profile, channels, branding) {
   const safeProfile = { ...DEFAULT_TENANT_META.profile, ...(profile || {}) };
   const safeChannels = { ...DEFAULT_TENANT_META.channels, ...(channels || {}) };
+  const safeBranding = { ...DEFAULT_TENANT_META.branding, ...(branding || {}) };
 
   return {
     general: {
@@ -54,70 +103,299 @@ function buildInitialSettings(profile, channels) {
       bufferTime:
         safeProfile.bufferTime ?? DEFAULT_TENANT_META.profile.bufferTime,
     },
+    branding: {
+      primaryColor: safeBranding.primaryColor || '#6B7280',
+      secondaryColor: safeBranding.secondaryColor || '#1F2937',
+      logoUrl: safeBranding.logoUrl || '',
+    },
   };
 }
 
 function Settings() {
   const { t } = useTranslation();
   const {
+    tenant,
     plan,
     modules,
     channels,
     flags,
+    featureFlagsRaw,
     profile,
+    branding,
     loading: tenantLoading,
+    error: tenantError,
+    slug,
+    applyTenantBootstrap,
+    refetch,
   } = useTenant();
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('branding');
 
   const initialSettings = useMemo(
-    () => buildInitialSettings(profile, channels),
-    [profile, channels]
+    () => buildInitialSettings(profile, channels, branding),
+    [profile, channels, branding]
   );
 
   const [settings, setSettings] = useState(initialSettings);
+  const [brandingFile, setBrandingFile] = useState(null);
+  const [brandingPreview, setBrandingPreview] = useState('');
+  const [brandingSaving, setBrandingSaving] = useState(false);
+  const [brandingError, setBrandingError] = useState(null);
+  const [brandingSuccess, setBrandingSuccess] = useState('');
 
   useEffect(() => {
     setSettings(initialSettings);
+    setBrandingFile(null);
+    setBrandingSuccess('');
+    setBrandingError(null);
   }, [initialSettings]);
 
+  useEffect(() => {
+    if (brandingFile) {
+      const url = URL.createObjectURL(brandingFile);
+      setBrandingPreview(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+    const preview =
+      resolveTenantAssetUrl(settings.branding.logoUrl) ||
+      resolveTenantAssetUrl(branding?.logoUrl) ||
+      '';
+    setBrandingPreview(preview);
+    return undefined;
+  }, [brandingFile, settings.branding.logoUrl, branding?.logoUrl]);
+
+  useEffect(() => {
+    if (!tenantLoading && tenant && !tenant?.plan) {
+      console.warn('[Settings] Tenant sem dados de plano recebidos do backend.', tenant);
+    }
+  }, [tenant, tenantLoading]);
+
+  const formatValue = useCallback(
+    (value, fallbackLabel) => {
+      if (value === undefined || value === null || value === '') {
+        return fallbackLabel || t('settings.value_missing', 'Não informado');
+      }
+      return value;
+    },
+    [t]
+  );
+
+  const renderInfoCard = useCallback(
+    (label, value, key) => (
+      <div
+        key={key}
+        className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-3"
+      >
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
+          {label}
+        </p>
+        <p className="mt-1 text-sm text-brand-surfaceForeground">{value}</p>
+      </div>
+    ),
+    []
+  );
+
+  const planName = useMemo(() => resolvePlanName(plan), [plan]);
+  const planTier = useMemo(() => resolvePlanTier(plan), [plan]);
+
   const moduleList = useMemo(() => {
-    if (Array.isArray(modules) && modules.length > 0) {
-      return modules;
-    }
-    if (Array.isArray(plan?.features) && plan.features.length > 0) {
-      return plan.features;
-    }
-    return [];
-  }, [modules, plan]);
+    const resolved = new Set(resolvePlanModules(plan, modules).filter(Boolean));
 
-  const channelEntries = useMemo(
-    () => Object.entries(channels || {}),
-    [channels]
+    Object.entries(MODULE_CONFIG).forEach(([moduleKey, config]) => {
+      const rawEnabled = Boolean(featureFlagsRaw?.modules?.[config.rawKey]);
+      const flattenedEnabled = config.flagKey
+        ? Boolean(flags?.[config.flagKey])
+        : undefined;
+
+      if (rawEnabled || flattenedEnabled) {
+        resolved.add(moduleKey);
+      }
+    });
+
+    return Array.from(resolved).filter((moduleKey) => {
+      const config = MODULE_CONFIG[moduleKey];
+      if (!config) return true;
+
+      if (
+        config.rawKey &&
+        featureFlagsRaw?.modules &&
+        Object.prototype.hasOwnProperty.call(featureFlagsRaw.modules, config.rawKey)
+      ) {
+        return Boolean(featureFlagsRaw.modules[config.rawKey]);
+      }
+
+      if (config.flagKey && flags && Object.prototype.hasOwnProperty.call(flags, config.flagKey)) {
+        return Boolean(flags[config.flagKey]);
+      }
+
+      // Sem informação explícita -> seguir plano (já presente no set)
+      return true;
+    });
+  }, [plan, modules, flags, featureFlagsRaw]);
+
+  const channelCards = useMemo(
+    () =>
+      CHANNEL_CONFIG.map(({ key, defaultLabel }) => ({
+        key,
+        label: t(`settings.channels.${key}`, defaultLabel),
+        enabled: Boolean(channels?.[key]),
+      })),
+    [channels, t]
   );
-  const activeFeatures = useMemo(
-    () => FEATURE_LIST.filter(({ key }) => flags?.[key]),
+
+  const hasFlagData = useMemo(
+    () => flags && typeof flags === 'object' && Object.keys(flags).length > 0,
     [flags]
   );
-  const lockedFeatures = useMemo(
-    () => FEATURE_LIST.filter(({ key }) => flags?.[key] === false),
-    [flags]
-  );
 
-  const handleSave = (section) => {
-    // TODO: integrar com endpoint de atualização
-    console.log(`Salvando configurações de ${section}:`, settings[section]);
+  const activeFeatures = useMemo(() => {
+    if (!hasFlagData) return [];
+    return FEATURE_LIST.filter(({ key }) => flags?.[key]);
+  }, [flags, hasFlagData]);
+
+  const lockedFeatures = useMemo(() => {
+    return FEATURE_LIST.filter(({ requiredPlan }) => {
+      if (!requiredPlan) {
+        return false;
+      }
+
+      return comparePlanTiers(requiredPlan, planTier) === -1;
+    });
+  }, [planTier]);
+
+  const sanitizedProfile = useMemo(() => {
+    const defaults = DEFAULT_TENANT_META.profile || {};
+    const sanitize = (value, defaultValue) => {
+      if (value === undefined || value === null) {
+        return '';
+      }
+      if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed) return '';
+        if (defaultValue && trimmed === defaultValue) {
+          return '';
+        }
+        return trimmed;
+      }
+      return value;
+    };
+
+    return {
+      businessName: sanitize(profile?.businessName, defaults.businessName),
+      email: sanitize(profile?.email, defaults.email),
+      phone: sanitize(profile?.phone, defaults.phone),
+      address: sanitize(profile?.address, defaults.address),
+      timezone: sanitize(profile?.timezone, defaults.timezone),
+      language: sanitize(profile?.language, defaults.language),
+    };
+  }, [profile]);
+
+  const handleBrandingSave = useCallback(async () => {
+    setBrandingSaving(true);
+    setBrandingError(null);
+    setBrandingSuccess('');
+
+    try {
+      await updateTenantBranding({
+        primaryColor: settings.branding.primaryColor,
+        secondaryColor: settings.branding.secondaryColor,
+        logoFile: brandingFile,
+        logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
+      });
+
+      let refreshed = false;
+
+      try {
+        if (slug) {
+          const metaResponse = await fetchTenantMeta(slug);
+          if (metaResponse?.data) {
+            applyTenantBootstrap({
+              ...(metaResponse.data || {}),
+              slug,
+            });
+            refreshed = true;
+          }
+        }
+      } catch (metaError) {
+        console.warn('[Settings] fetchTenantMeta pós-branding falhou:', metaError);
+      }
+
+      if (!refreshed) {
+        try {
+          const bootstrap = await fetchTenantBootstrap();
+          if (bootstrap?.slug) {
+            applyTenantBootstrap(bootstrap);
+            refreshed = true;
+          }
+        } catch (bootstrapError) {
+          console.warn('[Settings] fetchTenantBootstrap fallback falhou:', bootstrapError);
+        }
+      }
+
+      if (!refreshed) {
+        await refetch();
+      }
+
+      setBrandingSuccess(
+        t('settings.branding.saved', 'Branding atualizado com sucesso.')
+      );
+      setBrandingFile(null);
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t('common.save_error', 'Falha ao salvar. Tente novamente.')
+      );
+      setBrandingError(parsed);
+    } finally {
+      setBrandingSaving(false);
+    }
+  }, [
+    applyTenantBootstrap,
+    brandingFile,
+    refetch,
+    settings.branding.logoUrl,
+    settings.branding.primaryColor,
+    settings.branding.secondaryColor,
+    slug,
+    t,
+  ]);
+
+  const handleLogoFileChange = (event) => {
+    const file = event.target.files?.[0];
+    setBrandingFile(file || null);
+    if (file) {
+      setSettings((prev) => ({
+        ...prev,
+        branding: { ...prev.branding, logoUrl: '' },
+      }));
+    }
+  };
+
+  const handleLogoUrlChange = (event) => {
+    const value = event.target.value;
+    setBrandingFile(null);
+    setSettings({
+      ...settings,
+      branding: { ...settings.branding, logoUrl: value },
+    });
   };
 
   const renderPlanSummary = () => (
-    <Card className="p-6">
+    <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-brand-surfaceForeground">
             {t('settings.plan_title', 'Plano atual')}
           </h3>
-          <p className="text-sm text-gray-600">
-            {plan?.name || t('settings.plan_unknown', 'Plano não identificado')}
+          <p className="text-sm text-brand-surfaceForeground/80">
+            {planName || t('settings.plan_unknown', 'Plano não identificado')}
           </p>
+          {tenantLoading ? (
+            <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+              {t('common.loading_data', 'Carregando dados do plano...')}
+            </p>
+          ) : null}
         </div>
 
         {activeFeatures.length > 0 ? (
@@ -125,7 +403,7 @@ function Settings() {
             {activeFeatures.map(({ key, label }) => (
               <span
                 key={key}
-                className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-gray-700"
+                className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
               >
                 {label}
               </span>
@@ -134,19 +412,20 @@ function Settings() {
         ) : null}
       </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+      <div className="mt-6 space-y-6">
         <div>
-          <h4 className="text-sm font-semibold text-gray-900">
+          <h4 className="text-sm font-semibold text-brand-surfaceForeground">
             {t('settings.plan_modules', 'Módulos incluídos')}
           </h4>
           {moduleList.length ? (
-            <ul className="mt-2 space-y-1 text-sm text-gray-600">
-              {moduleList.map((module) => (
-                <li key={module}>• {module}</li>
-              ))}
+            <ul className="mt-2 space-y-1 text-sm text-brand-surfaceForeground/80">
+              {moduleList.map((module) => {
+                const label = resolveModuleLabel(module);
+                return <li key={module}>• {label}</li>;
+              })}
             </ul>
           ) : (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-brand-surfaceForeground/60">
               {t(
                 'settings.plan_modules_empty',
                 'Nenhum módulo adicional definido para este plano.'
@@ -156,336 +435,371 @@ function Settings() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-gray-900">
-            {t('settings.plan_channels', 'Canais ativos')}
+          <h4 className="text-sm font-semibold text-brand-surfaceForeground">
+            {t('settings.locked_features', 'Recursos bloqueados')}
           </h4>
-          {channelEntries.length ? (
-            <ul className="mt-2 space-y-1 text-sm text-gray-600">
-              {channelEntries.map(([channelKey, enabled]) => (
-                <li key={channelKey} className={enabled ? '' : 'text-gray-400'}>
-                  • {channelKey.toUpperCase()}{' '}
-                  {enabled ? '— ativo' : '— indisponível'}
-                </li>
-              ))}
-            </ul>
+          {hasFlagData ? (
+            lockedFeatures.length ? (
+              <ul className="mt-2 space-y-2 text-sm text-amber-700">
+                {lockedFeatures.map(({ key, label }) => {
+                  const requirement = describeFeatureRequirement(key, planName);
+                  return (
+                    <li
+                      key={key}
+                      className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2"
+                    >
+                      <strong>{label}</strong>
+                      {requirement.requiredPlan
+                        ? ` — ${t('settings.requires_plan', 'Requer plano')} ${requirement.requiredPlan}.`
+                        : ''}{' '}
+                      {requirement.description}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm text-brand-surfaceForeground/60">
+                {t(
+                  'settings.locked_features_empty',
+                  'Nenhum recurso bloqueado para este plano.'
+                )}
+              </p>
+            )
           ) : (
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-brand-surfaceForeground/60">
               {t(
-                'settings.plan_channels_empty',
-                'Sem informações de canais para este tenant.'
+                'settings.locked_features_unavailable',
+                'Sem dados de recursos do plano no momento. Tente atualizar a página.'
               )}
             </p>
           )}
         </div>
-
-        {lockedFeatures.length ? (
-          <div className="sm:col-span-2">
-            <h4 className="text-sm font-semibold text-gray-900">
-              {t('settings.locked_features', 'Recursos bloqueados')}
-            </h4>
-            <ul className="mt-2 space-y-2 text-sm text-amber-700">
-              {lockedFeatures.map(({ key, label }) => {
-                const requirement = describeFeatureRequirement(key, plan?.name);
-                return (
-                  <li
-                    key={key}
-                    className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2"
-                  >
-                    <strong>{label}</strong>
-                    {requirement.requiredPlan
-                      ? ` — Requer plano ${requirement.requiredPlan}.`
-                      : ''}{' '}
-                    {requirement.description}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : null}
       </div>
     </Card>
   );
 
-  const renderGeneralSettings = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-900">
-          {t('settings.business_name')}
-        </label>
-        <input
-          type="text"
-          value={settings.general.businessName}
-          onChange={(e) =>
-            setSettings({
-              ...settings,
-              general: { ...settings.general, businessName: e.target.value },
-            })
-          }
-          disabled={tenantLoading}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-900">
-          {t('settings.email')}
-        </label>
-        <input
-          type="email"
-          value={settings.general.email}
-          onChange={(e) =>
-            setSettings({
-              ...settings,
-              general: { ...settings.general, email: e.target.value },
-            })
-          }
-          disabled={tenantLoading}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-900">
-          {t('settings.phone')}
-        </label>
-        <input
-          type="tel"
-          value={settings.general.phone}
-          onChange={(e) =>
-            setSettings({
-              ...settings,
-              general: { ...settings.general, phone: e.target.value },
-            })
-          }
-          disabled={tenantLoading}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-900">
-          {t('settings.address')}
-        </label>
-        <textarea
-          value={settings.general.address}
-          onChange={(e) =>
-            setSettings({
-              ...settings,
-              general: { ...settings.general, address: e.target.value },
-            })
-          }
-          rows={2}
-          disabled={tenantLoading}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
-
-      <FormButton
-        onClick={() => handleSave('general')}
-        variant="primary"
-        className="w-full"
-        disabled={tenantLoading}
-      >
-        {t('settings.save')}
-      </FormButton>
-    </div>
-  );
-
-  const renderNotificationSettings = () => (
-    <div className="space-y-4">
-      {Object.entries(settings.notifications).map(([key, value]) => (
-        <div key={key} className="flex items-center justify-between">
-          <div>
-            <label className="text-sm font-medium text-gray-900">
-              {t(`settings.notifications.${key}`)}
-            </label>
-            <p className="text-sm text-gray-500">
-              {t(`settings.notifications.${key}_description`)}
-            </p>
+  const renderBrandingSettings = () => (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
+            {t('settings.branding.primary_color', 'Cor primária')}
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={settings.branding.primaryColor}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  branding: { ...settings.branding, primaryColor: e.target.value },
+                })
+              }
+              disabled={tenantLoading}
+              className="h-10 w-16 cursor-pointer"
+            />
+            <input
+              type="text"
+              value={settings.branding.primaryColor}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  branding: { ...settings.branding, primaryColor: e.target.value },
+                })
+              }
+              disabled={tenantLoading}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            />
           </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
+            {t('settings.branding.secondary_color', 'Cor secundária')}
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={settings.branding.secondaryColor}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  branding: { ...settings.branding, secondaryColor: e.target.value },
+                })
+              }
+              disabled={tenantLoading}
+              className="h-10 w-16 cursor-pointer"
+            />
+            <input
+              type="text"
+              value={settings.branding.secondaryColor}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  branding: { ...settings.branding, secondaryColor: e.target.value },
+                })
+              }
+              disabled={tenantLoading}
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-brand-surfaceForeground">
+          {t('settings.branding.logo_helper', 'Logo')}
+        </label>
+        {brandingPreview ? (
+          <img
+            src={brandingPreview}
+            alt={t('settings.branding.preview_alt', 'Pré-visualização do logo')}
+            className="h-14 w-14 rounded border border-brand-border object-contain"
+          />
+        ) : (
+          <p className="text-sm text-brand-surfaceForeground/60">
+            {t('settings.branding.no_logo', 'Nenhum logo definido.')}
+          </p>
+        )}
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
-            type="checkbox"
-            checked={value}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                notifications: {
-                  ...settings.notifications,
-                  [key]: e.target.checked,
-                },
-              })
-            }
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml"
+            onChange={handleLogoFileChange}
             disabled={tenantLoading}
-            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+            className="text-sm"
+          />
+          <span className="text-xs text-brand-surfaceForeground/60">
+            {t('settings.branding.logo_info', 'PNG, JPG ou SVG até 2MB. Enviar um arquivo substitui a URL do logo.')}
+          </span>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
+            {t('settings.branding.logo_url', 'URL do logo')}
+          </label>
+          <input
+            type="url"
+            value={settings.branding.logoUrl}
+            onChange={handleLogoUrlChange}
+            disabled={tenantLoading}
+            placeholder="https://..."
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>
-      ))}
+      </div>
 
-      {flags?.enableWebPush === false ? (
-        <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-          {describeFeatureRequirement('enableWebPush', plan?.name).description}
-        </div>
+      {brandingError ? (
+        <p className="text-sm text-red-600">{brandingError.message}</p>
+      ) : null}
+      {brandingSuccess ? (
+        <p className="text-sm text-emerald-600">{brandingSuccess}</p>
       ) : null}
 
       <FormButton
-        onClick={() => handleSave('notifications')}
+        onClick={handleBrandingSave}
         variant="primary"
         className="w-full"
-        disabled={tenantLoading}
+        disabled={tenantLoading || brandingSaving}
       >
-        {t('settings.save')}
+        {brandingSaving ? t('common.saving', 'Salvando...') : t('settings.save')}
       </FormButton>
     </div>
   );
 
-  const renderBusinessSettings = () => (
-    <div className="space-y-6">
-      <div>
-        <h4 className="mb-3 text-lg font-medium text-gray-900">
-          {t('settings.working_hours')}
-        </h4>
-        <div className="space-y-3">
-          {Object.entries(settings.business.workingHours).map(
-            ([day, hours]) => (
-              <div key={day} className="flex items-center space-x-4">
-                <div className="w-24">
-                  <span className="text-sm font-medium text-gray-900">
-                    {t(`settings.days.${day}`)}
-                  </span>
-                </div>
+  const renderGeneralSettings = () => {
+    const cardItems = [];
 
-                <input
-                  type="checkbox"
-                  checked={!hours.closed}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      business: {
-                        ...settings.business,
-                        workingHours: {
-                          ...settings.business.workingHours,
-                          [day]: { ...hours, closed: !e.target.checked },
-                        },
-                      },
-                    })
-                  }
-                  disabled={tenantLoading}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-                />
+    cardItems.push({
+      key: 'tenantName',
+      label: t('settings.general.tenant_name', 'Nome do salão'),
+      value: tenant?.name,
+    });
 
-                {!hours.closed && (
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="time"
-                      value={hours.open}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          business: {
-                            ...settings.business,
-                            workingHours: {
-                              ...settings.business.workingHours,
-                              [day]: { ...hours, open: e.target.value },
-                            },
-                          },
-                        })
-                      }
-                      disabled={tenantLoading}
-                      className="rounded border border-gray-300 px-2 py-1 text-sm"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <input
-                      type="time"
-                      value={hours.close}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          business: {
-                            ...settings.business,
-                            workingHours: {
-                              ...settings.business.workingHours,
-                              [day]: { ...hours, close: e.target.value },
-                            },
-                          },
-                        })
-                      }
-                      disabled={tenantLoading}
-                      className="rounded border border-gray-300 px-2 py-1 text-sm"
-                    />
-                  </div>
-                )}
-              </div>
-            )
+    cardItems.push({
+      key: 'tenantSlug',
+      label: t('settings.general.slug', 'Slug'),
+      value: tenant?.slug,
+    });
+
+    if (
+      sanitizedProfile.businessName &&
+      sanitizedProfile.businessName.toLowerCase() !== (tenant?.name || '').toLowerCase()
+    ) {
+      cardItems.push({
+        key: 'businessName',
+        label: t('settings.general.business_name', 'Nome comercial'),
+        value: sanitizedProfile.businessName,
+      });
+    }
+
+    if (sanitizedProfile.email) {
+      cardItems.push({
+        key: 'email',
+        label: t('settings.general.email', 'Email de contato'),
+        value: sanitizedProfile.email,
+      });
+    }
+
+    if (sanitizedProfile.phone) {
+      cardItems.push({
+        key: 'phone',
+        label: t('settings.general.phone', 'Telefone'),
+        value: sanitizedProfile.phone,
+      });
+    }
+
+    const timezoneValue = tenant?.timezone || sanitizedProfile.timezone;
+    if (timezoneValue) {
+      cardItems.push({
+        key: 'timezone',
+        label: t('settings.general.timezone', 'Fuso horário'),
+        value: timezoneValue,
+      });
+    }
+
+    if (sanitizedProfile.language) {
+      cardItems.push({
+        key: 'language',
+        label: t('settings.general.language', 'Idioma'),
+        value: sanitizedProfile.language.toUpperCase(),
+      });
+    }
+
+    if (tenant?.currency) {
+      cardItems.push({
+        key: 'currency',
+        label: t('settings.general.currency', 'Moeda padrão'),
+        value: tenant.currency.toUpperCase(),
+      });
+    }
+
+    if (sanitizedProfile.address) {
+      cardItems.push({
+        key: 'address',
+        label: t('settings.general.address', 'Endereço'),
+        value: sanitizedProfile.address,
+      });
+    }
+
+    return (
+      <div className="space-y-4">
+        {tenantLoading ? (
+          <p className="text-sm text-brand-surfaceForeground/60">
+            {t('common.loading_data', 'Carregando dados...')}
+          </p>
+        ) : null}
+
+        {cardItems.length ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {cardItems.map(({ key, label, value }) =>
+              renderInfoCard(label, formatValue(value), key)
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-brand-surfaceForeground/60">
+            {t(
+              'settings.general.empty',
+              'Nenhuma informação geral disponível para este salão.'
+            )}
+          </p>
+        )}
+
+        <p className="text-xs text-brand-surfaceForeground/60">
+          {t(
+            'settings.readonly_hint',
+            'Edição disponível em tarefas futuras (ver backlog de Settings).'
           )}
-        </div>
+        </p>
+      </div>
+    );
+  };
+
+  const renderNotificationSettings = () => (
+    <div className="space-y-4">
+      {tenantLoading ? (
+        <p className="text-sm text-brand-surfaceForeground/60">
+          {t('common.loading_data', 'Carregando dados...')}
+        </p>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {channelCards.map(({ key, label, enabled }) => (
+          <div
+            key={key}
+            className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-3"
+          >
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
+              {label}
+            </p>
+            <p className="mt-1 text-sm text-brand-surfaceForeground">
+              {enabled
+                ? t('settings.channel_enabled', 'Ativo')
+                : t('settings.channel_disabled', 'Indisponível')}
+            </p>
+          </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-900">
-            {t('settings.appointment_duration')} (min)
-          </label>
-          <input
-            type="number"
-            value={settings.business.appointmentDuration}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                business: {
-                  ...settings.business,
-                  appointmentDuration: Number.parseInt(e.target.value, 10) || 0,
-                },
-              })
-            }
-            disabled={tenantLoading}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-900">
-            {t('settings.buffer_time')} (min)
-          </label>
-          <input
-            type="number"
-            value={settings.business.bufferTime}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                business: {
-                  ...settings.business,
-                  bufferTime: Number.parseInt(e.target.value, 10) || 0,
-                },
-              })
-            }
-            disabled={tenantLoading}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
-      </div>
-
-      <FormButton
-        onClick={() => handleSave('business')}
-        variant="primary"
-        className="w-full"
-        disabled={tenantLoading}
-      >
-        {t('settings.save')}
-      </FormButton>
+      <p className="text-xs text-brand-surfaceForeground/60">
+        {t(
+          'settings.notifications_readonly_hint',
+          'Gestão fina de canais/alertas ficará disponível em issues específicas (FEW-245/246).'
+        )}
+      </p>
     </div>
   );
+
+  const renderBusinessSettings = () => {
+    return (
+      <div className="space-y-4">
+        <p className="text-sm text-brand-surfaceForeground/80">
+          {t(
+            'settings.business.placeholder',
+            'Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.'
+          )}
+        </p>
+
+        <p className="text-xs text-brand-surfaceForeground/60">
+          {t(
+            'settings.business_readonly_hint',
+            'Enquanto isso, utilize o console Ops para ajustes ou contacte o suporte.'
+          )}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <FullPageLayout>
       <PageHeader title={t('settings.title')} subtitle={t('settings.subtitle')}>
-        {plan?.name ? (
-          <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-gray-700">
-            {t('settings.plan_badge', 'Plano')}: {plan.name}
+        {planName ? (
+          <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground">
+            {t('settings.plan_badge', 'Plano')}: {planName}
           </span>
         ) : null}
       </PageHeader>
 
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
+        {tenantError ? (
+          <Card className="border border-red-200 bg-red-50 p-4 text-red-800">
+            <p className="text-sm font-medium">
+              {tenantError.message ||
+                t(
+                  'settings.error_loading_tenant',
+                  'Não foi possível carregar todas as informações do salão.'
+                )}
+            </p>
+            <p className="mt-1 text-xs">
+              {t(
+                'settings.error_loading_hint',
+                'Tente atualizar a página ou verificar sua conexão. Alguns dados podem estar desatualizados.'
+              )}
+            </p>
+          </Card>
+        ) : null}
+
         {renderPlanSummary()}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
@@ -499,7 +813,7 @@ function Settings() {
                     className={`w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                       activeTab === tab.id
                         ? 'border border-brand-border bg-brand-light text-brand-surfaceForeground'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        : 'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground'
                     }`}
                   >
                     <span className="mr-2">{tab.icon}</span>
@@ -511,7 +825,8 @@ function Settings() {
           </div>
 
           <div className="lg:col-span-3">
-            <Card className="p-6">
+            <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
+              {activeTab === 'branding' && renderBrandingSettings()}
               {activeTab === 'general' && renderGeneralSettings()}
               {activeTab === 'notifications' && renderNotificationSettings()}
               {activeTab === 'business' && renderBusinessSettings()}

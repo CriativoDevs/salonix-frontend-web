@@ -91,6 +91,7 @@
     "specialty": "Specialty",
     "phone": "Phone (optional)",
     "submit": "Add professional",
+    "no_bio": "No description",
     "errors": {
       "name_required": "Name is required.",
       "specialty_required": "Specialty is required."
@@ -154,9 +155,12 @@
     "subtitle": "Manage your business settings",
     "tabs": {
       "general": "General",
+      "branding": "Branding",
       "notifications": "Notifications",
       "business": "Business"
     },
+    "coming_soon": "Coming soon",
+    "coming_soon_hint": "Integration available soon.",
     "business_name": "Business name",
     "email": "Email",
     "phone": "Phone",
@@ -183,7 +187,18 @@
       "marketingEmails": "Marketing emails",
       "marketingEmails_description": "Receive promotional emails"
     },
-    "save": "Save"
+    "save": "Save",
+    "branding": {
+      "primary_color": "Primary color",
+      "secondary_color": "Secondary color",
+      "logo_helper": "Logo",
+      "logo_url": "Logo URL",
+      "logo_info": "PNG, JPG or SVG up to 2MB. Uploading a file replaces the logo URL.",
+      "no_logo": "No logo defined.",
+      "preview_alt": "Logo preview",
+      "logo_file": "Logo file",
+      "saved": "Branding updated successfully."
+    }
   },
   "nav": {
     "home": "Home",
@@ -194,5 +209,9 @@
     "settings": "Settings",
     "more": "More",
     "close": "Close"
+  },
+  "common": {
+    "saving": "Saving...",
+    "save_error": "Failed to save. Please try again."
   }
 }

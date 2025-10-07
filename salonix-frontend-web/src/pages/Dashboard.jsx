@@ -7,6 +7,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import { describeFeatureRequirement } from '../constants/tenantFeatures';
+import { resolvePlanName } from '../utils/tenantPlan';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ export default function Dashboard() {
     return `${profile.businessName} • ${t('dashboard.subtitle', 'Resumo do seu negócio')}`;
   }, [profile?.businessName, t]);
 
-  const planName = plan?.name;
+  const planName = resolvePlanName(plan);
   const reportsEnabled = flags?.enableReports !== false;
   const reportsRequirement = !reportsEnabled
     ? describeFeatureRequirement('enableReports', planName)
@@ -31,13 +32,7 @@ export default function Dashboard() {
       <PageHeader
         title={t('dashboard.title', 'Dashboard')}
         subtitle={businessSummary}
-      >
-        {planName ? (
-          <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-gray-700">
-            {t('settings.plan_badge', 'Plano')}: {planName}
-          </span>
-        ) : null}
-      </PageHeader>
+      />
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -63,8 +58,8 @@ export default function Dashboard() {
       </section>
 
       <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="text-lg font-medium text-gray-900">
+        <Card className="p-6 text-brand-surfaceForeground">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
             {t('dashboard.upcoming', 'Próximos agendamentos')}
           </h2>
           <div className="mt-4">
@@ -81,34 +76,34 @@ export default function Dashboard() {
                 <button className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-accent">
                   {t('dashboard.new_booking', 'Novo agendamento')}
                 </button>
-              }
+                }
             />
           </div>
-        </div>
+        </Card>
 
-        <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-          <h2 className="text-lg font-medium text-gray-900">
+        <Card className="p-6 text-brand-surfaceForeground">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
             {t('dashboard.quick_actions', 'Ações rápidas')}
           </h2>
           <div className="mt-4 flex flex-wrap gap-2">
-            <button className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">
+            <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light/80">
               {t('dashboard.add_slot', 'Abrir horários')}
             </button>
-            <button className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">
+            <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light/80">
               {t('dashboard.add_professional', 'Adicionar profissional')}
             </button>
-            <button className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:bg-gray-50">
+            <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light/80">
               {t('dashboard.add_service', 'Cadastrar serviço')}
             </button>
           </div>
-        </div>
+        </Card>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-medium text-gray-900">
+        <Card className="p-6 text-brand-surfaceForeground">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
             {t('dashboard.reports_section', 'Relatórios')}
           </h2>
           {reportsEnabled ? (
-            <div className="mt-4 space-y-3 text-sm text-gray-600">
+            <div className="mt-4 space-y-3 text-sm text-brand-surfaceForeground/80">
               <p>{t('dashboard.reports_enabled', 'Aceda aos relatórios completos e exporte os dados sempre que precisar.')}</p>
               <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm font-medium text-gray-700 hover:bg-brand-light/70">
                 {t('dashboard.view_reports', 'Ver relatórios')}

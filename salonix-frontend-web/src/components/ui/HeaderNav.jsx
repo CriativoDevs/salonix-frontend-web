@@ -36,17 +36,17 @@ export default function HeaderNav() {
   ];
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
-  const inactive = 'text-gray-600 hover:bg-gray-100';
-  const active = 'text-gray-900 ring-1 ring-brand-border';
+  const inactive = 'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
+  const active = 'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
 
   return (
-    <header className="hidden md:block bg-white shadow-sm ring-1 ring-gray-200">
+    <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border">
       <Container>
         <div className="flex h-14 items-center justify-between">
           <BrandLogo
             variant="inline"
             size={22}
-            textClassName="text-base font-semibold text-gray-900"
+            textClassName="text-base font-semibold text-brand-surfaceForeground"
             name={displayName}
             logoUrl={branding?.logoUrl}
           />
@@ -83,7 +83,7 @@ export default function HeaderNav() {
                 logout();
                 navigate('/login', { replace: true });
               }}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-900"
+              className="rounded-lg border border-brand-border px-3 py-1.5 text-sm font-medium text-brand-surfaceForeground transition hover:bg-brand-light"
             >
               {t('nav.logout', 'Sair')}
             </button>
