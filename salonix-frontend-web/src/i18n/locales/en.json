@@ -108,7 +108,51 @@
     "service": "Service",
     "professional": "Professional",
     "datetime": "Date & Time",
-    "empty": "No bookings found."
+    "status": "Status",
+    "notes": "Notes",
+    "empty": "No bookings found.",
+    "client_placeholder": "Client",
+    "create": {
+      "title": "Create appointment"
+    },
+    "form": {
+      "select_service": "Select a service",
+      "select_professional": "Select a professional",
+      "slot": "Time slot",
+      "select_slot": "Select a time slot",
+      "notes_placeholder": "Optional notes",
+      "loading_slots": "Loading available slots...",
+      "no_slots": "No available slots for this professional.",
+      "submit": "Schedule",
+      "reset": "Clear",
+      "required": "Please select service, professional and time slot."
+    },
+    "filters": {
+      "status": "Status",
+      "status_all": "All statuses",
+      "date_from": "From",
+      "date_to": "To"
+    },
+    "actions": {
+      "title": "Actions",
+      "manage": "Manage",
+      "cancel": "Cancel",
+      "save": "Save changes"
+    },
+    "edit": {
+      "keep_slot": "Keep current slot"
+    },
+    "statuses": {
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "paid": "Paid"
+    },
+    "pagination": {
+      "summary": "Total of {{count}} appointments",
+      "prev": "Previous",
+      "next": "Next"
+    }
   },
   "profile": {
     "title": "Salon profile",
