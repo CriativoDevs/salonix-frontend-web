@@ -114,7 +114,51 @@
     "service": "Serviço",
     "professional": "Profissional",
     "datetime": "Data e hora",
-    "empty": "Nenhum agendamento encontrado."
+    "status": "Status",
+    "notes": "Observações",
+    "empty": "Nenhum agendamento encontrado.",
+    "client_placeholder": "Cliente",
+    "create": {
+      "title": "Criar novo agendamento"
+    },
+    "form": {
+      "select_service": "Selecione um serviço",
+      "select_professional": "Selecione um profissional",
+      "slot": "Horário",
+      "select_slot": "Selecione um horário",
+      "notes_placeholder": "Notas opcionais",
+      "loading_slots": "Carregando horários disponíveis...",
+      "no_slots": "Nenhum horário disponível para este profissional.",
+      "submit": "Agendar",
+      "reset": "Limpar",
+      "required": "Selecione serviço, profissional e horário."
+    },
+    "filters": {
+      "status": "Status",
+      "status_all": "Todos",
+      "date_from": "Data inicial",
+      "date_to": "Data final"
+    },
+    "actions": {
+      "title": "Ações",
+      "manage": "Gerir",
+      "cancel": "Cancelar",
+      "save": "Salvar alterações"
+    },
+    "edit": {
+      "keep_slot": "Manter horário atual"
+    },
+    "statuses": {
+      "scheduled": "Agendado",
+      "cancelled": "Cancelado",
+      "completed": "Concluído",
+      "paid": "Pago"
+    },
+    "pagination": {
+      "summary": "Total de {{count}} agendamentos",
+      "prev": "Anterior",
+      "next": "Próxima"
+    }
   },
   "profile": {
     "title": "Perfil do salão",

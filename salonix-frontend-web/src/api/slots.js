@@ -36,3 +36,14 @@ export async function deleteSlot(id, { slug } = {}) {
   const { status } = await client.delete(`slots/${id}/`, { headers });
   return status === 204;
 }
+
+export async function fetchSlotDetail(id, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get(`slots/${id}/`, { headers, params });
+  return data;
+}
