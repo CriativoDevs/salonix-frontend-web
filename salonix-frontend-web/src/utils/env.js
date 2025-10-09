@@ -2,7 +2,10 @@ let cachedEnv;
 
 function resolveViteEnv() {
   try {
-    return import.meta.env || {};
+    // embed import.meta access in function body to avoid syntax errors in Jest
+    // eslint-disable-next-line no-new-func
+    const evaluateImportMeta = new Function('return (typeof import !== "undefined" && import.meta && import.meta.env) || {};');
+    return evaluateImportMeta();
   } catch {
     return {};
   }

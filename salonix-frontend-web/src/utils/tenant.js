@@ -251,12 +251,21 @@ function normalizePlan(plan, fallbackTier, fallbackPlan) {
   const tier = plan?.tier || plan?.code || fallbackTier || fallbackPlan.tier;
   base.code = tier || base.code;
   base.tier = tier || base.tier;
+  if (typeof base.code === 'string') {
+    const sanitizedCode = sanitizeTenantSlug(base.code);
+    base.code = sanitizedCode || base.code.toLowerCase();
+  }
+  if (typeof base.tier === 'string') {
+    const sanitizedTier = sanitizeTenantSlug(base.tier);
+    base.tier = sanitizedTier || base.tier.toLowerCase();
+  }
+  const normalizedTier = typeof base.tier === 'string' ? base.tier : undefined;
   if (plan?.name && typeof plan.name === 'string') {
     base.name = plan.name;
-  } else if (tier && PLAN_NAME_BY_TIER[tier]) {
-    base.name = PLAN_NAME_BY_TIER[tier];
-  } else if (tier && typeof tier === 'string') {
-    base.name = tier.charAt(0).toUpperCase() + tier.slice(1);
+  } else if (normalizedTier && PLAN_NAME_BY_TIER[normalizedTier]) {
+    base.name = PLAN_NAME_BY_TIER[normalizedTier];
+  } else if (normalizedTier) {
+    base.name = normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
   }
   if (Array.isArray(plan?.addons)) {
     base.addons = plan.addons;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import { fetchAppointments, fetchAppointmentDetail, createAppointment, updateAppointment } from '../api/appointments';
+import { fetchCustomers } from '../api/customers';
 import { fetchServices } from '../api/services';
 import { fetchProfessionals } from '../api/professionals';
 import { fetchSlots, fetchSlotDetail } from '../api/slots';
@@ -10,12 +11,26 @@ import { parseApiError } from '../utils/apiError';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
 
+const STATUS_STYLES = {
+  scheduled: 'border-emerald-200 bg-emerald-100 text-emerald-800',
+  completed: 'border-sky-200 bg-sky-100 text-sky-800',
+  paid: 'border-emerald-300 bg-emerald-200 text-emerald-900',
+  cancelled: 'border-rose-200 bg-rose-100 text-rose-800',
+};
+
 const INITIAL_FORM = {
   serviceId: '',
   professionalId: '',
   slotId: '',
   notes: '',
 };
+
+function normalizeResults(payload) {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.results)) return payload.results;
+  return [];
+}
 
 function parseSlotDate(raw) {
   if (!raw) return null;
@@ -91,11 +106,12 @@ function formatProfessionalOption(professional) {
   return description ? `${professional.name} • ${description}` : professional.name;
 }
 
-function combineAppointment(base, detail, serviceName, professionalName, slotDetail = null) {
+function combineAppointment(base, detail, serviceName, professionalName, slotDetail = null, fallbackCustomer = null) {
   const slotInfo = slotDetail || detail?.slot || null;
   const slotStart = slotInfo?.start_time ?? detail?.slot?.start_time ?? null;
   const slotEnd = slotInfo?.end_time ?? detail?.slot?.end_time ?? null;
   const slotId = slotInfo?.id ?? detail?.slot?.id ?? base.slot ?? null;
+  const customerInfo = detail?.customer || fallbackCustomer || null;
   return {
     id: base.id,
     serviceId: detail?.service?.id ?? base.service,
@@ -105,6 +121,10 @@ function combineAppointment(base, detail, serviceName, professionalName, slotDet
     notes: detail?.notes || base.notes || '',
     clientName: detail?.client_username || '',
     clientEmail: detail?.client_email || '',
+    customerId: customerInfo?.id ?? null,
+    customerName: customerInfo?.name || detail?.client_username || '',
+    customerEmail: customerInfo?.email || detail?.client_email || '',
+    customerPhone: customerInfo?.phone_number || '',
     slotStart,
     slotEnd,
     serviceName: detail?.service?.name || serviceName || `#${base.service}`,
@@ -122,12 +142,23 @@ function buildServiceMap(list) {
   return map;
 }
 
+function buildCustomerMap(list) {
+  const map = new Map();
+  list.forEach((item) => {
+    if (item?.id != null) {
+      map.set(item.id, item);
+    }
+  });
+  return map;
+}
+
 function Bookings() {
   const { t } = useTranslation();
   const { slug } = useTenant();
 
   const [services, setServices] = useState([]);
   const [professionals, setProfessionals] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [appointmentsCount, setAppointmentsCount] = useState(0);
   const [loadingList, setLoadingList] = useState(false);
@@ -154,19 +185,26 @@ function Bookings() {
   const [editingSlotsLoading, setEditingSlotsLoading] = useState(false);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editError, setEditError] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   const serviceMap = useMemo(() => buildServiceMap(services), [services]);
   const professionalMap = useMemo(() => buildServiceMap(professionals), [professionals]);
+  const customerMap = useMemo(() => buildCustomerMap(customers), [customers]);
 
   useEffect(() => {
     if (!slug) return;
     let active = true;
     setLookupLoading(true);
-    Promise.all([fetchServices(slug), fetchProfessionals(slug)])
-      .then(([svc, profs]) => {
+    const loadCustomers = fetchCustomers({ slug })
+      .then(normalizeResults)
+      .catch(() => []);
+
+    Promise.all([fetchServices(slug), fetchProfessionals(slug), loadCustomers])
+      .then(([svc, profs, customerList]) => {
         if (!active) return;
-        setServices(svc || []);
-        setProfessionals(profs || []);
+        setServices(Array.isArray(svc) ? svc : []);
+        setProfessionals(Array.isArray(profs) ? profs : []);
+        setCustomers(Array.isArray(customerList) ? customerList : []);
       })
       .catch((err) => {
         if (!active) return;
@@ -205,6 +243,7 @@ function Bookings() {
 
         const detailed = await Promise.all(
           baseResults.map(async (item) => {
+            const customerFallback = customerMap.get(item.customer) || null;
             try {
               const detail = await fetchAppointmentDetail(item.id, { slug });
               const svcName = serviceMap.get(item.service)?.name;
@@ -228,7 +267,7 @@ function Bookings() {
                 }
               }
 
-              return combineAppointment(item, detail, svcName, profName, slotDetail);
+              return combineAppointment(item, detail, svcName, profName, slotDetail, customerFallback);
             } catch {
               const svcName = serviceMap.get(item.service)?.name;
               const profName = professionalMap.get(item.professional)?.name;
@@ -249,7 +288,7 @@ function Bookings() {
                   }
                 }
               }
-              return combineAppointment(item, null, svcName, profName, slotDetail);
+              return combineAppointment(item, null, svcName, profName, slotDetail, customerFallback);
             }
           })
         );
@@ -271,7 +310,7 @@ function Bookings() {
     return () => {
       active = false;
     };
-  }, [slug, filters, page, lookupLoading, serviceMap, professionalMap, t]);
+  }, [slug, filters, page, lookupLoading, serviceMap, professionalMap, customerMap, t]);
 
   const resetForm = () => {
     setFormData(INITIAL_FORM);
@@ -337,6 +376,7 @@ function Bookings() {
   };
 
   const openEdit = (appointment) => {
+    setSelectedAppointment(appointment);
     setEditingId(appointment.id);
     setEditForm({
       status: appointment.status,
@@ -404,6 +444,7 @@ function Bookings() {
       setEditSubmitting(true);
       await updateAppointment(editingId, payload, { slug });
       cancelEdit();
+      setSelectedAppointment(null);
       setFilters((prev) => ({ ...prev }));
     } catch (err) {
       setEditError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
@@ -415,6 +456,10 @@ function Bookings() {
   const handleStatusQuickChange = async (appointment, status) => {
     try {
       await updateAppointment(appointment.id, { status }, { slug });
+      if (selectedAppointment?.id === appointment.id) {
+        cancelEdit();
+        setSelectedAppointment(null);
+      }
       setFilters((prev) => ({ ...prev }));
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
@@ -427,6 +472,10 @@ function Bookings() {
   };
 
   const loading = lookupLoading || loadingList;
+  const closeDetails = () => {
+    cancelEdit();
+    setSelectedAppointment(null);
+  };
 
   return (
     <FullPageLayout>
@@ -596,28 +645,27 @@ function Bookings() {
               <table className="min-w-full divide-y divide-brand-border text-left text-sm text-brand-surfaceForeground">
                 <thead className="bg-brand-light/60 text-xs uppercase tracking-wide text-brand-surfaceForeground/70">
                   <tr>
-                    <th className="px-4 py-2">ID</th>
                     <th className="px-4 py-2">{t('bookings.client')}</th>
-                    <th className="px-4 py-2">{t('bookings.service')}</th>
                     <th className="px-4 py-2">{t('bookings.professional')}</th>
                     <th className="px-4 py-2">{t('bookings.datetime')}</th>
                     <th className="px-4 py-2">{t('bookings.status')}</th>
-                    <th className="px-4 py-2">{t('bookings.notes')}</th>
-                    <th className="px-4 py-2 text-right">{t('bookings.actions.title', 'Ações')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/50">
                   {appointments.map((appointment) => (
-                    <>
-                      <tr key={appointment.id} className="align-top">
-                        <td className="px-4 py-3 font-mono text-xs text-brand-surfaceForeground/80">#{appointment.id}</td>
+                    <tr key={appointment.id} className="align-top">
                         <td className="px-4 py-3">
-                          <div className="font-medium">{appointment.clientName || t('bookings.client_placeholder', 'Cliente')}</div>
-                          {appointment.clientEmail && (
-                            <div className="text-xs text-brand-surfaceForeground/70">{appointment.clientEmail}</div>
+                          <button
+                            type="button"
+                            onClick={() => openEdit(appointment)}
+                            className="font-medium text-left text-brand-primary hover:underline"
+                          >
+                            {appointment.customerName || appointment.clientName || t('bookings.client_placeholder', 'Cliente')}
+                          </button>
+                          {appointment.customerEmail && (
+                            <div className="text-xs text-brand-surfaceForeground/70">{appointment.customerEmail}</div>
                           )}
                         </td>
-                        <td className="px-4 py-3">{appointment.serviceName}</td>
                         <td className="px-4 py-3">{appointment.professionalName}</td>
                         <td className="px-4 py-3">
                           <span className="font-mono text-xs text-brand-surfaceForeground/80">
@@ -625,117 +673,13 @@ function Bookings() {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full border border-brand-border bg-brand-light px-2 py-1 text-xs font-medium uppercase text-brand-surfaceForeground/80">
+                          <span
+                            className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                          >
                             {t(`bookings.statuses.${appointment.status}`, appointment.status)}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-brand-surfaceForeground/80">
-                          {appointment.notes || '—'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-wrap justify-end gap-2 text-sm font-medium">
-                            <button
-                              type="button"
-                              onClick={() => openEdit(appointment)}
-                              className="text-[#1D29CF] hover:underline"
-                            >
-                              {t('bookings.actions.manage', 'Gerir')}
-                            </button>
-                            {appointment.status !== 'cancelled' && (
-                              <button
-                                type="button"
-                                onClick={() => handleStatusQuickChange(appointment, 'cancelled')}
-                                className="text-[#CF3B1D] hover:underline"
-                              >
-                                {t('bookings.actions.cancel', 'Cancelar')}
-                              </button>
-                            )}
-                          </div>
-                        </td>
                       </tr>
-                      {editingId === appointment.id && (
-                        <tr key={`${appointment.id}-edit`}>
-                          <td colSpan={8} className="bg-brand-light/40 px-4 py-4">
-                            <div className="space-y-3">
-                              <div className="grid gap-3 sm:grid-cols-3">
-                                <div>
-                                  <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
-                                    {t('bookings.status')}
-                                  </label>
-                                  <select
-                                    value={editForm.status}
-                                    onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
-                                    className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-                                  >
-                                    {STATUS_OPTIONS.map((status) => (
-                                      <option key={status} value={status}>
-                                        {t(`bookings.statuses.${status}`, status)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
-                                    {t('bookings.form.slot', 'Horário')}
-                                  </label>
-                                  <select
-                                    value={editForm.slotId}
-                                    onChange={(e) => setEditForm((prev) => ({ ...prev, slotId: e.target.value }))}
-                                    className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-                                    disabled={editingSlotsLoading}
-                                  >
-                                    <option value="">
-                                      {t('bookings.edit.keep_slot', 'Manter horário atual')}
-                                    </option>
-                                    {editingSlots.map((slot) => (
-                                      <option key={slot.id} value={slot.id}>
-                                        {formatDateTimeRange(slot.start_time, slot.end_time)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  {editingSlotsLoading && (
-                                    <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                                      {t('bookings.form.loading_slots', 'Carregando horários disponíveis...')}
-                                    </p>
-                                  )}
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
-                                    {t('bookings.notes', 'Observações')}
-                                  </label>
-                                  <textarea
-                                    rows={2}
-                                    className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-                                    value={editForm.notes}
-                                    onChange={(e) => setEditForm((prev) => ({ ...prev, notes: e.target.value }))}
-                                  />
-                                </div>
-                              </div>
-                              {editError && (
-                                <p className="text-sm text-red-600">{editError.message}</p>
-                              )}
-                              <div className="flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  disabled={editSubmitting}
-                                  onClick={() => submitEdit(appointment)}
-                                  className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
-                                >
-                                  {editSubmitting ? t('common.saving', 'Salvando...') : t('bookings.actions.save', 'Salvar alterações')}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={cancelEdit}
-                                  className="rounded border border-brand-border px-4 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light"
-                                >
-                                  {t('common.cancel', 'Cancelar')}
-                                </button>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </>
                   ))}
                 </tbody>
               </table>
@@ -771,6 +715,139 @@ function Bookings() {
           )}
         </section>
       </div>
+      {selectedAppointment && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+            <div className="flex items-start gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-brand-surfaceForeground">
+                  {selectedAppointment.customerName || selectedAppointment.clientName || t('bookings.client_placeholder', 'Cliente')}
+                </h2>
+                {selectedAppointment.customerEmail && (
+                  <p className="text-sm text-brand-surfaceForeground/70">{selectedAppointment.customerEmail}</p>
+                )}
+                {selectedAppointment.customerPhone && (
+                  <p className="text-sm text-brand-surfaceForeground/70">{selectedAppointment.customerPhone}</p>
+                )}
+              </div>
+            </div>
+
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="font-semibold">{t('bookings.professional', 'Profissional')}</dt>
+                <dd>{selectedAppointment.professionalName}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="font-semibold">{t('bookings.service', 'Serviço')}</dt>
+                <dd>{selectedAppointment.serviceName}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="font-semibold">{t('bookings.datetime', 'Data e hora')}</dt>
+                <dd>{formatDateTimeRange(selectedAppointment.slotStart, selectedAppointment.slotEnd)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="font-semibold">{t('bookings.status', 'Status')}</dt>
+                <dd>
+                  <span
+                    className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${STATUS_STYLES[selectedAppointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                  >
+                    {t(`bookings.statuses.${selectedAppointment.status}`, selectedAppointment.status)}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.status')}
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
+                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {t(`bookings.statuses.${status}`, status)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.form.slot', 'Horário')}
+                </label>
+                <select
+                  value={editForm.slotId}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, slotId: e.target.value }))}
+                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                  disabled={editingSlotsLoading}
+                >
+                  <option value="">
+                    {t('bookings.edit.keep_slot', 'Manter horário atual')}
+                  </option>
+                  {editingSlots.map((slot) => (
+                    <option key={slot.id} value={slot.id}>
+                      {formatDateTimeRange(slot.start_time, slot.end_time)}
+                    </option>
+                  ))}
+                </select>
+                {editingSlotsLoading && (
+                  <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                    {t('bookings.form.loading_slots', 'Carregando horários disponíveis...')}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.notes', 'Observações')}
+                </label>
+                <textarea
+                  rows={2}
+                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+            </div>
+            {editError && (
+              <p className="mt-3 text-sm text-red-600">{editError.message}</p>
+            )}
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
+              {selectedAppointment.status !== 'cancelled' ? (
+                <button
+                  type="button"
+                  onClick={() => handleStatusQuickChange(selectedAppointment, 'cancelled')}
+                  className="rounded border border-brand-border px-4 py-2 text-sm text-[#CF3B1D] hover:bg-brand-light"
+                >
+                  {t('bookings.actions.cancel', 'Cancelar agendamento')}
+                </button>
+              ) : (
+                <span />
+              )}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={closeDetails}
+                  className="rounded border border-brand-border px-4 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light"
+                >
+                  {t('common.close', 'Fechar')}
+                </button>
+                <button
+                  type="button"
+                  disabled={editSubmitting}
+                  onClick={() => submitEdit(selectedAppointment)}
+                  className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
+                >
+                  {editSubmitting ? t('common.saving', 'Salvando...') : t('bookings.actions.save', 'Salvar alterações')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </FullPageLayout>
   );
 }
