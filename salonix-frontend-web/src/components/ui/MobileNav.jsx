@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
@@ -10,6 +10,7 @@ import {
   XIcon,
   StarIcon,
   SettingsIcon,
+  UsersIcon,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
@@ -33,6 +34,8 @@ function MobileNav() {
 
   // Links do menu expandido (novas funcionalidades)
   const expandedLinks = [
+    { to: '/bookings', icon: CalendarIcon, label: t('nav.bookings', 'Agendamentos') },
+    { to: '/customers', icon: UsersIcon, label: t('nav.customers', 'Clientes') },
     { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
     { to: '/feedback', icon: StarIcon, label: t('nav.feedback') },
     { to: '/settings', icon: SettingsIcon, label: t('nav.settings') },
@@ -104,13 +107,20 @@ function MobileNav() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mb-6 space-y-4">
-            <BrandLogo
-              variant="inline"
-              size={28}
-              textClassName="text-base font-semibold text-gray-900"
-              name={displayName}
-              logoUrl={branding?.logoUrl}
-            />
+            <Link
+              to="/dashboard"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center gap-3 rounded-md px-2 py-1 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
+              aria-label={t('nav.go_to_dashboard', 'Ir para o dashboard')}
+            >
+              <BrandLogo
+                variant="inline"
+                size={28}
+                textClassName="text-base font-semibold text-gray-900"
+                name={displayName}
+                logoUrl={branding?.logoUrl}
+              />
+            </Link>
 
             <div className="grid grid-cols-2 gap-4">
             {expandedLinks.map(({ to, icon: IconComponent, label }) => {

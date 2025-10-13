@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import { fetchAppointments, fetchAppointmentDetail, createAppointment, updateAppointment } from '../api/appointments';
@@ -19,6 +19,7 @@ const STATUS_STYLES = {
 };
 
 const INITIAL_FORM = {
+  customerId: '',
   serviceId: '',
   professionalId: '',
   slotId: '',
@@ -152,6 +153,23 @@ function buildCustomerMap(list) {
   return map;
 }
 
+function sortCustomers(list) {
+  if (!Array.isArray(list)) return [];
+  return [...list].sort((a, b) => {
+    const timeA = new Date(a?.created_at || 0).getTime();
+    const timeB = new Date(b?.created_at || 0).getTime();
+    if (Number.isNaN(timeA) && Number.isNaN(timeB)) return 0;
+    if (Number.isNaN(timeA)) return 1;
+    if (Number.isNaN(timeB)) return -1;
+    if (timeA === timeB) {
+      const nameA = (a?.name || '').toLocaleLowerCase();
+      const nameB = (b?.name || '').toLocaleLowerCase();
+      return nameA.localeCompare(nameB);
+    }
+    return timeB - timeA;
+  });
+}
+
 function Bookings() {
   const { t } = useTranslation();
   const { slug } = useTenant();
@@ -169,6 +187,7 @@ function Bookings() {
     status: '',
     dateFrom: '',
     dateTo: '',
+    customerId: '',
   });
 
   const [page, setPage] = useState(1);
@@ -191,6 +210,28 @@ function Bookings() {
   const professionalMap = useMemo(() => buildServiceMap(professionals), [professionals]);
   const customerMap = useMemo(() => buildCustomerMap(customers), [customers]);
 
+  const refreshSlotsForProfessional = useCallback(
+    (professionalId) => {
+      if (!professionalId) {
+        setFormSlots([]);
+        return Promise.resolve();
+      }
+      setFormSlotsLoading(true);
+      return fetchSlots({ professionalId, slug })
+        .then((slots) => {
+          setFormSlots(Array.isArray(slots) ? slots : []);
+        })
+        .catch((err) => {
+          setFormSlots([]);
+          setFormError(parseApiError(err, t('common.load_error', 'Falha ao carregar.')));
+        })
+        .finally(() => {
+          setFormSlotsLoading(false);
+        });
+    },
+    [slug, t],
+  );
+
   useEffect(() => {
     if (!slug) return;
     let active = true;
@@ -204,7 +245,7 @@ function Bookings() {
         if (!active) return;
         setServices(Array.isArray(svc) ? svc : []);
         setProfessionals(Array.isArray(profs) ? profs : []);
-        setCustomers(Array.isArray(customerList) ? customerList : []);
+        setCustomers(sortCustomers(customerList));
       })
       .catch((err) => {
         if (!active) return;
@@ -232,6 +273,7 @@ function Bookings() {
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
     if (filters.dateTo) params.date_to = filters.dateTo;
+    if (filters.customerId) params.customer_id = filters.customerId;
 
     const slotCache = new Map();
 
@@ -324,18 +366,7 @@ function Bookings() {
       setFormSlots([]);
       setFormData((prev) => ({ ...prev, slotId: '' }));
       if (!value) return;
-      setFormSlotsLoading(true);
-      fetchSlots({ professionalId: value, slug })
-        .then((slots) => {
-          setFormSlots(Array.isArray(slots) ? slots : []);
-        })
-        .catch((err) => {
-          setFormSlots([]);
-          setFormError(parseApiError(err, t('common.load_error', 'Falha ao carregar.')));
-        })
-        .finally(() => {
-          setFormSlotsLoading(false);
-        });
+      refreshSlotsForProfessional(value);
     }
     if (field !== 'professionalId' && field !== 'slotId') {
       setFormError(null);
@@ -346,12 +377,17 @@ function Bookings() {
     event.preventDefault();
     setFormError(null);
 
+    if (!formData.customerId) {
+      setFormError({ message: t('bookings.form.customer_required', 'Selecione um cliente para o agendamento.') });
+      return;
+    }
     if (!formData.serviceId || !formData.professionalId || !formData.slotId) {
       setFormError({ message: t('bookings.form.required', 'Selecione serviço, profissional e horário.') });
       return;
     }
 
     const payload = {
+      customer: Number.parseInt(formData.customerId, 10),
       service: Number.parseInt(formData.serviceId, 10),
       professional: Number.parseInt(formData.professionalId, 10),
       slot: Number.parseInt(formData.slotId, 10),
@@ -446,6 +482,13 @@ function Bookings() {
       cancelEdit();
       setSelectedAppointment(null);
       setFilters((prev) => ({ ...prev }));
+      if (
+        formData.professionalId &&
+        Number.parseInt(formData.professionalId, 10) === appointment.professionalId &&
+        (payload.status === 'cancelled' || Object.prototype.hasOwnProperty.call(payload, 'slot'))
+      ) {
+        refreshSlotsForProfessional(formData.professionalId);
+      }
     } catch (err) {
       setEditError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
     } finally {
@@ -461,6 +504,13 @@ function Bookings() {
         setSelectedAppointment(null);
       }
       setFilters((prev) => ({ ...prev }));
+      if (
+        status === 'cancelled' &&
+        formData.professionalId &&
+        Number.parseInt(formData.professionalId, 10) === appointment.professionalId
+      ) {
+        refreshSlotsForProfessional(formData.professionalId);
+      }
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
     }
@@ -484,7 +534,24 @@ function Bookings() {
           {t('bookings.title')}
         </h1>
 
-        <section className="mt-4 grid gap-3 sm:grid-cols-3">
+        <section className="mt-4 grid gap-3 sm:grid-cols-4">
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+              {t('bookings.filters.customer', 'Cliente')}
+            </label>
+            <select
+              value={filters.customerId}
+              onChange={(e) => handleFilterChange('customerId', e.target.value)}
+              className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+            >
+              <option value="">{t('bookings.filters.customer_all', 'Todos')}</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('bookings.filters.status', 'Status')}
@@ -530,7 +597,30 @@ function Bookings() {
           <h2 className="text-lg font-medium text-brand-surfaceForeground">
             {t('bookings.create.title', 'Criar novo agendamento')}
           </h2>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" onSubmit={handleCreateAppointment}>
+          <form className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" onSubmit={handleCreateAppointment}>
+            <div className="col-span-1">
+              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                {t('bookings.form.customer', 'Cliente')}
+              </label>
+              <select
+                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                value={formData.customerId}
+                onChange={(e) => handleFormChange('customerId', e.target.value)}
+                disabled={lookupLoading || customers.length === 0}
+              >
+                <option value="">{t('bookings.form.select_customer', 'Selecione um cliente')}</option>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+              {customers.length === 0 && !lookupLoading && (
+                <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                  {t('bookings.form.empty_customer', 'Cadastre clientes antes de criar agendamentos.')}
+                </p>
+              )}
+            </div>
             <div className="col-span-1">
               <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
                 {t('bookings.service', 'Serviço')}
@@ -575,7 +665,12 @@ function Bookings() {
                 className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
                 value={formData.slotId}
                 onChange={(e) => handleFormChange('slotId', e.target.value)}
-                disabled={!formData.professionalId || formSlotsLoading}
+                disabled={!formData.professionalId}
+                onFocus={() => {
+                  if (formData.professionalId) {
+                    refreshSlotsForProfessional(formData.professionalId);
+                  }
+                }}
               >
                 <option value="">{t('bookings.form.select_slot', 'Selecione um horário')}</option>
                 {formSlots.map((slot) => (
@@ -612,7 +707,7 @@ function Bookings() {
             <div className="col-span-full flex flex-wrap gap-2">
               <button
                 type="submit"
-                disabled={formSubmitting}
+                disabled={formSubmitting || customers.length === 0}
                 className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
               >
                 {formSubmitting ? t('common.saving', 'Salvando...') : t('bookings.form.submit', 'Agendar')}
