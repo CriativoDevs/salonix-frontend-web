@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageCircleIcon, StarIcon, SettingsIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
@@ -18,10 +18,10 @@ export default function HeaderNav() {
 
   // Links principais (sempre visíveis)
   const mainLinks = [
-    { to: '/dashboard', label: 'Dashboard' },
     { to: '/slots', label: 'Slots' },
     { to: '/professionals', label: 'Profissionais' },
     { to: '/bookings', label: 'Agendamentos' },
+    { to: '/customers', label: 'Clientes' },
     { to: '/services', label: 'Serviços' },
   ];
 
@@ -43,13 +43,19 @@ export default function HeaderNav() {
     <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border">
       <Container>
         <div className="flex h-14 items-center justify-between">
-          <BrandLogo
-            variant="inline"
-            size={22}
-            textClassName="text-base font-semibold text-brand-surfaceForeground"
-            name={displayName}
-            logoUrl={branding?.logoUrl}
-          />
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 rounded-md px-2 py-1 transition hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-border"
+            aria-label={t('nav.go_to_dashboard', 'Ir para o dashboard')}
+          >
+            <BrandLogo
+              variant="inline"
+              size={22}
+              textClassName="text-base font-semibold text-brand-surfaceForeground"
+              name={displayName}
+              logoUrl={branding?.logoUrl}
+            />
+          </Link>
 
           <nav className="flex items-center gap-1">
             {/* Links principais */}

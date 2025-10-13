@@ -11,6 +11,7 @@ import Professionals from '../pages/Professionals';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
 import Profile from '../pages/Profile';
+import Customers from '../pages/Customers';
 // Chat e Feedback desativados até backend estar pronto
 import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
@@ -48,6 +49,15 @@ function Router() {
         element={
           <PrivateRoute>
             <Professionals />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/customers"
+        element={
+          <PrivateRoute>
+            <Customers />
           </PrivateRoute>
         }
       />

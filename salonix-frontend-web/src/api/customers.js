@@ -22,7 +22,6 @@ export async function fetchCustomers({ slug, params } = {}) {
   const headers = {};
   const searchParams = {
     page_size: 200,
-    ordering: 'name',
     ...(params || {}),
   };
   if (slug) {
@@ -54,3 +53,29 @@ export async function fetchCustomerDetail(id, { slug } = {}) {
   return data;
 }
 
+export async function createCustomer(payload, { slug } = {}) {
+  const headers = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+  }
+  const { data } = await client.post('salon/customers/', payload, { headers });
+  return data;
+}
+
+export async function updateCustomer(id, payload, { slug } = {}) {
+  const headers = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+  }
+  const { data } = await client.patch(`salon/customers/${id}/`, payload, { headers });
+  return data;
+}
+
+export async function deleteCustomer(id, { slug } = {}) {
+  const headers = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+  }
+  const { status } = await client.delete(`salon/customers/${id}/`, { headers });
+  return status === 204;
+}
