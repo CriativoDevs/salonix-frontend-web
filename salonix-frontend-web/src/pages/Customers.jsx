@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import CustomerForm from '../components/CustomerForm';
@@ -7,9 +7,17 @@ import {
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  resendCustomerInvite,
 } from '../api/customers';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
+import {
+  buildInviteTooltipLines,
+  mapInviteStatusToKey,
+  normalizeInviteMeta,
+  resolveInviteStatusLabel,
+  resolveInviteVariant,
+} from '../utils/inviteStatus';
 
 const SORT_RECENT = 'recent';
 const SORT_NAME = 'name';
@@ -44,12 +52,15 @@ function sortCustomers(list = [], option = SORT_RECENT) {
 
 function Customers() {
   const { t } = useTranslation();
-  const { slug } = useTenant();
+  const { slug, flags, featureFlagsRaw } = useTenant();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [createBusy, setCreateBusy] = useState(false);
   const [busyId, setBusyId] = useState(null);
+  const [inviteBusyId, setInviteBusyId] = useState(null);
+  const [inviteStatuses, setInviteStatuses] = useState({});
+  const [activeInviteTooltip, setActiveInviteTooltip] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editingForm, setEditingForm] = useState({
     name: '',
@@ -62,6 +73,47 @@ function Customers() {
   const [showInactive, setShowInactive] = useState(false);
   const [sortOption, setSortOption] = useState(SORT_RECENT);
 
+  const updateInviteStatus = useCallback((customerId, status) => {
+    if (!customerId) return;
+    setInviteStatuses((prev) => {
+      if (!status) {
+        if (!prev[customerId]) {
+          return prev;
+        }
+        const next = { ...prev };
+        delete next[customerId];
+        return next;
+      }
+      const existing = prev[customerId];
+      if (
+        existing &&
+        existing.type === status.type &&
+        existing.text === status.text &&
+        existing.statusOverride === status.statusOverride &&
+        existing.messageOverride === status.messageOverride &&
+        existing.timestampOverride === status.timestampOverride
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [customerId]: status,
+      };
+    });
+  }, []);
+
+  const clearInviteStatus = useCallback(
+    (customerId) => {
+      updateInviteStatus(customerId, null);
+      setActiveInviteTooltip((current) => (current === customerId ? null : current));
+    },
+    [updateInviteStatus],
+  );
+
+  const closeInviteTooltip = useCallback(() => {
+    setActiveInviteTooltip(null);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -71,6 +123,8 @@ function Customers() {
         if (cancelled) return;
         const list = Array.isArray(payload?.results) ? payload.results : payload;
         setCustomers(list || []);
+        setInviteStatuses({});
+        closeInviteTooltip();
       })
       .catch((err) => {
         if (cancelled) return;
@@ -82,7 +136,7 @@ function Customers() {
     return () => {
       cancelled = true;
     };
-  }, [slug, t]);
+  }, [slug, t, closeInviteTooltip]);
 
   const sortedCustomers = useMemo(
     () => sortCustomers(customers, sortOption),
@@ -170,6 +224,7 @@ function Customers() {
       const updated = await updateCustomer(editingId, payload, { slug });
       setCustomers((prev) => prev.map((item) => (item.id === editingId ? updated : item)));
       setError(null);
+      clearInviteStatus(editingId);
       cancelEdit();
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
@@ -187,6 +242,7 @@ function Customers() {
         { slug },
       );
       setCustomers((prev) => prev.map((item) => (item.id === customer.id ? updated : item)));
+      clearInviteStatus(customer.id);
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
     } finally {
@@ -203,6 +259,7 @@ function Customers() {
       setBusyId(customer.id);
       await deleteCustomer(customer.id, { slug });
       setCustomers((prev) => prev.filter((item) => item.id !== customer.id));
+      clearInviteStatus(customer.id);
     } catch (err) {
       const parsed = parseApiError(err, t('customers.errors.delete_failed', 'Não foi possível remover o cliente.'));
       const status = err?.response?.status;
@@ -219,6 +276,96 @@ function Customers() {
       setError({ ...parsed, message });
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const pwaClientEnabled = useMemo(() => {
+    if (featureFlagsRaw?.modules && Object.prototype.hasOwnProperty.call(featureFlagsRaw.modules, 'pwa_client_enabled')) {
+      return Boolean(featureFlagsRaw.modules.pwa_client_enabled);
+    }
+    if (featureFlagsRaw?.modules && Object.prototype.hasOwnProperty.call(featureFlagsRaw.modules, 'pwa_client')) {
+      return Boolean(featureFlagsRaw.modules.pwa_client);
+    }
+    return Boolean(flags?.enableCustomerPwa);
+  }, [featureFlagsRaw, flags]);
+
+  const resendInvite = async (customer) => {
+    if (!customer?.id) return;
+    const customerId = customer.id;
+    updateInviteStatus(customerId, null);
+    setActiveInviteTooltip((current) => (current === customerId ? null : current));
+
+    if (!customer.email) {
+      updateInviteStatus(customerId, {
+        type: 'error',
+        text: t(
+          'customers.errors.invite_missing_email',
+          'Cadastre um e-mail antes de reenviar o convite.',
+        ),
+        statusOverride: 'failed',
+        messageOverride: t(
+          'customers.errors.invite_missing_email',
+          'Cadastre um e-mail antes de reenviar o convite.',
+        ),
+      });
+      return;
+    }
+
+    if (customer.is_active === false) {
+      updateInviteStatus(customerId, {
+        type: 'error',
+        text: t(
+          'customers.errors.invite_inactive',
+          'Ative o cliente para reenviar convites.',
+        ),
+        statusOverride: 'failed',
+        messageOverride: t(
+          'customers.errors.invite_inactive',
+          'Ative o cliente para reenviar convites.',
+        ),
+      });
+      return;
+    }
+
+    try {
+      setInviteBusyId(customerId);
+      await resendCustomerInvite(customerId, { slug });
+      updateInviteStatus(customerId, {
+        type: 'success',
+        text: t('customers.success.invite_sent', 'Convite reenviado com sucesso.'),
+        statusOverride: 'queued',
+        timestampOverride: new Date().toISOString(),
+        messageOverride: t(
+          'customers.invite.tooltip.refresh_hint',
+          'O status será atualizado assim que o backend confirmar o envio.',
+        ),
+      });
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t('customers.errors.invite_failed', 'Não foi possível reenviar o convite.'),
+      );
+      const status = err?.response?.status;
+      let message = parsed.message;
+      if (status === 404 || status === 501) {
+        message = t(
+          'customers.errors.invite_unavailable',
+          'Reenvio ainda não disponível. Aguarde a atualização do backend.',
+        );
+      } else if (status === 429) {
+        message = t(
+          'customers.errors.invite_rate_limit',
+          'Muitos convites em sequência. Tente novamente em instantes.',
+        );
+      }
+      updateInviteStatus(customerId, {
+        type: 'error',
+        text: message,
+        statusOverride: 'failed',
+        messageOverride: message,
+      });
+    } finally {
+      setInviteBusyId(null);
     }
   };
 
@@ -295,7 +442,6 @@ function Customers() {
           {error && (
             <p className="mt-4 text-sm text-red-600">{error.message}</p>
           )}
-
           {loading ? (
             <p className="mt-4 text-sm text-brand-surfaceForeground/70">
               {t('common.loading', 'Carregando...')}
@@ -307,7 +453,7 @@ function Customers() {
                 : t('customers.list.empty', 'Nenhum cliente cadastrado até o momento.')}
             </p>
           ) : (
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 overflow-x-auto md:overflow-visible">
               <table className="min-w-full divide-y divide-brand-border text-sm text-brand-surfaceForeground">
                 <thead className="bg-brand-light/60 text-xs uppercase tracking-wide text-brand-surfaceForeground/70">
                   <tr>
@@ -322,6 +468,79 @@ function Customers() {
                   {filtered.map((customer) => {
                     const isEditing = editingId === customer.id;
                     const disabled = busyId === customer.id;
+                    const inviteStatus = inviteStatuses[customer.id];
+                    const inviteInFlight = inviteBusyId === customer.id;
+                    const inviteButtonDisabled = inviteInFlight || customer.is_active === false;
+                    const inviteButtonTitle = inviteButtonDisabled
+                      ? customer.is_active === false
+                        ? t(
+                            'customers.actions.invite.require_active',
+                            'Ative o cliente para reenviar convites.',
+                          )
+                        : t(
+                            'customers.actions.invite.in_progress',
+                            'Reenvio em andamento...',
+                          )
+                      : !customer.email
+                        ? t(
+                            'customers.actions.invite.require_email',
+                            'Cadastre um e-mail para reenviar convites.',
+                          )
+                        : '';
+                    const inviteButtonClasses = [
+                      'block text-right text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed',
+                      inviteInFlight
+                        ? 'text-brand-primary opacity-60 cursor-not-allowed'
+                        : !customer.email
+                          ? 'text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground/80'
+                          : 'text-brand-primary hover:underline',
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+
+                    const inviteMeta = normalizeInviteMeta(customer, inviteStatus);
+                    const mappedStatusKey = inviteMeta.status
+                      ? mapInviteStatusToKey(inviteMeta.status)
+                      : 'none';
+                    const inviteStatusKey = pwaClientEnabled ? mappedStatusKey : 'disabled';
+                    const inviteVariant = resolveInviteVariant(inviteStatusKey);
+                    const inviteStatusLabel = resolveInviteStatusLabel(
+                      t,
+                      inviteStatusKey,
+                      inviteMeta.status,
+                    );
+                    const inviteTooltipLines = buildInviteTooltipLines(
+                      t,
+                      inviteStatusKey,
+                      inviteMeta,
+                      inviteStatusLabel,
+                    );
+                    const inviteTooltipOpen = activeInviteTooltip === customer.id;
+                    const showInviteDot =
+                      inviteStatusKey !== 'none' && inviteStatusKey !== 'disabled';
+                    const inviteBadgeClass = [
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 transition',
+                      showInviteDot ? 'gap-1' : '',
+                      inviteVariant.toneClass,
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+                    const inviteDotClass = ['h-1 w-1 rounded-full', inviteVariant.dotClass]
+                      .filter(Boolean)
+                      .join(' ');
+                    const handleInviteTooltipToggle = () => {
+                      setActiveInviteTooltip((current) =>
+                        current === customer.id ? null : customer.id,
+                      );
+                    };
+                    const handleInviteTooltipOpen = () => {
+                      setActiveInviteTooltip(customer.id);
+                    };
+                    const handleInviteTooltipClose = () => {
+                      setActiveInviteTooltip((current) =>
+                        current === customer.id ? null : current,
+                      );
+                    };
                     return (
                       <tr key={customer.id}>
                         <td className="px-3 py-3 align-top">
@@ -415,17 +634,58 @@ function Customers() {
                           )}
                         </td>
                         <td className="px-3 py-3 align-top">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                              customer.is_active !== false
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : 'bg-brand-light text-brand-surfaceForeground/70'
-                            }`}
-                          >
-                            {customer.is_active !== false
-                              ? t('customers.status.active', 'Ativo')
-                              : t('customers.status.inactive', 'Inativo')}
-                          </span>
+                          <div className="flex flex-col items-start gap-2">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                customer.is_active !== false
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : 'bg-brand-light text-brand-surfaceForeground/70'
+                              }`}
+                            >
+                              {customer.is_active !== false
+                                ? t('customers.status.active', 'Ativo')
+                                : t('customers.status.inactive', 'Inativo')}
+                            </span>
+
+                            <div
+                              className="relative"
+                              onMouseEnter={handleInviteTooltipOpen}
+                              onMouseLeave={handleInviteTooltipClose}
+                            >
+                              <button
+                                type="button"
+                                onClick={handleInviteTooltipToggle}
+                                onFocus={handleInviteTooltipOpen}
+                                onBlur={handleInviteTooltipClose}
+                                aria-expanded={inviteTooltipOpen}
+                                className={`${inviteBadgeClass} focus:outline-none focus:ring-2 focus:ring-brand-primary/60`}
+                              >
+                                {showInviteDot ? (
+                                  <span className={inviteDotClass} aria-hidden="true" />
+                                ) : null}
+                                <span>{inviteStatusLabel}</span>
+                              </button>
+
+                              {inviteTooltipOpen ? (
+                                <div className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg border border-brand-border bg-white p-3 text-left text-xs text-brand-surfaceForeground shadow-lg">
+                                  <div className="flex flex-col gap-2">
+                                    {inviteTooltipLines.map((line, index) => (
+                                      <div key={index}>
+                                        {line.label ? (
+                                          <p className="font-semibold text-brand-surfaceForeground/80">
+                                            {line.label}
+                                          </p>
+                                        ) : null}
+                                        <p className="text-brand-surfaceForeground">
+                                          {line.value}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
                         </td>
                         <td className="px-3 py-3 text-right align-top">
                           {isEditing ? (
@@ -447,35 +707,63 @@ function Customers() {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => startEdit(customer)}
-                                className="text-xs font-semibold text-[#1D29CF] hover:underline"
-                              >
-                                {t('common.edit', 'Editar')}
-                              </button>
-                              <button
-                                type="button"
-                                disabled={disabled}
-                                onClick={() => toggleActive(customer)}
-                                className="text-xs font-semibold text-brand-surfaceForeground/70 hover:underline disabled:opacity-50"
-                              >
-                                {customer.is_active !== false
-                                  ? t('customers.actions.deactivate', 'Desativar')
-                                  : t('customers.actions.activate', 'Reativar')}
-                              </button>
-                              {customer.is_active === false && (
+                            <>
+                              <div className="flex flex-col items-end gap-1 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(customer)}
+                                  className="block text-xs font-semibold text-[#1D29CF] hover:underline"
+                                >
+                                  {t('common.edit', 'Editar')}
+                                </button>
+                                {pwaClientEnabled ? (
+                                  <button
+                                    type="button"
+                                    disabled={inviteButtonDisabled}
+                                    onClick={() => {
+                                      if (inviteButtonDisabled) return;
+                                      resendInvite(customer);
+                                    }}
+                                    className={inviteButtonClasses}
+                                    title={inviteButtonTitle || undefined}
+                                    aria-busy={inviteInFlight}
+                                  >
+                                    {inviteInFlight
+                                      ? t('customers.actions.resending', 'Reenviando...')
+                                      : t('customers.actions.resend_invite', 'Reenviar convite')}
+                                  </button>
+                                ) : null}
                                 <button
                                   type="button"
                                   disabled={disabled}
-                                  onClick={() => removeCustomer(customer)}
-                                  className="text-xs font-semibold text-[#CF3B1D] hover:underline disabled:opacity-50"
+                                  onClick={() => toggleActive(customer)}
+                                  className="block text-xs font-semibold text-[#AD2409] hover:underline disabled:opacity-50"
                                 >
-                                  {t('common.delete', 'Excluir')}
+                                  {customer.is_active !== false
+                                    ? t('customers.actions.deactivate', 'Desativar')
+                                    : t('customers.actions.activate', 'Reativar')}
                                 </button>
-                              )}
-                            </div>
+                                {customer.is_active === false && (
+                                  <button
+                                    type="button"
+                                    disabled={disabled}
+                                    onClick={() => removeCustomer(customer)}
+                                    className="block text-xs font-semibold text-[#CF3B1D] hover:underline disabled:opacity-50"
+                                  >
+                                    {t('common.delete', 'Excluir')}
+                                  </button>
+                                )}
+                              </div>
+                              {pwaClientEnabled && inviteStatus ? (
+                                <div
+                                  className={`mt-2 text-xs ${
+                                    inviteStatus.type === 'success' ? 'text-emerald-600' : 'text-rose-600'
+                                  }`}
+                                >
+                                  {inviteStatus.text}
+                                </div>
+                              ) : null}
+                            </>
                           )}
                         </td>
                       </tr>

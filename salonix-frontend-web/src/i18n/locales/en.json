@@ -244,6 +244,34 @@
       "saved": "Branding updated successfully."
     }
   },
+  "customers": {
+    "invite": {
+      "status": {
+        "success": "Delivered",
+        "queued": "Pending",
+        "sending": "Sending",
+        "failed": "Failed",
+        "disabled": "PWA disabled",
+        "none": "Invite"
+      },
+      "tooltip": {
+        "pwa_disabled": "Enable the customer PWA to track invite history.",
+        "no_attempts": "No invite attempts registered yet.",
+        "status_label": "Last status",
+        "timestamp": "Recorded at",
+        "triggered_by": "Triggered by",
+        "details": "Details",
+        "refresh_hint": "Status will refresh as soon as the backend confirms delivery."
+      }
+    },
+    "actions": {
+      "invite": {
+        "require_active": "Activate the client before resending.",
+        "in_progress": "Invite in progress...",
+        "require_email": "Add an email to resend invites."
+      }
+    }
+  },
   "nav": {
     "home": "Home",
     "slots": "Slots",

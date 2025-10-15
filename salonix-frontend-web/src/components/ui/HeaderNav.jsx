@@ -40,8 +40,8 @@ export default function HeaderNav() {
   const active = 'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
 
   return (
-    <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border">
-      <Container>
+    <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible">
+      <Container className="overflow-visible">
         <div className="flex h-14 items-center justify-between">
           <Link
             to="/dashboard"
@@ -57,7 +57,7 @@ export default function HeaderNav() {
             />
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <nav className="relative flex items-center gap-1 overflow-visible">
             {/* Links principais */}
             {mainLinks.map((l) => (
               <NavLink

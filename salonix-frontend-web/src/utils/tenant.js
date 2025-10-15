@@ -40,6 +40,7 @@ export const DEFAULT_TENANT_SLUG = sanitizeTenantSlug(envDefaultSlug) || 'timely
 export const DEFAULT_TENANT_META = {
   slug: DEFAULT_TENANT_SLUG,
   name: 'TimelyOne',
+  auto_invite_enabled: false,
   plan: {
     code: 'starter',
     name: 'Starter',

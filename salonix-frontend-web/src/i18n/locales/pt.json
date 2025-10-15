@@ -237,6 +237,17 @@
       "marketingEmails": "E-mails de marketing",
       "marketingEmails_description": "Receber e-mails promocionais"
     },
+    "auto_invite": {
+      "title": "Convites automáticos do PWA Cliente",
+      "description": "Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.",
+      "blocked_hint": "Disponível apenas quando o PWA Cliente está habilitado para o salão.",
+      "status_enabled": "Ativo",
+      "status_disabled": "Inativo",
+      "success_enabled": "Convites automáticos ativados.",
+      "success_disabled": "Convites automáticos desativados.",
+      "error": "Não foi possível atualizar a preferência.",
+      "accessible_label": "Alternar convites automáticos do PWA"
+    },
     "save": "Salvar",
     "branding": {
       "primary_color": "Cor primária",
@@ -248,6 +259,34 @@
       "preview_alt": "Pré-visualização do logo",
       "logo_file": "Arquivo de logo",
       "saved": "Branding atualizado com sucesso."
+    }
+  },
+  "customers": {
+    "invite": {
+      "status": {
+        "success": "Enviado",
+        "queued": "Pendente",
+        "sending": "Enviando",
+        "failed": "Falhou",
+        "disabled": "PWA desativado",
+        "none": "Convite"
+      },
+      "tooltip": {
+        "pwa_disabled": "Habilite o PWA Cliente para acompanhar o histórico de convites.",
+        "no_attempts": "Nenhuma tentativa de convite registrada até o momento.",
+        "status_label": "Último status",
+        "timestamp": "Registrado em",
+        "triggered_by": "Disparado por",
+        "details": "Detalhes",
+        "refresh_hint": "O status será atualizado assim que o backend confirmar o envio."
+      }
+    },
+    "actions": {
+      "invite": {
+        "require_active": "Ative o cliente para reenviar convites.",
+        "in_progress": "Reenvio em andamento...",
+        "require_email": "Cadastre um e-mail para reenviar convites."
+      }
     }
   },
   "nav": {

@@ -7,6 +7,7 @@ import {
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  resendCustomerInvite,
 } from '../customers';
 
 jest.mock('../client', () => ({
@@ -82,5 +83,20 @@ describe('customers api', () => {
       headers: { 'X-Tenant-Slug': 'default' },
     });
     expect(removed).toBe(true);
+  });
+
+  it('resendCustomerInvite posts to invite endpoint with tenant scope', async () => {
+    client.post.mockResolvedValueOnce({ data: { status: 'queued' } });
+
+    await resendCustomerInvite(3, { slug: 'default' });
+
+    expect(client.post).toHaveBeenCalledWith(
+      'salon/customers/3/invite/',
+      {},
+      {
+        headers: { 'X-Tenant-Slug': 'default' },
+        params: { tenant: 'default' },
+      },
+    );
   });
 });
