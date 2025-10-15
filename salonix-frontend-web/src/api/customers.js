@@ -79,3 +79,18 @@ export async function deleteCustomer(id, { slug } = {}) {
   const { status } = await client.delete(`salon/customers/${id}/`, { headers });
   return status === 204;
 }
+
+export async function resendCustomerInvite(id, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post(
+    `salon/customers/${id}/invite/`,
+    {},
+    { headers, params },
+  );
+  return data;
+}

@@ -46,4 +46,11 @@ export async function updateTenantBranding({
   return response.data;
 }
 
+export async function updateTenantAutoInvite(autoInviteEnabled) {
+  const response = await client.patch(TENANT_ENDPOINT, {
+    auto_invite_enabled: Boolean(autoInviteEnabled),
+  });
+  return response.data;
+}
+
 export { TENANT_ENDPOINT };

@@ -97,4 +97,9 @@ describe('mergeTenantMeta', () => {
     const meta = mergeTenantMeta({ plan: { code: 'Pro Plus' } });
     expect(meta.plan.code).toBe('pro-plus');
   });
+
+  it('propagates auto invite flag when provided', () => {
+    const meta = mergeTenantMeta({ auto_invite_enabled: true }, 'aurora');
+    expect(meta.auto_invite_enabled).toBe(true);
+  });
 });

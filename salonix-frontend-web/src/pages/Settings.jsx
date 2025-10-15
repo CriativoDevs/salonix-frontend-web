@@ -7,7 +7,11 @@ import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
-import { fetchTenantMeta, updateTenantBranding } from '../api/tenant';
+import {
+  fetchTenantMeta,
+  updateTenantBranding,
+  updateTenantAutoInvite,
+} from '../api/tenant';
 import { fetchTenantBootstrap } from '../api/auth';
 import {
   TENANT_FEATURE_REQUIREMENTS,
@@ -141,6 +145,12 @@ function Settings() {
   const [brandingSaving, setBrandingSaving] = useState(false);
   const [brandingError, setBrandingError] = useState(null);
   const [brandingSuccess, setBrandingSuccess] = useState('');
+  const [autoInviteEnabled, setAutoInviteEnabled] = useState(
+    Boolean(tenant?.auto_invite_enabled)
+  );
+  const [autoInviteSaving, setAutoInviteSaving] = useState(false);
+  const [autoInviteError, setAutoInviteError] = useState(null);
+  const [autoInviteSuccess, setAutoInviteSuccess] = useState('');
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -148,6 +158,10 @@ function Settings() {
     setBrandingSuccess('');
     setBrandingError(null);
   }, [initialSettings]);
+
+  useEffect(() => {
+    setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
+  }, [tenant?.auto_invite_enabled]);
 
   useEffect(() => {
     if (brandingFile) {
@@ -244,6 +258,29 @@ function Settings() {
     [channels, t]
   );
 
+  const hasCustomerPwa = useMemo(() => {
+    if (Array.isArray(moduleList) && moduleList.includes('pwa_client')) {
+      return true;
+    }
+
+    if (flags?.enableCustomerPwa) {
+      return true;
+    }
+
+    const modulesFlags = featureFlagsRaw?.modules;
+    if (
+      modulesFlags &&
+      typeof modulesFlags === 'object' &&
+      Object.prototype.hasOwnProperty.call(modulesFlags, 'pwa_client_enabled')
+    ) {
+      return Boolean(modulesFlags.pwa_client_enabled);
+    }
+
+    return false;
+  }, [moduleList, flags, featureFlagsRaw]);
+
+  const canToggleAutoInvite = hasCustomerPwa;
+
   const hasFlagData = useMemo(
     () => flags && typeof flags === 'object' && Object.keys(flags).length > 0,
     [flags]
@@ -291,6 +328,51 @@ function Settings() {
     };
   }, [profile]);
 
+  const refreshTenantData = useCallback(async () => {
+    let refreshed = false;
+
+    if (slug) {
+      try {
+        const metaResponse = await fetchTenantMeta(slug);
+        if (metaResponse?.data) {
+          applyTenantBootstrap({
+            ...(metaResponse.data || {}),
+            slug,
+          });
+          refreshed = true;
+        }
+      } catch (metaError) {
+        console.warn('[Settings] fetchTenantMeta refresh falhou:', metaError);
+      }
+    }
+
+    if (!refreshed) {
+      try {
+        const bootstrap = await fetchTenantBootstrap();
+        if (bootstrap?.slug) {
+          applyTenantBootstrap(bootstrap);
+          refreshed = true;
+        }
+      } catch (bootstrapError) {
+        console.warn(
+          '[Settings] fetchTenantBootstrap refresh falhou:',
+          bootstrapError
+        );
+      }
+    }
+
+    if (!refreshed) {
+      try {
+        await refetch();
+        refreshed = true;
+      } catch (refetchError) {
+        console.warn('[Settings] refetch fallback falhou:', refetchError);
+      }
+    }
+
+    return refreshed;
+  }, [applyTenantBootstrap, refetch, slug]);
+
   const handleBrandingSave = useCallback(async () => {
     setBrandingSaving(true);
     setBrandingError(null);
@@ -304,38 +386,7 @@ function Settings() {
         logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
       });
 
-      let refreshed = false;
-
-      try {
-        if (slug) {
-          const metaResponse = await fetchTenantMeta(slug);
-          if (metaResponse?.data) {
-            applyTenantBootstrap({
-              ...(metaResponse.data || {}),
-              slug,
-            });
-            refreshed = true;
-          }
-        }
-      } catch (metaError) {
-        console.warn('[Settings] fetchTenantMeta pós-branding falhou:', metaError);
-      }
-
-      if (!refreshed) {
-        try {
-          const bootstrap = await fetchTenantBootstrap();
-          if (bootstrap?.slug) {
-            applyTenantBootstrap(bootstrap);
-            refreshed = true;
-          }
-        } catch (bootstrapError) {
-          console.warn('[Settings] fetchTenantBootstrap fallback falhou:', bootstrapError);
-        }
-      }
-
-      if (!refreshed) {
-        await refetch();
-      }
+      await refreshTenantData();
 
       setBrandingSuccess(
         t('settings.branding.saved', 'Branding atualizado com sucesso.')
@@ -351,13 +402,11 @@ function Settings() {
       setBrandingSaving(false);
     }
   }, [
-    applyTenantBootstrap,
     brandingFile,
-    refetch,
+    refreshTenantData,
     settings.branding.logoUrl,
     settings.branding.primaryColor,
     settings.branding.secondaryColor,
-    slug,
     t,
   ]);
 
@@ -380,6 +429,52 @@ function Settings() {
       branding: { ...settings.branding, logoUrl: value },
     });
   };
+
+  const handleAutoInviteToggle = useCallback(async () => {
+    if (autoInviteSaving || tenantLoading || !canToggleAutoInvite) {
+      return;
+    }
+
+    const nextValue = !autoInviteEnabled;
+    setAutoInviteEnabled(nextValue);
+    setAutoInviteSaving(true);
+    setAutoInviteError(null);
+    setAutoInviteSuccess('');
+
+    try {
+      await updateTenantAutoInvite(nextValue);
+      await refreshTenantData();
+      const successMessage = nextValue
+        ? t(
+            'settings.auto_invite.success_enabled',
+            'Convites automáticos ativados.'
+          )
+        : t(
+            'settings.auto_invite.success_disabled',
+            'Convites automáticos desativados.'
+          );
+      setAutoInviteSuccess(successMessage);
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.auto_invite.error',
+          'Não foi possível atualizar a preferência.'
+        )
+      );
+      setAutoInviteError(parsed);
+      setAutoInviteEnabled(!nextValue);
+    } finally {
+      setAutoInviteSaving(false);
+    }
+  }, [
+    autoInviteEnabled,
+    autoInviteSaving,
+    canToggleAutoInvite,
+    refreshTenantData,
+    t,
+    tenantLoading,
+  ]);
 
   const renderPlanSummary = () => (
     <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
@@ -723,6 +818,81 @@ function Settings() {
           {t('common.loading_data', 'Carregando dados...')}
         </p>
       ) : null}
+
+      <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-brand-surfaceForeground">
+              {t(
+                'settings.auto_invite.title',
+                'Convites automáticos do PWA Cliente'
+              )}
+            </p>
+            <p className="mt-1 text-sm text-brand-surfaceForeground/80">
+              {t(
+                'settings.auto_invite.description',
+                'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+              )}
+            </p>
+            {!canToggleAutoInvite ? (
+              <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                {t(
+                  'settings.auto_invite.blocked_hint',
+                  'Disponível apenas quando o PWA Cliente está habilitado para o salão.'
+                )}
+              </p>
+            ) : null}
+            {autoInviteSaving ? (
+              <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                {t('common.saving', 'Salvando...')}
+              </p>
+            ) : null}
+            {autoInviteSuccess ? (
+              <p className="mt-2 text-xs text-emerald-600">{autoInviteSuccess}</p>
+            ) : null}
+            {autoInviteError ? (
+              <p className="mt-2 text-xs text-rose-600">{autoInviteError}</p>
+            ) : null}
+          </div>
+          <div className="flex items-center gap-3">
+            <span
+              className={`text-sm font-medium ${
+                autoInviteEnabled
+                  ? 'text-emerald-600'
+                  : 'text-brand-surfaceForeground/60'
+              }`}
+            >
+              {autoInviteEnabled
+                ? t('settings.auto_invite.status_enabled', 'Ativo')
+                : t('settings.auto_invite.status_disabled', 'Inativo')}
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoInviteEnabled}
+              aria-label={t(
+                'settings.auto_invite.accessible_label',
+                'Alternar convites automáticos do PWA'
+              )}
+              onClick={handleAutoInviteToggle}
+              disabled={autoInviteSaving || tenantLoading || !canToggleAutoInvite}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+              } ${
+                autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                  ? 'cursor-not-allowed opacity-60'
+                  : 'cursor-pointer'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                  autoInviteEnabled ? 'translate-x-5' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {channelCards.map(({ key, label, enabled }) => (
