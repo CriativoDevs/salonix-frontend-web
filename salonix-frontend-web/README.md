@@ -242,6 +242,10 @@ src/
 - **GET /api/users/me/tenant/** usado quando apenas o refresh token está presente.
 - **TenantProvider** recebe slug do Auth antes de tentar resolver por query/host.
 - **Smokes**: use `npm run smoke` para validar auth/bootstrap com as seeds. Por padrão, o script usa `BASE_URL=http://localhost:8000/api/`, `LOGIN_EMAIL=pro_smoke@demo.local` e `SMOKE_USER_PASSWORD=Smoke@123` (sobreponha via env).
+  1. Após o script, acesse `/dashboard` e confirme que os cards exibem números formatados segundo moeda/idioma do tenant seed.
+  2. Verifique o hint de receita mostrando ticket médio quando disponível.
+  3. Force plano sem relatórios (ex.: alterar `enableReports` nas flags) e valide o banner amarelo avisando sobre upgrade e cards com `—`.
+  4. Simule erro desligando o backend: o banner deve exibir a mensagem de falha e o botão “Tentar novamente” deve recarregar os dados ao restaurar a API.
 
 ### Feature Flags
 
