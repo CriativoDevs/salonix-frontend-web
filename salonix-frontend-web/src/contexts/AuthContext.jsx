@@ -12,6 +12,7 @@ import {
   refreshToken,
   fetchFeatureFlags,
   fetchTenantBootstrap,
+  fetchCurrentUser,
 } from '../api/auth';
 import { parseApiError, hasActionableError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
@@ -24,6 +25,7 @@ export const AuthProvider = ({ children }) => {
   const [featureFlags, setFeatureFlags] = useState(null);
   const [authError, setAuthError] = useState(null);
   const [tenantInfo, setTenantInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
 
   const { applyTenantBootstrap, setTenantSlug } = useTenant();
 
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }) => {
     setFeatureFlags(null);
     setAuthError(null);
     setTenantInfo(null);
+    setUserInfo(null);
     setTenantSlug(DEFAULT_TENANT_META.slug);
     clearStoredTenantSlug();
   }, [setTenantSlug]);
@@ -55,6 +58,23 @@ export const AuthProvider = ({ children }) => {
       }
     }
   }, []);
+
+  const loadCurrentUser = useCallback(async () => {
+    try {
+      const profile = await fetchCurrentUser();
+      setUserInfo(profile);
+      return true;
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        console.warn('[Auth] loadCurrentUser failed with auth error. Forcing logout.');
+        handleLogout();
+      } else {
+        console.warn('[Auth] loadCurrentUser failed:', error);
+      }
+      return false;
+    }
+  }, [handleLogout]);
 
   const loadTenantBootstrap = useCallback(async () => {
     try {
@@ -100,6 +120,11 @@ export const AuthProvider = ({ children }) => {
         if (access) {
           setAccessToken(access);
           setIsAuthenticated(true);
+          const userLoaded = await loadCurrentUser();
+          if (!userLoaded) {
+            setIsLoading(false);
+            return;
+          }
           const tenantLoaded = await loadTenantBootstrap();
           if (tenantLoaded) {
             await loadFeatureFlags();
@@ -115,14 +140,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     bootstrap();
-  }, [loadFeatureFlags, loadTenantBootstrap, resetState]);
+  }, [loadFeatureFlags, loadTenantBootstrap, loadCurrentUser, resetState]);
 
   const login = useCallback(
     async ({ email, password }) => {
       setAuthError(null);
       try {
         const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
-        const { access, refresh, tenant } = await loginRequest(email, password, {
+        const { access, refresh, tenant, user } = await loginRequest(email, password, {
           captchaBypassToken: bypass,
         });
         if (access) {
@@ -142,7 +167,15 @@ export const AuthProvider = ({ children }) => {
           clearStoredTenantSlug();
         }
         setIsAuthenticated(true);
-        await loadFeatureFlags();
+        let userLoaded = true;
+        if (user) {
+          setUserInfo(user);
+        } else {
+          userLoaded = await loadCurrentUser();
+        }
+        if (userLoaded) {
+          await loadFeatureFlags();
+        }
       } catch (error) {
         console.warn('[Auth] login request failed:', error);
         const parsedError = parseApiError(error, 'Erro ao autenticar.');
@@ -150,7 +183,7 @@ export const AuthProvider = ({ children }) => {
         throw parsedError;
       }
     },
-    [applyTenantBootstrap, loadFeatureFlags, setTenantSlug]
+    [applyTenantBootstrap, loadCurrentUser, loadFeatureFlags, setTenantSlug]
   );
 
   const clearAuthError = useCallback(() => {
@@ -162,6 +195,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       isLoading,
       featureFlags,
+      user: userInfo,
       tenant: tenantInfo,
       login,
       logout: handleLogout,
@@ -172,6 +206,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated,
       isLoading,
       featureFlags,
+      userInfo,
       tenantInfo,
       login,
       handleLogout,

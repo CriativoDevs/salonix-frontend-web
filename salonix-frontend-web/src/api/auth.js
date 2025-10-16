@@ -10,7 +10,7 @@ export async function login(email, password, { captchaBypassToken } = {}) {
     { email, password },
     { headers }
   );
-  return response.data; // { access, refresh, tenant }
+  return response.data; // { access, refresh, tenant, user }
 }
 
 export async function refreshToken(refresh) {
@@ -36,6 +36,11 @@ export async function fetchFeatureFlags() {
 
 export async function fetchTenantBootstrap() {
   const response = await client.get('users/me/tenant/');
+  return response.data;
+}
+
+export async function fetchCurrentUser() {
+  const response = await client.get('users/me/profile/');
   return response.data;
 }
 
