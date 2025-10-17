@@ -7,6 +7,7 @@
 - **FEW-230/231 – Fluxo completo de recuperação de senha + captcha/429.**
 - **FEW-241b – Horários disponíveis** (CRUD de slots integrado ao BE).
 - **FEW-240 (parcial)** – Settings lê branding/plan/modules reais: badge única no Settings, cores/logo via PATCH, módulos refletem benefícios do plano (ex.: PWA Cliente sempre em Standard+).
+- **FEW-252 – Gestão de equipe (owner/managers)**: convite via modal, atualização de papéis/status com permissões e página pública de aceite de convite.
 
 ## 🏗️ Em Andamento / Próximo
 

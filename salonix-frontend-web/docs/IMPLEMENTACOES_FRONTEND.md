@@ -103,3 +103,25 @@
 - Notas:
   - Em dev, defina `VITE_BILLING_MOCK=true` para simular redirecionamento (`/checkout/mock?plan=...`).
   - Em produção, a API deve devolver `{ checkout_url }`.
+
+## Gestão de equipe (FEW-252)
+
+- **Contexto**: habilitar owners e managers a convidar, promover e desativar membros da equipe diretamente no painel Admin, com fluxo público de aceite de convite.
+- **Principais componentes**:
+  - `src/pages/Team.jsx` – filtros, botões e integração com os hooks `useStaff` para convidar/atualizar membros.
+  - `src/components/team/InviteStaffModal.jsx` e `ManageStaffModal.jsx` – modais com validação, feedback de `X-Request-ID` e bloqueios conforme permissões.
+  - `src/components/ui/Modal.jsx` – camada base reutilizável para modais acessíveis (escape, focus trap básico).
+  - `src/pages/StaffInviteAccept.jsx` – página pública que recebe `token` na URL, coleta senha e confirma o convite.
+- **Comportamentos relevantes**:
+  - Apenas o owner pode convidar ou promover alguém para o papel de manager; managers criam colaboradores.
+  - Todas as ações exibem confirmações e mantêm estado de carregamento para evitar cliques duplicados.
+  - Convites bem-sucedidos retornam token + expiração para compartilhamento manual quando necessário.
+  - A página de aceite exige senha ≥ 8 caracteres, permite ajustar nome/sobrenome e redireciona para o login após sucesso (com countdown).
+- **Testes adicionados**:
+  - `src/components/team/__tests__/InviteStaffModal.test.jsx`
+  - `src/components/team/__tests__/ManageStaffModal.test.jsx`
+  - `src/pages/__tests__/Team.test.jsx`
+  - `src/pages/__tests__/StaffInviteAccept.test.jsx`
+- **Observações**:
+  - Fluxo de reenvio de convite/histórico depende de endpoints adicionais (planejado em FEW-301).
+  - QA precisa validar tokens reais no ambiente staging assim que o backend liberar seed dedicada.

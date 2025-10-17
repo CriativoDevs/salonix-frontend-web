@@ -283,6 +283,130 @@
       }
     }
   },
+  "team": {
+    "current_team_heading": "Salon team management",
+    "current_role": {
+      "label": "You are signed in as {{role}}.",
+      "loading": "Detecting your role in the salon..."
+    },
+    "actions": {
+      "invite": "Invite member"
+    },
+    "list": {
+      "manage": "Manage"
+    },
+    "invite": {
+      "title": "Invite a team member",
+      "description": "Send an invitation by email. The guest will receive instructions to create a password and access the dashboard.",
+      "roles": {
+        "collaborator": "Collaborator",
+        "manager": "Manager",
+        "manager_hint": "Only the owner can invite new managers.",
+        "helper": "Managers can manage the team; collaborators have restricted access."
+      },
+      "fields": {
+        "email": "Email",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "role": "Role"
+      },
+      "errors": {
+        "email_required": "Please provide the guest's email.",
+        "generic": "We couldn't send the invitation."
+      },
+      "actions": {
+        "invite_another": "Invite someone else",
+        "sending": "Sending...",
+        "submit": "Send invitation"
+      },
+      "success": "Invitation sent successfully!",
+      "token_expires_at": "Token valid until {{datetime}}.",
+      "token_hint": "Share this token with the guest if they need to accept manually:"
+    },
+    "manage": {
+      "title": "Manage team member",
+      "description": {
+        "label": "Update permissions and status for {{name}}.",
+        "unknown": "selected member"
+      },
+      "feedback": {
+        "no_changes": "No changes detected.",
+        "role_updated": "Role updated successfully.",
+        "status_updated": "Status updated to {{status}}."
+      },
+      "errors": {
+        "owner_required": "Only the owner can promote someone to manager.",
+        "generic": "We couldn't update the role.",
+        "generic_status": "We couldn't update the status."
+      },
+      "summary": {
+        "title": "Summary",
+        "name": "Name",
+        "email": "Email",
+        "role": "Current role",
+        "status": "Current status",
+        "unknown": "Not provided"
+      },
+      "owner_notice": "The owner cannot have role or status changed.",
+      "fields": {
+        "role": "Role"
+      },
+      "roles": {
+        "manager": "Manager",
+        "collaborator": "Collaborator",
+        "owner_only": "Only the owner can promote collaborators to manager.",
+        "helper": "Managers have full administrative access to the team."
+      },
+      "status": {
+        "title": "Status & access",
+        "helper": "Changing the status adjusts this member's access to the dashboard.",
+        "confirm_disable": "Disable access for {{name}}?",
+        "confirm_activate": "Re-enable access for {{name}}?",
+        "confirm_activate_invite": "Manually activate {{name}}'s invitation?",
+        "confirm_cancel_invite": "Cancel the invitation sent to {{name}}?",
+        "updating": "Updating...",
+        "disable": "Disable",
+        "enable": "Enable",
+        "accept": "Activate manually",
+        "cancel_invite": "Cancel invitation"
+      },
+      "actions": {
+        "saving": "Saving...",
+        "save_role": "Save role"
+      }
+    }
+  },
+  "invite_accept": {
+    "title": "Activate dashboard access",
+    "subtitle": "Set your password to access the salon dashboard.",
+    "fields": {
+      "token": "Invitation token",
+      "token_placeholder": "Paste the token you received",
+      "first_name": "First name",
+      "last_name": "Last name",
+      "password": "Password",
+      "password_placeholder": "Create a strong password",
+      "confirm_password": "Confirm password",
+      "confirm_password_placeholder": "Repeat the password"
+    },
+    "errors": {
+      "token_required": "Provide the invitation token.",
+      "password_length": "Password must be at least 8 characters.",
+      "password_mismatch": "Passwords do not match.",
+      "generic": "We couldn't accept the invitation."
+    },
+    "actions": {
+      "submitting": "Activating...",
+      "submit": "Activate access"
+    },
+    "success": {
+      "title": "Invitation accepted!",
+      "body_named": "Welcome, {{name}}! Your account is active.",
+      "body": "Your account is active. Log in to start using the dashboard.",
+      "go_to_login": "Go to login",
+      "countdown": "Redirecting in {{seconds}}s..."
+    }
+  },
   "nav": {
     "home": "Home",
     "slots": "Slots",

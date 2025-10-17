@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 export default function FormInput({
   label,
@@ -8,6 +8,10 @@ export default function FormInput({
   inputClassName = '',
   ...props
 }) {
+  const generatedId = useId();
+  const { id: providedId, ...rest } = props;
+  const inputId = providedId || generatedId;
+
   const inputClasses = [
     'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm',
     'text-gray-900 placeholder-gray-400',
@@ -21,9 +25,11 @@ export default function FormInput({
   return (
     <div className={['space-y-1', className].filter(Boolean).join(' ')}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <label htmlFor={inputId} className="block text-sm font-medium text-gray-700">
+          {label}
+        </label>
       )}
-      <input className={inputClasses} {...props} />
+      <input id={inputId} className={inputClasses} {...rest} />
       {error ? (
         <p className="text-xs text-rose-600">{error}</p>
       ) : (

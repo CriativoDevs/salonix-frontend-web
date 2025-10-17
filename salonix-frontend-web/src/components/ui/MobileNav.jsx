@@ -36,6 +36,7 @@ function MobileNav() {
   const expandedLinks = [
     { to: '/bookings', icon: CalendarIcon, label: t('nav.bookings', 'Agendamentos') },
     { to: '/customers', icon: UsersIcon, label: t('nav.customers', 'Clientes') },
+    { to: '/team', icon: UsersIcon, label: t('nav.team', 'Equipe') },
     { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
     { to: '/feedback', icon: StarIcon, label: t('nav.feedback') },
     { to: '/settings', icon: SettingsIcon, label: t('nav.settings') },

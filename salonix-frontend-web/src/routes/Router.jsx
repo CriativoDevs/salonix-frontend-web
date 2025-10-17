@@ -8,10 +8,12 @@ import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import Services from '../pages/Services';
 import Professionals from '../pages/Professionals';
+import StaffInviteAccept from '../pages/StaffInviteAccept';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
 import Profile from '../pages/Profile';
 import Customers from '../pages/Customers';
+import Team from '../pages/Team';
 // Chat e Feedback desativados até backend estar pronto
 import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
@@ -25,6 +27,7 @@ function Router() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/staff/accept" element={<StaffInviteAccept />} />
 
       <Route
         path="/dashboard"
@@ -58,6 +61,15 @@ function Router() {
         element={
           <PrivateRoute>
             <Customers />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/team"
+        element={
+          <PrivateRoute>
+            <Team />
           </PrivateRoute>
         }
       />
