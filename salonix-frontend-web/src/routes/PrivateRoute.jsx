@@ -31,6 +31,7 @@ function PrivateRoute({ children }) {
   // quando a rota atual for o dashboard inicial.
   const scheduled = consumePostAuthRedirect();
   if (scheduled) {
+    console.log('[PrivateRoute] Found scheduled redirect to', scheduled);
     return <Navigate to={scheduled} replace state={{ from: location }} />;
   }
 

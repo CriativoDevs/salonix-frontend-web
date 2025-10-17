@@ -18,11 +18,12 @@ export default function HeaderNav() {
 
   // Links principais (sempre visíveis)
   const mainLinks = [
-    { to: '/slots', label: 'Slots' },
-    { to: '/professionals', label: 'Profissionais' },
-    { to: '/bookings', label: 'Agendamentos' },
-    { to: '/customers', label: 'Clientes' },
-    { to: '/services', label: 'Serviços' },
+    { to: '/slots', label: t('nav.slots', 'Slots') },
+    { to: '/bookings', label: t('nav.bookings', 'Agendamentos') },
+    { to: '/professionals', label: t('nav.professionals', 'Profissionais') },
+    { to: '/services', label: t('nav.services', 'Serviços') },
+    { to: '/customers', label: t('nav.customers', 'Clientes') },
+    { to: '/team', label: t('nav.team', 'Equipe') },
   ];
 
   // Links do menu hamburger (novas funcionalidades)

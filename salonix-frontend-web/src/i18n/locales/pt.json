@@ -300,6 +300,130 @@
       }
     }
   },
+  "team": {
+    "current_team_heading": "Gestão da equipe do salão",
+    "current_role": {
+      "label": "Você está autenticado como {{role}}.",
+      "loading": "Identificando seu papel no salão..."
+    },
+    "actions": {
+      "invite": "Convidar membro"
+    },
+    "list": {
+      "manage": "Gerenciar"
+    },
+    "invite": {
+      "title": "Convidar membro da equipe",
+      "description": "Envie um convite por e-mail. O convidado receberá instruções para criar a senha e acessar o painel.",
+      "roles": {
+        "collaborator": "Colaborador",
+        "manager": "Manager",
+        "manager_hint": "Somente o owner pode convidar novos managers.",
+        "helper": "Managers podem gerenciar a equipe; colaboradores têm acesso restrito."
+      },
+      "fields": {
+        "email": "E-mail",
+        "first_name": "Nome",
+        "last_name": "Sobrenome",
+        "role": "Papel"
+      },
+      "errors": {
+        "email_required": "Informe o e-mail da pessoa convidada.",
+        "generic": "Não foi possível enviar o convite."
+      },
+      "actions": {
+        "invite_another": "Convidar outra pessoa",
+        "sending": "Enviando...",
+        "submit": "Enviar convite"
+      },
+      "success": "Convite enviado com sucesso!",
+      "token_expires_at": "Token válido até {{datetime}}.",
+      "token_hint": "Compartilhe este token com o convidado se precisar aceitar manualmente:"
+    },
+    "manage": {
+      "title": "Gerenciar membro da equipe",
+      "description": {
+        "label": "Atualize permissões e status de {{name}}.",
+        "unknown": "membro selecionado"
+      },
+      "feedback": {
+        "no_changes": "Nenhuma alteração detectada.",
+        "role_updated": "Papel atualizado com sucesso.",
+        "status_updated": "Status atualizado para {{status}}."
+      },
+      "errors": {
+        "owner_required": "Apenas o owner pode promover para manager.",
+        "generic": "Não foi possível atualizar o papel.",
+        "generic_status": "Não foi possível atualizar o status."
+      },
+      "summary": {
+        "title": "Resumo",
+        "name": "Nome",
+        "email": "E-mail",
+        "role": "Papel atual",
+        "status": "Status atual",
+        "unknown": "Não informado"
+      },
+      "owner_notice": "O owner não pode ter papel ou status alterados.",
+      "fields": {
+        "role": "Papel"
+      },
+      "roles": {
+        "manager": "Manager",
+        "collaborator": "Colaborador",
+        "owner_only": "Apenas o owner pode promover colaboradores a manager.",
+        "helper": "Managers têm acesso administrativo completo à equipe."
+      },
+      "status": {
+        "title": "Status e acesso",
+        "helper": "Alterar o status ajusta o acesso deste membro ao painel.",
+        "confirm_disable": "Desativar o acesso de {{name}}?",
+        "confirm_activate": "Reativar o acesso de {{name}}?",
+        "confirm_activate_invite": "Ativar manualmente o convite de {{name}}?",
+        "confirm_cancel_invite": "Cancelar o convite enviado para {{name}}?",
+        "updating": "Atualizando...",
+        "disable": "Desativar",
+        "enable": "Reativar",
+        "accept": "Ativar manualmente",
+        "cancel_invite": "Cancelar convite"
+      },
+      "actions": {
+        "saving": "Salvando...",
+        "save_role": "Salvar papel"
+      }
+    }
+  },
+  "invite_accept": {
+    "title": "Ativar acesso ao painel",
+    "subtitle": "Defina sua senha para acessar o painel do salão.",
+    "fields": {
+      "token": "Token do convite",
+      "token_placeholder": "Cole o token recebido",
+      "first_name": "Nome",
+      "last_name": "Sobrenome",
+      "password": "Senha",
+      "password_placeholder": "Crie uma senha forte",
+      "confirm_password": "Confirmar senha",
+      "confirm_password_placeholder": "Repita a senha"
+    },
+    "errors": {
+      "token_required": "Informe o token do convite.",
+      "password_length": "A senha deve ter pelo menos 8 caracteres.",
+      "password_mismatch": "As senhas informadas não coincidem.",
+      "generic": "Não foi possível aceitar o convite."
+    },
+    "actions": {
+      "submitting": "Ativando...",
+      "submit": "Ativar acesso"
+    },
+    "success": {
+      "title": "Convite aceito com sucesso!",
+      "body_named": "Bem-vindo(a), {{name}}! Sua conta foi ativada.",
+      "body": "Sua conta foi ativada. Faça login para começar a usar o painel.",
+      "go_to_login": "Ir para login",
+      "countdown": "Redirecionando em {{seconds}}s..."
+    }
+  },
   "nav": {
     "home": "Início",
     "slots": "Horários",
