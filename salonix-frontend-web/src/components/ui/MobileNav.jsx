@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,16 +14,40 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
+import { useStaff } from '../../hooks/useStaff';
 import BrandLogo from './BrandLogo';
 
 function MobileNav() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const { tenant, branding } = useTenant();
+  const { user, logout } = useAuth();
+  const { tenant, branding, slug } = useTenant();
+  const { staff } = useStaff({ slug });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const displayName = tenant?.name || 'TimelyOne';
+
+  // Determinar papel do usuário atual
+  const currentUserRole = useMemo(() => {
+    if (!Array.isArray(staff) || !user) {
+      return null;
+    }
+    
+    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
+    
+    const match = staff.find((member) => {
+      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
+      
+      return (
+        (email && memberEmail === email) ||
+        (username && memberUsername === username)
+      );
+    });
+    
+    return match?.role || null;
+  }, [staff, user]);
 
   // Links principais (sempre visíveis)
   const mainLinks = [
@@ -32,15 +56,21 @@ function MobileNav() {
     { to: '/profile', icon: UserIcon, label: t('nav.profile') },
   ];
 
-  // Links do menu expandido (novas funcionalidades)
-  const expandedLinks = [
-    { to: '/bookings', icon: CalendarIcon, label: t('nav.bookings', 'Agendamentos') },
-    { to: '/customers', icon: UsersIcon, label: t('nav.customers', 'Clientes') },
-    { to: '/team', icon: UsersIcon, label: t('nav.team', 'Equipe') },
-    { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
-    { to: '/feedback', icon: StarIcon, label: t('nav.feedback') },
-    { to: '/settings', icon: SettingsIcon, label: t('nav.settings') },
-  ];
+  // Links do menu expandido (filtrados por permissão)
+  const expandedLinks = useMemo(() => {
+    const allLinks = [
+      { to: '/bookings', icon: CalendarIcon, label: t('nav.bookings', 'Agendamentos') },
+      { to: '/customers', icon: UsersIcon, label: t('nav.customers', 'Clientes') },
+      { to: '/team', icon: UsersIcon, label: t('nav.team', 'Equipe'), roles: ['owner', 'manager'] },
+      { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
+      { to: '/feedback', icon: StarIcon, label: t('nav.feedback') },
+      { to: '/settings', icon: SettingsIcon, label: t('nav.settings'), roles: ['owner'] },
+    ];
+
+    return allLinks.filter(link => 
+      !link.roles || link.roles.includes(currentUserRole)
+    );
+  }, [t, currentUserRole]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -74,22 +104,24 @@ function MobileNav() {
           );
         })}
 
-        {/* Botão hamburger para expandir */}
-        <button
-          onClick={toggleMenu}
-          className={`flex flex-col items-center justify-center text-xs transition-all duration-200 ${
-            isMenuOpen
-              ? 'text-brand font-semibold scale-110'
-              : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          {isMenuOpen ? (
-            <XIcon className="h-5 w-5 mb-0.5" />
-          ) : (
-            <MoreHorizontalIcon className="h-5 w-5 mb-0.5" />
-          )}
-          {isMenuOpen ? t('nav.close') : t('nav.more')}
-        </button>
+        {/* Botão hamburger para expandir - só aparece se houver itens expandidos */}
+        {expandedLinks.length > 0 && (
+          <button
+            onClick={toggleMenu}
+            className={`flex flex-col items-center justify-center text-xs transition-all duration-200 ${
+              isMenuOpen
+                ? 'text-brand font-semibold scale-110'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {isMenuOpen ? (
+              <XIcon className="h-5 w-5 mb-0.5" />
+            ) : (
+              <MoreHorizontalIcon className="h-5 w-5 mb-0.5" />
+            )}
+            {isMenuOpen ? t('nav.close') : t('nav.more')}
+          </button>
+        )}
       </nav>
 
       {/* Menu expandido (overlay) com animação */}

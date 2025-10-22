@@ -93,7 +93,10 @@ export function TenantProvider({ children }) {
         }
 
         const status = err?.response?.status;
-        if (status === 400 || status === 404) {
+        const isNetworkError = err?.code === 'ERR_NETWORK' || err?.message?.includes('ERR_ABORTED');
+        
+        // Para erros de rede (backend não disponível), usar fallback silenciosamente
+        if (isNetworkError || status === 400 || status === 404) {
           if (!silent) {
             const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
             setTenant(fallbackMeta);

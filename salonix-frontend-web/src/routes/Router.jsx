@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
+import RoleProtectedRoute from './RoleProtectedRoute';
 import Dashboard from '../pages/Dashboard';
 import Landing from '../pages/Landing';
 import Login from '../pages/Login';
@@ -7,11 +8,10 @@ import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import Services from '../pages/Services';
-import Professionals from '../pages/Professionals';
 import StaffInviteAccept from '../pages/StaffInviteAccept';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
-import Profile from '../pages/Profile';
+
 import Customers from '../pages/Customers';
 import Team from '../pages/Team';
 // Chat e Feedback desativados até backend estar pronto
@@ -42,16 +42,9 @@ function Router() {
         path="/services"
         element={
           <PrivateRoute>
-            <Services />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/professionals"
-        element={
-          <PrivateRoute>
-            <Professionals />
+            <RoleProtectedRoute allowedRoles={['owner', 'manager']}>
+              <Services />
+            </RoleProtectedRoute>
           </PrivateRoute>
         }
       />
@@ -92,20 +85,15 @@ function Router() {
         }
       />
 
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        }
-      />
+
 
       <Route
         path="/settings"
         element={
           <PrivateRoute>
-            <Settings />
+            <RoleProtectedRoute allowedRoles={['owner']}>
+              <Settings />
+            </RoleProtectedRoute>
           </PrivateRoute>
         }
       />

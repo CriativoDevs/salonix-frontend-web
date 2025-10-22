@@ -55,8 +55,7 @@ describe('InviteStaffModal', () => {
     );
 
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'guest@example.com' } });
-    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Guest' } });
-    fireEvent.change(screen.getByLabelText('Sobrenome'), { target: { value: 'User' } });
+    fireEvent.change(screen.getByLabelText('Nome do profissional'), { target: { value: 'Guest User' } });
 
     fireEvent.click(screen.getByRole('button', { name: 'Enviar convite' }));
 
@@ -64,8 +63,7 @@ describe('InviteStaffModal', () => {
       expect(onSubmit).toHaveBeenCalledWith({
         email: 'guest@example.com',
         role: 'collaborator',
-        first_name: 'Guest',
-        last_name: 'User',
+        first_name: 'Guest User',
       });
     });
 
@@ -90,6 +88,7 @@ describe('InviteStaffModal', () => {
     );
 
     fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'guest@example.com' } });
+    fireEvent.change(screen.getByLabelText('Nome do profissional'), { target: { value: 'Guest User' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar convite' }));
 
     await waitFor(() => {

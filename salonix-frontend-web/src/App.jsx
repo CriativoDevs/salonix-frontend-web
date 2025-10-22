@@ -141,17 +141,22 @@ function TenantThemeManager() {
       const manifestPayload = {
         name,
         short_name: shortName,
-        start_url: '/',
+        start_url: window.location.origin + '/',
         display: 'standalone',
         background_color: backgroundColor,
         theme_color: themeColor,
         icons:
           targetBranding.icons && targetBranding.icons.length
-            ? targetBranding.icons
+            ? targetBranding.icons.map(icon => ({
+                ...icon,
+                src: icon.src.startsWith('http') ? icon.src : window.location.origin + icon.src
+              }))
             : [
                 targetBranding.logoUrl
                   ? {
-                      src: targetBranding.logoUrl,
+                      src: targetBranding.logoUrl.startsWith('http') 
+                        ? targetBranding.logoUrl 
+                        : window.location.origin + targetBranding.logoUrl,
                       sizes: '512x512',
                       type: 'image/png',
                     }
