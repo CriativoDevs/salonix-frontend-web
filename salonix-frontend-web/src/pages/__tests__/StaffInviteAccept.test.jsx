@@ -1,15 +1,16 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { acceptStaffInvite } from '../../api/staff';
 import { TextDecoder, TextEncoder } from 'util';
+import StaffInviteAccept from '../StaffInviteAccept';
+import { acceptStaffInvite } from '../../api/staff';
 
-if (!global.TextEncoder) {
-  global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder;
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = TextEncoder;
 }
-
-const StaffInviteAccept = require('../StaffInviteAccept').default;
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = TextDecoder;
+}
 
 jest.mock('../../api/staff', () => ({
   acceptStaffInvite: jest.fn(),
@@ -22,11 +23,6 @@ jest.mock('../../hooks/useTenant', () => ({
 const mockNavigate = jest.fn();
 
 jest.mock('react-router-dom', () => {
-  const { TextDecoder: Decoder, TextEncoder: Encoder } = require('util');
-  if (!global.TextEncoder) {
-    global.TextEncoder = Encoder;
-    global.TextDecoder = Decoder;
-  }
   const actual = jest.requireActual('react-router-dom');
   return {
     ...actual,

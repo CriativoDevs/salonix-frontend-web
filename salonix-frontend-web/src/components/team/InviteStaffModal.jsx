@@ -5,10 +5,11 @@ import FormInput from '../ui/FormInput';
 import FormButton from '../ui/FormButton';
 
 const DEFAULT_FORM = {
+  professionalName: '',
   email: '',
-  firstName: '',
-  lastName: '',
   role: 'collaborator',
+  professionalBio: '',
+  professionalStaffMemberId: '',
 };
 
 function normalizeEmail(value = '') {
@@ -40,7 +41,19 @@ function InviteStaffModal({
       setSuccess(false);
       setInviteToken(null);
       setInviteExpiresAt(null);
+      return;
     }
+
+    setForm({
+      ...DEFAULT_FORM,
+      role: DEFAULT_FORM.role,
+    });
+    setSubmitting(false);
+    setError(null);
+    setRequestId(null);
+    setSuccess(false);
+    setInviteToken(null);
+    setInviteExpiresAt(null);
   }, [open]);
 
   const canInviteManagers = currentUserRole === 'owner';
@@ -69,6 +82,17 @@ function InviteStaffModal({
     event.preventDefault();
     if (submitting) return;
 
+    const professionalName = form.professionalName.trim();
+    if (!professionalName) {
+      setError({
+        message: t(
+          'team.invite.errors.professional_name_required',
+          'Informe o nome que será exibido para o profissional.'
+        ),
+      });
+      return;
+    }
+
     const email = normalizeEmail(form.email);
     if (!email) {
       setError({
@@ -87,13 +111,8 @@ function InviteStaffModal({
     const payload = {
       email,
       role: form.role || 'collaborator',
+      first_name: professionalName, // Usando o nome profissional como first_name
     };
-    if (form.firstName.trim()) {
-      payload.first_name = form.firstName.trim();
-    }
-    if (form.lastName.trim()) {
-      payload.last_name = form.lastName.trim();
-    }
 
     try {
       const result = await onSubmit(payload);
@@ -107,7 +126,9 @@ function InviteStaffModal({
       setRequestId(result.requestId || null);
       setInviteToken(result.staffMember?.invite_token || null);
       setInviteExpiresAt(result.staffMember?.invite_token_expires_at || null);
-      setForm((prev) => ({ ...prev, email: '', firstName: '', lastName: '' }));
+      setForm({
+        ...DEFAULT_FORM,
+      });
     } catch (err) {
       setError({
         message: err?.message || t('team.invite.errors.generic', 'Não foi possível enviar o convite.'),
@@ -119,7 +140,9 @@ function InviteStaffModal({
   };
 
   const handleInviteAnother = () => {
-    setForm(DEFAULT_FORM);
+    setForm({
+      ...DEFAULT_FORM,
+    });
     setSuccess(false);
     setInviteToken(null);
     setInviteExpiresAt(null);
@@ -195,56 +218,65 @@ function InviteStaffModal({
         </div>
       ) : (
         <form id={formId} onSubmit={handleSubmit} className="space-y-4">
-          <FormInput
-            label={t('team.invite.fields.email', 'E-mail')}
-            type="email"
-            value={form.email}
-            onChange={(event) => handleChange('email', event.target.value)}
-            required
-            autoFocus
-          />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormInput
-              label={t('team.invite.fields.first_name', 'Nome')}
-              value={form.firstName}
-              onChange={(event) => handleChange('firstName', event.target.value)}
-            />
-            <FormInput
-              label={t('team.invite.fields.last_name', 'Sobrenome')}
-              value={form.lastName}
-              onChange={(event) => handleChange('lastName', event.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              {t('team.invite.fields.role', 'Papel')}
-            </label>
-            <select
-              value={form.role}
-              onChange={(event) => handleChange('role', event.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-            >
-              {roleOptions.map((option) => (
-                <option key={option.value} value={option.value} disabled={option.disabled}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {!canInviteManagers ? (
+          <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div>
+              <p className="text-sm font-medium text-gray-800">
+                {t('team.invite.professional.title', 'Dados do profissional')}
+              </p>
               <p className="text-xs text-gray-500">
                 {t(
-                  'team.invite.roles.manager_hint',
-                  'Somente o owner pode convidar novos managers.',
+                  'team.invite.professional.helper',
+                  'Defina como o profissional será apresentado no portal.'
                 )}
               </p>
-            ) : (
-              <p className="text-xs text-gray-500">
-                {t(
-                  'team.invite.roles.helper',
-                  'Managers podem gerenciar a equipe; colaboradores têm acesso restrito.',
-                )}
-              </p>
-            )}
+            </div>
+            <FormInput
+              label={t('team.invite.professional.name', 'Nome do profissional')}
+              value={form.professionalName}
+              onChange={(event) =>
+                handleChange('professionalName', event.target.value)
+              }
+              required
+              autoFocus
+            />
+            <FormInput
+              label={t('team.invite.fields.email', 'E-mail')}
+              type="email"
+              value={form.email}
+              onChange={(event) => handleChange('email', event.target.value)}
+              required
+            />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                {t('team.invite.fields.role', 'Papel')}
+              </label>
+              <select
+                value={form.role}
+                onChange={(event) => handleChange('role', event.target.value)}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+              >
+                {roleOptions.map((option) => (
+                  <option key={option.value} value={option.value} disabled={option.disabled}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {!canInviteManagers ? (
+                <p className="text-xs text-gray-500">
+                  {t(
+                    'team.invite.roles.manager_hint',
+                    'Somente o owner pode convidar novos managers.',
+                  )}
+                </p>
+              ) : (
+                <p className="text-xs text-gray-500">
+                  {t(
+                    'team.invite.roles.helper',
+                    'Managers podem gerenciar a equipe; colaboradores têm acesso restrito.',
+                  )}
+                </p>
+              )}
+            </div>
           </div>
 
           {error ? (

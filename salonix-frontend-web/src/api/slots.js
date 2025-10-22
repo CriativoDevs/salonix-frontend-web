@@ -25,15 +25,23 @@ export async function createSlot({ professionalId, startTime, endTime, slug }) {
     is_available: true,
   };
   const headers = {};
-  if (slug) headers['X-Tenant-Slug'] = slug;
-  const { data } = await client.post('slots/', payload, { headers });
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('slots/', payload, { headers, params });
   return data;
 }
 
 export async function deleteSlot(id, { slug } = {}) {
   const headers = {};
-  if (slug) headers['X-Tenant-Slug'] = slug;
-  const { status } = await client.delete(`slots/${id}/`, { headers });
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { status } = await client.delete(`slots/${id}/`, { headers, params });
   return status === 204;
 }
 

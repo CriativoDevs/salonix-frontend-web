@@ -8,6 +8,7 @@ import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
+import { useStaff } from '../hooks/useStaff';
 import { describeFeatureRequirement } from '../constants/tenantFeatures';
 import { resolvePlanName } from '../utils/tenantPlan';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
@@ -116,6 +117,29 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { tenant, plan, profile, flags, slug } = useTenant();
   const { user } = useAuth();
+  const { staff } = useStaff({ slug });
+
+  // Determinar papel do usuário atual
+  const currentUserRole = useMemo(() => {
+    if (!Array.isArray(staff) || !user) {
+      return null;
+    }
+    
+    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
+    
+    const match = staff.find((member) => {
+      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
+      
+      return (
+        (email && memberEmail === email) ||
+        (username && memberUsername === username)
+      );
+    });
+    
+    return match?.role || null;
+  }, [staff, user]);
 
   const businessSummary = useMemo(() => {
     const fallbackTitle = t('dashboard.subtitle', 'Resumo do seu negócio');
@@ -157,6 +181,38 @@ export default function Dashboard() {
 
   const planName = resolvePlanName(plan);
   const reportsEnabled = flags?.enableReports !== false;
+
+  // Verificar se o usuário tem acesso aos relatórios (apenas owner e manager)
+  const hasReportsAccess = useMemo(() => {
+    if (!currentUserRole) {
+      // Fallback para usuários sem staff data (como no tenant 'default')
+      if (!user) return false;
+      
+      const email = typeof user.email === 'string' ? user.email.toLowerCase() : '';
+      const username = typeof user.username === 'string' ? user.username.toLowerCase() : '';
+      
+      // Admin sempre tem acesso
+      if (email === 'admin@demo.local' || username === 'admin') {
+        return true;
+      }
+      
+      // Manager tem acesso
+      if (username === 'manager' || email.includes('manager')) {
+        return true;
+      }
+      
+      // Pro users (owners) têm acesso
+      if (username.startsWith('pro_') || email.startsWith('pro_')) {
+        return true;
+      }
+      
+      // Colaboradores não têm acesso
+      return false;
+    }
+    
+    // Com staff data, verificar role
+    return currentUserRole === 'owner' || currentUserRole === 'manager';
+  }, [currentUserRole, user]);
 
   const {
     data: dashboardData,
@@ -244,9 +300,9 @@ export default function Dashboard() {
           if ((!slotPayload || !slotPayload?.start_time) && !hasDetailedSlot && entry?.slot) {
             try {
               slotPayload = await fetchSlotDetail(entry.slot, { slug });
-            } catch (slotError) {
-              console.warn('Failed to fetch slot detail', slotError);
-            }
+              } catch (slotError) {
+                console.warn('Failed to fetch slot detail', slotError);
+              }
           }
 
           let customerPayload = null;
@@ -258,6 +314,7 @@ export default function Dashboard() {
                 customerPayload = await fetchCustomerDetail(entry.customer, { slug });
                 customerCache.set(entry.customer, customerPayload);
               } catch (customerError) {
+                console.warn('Failed to fetch customer detail', customerError);
                 customerCache.set(entry.customer, null);
               }
             }
@@ -746,20 +803,24 @@ export default function Dashboard() {
             >
               {t('dashboard.add_slot', 'Abrir horários')}
             </button>
-            <button
-              type="button"
-              onClick={() => navigate('/professionals')}
-              className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
-            >
-              {t('dashboard.add_professional', 'Adicionar profissional')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/services')}
-              className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
-            >
-              {t('dashboard.add_service', 'Cadastrar serviço')}
-            </button>
+            {hasReportsAccess && (
+              <button
+                type="button"
+                onClick={() => navigate('/team')}
+                className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
+              >
+                {t('dashboard.add_professional', 'Adicionar profissional')}
+              </button>
+            )}
+            {(currentUserRole === 'owner' || currentUserRole === 'manager') && (
+              <button
+                type="button"
+                onClick={() => navigate('/services')}
+                className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
+              >
+                {t('dashboard.add_service', 'Cadastrar serviço')}
+              </button>
+            )}
           </div>
         </Card>
 
@@ -767,7 +828,19 @@ export default function Dashboard() {
           <h2 className="text-lg font-medium text-brand-surfaceForeground">
             {t('dashboard.reports_section', 'Relatórios')}
           </h2>
-          {reportsEnabled ? (
+          {!hasReportsAccess ? (
+            <div className="mt-4 rounded-lg border border-dashed border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <strong>
+                {t('dashboard.reports_access_denied', 'Acesso negado')}
+              </strong>
+              <p className="mt-1">
+                {t(
+                  'dashboard.reports_access_denied_description',
+                  'Apenas proprietários e gerentes têm acesso aos relatórios.'
+                )}
+              </p>
+            </div>
+          ) : reportsEnabled ? (
             <div className="mt-4 space-y-3 text-sm text-brand-surfaceForeground/80">
               <p>
                 {t(

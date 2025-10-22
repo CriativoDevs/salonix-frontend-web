@@ -101,11 +101,20 @@
     "name": "Name",
     "specialty": "Specialty",
     "phone": "Phone (optional)",
+    "staff_member": "Responsible (staff)",
+    "staff_placeholder": "Select an active team member",
+    "staff_loading": "Loading team members...",
+    "staff_required_hint": "Invite or activate a staff member to link them to the professional.",
+    "staff_error": "Unable to load the team list.",
+    "responsible_label": "Responsible",
+    "staff_missing": "Responsible not found",
     "submit": "Add professional",
     "no_bio": "No description",
     "errors": {
       "name_required": "Name is required.",
-      "specialty_required": "Specialty is required."
+      "specialty_required": "Specialty is required.",
+      "staff_required": "Select who will be responsible for this professional.",
+      "permission_denied": "Permission denied: only owner/manager can manage professionals linked to other staff members."
     }
   },
   "slots": {
@@ -293,8 +302,11 @@
       "invite": "Invite member"
     },
     "list": {
-      "manage": "Manage"
+      "manage": "Manage",
+      "professionals_link": "Linked professionals",
+      "no_professional": "No professional linked"
     },
+    "professionals_error": "Failed to load professionals.",
     "invite": {
       "title": "Invite a team member",
       "description": "Send an invitation by email. The guest will receive instructions to create a password and access the dashboard.",

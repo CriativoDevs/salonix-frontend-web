@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MessageCircleIcon, StarIcon, SettingsIcon } from 'lucide-react';
@@ -7,34 +7,69 @@ import Container from './Container';
 import DropdownMenu from './DropdownMenu';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
+import { useStaff } from '../../hooks/useStaff';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
-  const { tenant, branding } = useTenant();
+  const { user, logout } = useAuth();
+  const { tenant, branding, slug } = useTenant();
+  const { staff } = useStaff({ slug });
 
   const displayName = tenant?.name || 'TimelyOne';
 
-  // Links principais (sempre visíveis)
-  const mainLinks = [
-    { to: '/slots', label: t('nav.slots', 'Slots') },
-    { to: '/bookings', label: t('nav.bookings', 'Agendamentos') },
-    { to: '/professionals', label: t('nav.professionals', 'Profissionais') },
-    { to: '/services', label: t('nav.services', 'Serviços') },
-    { to: '/customers', label: t('nav.customers', 'Clientes') },
-    { to: '/team', label: t('nav.team', 'Equipe') },
-  ];
+  // Determinar papel do usuário atual
+  const currentUserRole = useMemo(() => {
+    if (!Array.isArray(staff) || !user) {
+      return null;
+    }
+    
+    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
+    
+    const match = staff.find((member) => {
+      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
+      
+      return (
+        (email && memberEmail === email) ||
+        (username && memberUsername === username)
+      );
+    });
+    
+    return match?.role || null;
+  }, [staff, user]);
 
-  // Links do menu hamburger (novas funcionalidades)
-  const dropdownItems = [
-    // Chat e Feedback desativados por enquanto
-    {
-      to: '/settings',
-      label: t('nav.settings'),
-      icon: SettingsIcon,
-    },
-  ];
+  // Links principais (filtrados por permissão)
+  const mainLinks = useMemo(() => {
+    const allLinks = [
+      { to: '/slots', label: t('nav.slots', 'Slots') },
+      { to: '/bookings', label: t('nav.bookings', 'Agendamentos') },
+      { to: '/services', label: t('nav.services', 'Serviços'), roles: ['owner', 'manager'] },
+      { to: '/customers', label: t('nav.customers', 'Clientes') },
+      { to: '/team', label: t('nav.team', 'Equipe'), roles: ['owner', 'manager'] },
+    ];
+
+    return allLinks.filter(link => 
+      !link.roles || link.roles.includes(currentUserRole)
+    );
+  }, [t, currentUserRole]);
+
+  // Links do menu hamburger (filtrados por permissão)
+  const dropdownItems = useMemo(() => {
+    const allItems = [
+      {
+        to: '/settings',
+        label: t('nav.settings'),
+        icon: SettingsIcon,
+        roles: ['owner']
+      },
+    ];
+
+    return allItems.filter(item => 
+      !item.roles || item.roles.includes(currentUserRole)
+    );
+  }, [t, currentUserRole]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
   const inactive = 'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
@@ -72,15 +107,17 @@ export default function HeaderNav() {
               </NavLink>
             ))}
 
-            {/* Menu hamburger com novas funcionalidades */}
-            <DropdownMenu
-              items={dropdownItems}
-              trigger={
-                <div className="flex items-center space-x-2">
-                  <span>{t('nav.more')}</span>
-                </div>
-              }
-            />
+            {/* Menu hamburger com novas funcionalidades - só aparece se houver itens */}
+            {dropdownItems.length > 0 && (
+              <DropdownMenu
+                items={dropdownItems}
+                trigger={
+                  <div className="flex items-center space-x-2">
+                    <span>{t('nav.more')}</span>
+                  </div>
+                }
+              />
+            )}
           </nav>
 
           <div className="flex items-center gap-2">

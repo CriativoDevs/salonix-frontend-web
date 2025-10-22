@@ -107,11 +107,20 @@
     "name": "Nome",
     "specialty": "Especialidade",
     "phone": "Telefone (opcional)",
+    "staff_member": "Responsável (staff)",
+    "staff_placeholder": "Selecione um membro ativo",
+    "staff_loading": "Carregando membros da equipe...",
+    "staff_required_hint": "Convide ou ative um membro da equipe para vinculá-lo ao profissional.",
+    "staff_error": "Não foi possível carregar a equipe.",
+    "responsible_label": "Responsável",
+    "staff_missing": "Responsável não encontrado",
     "submit": "Adicionar profissional",
     "no_bio": "Sem descrição",
     "errors": {
       "name_required": "O nome é obrigatório.",
-      "specialty_required": "A especialidade é obrigatória."
+      "specialty_required": "A especialidade é obrigatória.",
+      "staff_required": "Selecione o responsável pelo profissional.",
+      "permission_denied": "Permissão negada: apenas owner/manager podem alterar profissionais de outros membros."
     }
   },
   "slots": {
@@ -310,8 +319,11 @@
       "invite": "Convidar membro"
     },
     "list": {
-      "manage": "Gerenciar"
+      "manage": "Gerenciar",
+      "professionals_link": "Profissionais vinculados",
+      "no_professional": "Nenhum profissional vinculado"
     },
+    "professionals_error": "Falha ao carregar profissionais.",
     "invite": {
       "title": "Convidar membro da equipe",
       "description": "Envie um convite por e-mail. O convidado receberá instruções para criar a senha e acessar o painel.",

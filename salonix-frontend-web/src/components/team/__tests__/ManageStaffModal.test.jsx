@@ -54,13 +54,23 @@ describe('ManageStaffModal', () => {
       <ManageStaffModal
         open
         member={baseMember}
-        currentUserRole="owner"
         onClose={jest.fn()}
         onUpdate={onUpdate}
+        professionals={[]}
+        currentUserRole="owner"
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Papel'), { target: { value: 'manager' } });
+    // Switch to permissions tab first
+    fireEvent.click(screen.getByRole('button', { name: 'Permissões' }));
+    
+    // Select manager role using radio button - use userEvent for better simulation
+    const managerRadio = screen.getByDisplayValue('manager');
+    fireEvent.click(managerRadio);
+    
+    // Verify the radio is selected
+    expect(managerRadio).toBeChecked();
+    
     fireEvent.click(screen.getByRole('button', { name: 'Salvar papel' }));
 
     await waitFor(() => {
@@ -82,6 +92,9 @@ describe('ManageStaffModal', () => {
       />
     );
 
+    // Switch to permissions tab first
+    fireEvent.click(screen.getByRole('button', { name: 'Permissões' }));
+    
     fireEvent.click(screen.getByRole('button', { name: 'Desativar' }));
 
     await waitFor(() => {

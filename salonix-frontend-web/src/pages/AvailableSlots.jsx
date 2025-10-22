@@ -74,11 +74,19 @@ function AvailableSlots() {
   // Backend envia "YYYY-MM-DD HH:MM" (sem timezone). Vamos formatar sem segundos.
   const parseBackendDate = (s) => {
     if (!s) return null;
-    // s: '2025-09-30 17:45' => new Date(YYYY, MM-1, DD, HH, MM)
-    const m = /^(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2})$/.exec(s);
+    // Formatos aceitos: 'YYYY-MM-DD HH:MM' ou 'YYYY-MM-DD HH:MM:SS'
+    const m = /^(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(s);
     if (!m) return null;
-    const [_, Y, M, D, h, mnt] = m;
-    return new Date(Number(Y), Number(M) - 1, Number(D), Number(h), Number(mnt), 0, 0);
+    const [, Y, M, D, h, mnt, sec = '0'] = m;
+    return new Date(
+      Number(Y),
+      Number(M) - 1,
+      Number(D),
+      Number(h),
+      Number(mnt),
+      Number(sec),
+      0
+    );
   };
 
   const fmtDate = (d) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;

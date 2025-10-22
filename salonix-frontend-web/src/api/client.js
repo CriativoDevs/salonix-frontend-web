@@ -7,7 +7,8 @@ import {
   triggerLogout,
 } from '../utils/authStorage';
 
-const defaultBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+// Use fallback for Jest environment - hardcoded for now to avoid import.meta issues
+const defaultBase = 'http://localhost:8000/api/';
 export const API_BASE_URL = defaultBase.endsWith('/') ? defaultBase : `${defaultBase}/`;
 
 const client = axios.create({
