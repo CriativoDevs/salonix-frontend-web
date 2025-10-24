@@ -16,6 +16,7 @@ import {
 import InviteStaffModal from '../components/team/InviteStaffModal';
 import ManageStaffModal from '../components/team/ManageStaffModal';
 import { parseApiError } from '../utils/apiError';
+import { ROLE_BADGE_STYLES, TEAM_STATUS_STYLES } from '../utils/badgeStyles';
 
 const ROLE_LABELS = {
   owner: 'Owner',
@@ -43,17 +44,7 @@ const STATUS_OPTIONS = [
   { value: 'disabled', label: 'Desativados' },
 ];
 
-const ROLE_BADGE_CLASS = {
-  owner: 'bg-purple-100 text-purple-700',
-  manager: 'bg-sky-100 text-sky-700',
-  collaborator: 'bg-emerald-100 text-emerald-700',
-};
 
-const STATUS_BADGE_CLASS = {
-  active: 'bg-emerald-100 text-emerald-700',
-  invited: 'bg-amber-100 text-amber-700',
-  disabled: 'bg-rose-100 text-rose-700',
-};
 
 
 
@@ -86,34 +77,34 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
         const roleLabel = staffMember ? ROLE_LABELS[staffMember.role] || staffMember.role : '—';
         
         // Determine status based on staff member status if available
-        let statusLabel, statusBadgeClass;
-        if (professional.isStaffOnly) {
-          // For staff-only entries, use staff status directly
-          const staffStatus = staffMember?.status || 'active';
-          statusLabel = STATUS_LABELS[staffStatus] || staffStatus;
-          statusBadgeClass = STATUS_BADGE_CLASS[staffStatus] || 'bg-gray-100 text-gray-600';
-        } else {
-          // For professionals with staff, combine both statuses
-          if (staffMember) {
-            if (staffMember.status === 'invited') {
-              statusLabel = STATUS_LABELS.invited;
-              statusBadgeClass = STATUS_BADGE_CLASS.invited;
-            } else if (staffMember.status === 'disabled') {
-              statusLabel = STATUS_LABELS.disabled;
-              statusBadgeClass = STATUS_BADGE_CLASS.disabled;
-            } else if (staffMember.status === 'active' && professional.is_active) {
-              statusLabel = STATUS_LABELS.active;
-              statusBadgeClass = STATUS_BADGE_CLASS.active;
-            } else {
-              statusLabel = STATUS_LABELS.disabled;
-              statusBadgeClass = STATUS_BADGE_CLASS.disabled;
-            }
-          } else {
-            // Professional without staff member
-            statusLabel = professional.is_active ? STATUS_LABELS.active : STATUS_LABELS.disabled;
-            statusBadgeClass = professional.is_active ? STATUS_BADGE_CLASS.active : STATUS_BADGE_CLASS.disabled;
-          }
-        }
+        let statusLabel, statusBadgeStyle;
+         if (professional.isStaffOnly) {
+           // For staff-only entries, use staff status directly
+           const staffStatus = staffMember?.status || 'active';
+           statusLabel = STATUS_LABELS[staffStatus] || staffStatus;
+           statusBadgeStyle = TEAM_STATUS_STYLES[staffStatus] || 'bg-gray-100 text-gray-600';
+         } else {
+           // For professionals with staff, combine both statuses
+           if (staffMember) {
+             if (staffMember.status === 'invited') {
+               statusLabel = STATUS_LABELS.invited;
+               statusBadgeStyle = TEAM_STATUS_STYLES.invited;
+             } else if (staffMember.status === 'disabled') {
+               statusLabel = STATUS_LABELS.disabled;
+               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
+             } else if (staffMember.status === 'active' && professional.is_active) {
+               statusLabel = STATUS_LABELS.active;
+               statusBadgeStyle = TEAM_STATUS_STYLES.active;
+             } else {
+               statusLabel = STATUS_LABELS.disabled;
+               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
+             }
+           } else {
+             // Professional without staff member
+             statusLabel = professional.is_active ? STATUS_LABELS.active : STATUS_LABELS.disabled;
+             statusBadgeStyle = professional.is_active ? TEAM_STATUS_STYLES.active : TEAM_STATUS_STYLES.disabled;
+           }
+         }
         
         const createdAt = formatDateTime(professional.created_at);
         const updatedAt = formatDateTime(professional.updated_at);
@@ -141,25 +132,25 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
         const email = staffMember?.email || professional.email || '';
         
         return (
-          <Card key={professional.id} className="p-4">
+          <Card key={professional.id} className="p-4 bg-brand-surface text-brand-surfaceForeground ring-1 ring-brand-border">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="space-y-2">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-brand-surfaceForeground">
                     {primaryName}
                   </h3>
                   {bio && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-brand-surfaceForeground/70 mt-1">
                       {bio}
                     </p>
                   )}
                   {email && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-brand-surfaceForeground/60">
                       {email}
                     </p>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-3 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-3 text-xs text-brand-surfaceForeground/60">
                   {createdAt && (
                     <span>
                       Criado em <strong>{createdAt}</strong>
@@ -172,7 +163,9 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
                   )}
                 </div>
                 {!staffMember && (
-                  <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                    <div className="rounded-full border px-2 py-1 text-xs font-medium uppercase border-amber-200 bg-amber-100 text-amber-800"
+                    role="alert"
+                  >
                     {t('team.list.no_staff_member', 'Sem membro da equipe vinculado')}
                   </div>
                 )}
@@ -181,27 +174,27 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
               <div className="flex flex-col items-start gap-2 md:items-end">
                 {staffMember && (
                   <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                      ROLE_BADGE_CLASS[staffMember.role] || 'bg-gray-100 text-gray-600'
+                    className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${
+                      ROLE_BADGE_STYLES[staffMember.role] || 'bg-gray-100 text-gray-600'
                     }`}
                   >
                     {roleLabel}
                   </span>
                 )}
                 <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusBadgeClass}`}
+                  className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${statusBadgeStyle}`}
                 >
                   {statusLabel}
                 </span>
                 {canManage && staffMember && canManageThisProfessional() && (
-                  <FormButton
-                    size="sm"
-                    variant="outline"
+                  <button
+                    type="button"
                     disabled={manageDisabled}
                     onClick={() => onManage(staffMember.id)}
+                    className="text-brand-primary hover:underline font-medium text-sm disabled:text-brand-surfaceForeground/40 disabled:no-underline"
                   >
                     {t('team.list.manage', 'Gerenciar')}
-                  </FormButton>
+                  </button>
                 )}
               </div>
             </div>
@@ -282,16 +275,6 @@ function Team() {
       return;
     }
 
-    // Only owners and managers should load staff data
-    if (currentUserRole === 'collaborator') {
-      setStaff([]);
-      setStaffLoading(false);
-      setStaffError(null);
-      setRequestId(null);
-      setForbidden(false);
-      return;
-    }
-
     setStaffLoading(true);
     setStaffError(null);
     setRequestId(null);
@@ -314,14 +297,12 @@ function Team() {
       setRequestId(parsed.requestId || null);
       setStaffLoading(false);
     }
-  }, [slug, currentUserRole]);
+  }, [slug]);
 
-  // Load staff when role is determined
+  // Load staff when slug is available
   useEffect(() => {
-    if (currentUserRole !== null) {
-      loadStaff();
-    }
-  }, [loadStaff, currentUserRole]);
+    loadStaff();
+  }, [loadStaff]);
 
   const refetchStaff = useCallback(() => {
     if (!professionalsMountedRef.current) return;
@@ -755,58 +736,78 @@ function Team() {
         </Card>
       ) : (
         <>
-          <div className="mb-6 flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-800">
-                {currentUserRole === 'collaborator' 
-                  ? t('team.current_team_heading_collaborator', 'Meu perfil profissional')
-                  : t('team.current_team_heading', 'Gestão da equipe')
-                }
-              </p>
-              {currentRoleLabel ? (
-                <p className="text-xs text-gray-500">
-                  {t('team.current_role.label', {
-                    defaultValue: 'Você está autenticado como {{role}}.',
-                    role: currentRoleLabel,
-                  })}
+          <div className="mb-6 rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-sm font-medium text-brand-surfaceForeground">
+                  {currentUserRole === 'collaborator' 
+                    ? t('team.current_team_heading_collaborator', 'Meu perfil profissional')
+                    : t('team.current_team_heading', 'Gestão da equipe')
+                  }
                 </p>
-              ) : (
-                <p className="text-xs text-gray-400">
-                  {t(
-                    'team.current_role.loading',
-                    'Identificando seu papel no salão...'
-                  )}
-                </p>
+                {currentRoleLabel ? (
+                  <p className="text-xs text-brand-surfaceForeground/70">
+                    {t('team.current_role.label', {
+                      defaultValue: 'Você está autenticado como {{role}}.',
+                      role: currentRoleLabel,
+                    })}
+                  </p>
+                ) : (
+                  <p className="text-xs text-brand-surfaceForeground/60">
+                    {t(
+                      'team.current_role.loading',
+                      'Identificando seu papel no salão...'
+                    )}
+                  </p>
+                )}
+              </div>
+              {canManageAll && (
+                <button
+                  type="button"
+                  onClick={openInviteModal}
+                  className="text-[#7F7EED] hover:underline font-medium"
+                >
+                  {t('team.actions.invite', 'Convidar membro')}
+                </button>
               )}
             </div>
-            {canManageAll && (
-              <FormButton onClick={openInviteModal}>
-                {t('team.actions.invite', 'Convidar membro')}
-              </FormButton>
-            )}
           </div>
 
           <div className="mb-6 grid gap-4 md:grid-cols-3">
-            <FormInput
-              label={t('team.filters.search', 'Busca')}
-              placeholder={t(
-                'team.filters.search_placeholder',
-                'Procurar por nome ou email'
-              )}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              inputClassName="text-sm"
-            />
-
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('team.filters.search', 'Busca')}
+              </label>
+              <input
+                type="text"
+                placeholder={t(
+                  'team.filters.search_placeholder',
+                  'Procurar por nome ou email'
+                )}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+                className="w-full rounded border px-3 py-2 text-sm"
+              />
+            </div>
             {canManageAll && (
               <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('team.filters.role', 'Papel')}
                 </label>
                 <select
                   value={roleFilter}
                   onChange={(event) => setRoleFilter(event.target.value)}
-                  className="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)'
+                  }}
+                  className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   {ROLE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -818,13 +819,18 @@ function Team() {
             )}
 
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 {t('team.filters.status', 'Status')}
               </label>
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+                className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -882,13 +888,21 @@ function Team() {
               action={
                 <div className="flex flex-col gap-2 sm:flex-row">
                   {canManageAll && (
-                    <FormButton onClick={openInviteModal}>
+                    <button
+                      type="button"
+                      onClick={openInviteModal}
+                      className="text-[#7F7EED] hover:underline font-medium"
+                    >
                       {t('team.actions.invite', 'Convidar membro')}
-                    </FormButton>
+                    </button>
                   )}
-                  <FormButton variant="outline" onClick={refetchStaff}>
-                    {t('common.refresh', 'Atualizar')}
-                  </FormButton>
+                  <button
+                      type="button"
+                      onClick={refetchStaff}
+                      className="text-[#7F7EED] hover:underline font-medium"
+                    >
+                      {t('common.refresh', 'Atualizar')}
+                    </button>
                 </div>
               }
             />

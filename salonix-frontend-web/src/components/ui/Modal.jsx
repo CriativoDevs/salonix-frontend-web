@@ -61,13 +61,13 @@ function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`relative w-full transform rounded-xl bg-white shadow-2xl transition-all ${sizeClass}`}
+        className={`relative w-full transform rounded-xl bg-brand-surface border border-brand-border shadow-2xl transition-all ${sizeClass}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <button
           type="button"
           onClick={() => onClose?.()}
-          className="absolute right-3 top-3 rounded-full bg-gray-100 p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+          className="absolute right-3 top-3 rounded-full bg-brand-light p-1 text-brand-surfaceForeground/60 hover:bg-brand-light/80 hover:text-brand-surfaceForeground focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
           aria-label="Fechar"
         >
           <svg
@@ -86,18 +86,18 @@ function Modal({
 
         <div className="px-6 pb-6 pt-7">
           {title ? (
-            <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+            <h2 id="modal-title" className="text-lg font-semibold text-brand-surfaceForeground">
               {title}
             </h2>
           ) : null}
           {description ? (
-            <p className="mt-2 text-sm text-gray-600">{description}</p>
+            <p className="mt-2 text-sm text-brand-surfaceForeground/70">{description}</p>
           ) : null}
 
           <div className="mt-5">{children}</div>
         </div>
 
-        {footer ? <div className="border-t border-gray-100 px-6 py-4">{footer}</div> : null}
+        {footer ? <div className="border-t border-brand-border px-6 py-4">{footer}</div> : null}
       </div>
     </div>,
     document.body

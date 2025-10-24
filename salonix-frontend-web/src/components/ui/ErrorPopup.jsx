@@ -21,7 +21,7 @@ export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }
     >
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-primary">{title}</h2>
           {code && (
             <p className="mt-1 text-xs uppercase tracking-wide text-gray-400">
               Código: <span className="font-mono text-gray-500">{code}</span>

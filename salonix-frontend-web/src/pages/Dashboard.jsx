@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import StatCard from '../components/ui/StatCard';
@@ -680,7 +680,7 @@ export default function Dashboard() {
       <PageHeader title={t('dashboard.title', 'Dashboard')} subtitle={businessSummary} />
 
       {(error || reportsForbidden) ? (
-        <Card className="mb-4 border border-amber-200 bg-amber-50 p-4 text-amber-700">
+        <Card className="mb-4 border border-warning bg-warning/10 p-4 text-warning">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm">
               {reportsForbidden
@@ -691,7 +691,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={refetch}
-                className="self-start rounded-md border border-amber-300 px-3 py-1 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
+                className="self-start rounded-md border border-warning px-3 py-1 text-xs font-medium text-warning transition hover:bg-warning/20"
               >
                 {t('dashboard.retry', 'Tentar novamente')}
               </button>
@@ -778,13 +778,12 @@ export default function Dashboard() {
                   )
                 }
                 action={
-                  <button
-                    type="button"
-                    onClick={() => navigate('/bookings')}
-                    className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent"
+                  <Link
+                    to="/bookings"
+                    className="text-brand-primary hover:text-brand-accent underline font-medium transition"
                   >
                     {t('dashboard.new_booking', 'Novo agendamento')}
-                  </button>
+                  </Link>
                 }
               />
             )}
@@ -829,7 +828,7 @@ export default function Dashboard() {
             {t('dashboard.reports_section', 'Relatórios')}
           </h2>
           {!hasReportsAccess ? (
-            <div className="mt-4 rounded-lg border border-dashed border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="mt-4 rounded-lg border border-dashed border-error bg-error/10 px-4 py-3 text-sm text-error">
               <strong>
                 {t('dashboard.reports_access_denied', 'Acesso negado')}
               </strong>
@@ -848,16 +847,16 @@ export default function Dashboard() {
                   'Aceda aos relatórios completos e exporte os dados sempre que precisar.'
                 )}
               </p>
-              <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm font-medium text-gray-700 hover:bg-brand-light/70">
+              <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm font-medium text-brand-surfaceForeground hover:bg-brand-light/70">
                 {t('dashboard.view_reports', 'Ver relatórios')}
               </button>
             </div>
           ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-              <strong>
+            <div className="mt-4 rounded-lg border border-dashed border-yellow-400 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-500 dark:bg-yellow-900/20">
+              <strong className="font-semibold" style={{color: 'var(--text-primary)'}}>
                 {reportsRequirement?.label || t('dashboard.reports_locked', 'Relatórios bloqueados')}
               </strong>
-              <p className="mt-1">
+              <p className="mt-1" style={{color: 'var(--text-secondary)'}}>
                 {reportsRequirement?.description ||
                   t(
                     'dashboard.reports_locked_description',

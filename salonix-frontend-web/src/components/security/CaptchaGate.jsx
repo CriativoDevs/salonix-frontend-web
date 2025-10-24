@@ -84,7 +84,7 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
         type="checkbox"
         onChange={(e) => onToken?.(e.target.checked ? 'builtin-ok' : null)}
       />
-      <span>Eu não sou um robô</span>
+      <span className="text-brand-surfaceForeground">Eu não sou um robô</span>
     </label>
   );
 }

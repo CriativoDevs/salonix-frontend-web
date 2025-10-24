@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
+import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 
 function ResetPassword() {
@@ -44,7 +45,7 @@ function ResetPassword() {
     return (
       <AuthLayout>
         <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-brand-surfaceForeground">
             {t('auth.errors.invalid_link')}
           </h2>
           <Link to="/forgot-password" className="text-brand-primary hover:underline">
@@ -64,10 +65,10 @@ function ResetPassword() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">{t('auth.password_updated')}</h2>
-          <FormButton onClick={() => navigate('/login')} variant="primary">
+          <h2 className="text-xl font-semibold text-brand-surfaceForeground">{t('auth.password_updated')}</h2>
+          <button onClick={() => navigate('/login')} className="bg-brand-primary hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors">
             {t('auth.login')}
-          </FormButton>
+          </button>
         </div>
       </AuthLayout>
     );
@@ -77,38 +78,32 @@ function ResetPassword() {
     <AuthLayout>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-2xl font-semibold text-brand-surfaceForeground mb-2">
             {t('auth.reset_password')}
           </h1>
-          <p className="text-gray-600">{t('auth.reset_password_description')}</p>
+          <p className="text-brand-surfaceForeground">{t('auth.reset_password_description')}</p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.new_password')}</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="********"
-          />
-        </div>
+        <FormInput
+          type="password"
+          label={t('auth.new_password')}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="********"
+        />
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.confirm_password')}</label>
-          <input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            placeholder="********"
-          />
-        </div>
+        <FormInput
+          type="password"
+          label={t('auth.confirm_password')}
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="********"
+        />
         {error && <p className="text-sm text-red-500">{error}</p>}
 
-        <FormButton type="submit" variant="primary" className="w-full">
+        <button type="submit" className="w-full bg-brand-primary hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition-colors">
           {t('auth.update_password')}
-        </FormButton>
+        </button>
       </form>
     </AuthLayout>
   );

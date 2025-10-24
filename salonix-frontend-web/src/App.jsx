@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { useTenant } from './hooks/useTenant';
 import Router from './routes/Router';
@@ -14,6 +15,10 @@ const THEME_VARIABLES = {
   surfaceForeground: '--brand-on-surface',
   accent: '--brand-accent',
   border: '--brand-border',
+  secondary: '--brand-secondary',
+  secondaryForeground: '--brand-on-secondary',
+  highlight: '--brand-highlight',
+  highlightForeground: '--brand-on-highlight',
 };
 
 const MANIFEST_LINK_ID = 'tenant-dynamic-manifest';
@@ -49,13 +54,44 @@ function TenantThemeManager() {
       : DEFAULT_TENANT_META.branding;
 
     const effectiveTheme = { ...targetTheme };
+    
+    // Aplicar cores personalizadas do tenant
     if (targetBranding?.primaryColor) {
       effectiveTheme.primary = targetBranding.primaryColor;
       effectiveTheme.accent = targetBranding.primaryColor;
       effectiveTheme.border = targetBranding.primaryColor;
     }
+    
     if (targetBranding?.secondaryColor) {
+      effectiveTheme.secondary = targetBranding.secondaryColor;
       effectiveTheme.surfaceForeground = targetBranding.secondaryColor;
+    }
+    
+    // Aplicar cores de destaque personalizadas
+    if (targetBranding?.highlightColor) {
+      effectiveTheme.highlight = targetBranding.highlightColor;
+    }
+    
+    // Aplicar cores de superfície personalizadas
+    if (targetBranding?.surfaceColor) {
+      effectiveTheme.surface = targetBranding.surfaceColor;
+    }
+    
+    // Aplicar cores de texto personalizadas
+    if (targetBranding?.textColor) {
+      effectiveTheme.primaryForeground = targetBranding.textColor;
+      effectiveTheme.secondaryForeground = targetBranding.textColor;
+      effectiveTheme.highlightForeground = targetBranding.textColor;
+    }
+    
+    // Garantir que as cores de texto sejam adequadas para o tema atual
+    const isDarkTheme = root.classList.contains('theme-dark');
+    if (isDarkTheme) {
+      // No tema escuro, usar cores claras para texto
+      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#f8fafc';
+    } else {
+      // No tema claro, usar cores escuras para texto
+      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#0f172a';
     }
 
     if (!originalAssetsRef.current) {
@@ -258,10 +294,12 @@ function App() {
   return (
     <TenantProvider>
       <AuthProvider>
-        <TenantThemeManager />
-        <BrowserRouter>
-          <Router />
-        </BrowserRouter>
+        <ThemeProvider>
+          <TenantThemeManager />
+          <BrowserRouter>
+            <Router />
+          </BrowserRouter>
+        </ThemeProvider>
       </AuthProvider>
     </TenantProvider>
   );

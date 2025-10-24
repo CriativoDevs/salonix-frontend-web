@@ -1,22 +1,16 @@
+/* Importar temas */
+@import './themes.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Base limpa e consistente */
 @layer base {
-  :root {
-    --brand-primary: #6b7280;
-    --brand-on-primary: #ffffff;
-    --brand-surface: #f3f4f6;
-    --brand-on-surface: #1f2937;
-    --brand-accent: #4b5563;
-    --brand-border: #d1d5db;
-  }
-
   html, body, #root {
     height: 100%;
-    background-color: var(--brand-surface, #f3f4f6);
-    color: var(--brand-on-surface, #1f2937);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
   }
 }
 
@@ -29,7 +23,6 @@
   .form-light input[type="password"],
   .form-light select,
   .form-light textarea {
-    @apply bg-white text-gray-900 placeholder-gray-400 border border-gray-200 rounded-lg px-3 py-2
-           focus:outline-none focus:ring-2 focus:ring-brand-primary;
+    @apply input;
   }
 }

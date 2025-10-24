@@ -8,7 +8,7 @@ export default function BrandLogo({
   className = '',
   logoUrl = null,
   iconClassName = 'text-brand-primary',
-  textClassName = 'text-xl font-semibold tracking-wide text-gray-800',
+  textClassName = 'text-xl font-semibold tracking-wide text-brand-surfaceForeground',
 }) {
   const normalizedLogoUrl = resolveTenantAssetUrl(logoUrl);
 

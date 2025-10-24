@@ -61,7 +61,7 @@
     }
   },
   "dashboard": {
-    "welcome": "Bem-vindo ao painel do salão!",
+    "welcome": "Bem-vindo ao painel!",
     "title": "Dashboard",
     "subtitle": "Resumo do seu negócio",
     "loading": "Carregando dados...",
@@ -91,7 +91,7 @@
     "add_service": "Cadastrar serviço"
   },
   "services": {
-    "title": "Serviços do salão",
+    "title": "Serviços",
     "name": "Nome do serviço",
     "price": "Preço (€)",
     "duration": "Duração (minutos)",
@@ -103,7 +103,7 @@
     }
   },
   "professionals": {
-    "title": "Profissionais do salão",
+    "title": "Profissionais",
     "name": "Nome",
     "specialty": "Especialidade",
     "phone": "Telefone (opcional)",
@@ -181,7 +181,7 @@
     }
   },
   "profile": {
-    "title": "Perfil do salão",
+    "title": "Perfil",
     "no_logo": "Sem logo",
     "address": "Endereço"
   },
@@ -310,7 +310,7 @@
     }
   },
   "team": {
-    "current_team_heading": "Gestão da equipe do salão",
+    "current_team_heading": "Gestão da equipe",
     "current_role": {
       "label": "Você está autenticado como {{role}}.",
       "loading": "Identificando seu papel no salão..."
@@ -407,7 +407,7 @@
   },
   "invite_accept": {
     "title": "Ativar acesso ao painel",
-    "subtitle": "Defina sua senha para acessar o painel do salão.",
+    "subtitle": "Defina sua senha para acessar o painel.",
     "fields": {
       "token": "Token do convite",
       "token_placeholder": "Cole o token recebido",

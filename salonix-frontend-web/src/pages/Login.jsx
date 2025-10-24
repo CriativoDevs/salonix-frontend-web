@@ -74,7 +74,7 @@ function Login() {
     <AuthLayout>
       <ErrorPopup error={activeError} onClose={handleCloseError} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
+        <h1 className="text-2xl font-bold text-center text-brand-surfaceForeground">
           {t('login.title')}
         </h1>
 
@@ -97,20 +97,26 @@ function Login() {
         />
 
         <div className="text-right text-sm">
-          <Link to="/forgot-password" className="text-brand hover:underline">
+          <Link to="/forgot-password" className="text-brand-primary hover:text-brand-primary/80 underline">
             {t('login.forgot_password')}
           </Link>
         </div>
 
-      <FormButton type="submit" disabled={submitting}>
-        {submitting ? t('common.loading') : t('login.submit')}
-      </FormButton>
+      <div className="text-center">
+        <button 
+          type="submit" 
+          disabled={submitting}
+          className="text-brand-primary hover:text-brand-primary/80 underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting ? t('common.loading') : t('login.submit')}
+        </button>
+      </div>
 
         <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="mt-4 text-sm text-center">
           {t('login.no_account')}{' '}
-          <Link to="/register" className="text-brand hover:underline">
+          <Link to="/register" className="text-brand-primary hover:text-brand-primary/80 underline">
             {t('login.register')}
           </Link>
         </div>

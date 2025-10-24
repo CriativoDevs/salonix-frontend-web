@@ -61,8 +61,13 @@ function CustomerForm({ onAdd, busy = false }) {
             type="text"
             value={form.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            className="mt-1 rounded border border-brand-border px-3 py-2 text-sm"
             placeholder={t('customers.form.name_placeholder', 'Nome completo')}
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
+            className="mt-1 rounded border px-3 py-2 text-sm"
           />
         </label>
         <label className="flex flex-col text-sm font-medium text-brand-surfaceForeground/80">
@@ -71,8 +76,13 @@ function CustomerForm({ onAdd, busy = false }) {
             type="email"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            className="mt-1 rounded border border-brand-border px-3 py-2 text-sm"
             placeholder="cliente@email.com"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
+            className="mt-1 rounded border px-3 py-2 text-sm"
           />
         </label>
         <label className="flex flex-col text-sm font-medium text-brand-surfaceForeground/80">
@@ -81,8 +91,13 @@ function CustomerForm({ onAdd, busy = false }) {
             type="tel"
             value={form.phone_number}
             onChange={(e) => handleChange('phone_number', e.target.value)}
-            className="mt-1 rounded border border-brand-border px-3 py-2 text-sm"
             placeholder="+351912345678"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
+            className="mt-1 rounded border px-3 py-2 text-sm"
           />
         </label>
         <label className="flex flex-col text-sm font-medium text-brand-surfaceForeground/80">
@@ -91,8 +106,13 @@ function CustomerForm({ onAdd, busy = false }) {
             type="text"
             value={form.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
-            className="mt-1 rounded border border-brand-border px-3 py-2 text-sm"
             placeholder={t('customers.form.notes_placeholder', 'Preferências, observações...')}
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
+            className="mt-1 rounded border px-3 py-2 text-sm"
           />
         </label>
       </div>
@@ -113,7 +133,7 @@ function CustomerForm({ onAdd, busy = false }) {
         <button
           type="submit"
           disabled={busy}
-          className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
+          className="text-sm font-medium text-[#7F7EED] hover:underline disabled:opacity-50"
         >
           {busy ? t('common.saving', 'Salvando...') : t('customers.form.submit', 'Adicionar cliente')}
         </button>
