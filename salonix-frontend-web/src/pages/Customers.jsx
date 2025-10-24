@@ -374,7 +374,7 @@ function Customers() {
       <div className="space-y-6">
         <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
           <h1 className="text-2xl font-semibold text-brand-surfaceForeground">
-            {t('customers.title', 'Clientes do salão')}
+            {t('customers.title', 'Clientes')}
           </h1>
           <p className="mt-1 text-sm text-brand-surfaceForeground/70">
             {t(
@@ -411,7 +411,12 @@ function Customers() {
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
-                className="rounded border border-brand-border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+                className="rounded border px-3 py-2 text-sm"
               >
                 <option value={SORT_RECENT}>
                   {t('customers.list.sort_recent', 'Mais recentes')}
@@ -425,7 +430,12 @@ function Customers() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('customers.list.search', 'Buscar cliente...')}
-                className="w-full rounded border border-brand-border px-3 py-2 text-sm sm:w-64"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+                className="w-full rounded border px-3 py-2 text-sm sm:w-64"
               />
               <label className="flex items-center gap-2 text-sm text-brand-surfaceForeground/70">
                 <input
@@ -546,7 +556,13 @@ function Customers() {
                         <td className="px-3 py-3 align-top">
                           {isEditing ? (
                             <input
-                              className="w-full rounded border border-brand-border px-2 py-1 text-sm"
+                              className="w-full rounded px-2 py-1 text-sm"
+                              style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border-primary)',
+                                border: '1px solid'
+                              }}
                               value={editingForm.name}
                               onChange={(e) =>
                                 setEditingForm((prev) => ({ ...prev, name: e.target.value }))
@@ -569,7 +585,13 @@ function Customers() {
                           {isEditing ? (
                             <div className="space-y-1">
                               <input
-                                className="w-full rounded border border-brand-border px-2 py-1 text-sm"
+                                className="w-full rounded px-2 py-1 text-sm"
+                                style={{
+                                  backgroundColor: 'var(--bg-primary)',
+                                  color: 'var(--text-primary)',
+                                  borderColor: 'var(--border-primary)',
+                                  border: '1px solid'
+                                }}
                                 value={editingForm.email}
                                 onChange={(e) =>
                                   setEditingForm((prev) => ({ ...prev, email: e.target.value }))
@@ -577,7 +599,13 @@ function Customers() {
                                 placeholder="cliente@email.com"
                               />
                               <input
-                                className="w-full rounded border border-brand-border px-2 py-1 text-sm"
+                                className="w-full rounded px-2 py-1 text-sm"
+                                style={{
+                                  backgroundColor: 'var(--bg-primary)',
+                                  color: 'var(--text-primary)',
+                                  borderColor: 'var(--border-primary)',
+                                  border: '1px solid'
+                                }}
                                 value={editingForm.phone_number}
                                 onChange={(e) =>
                                   setEditingForm((prev) => ({
@@ -604,7 +632,13 @@ function Customers() {
                         <td className="px-3 py-3 align-top">
                           {isEditing ? (
                             <textarea
-                              className="w-full rounded border border-brand-border px-2 py-1 text-sm"
+                              className="w-full rounded px-2 py-1 text-sm"
+                              style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border-primary)',
+                                border: '1px solid'
+                              }}
                               rows={2}
                               value={editingForm.notes}
                               onChange={(e) =>
@@ -667,16 +701,27 @@ function Customers() {
                               </button>
 
                               {inviteTooltipOpen ? (
-                                <div className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg border border-brand-border bg-white p-3 text-left text-xs text-brand-surfaceForeground shadow-lg">
+                                <div 
+                                  className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-xs shadow-lg"
+                                  style={{
+                                    backgroundColor: 'var(--bg-primary)',
+                                    color: 'var(--text-primary)',
+                                    borderColor: 'var(--border-primary)',
+                                    border: '1px solid'
+                                  }}
+                                >
                                   <div className="flex flex-col gap-2">
                                     {inviteTooltipLines.map((line, index) => (
                                       <div key={index}>
                                         {line.label ? (
-                                          <p className="font-semibold text-brand-surfaceForeground/80">
+                                          <p 
+                                            className="font-semibold"
+                                            style={{ color: 'var(--text-secondary)' }}
+                                          >
                                             {line.label}
                                           </p>
                                         ) : null}
-                                        <p className="text-brand-surfaceForeground">
+                                        <p style={{ color: 'var(--text-primary)' }}>
                                           {line.value}
                                         </p>
                                       </div>
@@ -694,14 +739,16 @@ function Customers() {
                                 type="button"
                                 onClick={saveEdit}
                                 disabled={disabled}
-                                className="rounded bg-brand-primary px-3 py-1 text-xs font-medium text-white hover:bg-brand-accent disabled:opacity-50"
+                                className="text-xs font-medium hover:underline disabled:opacity-50"
+                                style={{ color: '#7F7EED' }}
                               >
                                 {t('common.save', 'Salvar')}
                               </button>
                               <button
                                 type="button"
                                 onClick={cancelEdit}
-                                className="rounded border border-brand-border px-3 py-1 text-xs font-medium text-brand-surfaceForeground hover:bg-brand-light"
+                                className="text-xs font-medium hover:underline"
+                                style={{ color: '#7F7EED' }}
                               >
                                 {t('common.cancel', 'Cancelar')}
                               </button>
@@ -712,7 +759,7 @@ function Customers() {
                                 <button
                                   type="button"
                                   onClick={() => startEdit(customer)}
-                                  className="block text-xs font-semibold text-[#1D29CF] hover:underline"
+                                  className="block text-xs font-semibold text-[#7F7EED] hover:underline"
                                 >
                                   {t('common.edit', 'Editar')}
                                 </button>

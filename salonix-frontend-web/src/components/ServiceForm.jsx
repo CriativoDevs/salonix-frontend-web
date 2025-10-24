@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import FormButton from './ui/FormButton';
 
 function ServiceForm({ onAdd }) {
   const { t } = useTranslation();
@@ -63,9 +62,14 @@ function ServiceForm({ onAdd }) {
         )}
       </div>
 
-      <FormButton type="submit" variant="success" className="w-full">
-        {t('services.submit')}
-      </FormButton>
+      <div className="flex justify-center">
+        <button 
+          type="submit" 
+          className="text-sm font-medium text-[#1D29CF] hover:underline"
+        >
+          {t('services.submit')}
+        </button>
+      </div>
     </form>
   );
 }

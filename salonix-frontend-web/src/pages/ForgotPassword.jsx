@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
+import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import CaptchaGate from '../components/security/CaptchaGate';
 
@@ -53,11 +54,11 @@ function ForgotPassword() {
             </svg>
           </div>
 
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-brand-surfaceForeground">
             {t('auth.password_reset_sent')}
           </h2>
 
-          <p className="text-gray-600">
+          <p className="text-brand-surfaceForeground">
             {t('auth.password_reset_instructions')}
           </p>
 
@@ -76,34 +77,33 @@ function ForgotPassword() {
     <AuthLayout>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-2xl font-semibold text-brand-surfaceForeground mb-2">
             {t('auth.forgot_password')}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-brand-surfaceForeground">
             {t('auth.forgot_password_description')}
           </p>
         </div>
 
-        <div>
-          <label className="block text-sm mb-1">{t('auth.email')}</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
-            placeholder={t('auth.email_placeholder')}
-          />
-          {error && <p className="text-sm text-red-500">{error}</p>}
-        </div>
+        <FormInput
+          type="email"
+          label={t('auth.email')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('auth.email_placeholder')}
+          error={error}
+        />
 
-        <FormButton type="submit" variant="primary" className="w-full">
-          {t('auth.send_reset_link')}
-        </FormButton>
+        <div className="text-center">
+          <button type="submit" className="text-brand-primary hover:text-brand-primary/80 underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {t('auth.send_reset_link')}
+          </button>
+        </div>
 
         <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="text-center text-sm">
-          <span className="text-gray-600">{t('auth.remember_password')} </span>
+          <span className="text-brand-surfaceForeground">{t('auth.remember_password')} </span>
           <Link to="/login" className="text-brand-primary hover:underline">
             {t('auth.login')}
           </Link>

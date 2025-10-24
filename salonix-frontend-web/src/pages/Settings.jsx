@@ -421,15 +421,6 @@ function Settings() {
     }
   };
 
-  const handleLogoUrlChange = (event) => {
-    const value = event.target.value;
-    setBrandingFile(null);
-    setSettings({
-      ...settings,
-      branding: { ...settings.branding, logoUrl: value },
-    });
-  };
-
   const handleAutoInviteToggle = useCallback(async () => {
     if (autoInviteSaving || tenantLoading || !canToggleAutoInvite) {
       return;
@@ -603,7 +594,12 @@ function Settings() {
                 })
               }
               disabled={tenantLoading}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              className="flex-1 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-primary)'
+              }}
             />
           </div>
         </div>
@@ -635,7 +631,12 @@ function Settings() {
                 })
               }
               disabled={tenantLoading}
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              className="flex-1 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-primary)'
+              }}
             />
           </div>
         </div>
@@ -658,30 +659,19 @@ function Settings() {
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/svg+xml"
-            onChange={handleLogoFileChange}
-            disabled={tenantLoading}
-            className="text-sm"
-          />
-          <span className="text-xs text-brand-surfaceForeground/60">
-            {t('settings.branding.logo_info', 'PNG, JPG ou SVG até 2MB. Enviar um arquivo substitui a URL do logo.')}
-          </span>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
-            {t('settings.branding.logo_url', 'URL do logo')}
+          <label className="cursor-pointer text-sm text-brand-primary hover:text-brand-primary/80 underline">
+            Escolher arquivo
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/svg+xml"
+              onChange={handleLogoFileChange}
+              disabled={tenantLoading}
+              className="hidden"
+            />
           </label>
-          <input
-            type="url"
-            value={settings.branding.logoUrl}
-            onChange={handleLogoUrlChange}
-            disabled={tenantLoading}
-            placeholder="https://..."
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-          />
+          <span className="text-xs text-brand-surfaceForeground/60">
+            {t('settings.branding.logo_info', 'PNG, JPG ou SVG até 2MB.')}
+          </span>
         </div>
       </div>
 
@@ -692,14 +682,13 @@ function Settings() {
         <p className="text-sm text-emerald-600">{brandingSuccess}</p>
       ) : null}
 
-      <FormButton
+      <button
         onClick={handleBrandingSave}
-        variant="primary"
-        className="w-full"
+        className="w-full text-center text-brand-primary hover:text-brand-primary/80 underline text-sm py-2 disabled:opacity-50 disabled:cursor-not-allowed"
         disabled={tenantLoading || brandingSaving}
       >
         {brandingSaving ? t('common.saving', 'Salvando...') : t('settings.save')}
-      </FormButton>
+      </button>
     </div>
   );
 
@@ -995,7 +984,7 @@ function Settings() {
           </div>
 
           <div className="lg:col-span-3">
-            <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
+            <Card className="p-4 sm:p-6 bg-brand-surface text-brand-surfaceForeground">
               {activeTab === 'branding' && renderBrandingSettings()}
               {activeTab === 'general' && renderGeneralSettings()}
               {activeTab === 'notifications' && renderNotificationSettings()}

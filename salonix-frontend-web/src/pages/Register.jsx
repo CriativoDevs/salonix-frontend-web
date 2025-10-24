@@ -106,7 +106,7 @@ function Register() {
     <AuthLayout>
       <ErrorPopup error={apiError} onClose={handleCloseError} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
+        <h1 className="text-2xl font-bold text-center text-brand-surfaceForeground">
           {t('auth.register_title')}
         </h1>
 
@@ -155,14 +155,16 @@ function Register() {
           onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
         />
 
-        <FormButton type="submit" variant="primary" className="w-full" disabled={submitting}>
-          {submitting ? t('common.loading') : t('auth.register')}
-        </FormButton>
+        <div className="text-center">
+          <button type="submit" className="text-brand-primary hover:text-brand-primary/80 underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled={submitting}>
+            {submitting ? t('common.loading') : t('auth.register')}
+          </button>
+        </div>
 
         <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="text-center text-sm">
-          <span className="text-gray-600">
+          <span className="text-brand-surfaceForeground">
             {t('auth.already_have_account')}{' '}
           </span>
           <Link to="/login" className="text-brand-primary hover:underline">

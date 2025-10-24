@@ -1,11 +1,8 @@
 import React from 'react';
 
 const variants = {
-  primary: 'bg-brand-primary hover:bg-brand-hover text-white',
-  success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-  warning: 'bg-amber-500 hover:bg-amber-600 text-white',
-  danger: 'bg-rose-600 hover:bg-rose-700 text-white',
-  outline: 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
 };
 
 const sizes = {

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 import './styles/index.css';
+import './styles/themes.css';
 import './i18n';
 import { getEnvVar } from './utils/env';
 

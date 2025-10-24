@@ -285,21 +285,26 @@ function ManageStaffModal({
 
   const footerButtons = (
     <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-      <FormButton variant="outline" onClick={onClose}>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-sm font-medium text-brand-surfaceForeground/60 hover:underline"
+      >
         {t('common.close', 'Fechar')}
-      </FormButton>
+      </button>
       {activeTab === 'permissions' &&
       !isOwnerMember &&
       currentUserRole === 'owner' ? (
-        <FormButton
+        <button
           type="submit"
           form={formId}
           disabled={savingRole || statusBusy}
+          className="text-sm font-medium text-[#1D29CF] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {savingRole
             ? t('team.manage.actions.saving', 'Salvando...')
             : t('team.manage.actions.save_role', 'Salvar papel')}
-        </FormButton>
+        </button>
       ) : null}
     </div>
   );
@@ -323,14 +328,14 @@ function ManageStaffModal({
       footer={footerButtons}
     >
       {!member ? (
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-brand-surfaceForeground/60">
           {t('team.manage.empty', 'Selecione um membro para gerenciar.')}
         </p>
       ) : (
         <div className="space-y-5">
           {/* Tab Navigation - Hide permissions tab for collaborators */}
           {!isCollaboratorUser && (
-            <div className="border-b border-gray-200">
+            <div className="border-b border-brand-border">
               <nav className="-mb-px flex space-x-8">
                 <button
                   type="button"
@@ -338,7 +343,7 @@ function ManageStaffModal({
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'professional'
                       ? 'border-brand-primary text-brand-primary'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:border-brand-border'
                   }`}
                 >
                   {t('team.manage.tabs.professional', 'Dados Profissionais')}
@@ -349,7 +354,7 @@ function ManageStaffModal({
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
                     activeTab === 'permissions'
                       ? 'border-brand-primary text-brand-primary'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:border-brand-border'
                   }`}
                 >
                   {t('team.manage.tabs.permissions', 'Permissões')}
@@ -361,14 +366,14 @@ function ManageStaffModal({
           {/* Professional Tab */}
           {(activeTab === 'professional' || isCollaboratorUser) && (
             <div className="space-y-4">
-              <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-700">
+              <div className="space-y-2 rounded-lg border border-brand-border bg-brand-light p-4">
+                <p className="text-sm font-medium text-brand-surfaceForeground">
                   {t(
                     'team.manage.professional.summary',
                     'Informações Profissionais'
                   )}
                 </p>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="space-y-1 text-sm text-brand-surfaceForeground/70">
                   <li>
                     <strong>{t('team.manage.summary.name', 'Nome')}:</strong>{' '}
                     {currentProfessional?.name ||
@@ -395,7 +400,7 @@ function ManageStaffModal({
               </div>
 
               {professionalEditing ? (
-                <div className="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+                <div className="space-y-3 rounded-lg border border-brand-border bg-brand-surface p-4">
                   <FormInput
                     label={t(
                       'team.manage.professional.form.name',
@@ -407,7 +412,7 @@ function ManageStaffModal({
                     }
                   />
                   <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-brand-surfaceForeground">
                       {t(
                         'team.manage.professional.form.bio',
                         'Bio ou especialidade'
@@ -419,7 +424,12 @@ function ManageStaffModal({
                         handleProfessionalChange('bio', event.target.value)
                       }
                       rows={3}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                      className="w-full rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)'
+                      }}
                     />
                   </div>
                   {professionalModalError ? (
@@ -428,12 +438,11 @@ function ManageStaffModal({
                     </div>
                   ) : null}
                   <div className="flex flex-wrap gap-2">
-                    <FormButton
+                    <button
                       type="button"
-                      size="sm"
-                      variant="primary"
                       disabled={professionalModalSubmitting}
                       onClick={handleProfessionalSave}
+                      className="text-sm font-medium text-emerald-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {professionalModalSubmitting
                         ? t(
@@ -444,26 +453,24 @@ function ManageStaffModal({
                             'team.manage.professional.form.save',
                             'Salvar profissional'
                           )}
-                    </FormButton>
-                    <FormButton
+                    </button>
+                    <button
                       type="button"
-                      size="sm"
-                      variant="outline"
                       disabled={professionalModalSubmitting}
                       onClick={handleProfessionalCancel}
+                      className="text-sm font-medium text-brand-surfaceForeground/60 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {t('common.cancel', 'Cancelar')}
-                    </FormButton>
+                    </button>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {canEditProfessional ? (
-                    <FormButton
+                    <button
                       type="button"
-                      size="sm"
-                      variant="outline"
                       onClick={handleProfessionalEdit}
+                      className="text-sm font-medium text-[#1D29CF] hover:underline"
                     >
                       {currentProfessional
                         ? t(
@@ -474,9 +481,9 @@ function ManageStaffModal({
                             'team.manage.professional.create',
                             'Criar Profissional'
                           )}
-                    </FormButton>
+                    </button>
                   ) : (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-brand-surfaceForeground/60">
                       {t(
                         'team.manage.professional.no_permission',
                         'Sem permissão para editar dados profissionais'
@@ -503,11 +510,11 @@ function ManageStaffModal({
           {/* Permissions Tab */}
           {activeTab === 'permissions' && (
             <form id={formId} onSubmit={handleSaveRole} className="space-y-5">
-              <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-4">
-                <p className="text-sm font-medium text-gray-700">
+              <div className="space-y-2 rounded-lg border border-brand-border bg-brand-light p-4">
+                <p className="text-sm font-medium text-brand-surfaceForeground">
                   {t('team.manage.permissions.summary', 'Permissões de Acesso')}
                 </p>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="space-y-1 text-sm text-brand-surfaceForeground/70">
                   <li>
                     <strong>{t('team.manage.summary.email', 'E-mail')}:</strong>{' '}
                     {member?.email || '—'}
@@ -539,7 +546,7 @@ function ManageStaffModal({
                   {/* Role section - only visible to owners */}
                   {currentUserRole === 'owner' && (
                     <div className="space-y-3">
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label className="block text-sm font-medium text-brand-surfaceForeground">
                         {t('team.manage.role.label', 'Papel')}
                       </label>
                       <div className="space-y-2">
@@ -552,9 +559,9 @@ function ManageStaffModal({
                                 value={roleOption}
                                 checked={role === roleOption}
                                 onChange={(e) => setRole(e.target.value)}
-                                className="mr-2"
+                                className="mr-2 text-brand-primary focus:ring-brand-primary"
                               />
-                              <span className="text-sm">
+                              <span className="text-sm text-brand-surfaceForeground">
                                 {ROLE_LABELS[roleOption] || roleOption}
                               </span>
                             </label>
@@ -566,11 +573,11 @@ function ManageStaffModal({
 
                   {(currentUserRole === 'owner' ||
                     currentUserRole === 'manager') && (
-                    <div className="space-y-3 rounded-lg border border-gray-100 p-4">
-                      <p className="text-sm font-medium text-gray-700">
+                    <div className="space-y-3 rounded-lg border border-brand-border bg-brand-light p-4">
+                      <p className="text-sm font-medium text-brand-surfaceForeground">
                         {t('team.manage.status.title', 'Status e acesso')}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-brand-surfaceForeground/60">
                         {t(
                           'team.manage.status.helper',
                           'Alterar o status ajusta o acesso deste membro ao painel.'
@@ -588,7 +595,7 @@ function ManageStaffModal({
                               ),
                             })
                           }
-                          className="rounded-md border border-emerald-300 px-3 py-1 text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-sm font-medium text-emerald-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {t('team.manage.status.activate', 'Ativar')}
                         </button>
@@ -603,7 +610,7 @@ function ManageStaffModal({
                               ),
                             })
                           }
-                          className="rounded-md border border-rose-300 px-3 py-1 text-rose-700 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-sm font-medium text-rose-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {statusBusy
                             ? t(
@@ -645,7 +652,7 @@ function ManageStaffModal({
                   ) : null}
                 </div>
               ) : requestId ? (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-brand-surfaceForeground/40">
                   {t('common.request_id', 'Request ID')}: {requestId}
                 </p>
               ) : null}

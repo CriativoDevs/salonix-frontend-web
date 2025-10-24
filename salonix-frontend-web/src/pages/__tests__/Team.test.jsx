@@ -6,6 +6,7 @@ import Team from '../Team';
 import { useTenant } from '../../hooks/useTenant';
 import { useAuth } from '../../hooks/useAuth';
 import { fetchProfessionals } from '../../api/professionals';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 
 if (typeof globalThis.TextEncoder === 'undefined') {
   globalThis.TextEncoder = TextEncoder;
@@ -65,9 +66,11 @@ describe('Team page', () => {
 
   it('renders team page', async () => {
     render(
-      <MemoryRouter>
-        <Team />
-      </MemoryRouter>
+      <ThemeProvider>
+        <MemoryRouter>
+          <Team />
+        </MemoryRouter>
+      </ThemeProvider>
     );
 
     expect(await screen.findByText('Equipe')).toBeInTheDocument();

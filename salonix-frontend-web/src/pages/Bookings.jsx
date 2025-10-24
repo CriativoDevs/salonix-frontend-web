@@ -8,15 +8,9 @@ import { fetchProfessionals } from '../api/professionals';
 import { fetchSlots, fetchSlotDetail } from '../api/slots';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
+import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
-
-const STATUS_STYLES = {
-  scheduled: 'border-emerald-200 bg-emerald-100 text-emerald-800',
-  completed: 'border-sky-200 bg-sky-100 text-sky-800',
-  paid: 'border-emerald-300 bg-emerald-200 text-emerald-900',
-  cancelled: 'border-rose-200 bg-rose-100 text-rose-800',
-};
 
 const INITIAL_FORM = {
   customerId: '',
@@ -540,56 +534,82 @@ function Bookings() {
               {t('bookings.filters.customer', 'Cliente')}
             </label>
             <select
-              value={filters.customerId}
-              onChange={(e) => handleFilterChange('customerId', e.target.value)}
-              className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-            >
-              <option value="">{t('bookings.filters.customer_all', 'Todos')}</option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name}
+                value={filters.customerId}
+                onChange={(e) => handleFilterChange('customerId', e.target.value)}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+              >
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.filters.customer_all', 'Todos')}
                 </option>
-              ))}
-            </select>
+                {customers.map((customer) => (
+                  <option key={customer.id} value={customer.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('bookings.filters.status', 'Status')}
             </label>
             <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-            >
-              <option value="">{t('bookings.filters.status_all', 'Todos')}</option>
-              {STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>
-                  {t(`bookings.statuses.${status}`, status)}
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
+              >
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.filters.status_all', 'Todos')}
                 </option>
-              ))}
-            </select>
+                {STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                    {t(`bookings.status.${status}`, status)}
+                  </option>
+                ))}
+              </select>
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('bookings.filters.date_from', 'Data inicial')}
             </label>
             <input
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-            />
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)',
+                  colorScheme: 'light dark'
+                }}
+              />
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('bookings.filters.date_to', 'Data final')}
             </label>
             <input
-              type="date"
-              value={filters.dateTo}
-              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
-            />
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)',
+                  colorScheme: 'light dark'
+                }}
+              />
           </div>
         </section>
 
@@ -603,14 +623,21 @@ function Bookings() {
                 {t('bookings.form.customer', 'Cliente')}
               </label>
               <select
-                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
                 value={formData.customerId}
                 onChange={(e) => handleFormChange('customerId', e.target.value)}
                 disabled={lookupLoading || customers.length === 0}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
               >
-                <option value="">{t('bookings.form.select_customer', 'Selecione um cliente')}</option>
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.form.select_customer', 'Selecione um cliente')}
+                </option>
                 {customers.map((customer) => (
-                  <option key={customer.id} value={customer.id}>
+                  <option key={customer.id} value={customer.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     {customer.name}
                   </option>
                 ))}
@@ -626,13 +653,20 @@ function Bookings() {
                 {t('bookings.service', 'Serviço')}
               </label>
               <select
-                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
                 value={formData.serviceId}
                 onChange={(e) => handleFormChange('serviceId', e.target.value)}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
               >
-                <option value="">{t('bookings.form.select_service', 'Selecione um serviço')}</option>
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.form.select_service', 'Selecione um serviço')}
+                </option>
                 {services.map((service) => (
-                  <option key={service.id} value={service.id}>
+                  <option key={service.id} value={service.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     {formatServiceOption(service)}
                   </option>
                 ))}
@@ -644,13 +678,20 @@ function Bookings() {
                 {t('bookings.professional', 'Profissional')}
               </label>
               <select
-                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
                 value={formData.professionalId}
                 onChange={(e) => handleFormChange('professionalId', e.target.value)}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
               >
-                <option value="">{t('bookings.form.select_professional', 'Selecione um profissional')}</option>
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.form.select_professional', 'Selecione um profissional')}
+                </option>
                 {professionals.map((professional) => (
-                  <option key={professional.id} value={professional.id}>
+                  <option key={professional.id} value={professional.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     {formatProfessionalOption(professional)}
                   </option>
                 ))}
@@ -662,7 +703,7 @@ function Bookings() {
                 {t('bookings.form.slot', 'Horário')}
               </label>
               <select
-                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
                 value={formData.slotId}
                 onChange={(e) => handleFormChange('slotId', e.target.value)}
                 disabled={!formData.professionalId}
@@ -671,10 +712,17 @@ function Bookings() {
                     refreshSlotsForProfessional(formData.professionalId);
                   }
                 }}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
               >
-                <option value="">{t('bookings.form.select_slot', 'Selecione um horário')}</option>
+                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                  {t('bookings.form.select_slot', 'Selecione um horário')}
+                </option>
                 {formSlots.map((slot) => (
-                  <option key={slot.id} value={slot.id}>
+                  <option key={slot.id} value={slot.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     {formatDateTimeRange(slot.start_time, slot.end_time)}
                   </option>
                 ))}
@@ -696,11 +744,16 @@ function Bookings() {
                 {t('bookings.notes', 'Observações')}
               </label>
               <textarea
-                className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
                 rows={1}
                 value={formData.notes}
                 onChange={(e) => handleFormChange('notes', e.target.value)}
                 placeholder={t('bookings.form.notes_placeholder', 'Notas opcionais')}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)'
+                }}
               />
             </div>
 
@@ -708,14 +761,15 @@ function Bookings() {
               <button
                 type="submit"
                 disabled={formSubmitting || customers.length === 0}
-                className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
+                className="text-brand-primary hover:text-brand-accent underline font-medium transition"
               >
                 {formSubmitting ? t('common.saving', 'Salvando...') : t('bookings.form.submit', 'Agendar')}
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded border border-brand-border px-4 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light"
+                style={{ color: '#7F7EED' }}
+                className="hover:text-brand-accent underline font-medium transition"
               >
                 {t('bookings.form.reset', 'Limpar')}
               </button>
@@ -769,7 +823,7 @@ function Bookings() {
                         </td>
                         <td className="px-4 py-3">
                           <span
-                            className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                            className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
                           >
                             {t(`bookings.statuses.${appointment.status}`, appointment.status)}
                           </span>
@@ -812,7 +866,7 @@ function Bookings() {
       </div>
       {selectedAppointment && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+          <div className="w-full max-w-lg rounded-lg bg-brand-surface p-6 shadow-xl border border-brand-border">
             <div className="flex items-start gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-brand-surfaceForeground">
@@ -829,22 +883,22 @@ function Bookings() {
 
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="font-semibold">{t('bookings.professional', 'Profissional')}</dt>
-                <dd>{selectedAppointment.professionalName}</dd>
+                <dt className="font-semibold text-brand-surfaceForeground">{t('bookings.professional', 'Profissional')}</dt>
+                <dd className="text-brand-surfaceForeground">{selectedAppointment.professionalName}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="font-semibold">{t('bookings.service', 'Serviço')}</dt>
-                <dd>{selectedAppointment.serviceName}</dd>
+                <dt className="font-semibold text-brand-surfaceForeground">{t('bookings.service', 'Serviço')}</dt>
+                <dd className="text-brand-surfaceForeground">{selectedAppointment.serviceName}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="font-semibold">{t('bookings.datetime', 'Data e hora')}</dt>
-                <dd>{formatDateTimeRange(selectedAppointment.slotStart, selectedAppointment.slotEnd)}</dd>
+                <dt className="font-semibold text-brand-surfaceForeground">{t('bookings.datetime', 'Data e hora')}</dt>
+                <dd className="text-brand-surfaceForeground">{formatDateTimeRange(selectedAppointment.slotStart, selectedAppointment.slotEnd)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="font-semibold">{t('bookings.status', 'Status')}</dt>
+                <dt className="font-semibold text-brand-surfaceForeground">{t('bookings.status', 'Status')}</dt>
                 <dd>
                   <span
-                    className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${STATUS_STYLES[selectedAppointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                    className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${APPOINTMENT_STATUS_STYLES[selectedAppointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
                   >
                     {t(`bookings.statuses.${selectedAppointment.status}`, selectedAppointment.status)}
                   </span>
@@ -860,10 +914,15 @@ function Bookings() {
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
-                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)'
+                  }}
                 >
                   {STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>
+                    <option key={status} value={status} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                       {t(`bookings.statuses.${status}`, status)}
                     </option>
                   ))}
@@ -876,14 +935,19 @@ function Bookings() {
                 <select
                   value={editForm.slotId}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, slotId: e.target.value }))}
-                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
                   disabled={editingSlotsLoading}
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)'
+                  }}
                 >
-                  <option value="">
+                  <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                     {t('bookings.edit.keep_slot', 'Manter horário atual')}
                   </option>
                   {editingSlots.map((slot) => (
-                    <option key={slot.id} value={slot.id}>
+                    <option key={slot.id} value={slot.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                       {formatDateTimeRange(slot.start_time, slot.end_time)}
                     </option>
                   ))}
@@ -900,9 +964,14 @@ function Bookings() {
                 </label>
                 <textarea
                   rows={2}
-                  className="mt-1 w-full rounded border border-brand-border px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
                   value={editForm.notes}
                   onChange={(e) => setEditForm((prev) => ({ ...prev, notes: e.target.value }))}
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)'
+                  }}
                 />
               </div>
             </div>
@@ -915,7 +984,7 @@ function Bookings() {
                 <button
                   type="button"
                   onClick={() => handleStatusQuickChange(selectedAppointment, 'cancelled')}
-                  className="rounded border border-brand-border px-4 py-2 text-sm text-[#CF3B1D] hover:bg-brand-light"
+                  className="text-[#CF3B1D] hover:underline font-medium transition"
                 >
                   {t('bookings.actions.cancel', 'Cancelar agendamento')}
                 </button>
@@ -926,7 +995,7 @@ function Bookings() {
                 <button
                   type="button"
                   onClick={closeDetails}
-                  className="rounded border border-brand-border px-4 py-2 text-sm text-brand-surfaceForeground hover:bg-brand-light"
+                  className="text-brand-surfaceForeground hover:underline font-medium transition"
                 >
                   {t('common.close', 'Fechar')}
                 </button>
@@ -934,7 +1003,7 @@ function Bookings() {
                   type="button"
                   disabled={editSubmitting}
                   onClick={() => submitEdit(selectedAppointment)}
-                  className="rounded bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-accent disabled:opacity-50"
+                  className="text-brand-primary hover:underline font-medium transition disabled:opacity-50"
                 >
                   {editSubmitting ? t('common.saving', 'Salvando...') : t('bookings.actions.save', 'Salvar alterações')}
                 </button>

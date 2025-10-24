@@ -179,9 +179,17 @@ function AvailableSlots() {
             value={selectedProfessional}
             onChange={(e) => setSelectedProfessional(e.target.value)}
             className="w-full"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '0.375rem',
+              padding: '0.5rem 0.75rem',
+              colorScheme: 'light dark'
+            }}
           >
             {professionals.map((p) => (
-              <option key={p.id} value={p.id}>
+              <option key={p.id} value={p.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                 {p.name}
               </option>
             ))}
@@ -194,10 +202,18 @@ function AvailableSlots() {
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             className="w-full"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '0.375rem',
+              padding: '0.5rem 0.75rem',
+              colorScheme: 'light dark'
+            }}
           >
-            <option value="">{t('common.all', 'Todas')}</option>
+            <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('common.all', 'Todas')}</option>
             {dates.map((date) => (
-              <option key={date} value={date}>
+              <option key={date} value={date} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
                 {date}
               </option>
             ))}
@@ -215,19 +231,57 @@ function AvailableSlots() {
                 value={form.date || selectedDate}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
                 className="w-44 md:w-56"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                  borderRadius: '0.375rem',
+                  padding: '0.5rem 0.75rem',
+                  colorScheme: 'light dark'
+                }}
               />
             </div>
             <div>
               <Label className="mb-1 block md:mb-0">Início</Label>
               <div className="flex gap-2">
-                <select value={form.sh} onChange={(e) => setForm({ ...form, sh: e.target.value })} className="w-20 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                <select 
+                  value={form.sh} 
+                  onChange={(e) => setForm({ ...form, sh: e.target.value })} 
+                  className="w-20 font-mono" 
+                  style={{ 
+                    fontVariantNumeric: 'tabular-nums',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    colorScheme: 'light dark'
+                  }}
+                >
                   {Array.from({ length: 24 }).map((_, h) => (
-                    <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}</option>
+                    <option key={h} value={String(h).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {String(h).padStart(2,'0')}
+                    </option>
                   ))}
                 </select>
-                <select value={form.sm} onChange={(e) => setForm({ ...form, sm: e.target.value })} className="w-20 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                <select 
+                  value={form.sm} 
+                  onChange={(e) => setForm({ ...form, sm: e.target.value })} 
+                  className="w-20 font-mono" 
+                  style={{ 
+                    fontVariantNumeric: 'tabular-nums',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    colorScheme: 'light dark'
+                  }}
+                >
                   {minuteOptions.map((m) => (
-                    <option key={m} value={String(m).padStart(2,'0')}>{String(m).padStart(2,'0')}</option>
+                    <option key={m} value={String(m).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {String(m).padStart(2,'0')}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -235,14 +289,44 @@ function AvailableSlots() {
             <div>
               <Label className="mb-1 block md:mb-0">{t('slots.end_time', 'Término')}</Label>
               <div className="flex gap-2">
-                <select value={form.eh} onChange={(e) => setForm({ ...form, eh: e.target.value })} className="w-20 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                <select 
+                  value={form.eh} 
+                  onChange={(e) => setForm({ ...form, eh: e.target.value })} 
+                  className="w-20 font-mono" 
+                  style={{ 
+                    fontVariantNumeric: 'tabular-nums',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    colorScheme: 'light dark'
+                  }}
+                >
                   {Array.from({ length: 24 }).map((_, h) => (
-                    <option key={h} value={String(h).padStart(2,'0')}>{String(h).padStart(2,'0')}</option>
+                    <option key={h} value={String(h).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {String(h).padStart(2,'0')}
+                    </option>
                   ))}
                 </select>
-                <select value={form.em} onChange={(e) => setForm({ ...form, em: e.target.value })} className="w-20 font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                <select 
+                  value={form.em} 
+                  onChange={(e) => setForm({ ...form, em: e.target.value })} 
+                  className="w-20 font-mono" 
+                  style={{ 
+                    fontVariantNumeric: 'tabular-nums',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: '0.375rem',
+                    padding: '0.5rem 0.75rem',
+                    colorScheme: 'light dark'
+                  }}
+                >
                   {minuteOptions.map((m) => (
-                    <option key={m} value={String(m).padStart(2,'0')}>{String(m).padStart(2,'0')}</option>
+                    <option key={m} value={String(m).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {String(m).padStart(2,'0')}
+                    </option>
                   ))}
                 </select>
               </div>

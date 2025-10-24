@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 
 const plans = [
   {
@@ -76,35 +78,76 @@ const audiences = [
 
 function Landing() {
   const { isAuthenticated } = useAuth();
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+
+  // Detecta preferência do sistema ao carregar
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsDarkTheme(mediaQuery.matches);
+    
+    const handleChange = (e) => setIsDarkTheme(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+  };
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900">
-      <header className="sticky top-0 z-10 border-b border-white/60 bg-white/70 backdrop-blur">
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkTheme 
+        ? 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-slate-100' 
+        : 'bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900'
+    }`}>
+      <header className={`sticky top-0 z-10 border-b backdrop-blur transition-colors duration-300 ${
+        isDarkTheme 
+          ? 'border-slate-700 bg-slate-900/70' 
+          : 'border-white/60 bg-white/70'
+      }`}>
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link
             to="/"
-            className="flex items-center gap-2 text-lg font-semibold text-slate-900"
+            className={`flex items-center gap-2 text-lg font-semibold transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-100' : 'text-slate-900'
+            }`}
           >
-            <span className="rounded-full bg-slate-900 px-2 py-1 text-xs font-bold uppercase tracking-widest text-white">
+            <span className={`rounded-full px-2 py-1 text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
+              isDarkTheme 
+                ? 'bg-slate-100 text-slate-900' 
+                : 'bg-slate-900 text-white'
+            }`}>
               Criativo Devs
             </span>
             <span>TimelyOne</span>
           </Link>
 
           <div className="flex items-center gap-4 text-sm">
+            <SimpleThemeToggle 
+              isDark={isDarkTheme} 
+              onToggle={toggleTheme}
+              className="mr-2"
+            />
             <Link
               to="/login"
-              className="font-medium text-slate-600 transition hover:text-slate-900"
+              className={`font-medium transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
             >
               Entrar
             </Link>
             <Link
               to="/register"
-              className="rounded-full bg-slate-900 px-4 py-2 font-semibold text-white transition hover:bg-slate-700"
+              className={`rounded-full px-4 py-2 font-semibold transition hover:opacity-90 ${
+                isDarkTheme 
+                  ? 'bg-slate-100 text-slate-900' 
+                  : 'bg-slate-900 text-white'
+              }`}
             >
               Registar
             </Link>
@@ -115,13 +158,21 @@ function Landing() {
       <main>
         <section className="relative overflow-hidden">
           <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 px-4 py-24 text-center">
-            <p className="rounded-full bg-slate-900/10 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-700">
+            <p className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest transition-colors duration-300 ${
+              isDarkTheme 
+                ? 'bg-slate-100/10 text-slate-300' 
+                : 'bg-slate-900/10 text-slate-700'
+            }`}>
               Gestão e Agendamento Inteligente
             </p>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+            <h1 className={`text-4xl font-bold tracking-tight md:text-5xl transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-100' : 'text-slate-900'
+            }`}>
               A plataforma completa para modernizar o seu negócio
             </h1>
-            <p className="max-w-2xl text-lg text-slate-600">
+            <p className={`max-w-2xl text-lg transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+            }`}>
               Criado pela Criativo Devs, o TimelyOne digitaliza salões,
               barbearias e estúdios com agenda online, notificações automáticas
               e relatórios em tempo real — tudo num único painel fácil de usar.
@@ -129,14 +180,22 @@ function Landing() {
             <div className="flex flex-col items-center gap-3 sm:flex-row">
               <Link
                 to="/register"
-                className="group flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className={`group flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:opacity-90 ${
+                  isDarkTheme 
+                    ? 'bg-slate-100 text-slate-900' 
+                    : 'bg-slate-900 text-white'
+                }`}
               >
                 Começar período trial
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
               </Link>
               <a
                 href="#planos"
-                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                className={`rounded-full border px-6 py-3 text-sm font-semibold transition hover:opacity-80 ${
+                  isDarkTheme 
+                    ? 'border-slate-600 text-slate-300 hover:border-slate-500' 
+                    : 'border-slate-300 text-slate-700 hover:border-slate-400'
+                }`}
               >
                 Ver planos e preços
               </a>
@@ -144,15 +203,21 @@ function Landing() {
           </div>
         </section>
 
-        <section className="bg-white">
+        <section className={`transition-colors duration-300 ${
+          isDarkTheme ? 'bg-slate-800' : 'bg-white'
+        }`}>
           <div className="mx-auto grid max-w-5xl gap-6 px-4 py-16 md:grid-cols-2">
             {highlights.map((item) => (
               <article
                 key={item}
-                className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white/80 p-5 shadow-sm"
+                className={`flex items-start gap-3 rounded-xl border p-5 shadow-sm transition-colors duration-300 ${
+                  isDarkTheme 
+                    ? 'border-slate-700 bg-slate-800/80 text-slate-300' 
+                    : 'border-slate-200 bg-white/80 text-slate-700'
+                }`}
               >
                 <CheckCircle className="mt-1 h-5 w-5 text-emerald-500" />
-                <p className="text-sm text-slate-700">{item}</p>
+                <p className="text-sm">{item}</p>
               </article>
             ))}
           </div>
@@ -209,12 +274,18 @@ function Landing() {
           </div>
         </section>
 
-        <section className="bg-white">
+        <section className={`transition-colors duration-300 ${
+          isDarkTheme ? 'bg-slate-900' : 'bg-white'
+        }`}>
           <div className="mx-auto grid max-w-4xl gap-4 px-4 py-16 text-center sm:grid-cols-2">
             {audiences.map((audience) => (
               <div
                 key={audience}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-6 py-8 text-sm font-medium text-slate-700 shadow-sm"
+                className={`rounded-xl border px-6 py-8 text-sm font-medium shadow-sm transition-colors duration-300 ${
+                  isDarkTheme 
+                    ? 'border-slate-700 bg-slate-800 text-slate-300' 
+                    : 'border-slate-200 bg-slate-50 text-slate-700'
+                }`}
               >
                 {audience}
               </div>
@@ -222,18 +293,26 @@ function Landing() {
           </div>
         </section>
 
-        <section className="bg-slate-100">
+        <section className={`transition-colors duration-300 ${
+          isDarkTheme ? 'bg-slate-800' : 'bg-slate-100'
+        }`}>
           <div className="mx-auto max-w-4xl px-4 py-20 text-center">
-            <h2 className="text-3xl font-semibold text-slate-900">
+            <h2 className={`text-3xl font-semibold transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-100' : 'text-slate-900'
+            }`}>
               Criado pela Criativo Devs
             </h2>
-            <p className="mt-4 text-base text-slate-600">
+            <p className={`mt-4 text-base transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+            }`}>
               Somos uma equipa apaixonada por tecnologia e experiência do
               cliente. O TimelyOne leva a digitalização a negócios locais com
               uma plataforma robusta, intuitiva e acessível — pronta para
               atender salões e estúdios em Portugal e além.
             </p>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className={`mt-2 text-xs transition-colors duration-300 ${
+              isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+            }`}>
               *PWA (Aplicação Web Progressiva): instale o TimelyOne como um app
               no telemóvel ou no computador, com ícone próprio e acesso rápido,
               sem depender das lojas tradicionais.
@@ -241,13 +320,21 @@ function Landing() {
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 to="/register"
-                className="rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className={`rounded-full px-6 py-3 text-sm font-semibold transition hover:opacity-90 ${
+                  isDarkTheme 
+                    ? 'bg-slate-100 text-slate-900' 
+                    : 'bg-slate-900 text-white'
+                }`}
               >
                 Criar conta gratuita
               </Link>
               <Link
                 to="/login"
-                className="rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+                className={`rounded-full border px-6 py-3 text-sm font-semibold transition hover:opacity-80 ${
+                  isDarkTheme 
+                    ? 'border-slate-600 text-slate-300 hover:border-slate-500' 
+                    : 'border-slate-300 text-slate-700 hover:border-slate-400'
+                }`}
               >
                 Já tenho conta
               </Link>
@@ -256,8 +343,14 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-6 text-sm text-slate-500 md:flex-row">
+      <footer className={`border-t transition-colors duration-300 ${
+        isDarkTheme 
+          ? 'border-slate-700 bg-slate-900' 
+          : 'border-slate-200 bg-white'
+      }`}>
+        <div className={`mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-6 text-sm md:flex-row transition-colors duration-300 ${
+          isDarkTheme ? 'text-slate-400' : 'text-slate-500'
+        }`}>
           <p>
             © {new Date().getFullYear()} Criativo Devs. Todos os direitos
             reservados.

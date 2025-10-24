@@ -55,7 +55,7 @@
     }
   },
   "dashboard": {
-    "welcome": "Welcome to the salon dashboard!",
+    "welcome": "Welcome to the dashboard!",
     "title": "Dashboard",
     "subtitle": "Summary of your business",
     "loading": "Loading dashboard data...",
@@ -85,7 +85,7 @@
     "add_service": "Register service"
   },
   "services": {
-    "title": "Salon services",
+    "title": "Services",
     "name": "Service name",
     "price": "Price (€)",
     "duration": "Duration (minutes)",
@@ -97,7 +97,7 @@
     }
   },
   "professionals": {
-    "title": "Salon professionals",
+    "title": "professionals",
     "name": "Name",
     "specialty": "Specialty",
     "phone": "Phone (optional)",
@@ -175,7 +175,7 @@
     }
   },
   "profile": {
-    "title": "Salon profile",
+    "title": "profile",
     "no_logo": "No logo",
     "address": "Address"
   },
@@ -293,7 +293,7 @@
     }
   },
   "team": {
-    "current_team_heading": "Salon team management",
+    "current_team_heading": "team management",
     "current_role": {
       "label": "You are signed in as {{role}}.",
       "loading": "Detecting your role in the salon..."
@@ -390,7 +390,7 @@
   },
   "invite_accept": {
     "title": "Activate dashboard access",
-    "subtitle": "Set your password to access the salon dashboard.",
+    "subtitle": "Set your password to access the dashboard.",
     "fields": {
       "token": "Invitation token",
       "token_placeholder": "Paste the token you received",

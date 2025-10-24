@@ -5,12 +5,14 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: 'var(--brand-primary, #6B7280)', // botão / texto escuro
-          light: 'var(--brand-surface, #F3F4F6)', // fundo dos cards
-          border: 'var(--brand-border, #D1D5DB)', // bordas de input/card
-          hover: 'var(--brand-accent, #4B5563)', // hover botão
-          foreground: 'var(--brand-on-primary, #FFFFFF)',
-          surfaceForeground: 'var(--brand-on-surface, #1F2937)',
+          primary: 'var(--accent-primary)',
+          surface: 'var(--bg-primary)',
+          light: 'var(--bg-secondary)',
+          border: 'var(--border-primary)',
+          hover: 'var(--accent-hover)',
+          accent: 'var(--accent-hover)',
+          foreground: 'var(--text-primary)',
+          surfaceForeground: 'var(--text-primary)',
         },
       },
     },

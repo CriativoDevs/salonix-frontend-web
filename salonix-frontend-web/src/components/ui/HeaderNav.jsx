@@ -5,6 +5,7 @@ import { MessageCircleIcon, StarIcon, SettingsIcon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
+import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
 import { useStaff } from '../../hooks/useStaff';
@@ -121,6 +122,7 @@ export default function HeaderNav() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => {
