@@ -8,7 +8,7 @@ export default function AuthLayout({ children }) {
   const logoUrl = resolveTenantAssetUrl(branding?.logoUrl);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 px-4 md:bg-gradient-to-br md:from-brand-100 md:via-brand-50 md:to-white">
+    <div className="min-h-screen flex items-center justify-center theme-bg-primary px-4 md:bg-gradient-to-br md:from-brand-100 md:via-brand-50 md:to-white">
       <div className="w-full max-w-md bg-white dark:bg-brand-surface rounded-2xl shadow-xl p-8">
         <BrandLogo
           className="mb-6"

@@ -5,7 +5,7 @@ import Container from '../components/ui/Container';
 
 export default function FullPageLayout({ children }) {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen theme-bg-primary theme-text-primary">
       <HeaderNav />
       <main className="py-6">
         <Container>{children}</Container>
