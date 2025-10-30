@@ -453,6 +453,10 @@
   "reports": {
     "title": "Relatórios",
     "subtitle": "Visualize e exporte dados do seu salão",
+    "loading": "Carregando relatórios...",
+    "error": "Erro ao carregar relatórios",
+    "retry": "Tentar novamente",
+    "forbidden": "Seu plano atual não inclui acesso aos relatórios.",
     "tabs": {
       "basic": "Básicos",
       "advanced": "Avançados"
@@ -460,12 +464,14 @@
     "basic": {
       "title": "Relatórios Básicos",
       "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
-      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes"
+      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes",
+      "data_loaded": "Dados carregados com sucesso"
     },
     "advanced": {
       "title": "Relatórios Avançados",
       "description": "Análises detalhadas e métricas avançadas",
       "coming_soon": "Em breve: Análises avançadas, comparativos e insights detalhados",
+      "data_loaded": "Dados avançados carregados com sucesso",
       "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
       "upgrade_button": "Atualizar plano"
     },

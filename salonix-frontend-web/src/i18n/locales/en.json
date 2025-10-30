@@ -438,6 +438,10 @@
   "reports": {
     "title": "Reports",
     "subtitle": "View and export your salon data",
+    "loading": "Loading reports...",
+    "error": "Error loading reports",
+    "retry": "Try again",
+    "forbidden": "Your current plan does not include access to reports.",
     "tabs": {
       "basic": "Basic",
       "advanced": "Advanced"
@@ -445,14 +449,16 @@
     "basic": {
       "title": "Basic Reports",
       "description": "Essential reports to track your salon's performance",
-      "coming_soon": "Coming soon: Basic reports for appointments, revenue and customers"
+      "coming_soon": "Coming soon: Basic reports for appointments, revenue and customers",
+      "data_loaded": "Data loaded successfully"
     },
     "advanced": {
       "title": "Advanced Reports",
       "description": "Detailed analytics and advanced metrics",
       "upgrade_required": "Available from Pro plan onwards. Unlock detailed metrics and advanced export.",
       "upgrade_button": "Upgrade plan",
-      "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights"
+      "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
+      "data_loaded": "Advanced data loaded successfully"
     },
     "access_denied": {
       "title": "Restricted access",

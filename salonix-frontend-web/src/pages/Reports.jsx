@@ -6,6 +6,7 @@ import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
+import { useReportsData } from '../hooks/useReportsData';
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -38,6 +39,18 @@ export default function Reports() {
 
   // Verificar se é owner
   const isOwner = currentUserRole === 'owner';
+
+  // Hook para dados de relatórios (só carrega se for owner)
+  const {
+    data: reportsData,
+    loading: reportsLoading,
+    error: reportsError,
+    forbidden: reportsForbidden,
+    refetch: refetchReports,
+  } = useReportsData({ 
+    slug: isOwner ? slug : null,
+    type: activeTab === 'basic' ? 'basic' : 'advanced'
+  });
 
   // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
   const hasAdvancedReports = useMemo(() => {
@@ -129,11 +142,57 @@ export default function Reports() {
               <p className="text-brand-surfaceForeground/70 mb-4">
                 {t('reports.basic.description', 'Relatórios essenciais para acompanhar o desempenho do seu salão')}
               </p>
-              <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                <p className="text-sm text-brand-surfaceForeground/60">
-                  {t('reports.basic.coming_soon', 'Em breve: Relatórios básicos de agendamentos, receita e clientes')}
-                </p>
-              </div>
+              
+              {/* Loading state */}
+              {reportsLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+                  <span className="ml-3 text-brand-surfaceForeground/70">
+                    {t('reports.loading', 'Carregando relatórios...')}
+                  </span>
+                </div>
+              )}
+
+              {/* Error state */}
+              {reportsError && !reportsLoading && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+                  <div className="flex items-center">
+                    <svg className="h-5 w-5 text-red-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                      {reportsError.message || t('reports.error', 'Erro ao carregar relatórios')}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={refetchReports}
+                    className="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                  >
+                    {t('reports.retry', 'Tentar novamente')}
+                  </button>
+                </div>
+              )}
+
+              {/* Forbidden state */}
+              {reportsForbidden && !reportsLoading && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    {t('reports.forbidden', 'Seu plano atual não inclui acesso aos relatórios.')}
+                  </p>
+                </div>
+              )}
+
+              {/* Content */}
+              {!reportsLoading && !reportsError && !reportsForbidden && (
+                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                  <p className="text-sm text-brand-surfaceForeground/60">
+                    {reportsData?.basicReports ? 
+                      t('reports.basic.data_loaded', 'Dados carregados com sucesso') :
+                      t('reports.basic.coming_soon', 'Em breve: Relatórios básicos de agendamentos, receita e clientes')
+                    }
+                  </p>
+                </div>
+              )}
             </Card>
           )}
 
@@ -157,11 +216,58 @@ export default function Reports() {
                   </button>
                 </div>
               ) : (
-                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                  <p className="text-sm text-brand-surfaceForeground/60">
-                    {t('reports.advanced.coming_soon', 'Em breve: Análises avançadas, comparativos e insights detalhados')}
-                  </p>
-                </div>
+                <>
+                  {/* Loading state */}
+                  {reportsLoading && (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+                      <span className="ml-3 text-brand-surfaceForeground/70">
+                        {t('reports.loading', 'Carregando relatórios...')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Error state */}
+                  {reportsError && !reportsLoading && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+                      <div className="flex items-center">
+                        <svg className="h-5 w-5 text-red-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-sm text-red-800 dark:text-red-200">
+                          {reportsError.message || t('reports.error', 'Erro ao carregar relatórios')}
+                        </p>
+                      </div>
+                      <button 
+                        onClick={refetchReports}
+                        className="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                      >
+                        {t('reports.retry', 'Tentar novamente')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Forbidden state */}
+                  {reportsForbidden && !reportsLoading && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        {t('reports.forbidden', 'Seu plano atual não inclui acesso aos relatórios.')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  {!reportsLoading && !reportsError && !reportsForbidden && (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <p className="text-sm text-brand-surfaceForeground/60">
+                        {reportsData?.advancedReports ? 
+                          t('reports.advanced.data_loaded', 'Dados avançados carregados com sucesso') :
+                          t('reports.advanced.coming_soon', 'Em breve: Análises avançadas, comparativos e insights detalhados')
+                        }
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </Card>
           )}
