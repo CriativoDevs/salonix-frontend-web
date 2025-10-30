@@ -21,7 +21,13 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
             id="from-date"
             value={fromDate}
             onChange={(e) => onFromDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-brand-surface text-brand-surfaceForeground"
+            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)',
+              colorScheme: 'light dark'
+            }}
           />
         </div>
         
@@ -34,18 +40,24 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
             id="to-date"
             value={toDate}
             onChange={(e) => onToDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-brand-surface text-brand-surfaceForeground"
+            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)',
+              colorScheme: 'light dark'
+            }}
           />
         </div>
         
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-brand-primary text-brand-primaryForeground rounded-lg font-medium hover:bg-brand-primaryHover focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="text-brand-primary hover:text-brand-primaryHover underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2"
         >
           {loading ? (
             <div className="flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
               {t('reports.filters.applying', 'Aplicando...')}
             </div>
           ) : (
