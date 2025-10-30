@@ -82,7 +82,9 @@
     "quick_actions": "Quick actions",
     "add_slot": "Open slots",
     "add_professional": "Add professional",
-    "add_service": "Register service"
+    "add_service": "Register service",
+    "more": "More",
+    "reports": "Reports"
   },
   "services": {
     "title": "Services",
@@ -432,5 +434,29 @@
   "common": {
     "saving": "Saving...",
     "save_error": "Failed to save. Please try again."
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "View and export your salon data",
+    "tabs": {
+      "basic": "Basic",
+      "advanced": "Advanced"
+    },
+    "basic": {
+      "title": "Basic Reports",
+      "description": "Essential reports to track your salon's performance",
+      "coming_soon": "Coming soon: Basic reports for appointments, revenue and customers"
+    },
+    "advanced": {
+      "title": "Advanced Reports",
+      "description": "Detailed analytics and advanced metrics",
+      "upgrade_required": "Available from Pro plan onwards. Unlock detailed metrics and advanced export.",
+      "upgrade_button": "Upgrade plan",
+      "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights"
+    },
+    "access_denied": {
+      "title": "Restricted access",
+      "description": "Only owners have access to salon reports."
+    }
   }
 }

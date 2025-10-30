@@ -88,7 +88,9 @@
     "quick_actions": "Ações rápidas",
     "add_slot": "Abrir horários",
     "add_professional": "Adicionar profissional",
-    "add_service": "Cadastrar serviço"
+    "add_service": "Cadastrar serviço",
+    "more": "Mais",
+    "reports": "Relatórios"
   },
   "services": {
     "title": "Serviços",
@@ -444,8 +446,33 @@
     "feedback": "Feedback",
     "settings": "Configurações",
     "more": "Mais",
+    "reports": "Relatórios",
     "close": "Fechar",
     "logout": "Sair"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "subtitle": "Visualize e exporte dados do seu salão",
+    "tabs": {
+      "basic": "Básicos",
+      "advanced": "Avançados"
+    },
+    "basic": {
+      "title": "Relatórios Básicos",
+      "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
+      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes"
+    },
+    "advanced": {
+      "title": "Relatórios Avançados",
+      "description": "Análises detalhadas e métricas avançadas",
+      "coming_soon": "Em breve: Análises avançadas, comparativos e insights detalhados",
+      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
+      "upgrade_button": "Atualizar plano"
+    },
+    "access_denied": {
+      "title": "Acesso restrito",
+      "description": "Apenas proprietários têm acesso aos relatórios do salão."
+    }
   },
   "common": {
     "saving": "Salvando...",
