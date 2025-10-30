@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -6,10 +6,12 @@ import Card from '../components/ui/Card';
 import BasicReportsMetrics from '../components/reports/BasicReportsMetrics';
 import DateFilters from '../components/reports/DateFilters';
 import ExportButton from '../components/reports/ExportButton';
+import ToastContainer from '../components/ui/ToastContainer';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
+import useToast from '../hooks/useToast';
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -17,6 +19,9 @@ export default function Reports() {
   const { user } = useAuth();
   const { staff } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
+  
+  // Toast system
+  const { toasts, showSuccess, showError, hideToast } = useToast();
 
   // Função para formatar data para input type="date"
   const formatDateForInput = (date) => {
@@ -87,6 +92,15 @@ export default function Reports() {
     type: activeTab === 'basic' ? 'basic' : 'advanced',
     filters: appliedFilters,
   });
+
+  // Toast notifications based on data loading state
+  useEffect(() => {
+    if (reportsError) {
+      showError('Erro ao carregar relatórios. Tente novamente.');
+    } else if (reportsData && !reportsLoading) {
+      showSuccess('Relatórios carregados com sucesso!');
+    }
+  }, [reportsData, reportsError, reportsLoading, showSuccess, showError]);
 
   // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
   const hasAdvancedReports = useMemo(() => {
@@ -286,30 +300,6 @@ export default function Reports() {
                           disabled={reportsLoading}
                         />
                       </div>
-
-                      <div className="bg-green-100 border border-green-300 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800 mt-4">
-                        <div className="flex items-center">
-                          <svg
-                            className="h-5 w-5 text-green-600 dark:text-green-400 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                            {t(
-                              'reports.basic.data_loaded',
-                              'Dados carregados com sucesso'
-                            )}
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   ) : (
                     <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
@@ -408,35 +398,14 @@ export default function Reports() {
 
                   {/* Content */}
                   {!reportsLoading && !reportsError && !reportsForbidden && (
-                    <div
-                      className={`rounded-lg p-4 ${
-                        reportsData?.advancedReports
-                          ? 'bg-green-100 border border-green-300 dark:bg-green-900/20 dark:border-green-800'
-                          : 'bg-brand-light/50 border border-brand-border'
-                      }`}
-                    >
+                    <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
                       {reportsData?.advancedReports ? (
-                        <div className="flex items-center">
-                          <svg
-                            className="h-5 w-5 text-green-600 dark:text-green-400 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
-                            {t(
-                              'reports.advanced.data_loaded',
-                              'Dados avançados carregados com sucesso'
-                            )}
-                          </p>
-                        </div>
+                        <p className="text-sm text-brand-surfaceForeground/60">
+                          {t(
+                            'reports.advanced.data_loaded',
+                            'Dados avançados disponíveis'
+                          )}
+                        </p>
                       ) : (
                         <p className="text-sm text-brand-surfaceForeground/60">
                           {t(
@@ -453,6 +422,9 @@ export default function Reports() {
           )}
         </div>
       )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={hideToast} />
     </FullPageLayout>
   );
 }

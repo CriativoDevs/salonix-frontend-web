@@ -53,7 +53,7 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
         <button
           type="submit"
           disabled={loading}
-          className="text-brand-primary hover:text-brand-primaryHover underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2"
+          className="text-brand-primary hover:text-brand-primaryHover font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2"
         >
           {loading ? (
             <div className="flex items-center">

@@ -48,7 +48,7 @@ const ExportButton = ({ filters, disabled = false }) => {
         e.preventDefault();
         handleExport();
       }}
-      className={`text-brand-primary hover:text-brand-primary/80 underline font-medium transition-colors inline-flex items-center ${
+      className={`text-brand-primary hover:text-brand-primary/80 font-medium transition-colors inline-flex items-center ${
         disabled || isExporting ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'cursor-pointer'
       }`}
     >
