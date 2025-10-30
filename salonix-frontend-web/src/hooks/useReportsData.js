@@ -35,16 +35,16 @@ export function useReportsData({ slug, type, filters } = {}) {
       if (type === 'basic') {
         const result = await fetchBasicReports({ slug, ...filters });
         if (!mountedRef.current) return;
-        setData(prev => ({ ...prev, basicReports: result }));
+        setData((prev) => ({ ...prev, basicReports: result }));
       } else if (type === 'advanced') {
         const result = await fetchAdvancedReports({ slug, ...filters });
         if (!mountedRef.current) return;
-        setData(prev => ({ ...prev, advancedReports: result }));
+        setData((prev) => ({ ...prev, advancedReports: result }));
       } else {
         // Carregar ambos quando type não é especificado ou é 'all'
         const [basicResult, advancedResult] = await Promise.allSettled([
           fetchBasicReports({ slug, ...filters }),
-          fetchAdvancedReports({ slug, ...filters })
+          fetchAdvancedReports({ slug, ...filters }),
         ]);
 
         if (!mountedRef.current) return;
@@ -77,11 +77,11 @@ export function useReportsData({ slug, type, filters } = {}) {
 
         setData(nextData);
         setForbidden(hasForbidden);
-        
+
         if (hasError) {
           setError(parseApiError(hasError, 'Falha ao carregar os relatórios.'));
         }
-        
+
         setLoading(false);
         return;
       }
@@ -89,7 +89,7 @@ export function useReportsData({ slug, type, filters } = {}) {
       setLoading(false);
     } catch (err) {
       if (!mountedRef.current) return;
-      
+
       const status = err?.response?.status;
       setForbidden(status === 403);
       const parsed = parseApiError(err, 'Falha ao carregar os relatórios.');

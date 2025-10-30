@@ -18,10 +18,31 @@ export default function Reports() {
   const { staff } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
   
-  // Estados para filtros de data
+  // Função para formatar data para input type="date"
+  const formatDateForInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toISOString().split('T')[0];
+  };
+
+  // Definir data padrão (últimos 30 dias)
+  const getDefaultFromDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+    return formatDateForInput(date);
+  };
+
+  const getDefaultToDate = () => {
+    return formatDateForInput(new Date());
+  };
+
+  // Estados para filtros de data - inicializar com valores vazios para permitir seleção do usuário
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [appliedFilters, setAppliedFilters] = useState({});
+  const [appliedFilters, setAppliedFilters] = useState({
+    from: getDefaultFromDate(),
+    to: getDefaultToDate()
+  });
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {

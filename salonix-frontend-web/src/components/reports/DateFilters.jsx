@@ -9,26 +9,8 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
     onApplyFilters();
   };
 
-  // Função para formatar data para input type="date"
-  const formatDateForInput = (date) => {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toISOString().split('T')[0];
-  };
-
-  // Definir data padrão (últimos 30 dias)
-  const getDefaultFromDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() - 30);
-    return formatDateForInput(date);
-  };
-
-  const getDefaultToDate = () => {
-    return formatDateForInput(new Date());
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-brand-border p-4 mb-6">
+    <div className="bg-brand-surface border border-brand-border rounded-lg p-4 mb-6">
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
         <div className="flex-1">
           <label htmlFor="from-date" className="block text-sm font-medium text-brand-surfaceForeground mb-1">
@@ -37,9 +19,9 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
           <input
             type="date"
             id="from-date"
-            value={fromDate || getDefaultFromDate()}
+            value={fromDate}
             onChange={(e) => onFromDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-brand-surface text-brand-surfaceForeground"
           />
         </div>
         
@@ -50,9 +32,9 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
           <input
             type="date"
             id="to-date"
-            value={toDate || getDefaultToDate()}
+            value={toDate}
             onChange={(e) => onToDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-brand-surface text-brand-surfaceForeground"
           />
         </div>
         

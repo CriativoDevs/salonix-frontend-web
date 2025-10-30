@@ -469,7 +469,7 @@
     },
     "basic": {
       "title": "Relatórios Básicos",
-      "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
+      "description": "Relatórios essenciais para acompanhar o desempenho do seu negócio",
       "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes",
       "data_loaded": "Dados carregados com sucesso"
     },
@@ -494,7 +494,7 @@
     },
     "access_denied": {
       "title": "Acesso restrito",
-      "description": "Apenas proprietários têm acesso aos relatórios do salão."
+      "description": "Apenas proprietários têm acesso aos relatórios do negócio."
     }
   },
   "common": {

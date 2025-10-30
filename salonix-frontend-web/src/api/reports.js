@@ -8,20 +8,21 @@ export async function fetchBasicReports(params = {}) {
   const { from, to, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
-  
-  const { data } = await client.get('reports/basic/', { 
-    headers, 
-    params: queryParams 
+
+  const response = await client.get('reports/basic/', {
+    params: queryParams,
+    headers
   });
-  return data;
+
+  return response.data;
 }
 
 /**
@@ -32,21 +33,21 @@ export async function fetchAdvancedReports(params = {}) {
   const { from, to, limit, offset, interval, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
   if (limit) queryParams.limit = limit;
   if (offset) queryParams.offset = offset;
   if (interval) queryParams.interval = interval; // day/week/month
-  
-  const { data } = await client.get('reports/advanced/', { 
-    headers, 
-    params: queryParams 
+
+  const { data } = await client.get('reports/advanced/', {
+    headers,
+    params: queryParams,
   });
   return data;
 }
@@ -59,19 +60,19 @@ export async function exportBasicReportsCSV(params = {}) {
   const { from, to, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
-  
-  const response = await client.get('reports/basic/export/', { 
-    headers, 
+
+  const response = await client.get('reports/basic/export/', {
+    headers,
     params: queryParams,
-    responseType: 'blob'
+    responseType: 'blob',
   });
   return response;
 }
@@ -83,21 +84,21 @@ export async function exportOverviewReport(params = {}) {
   const { from, to, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
-  
-  const response = await client.get('reports/overview/export/', { 
-    headers, 
+
+  const response = await client.get('reports/overview/export/', {
+    headers,
     params: queryParams,
-    responseType: 'blob'
+    responseType: 'blob',
   });
-  
+
   return response.data;
 }
 
@@ -108,22 +109,22 @@ export async function exportTopServicesReport(params = {}) {
   const { from, to, limit, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
   if (limit) queryParams.limit = limit;
-  
-  const response = await client.get('reports/top-services/export/', { 
-    headers, 
+
+  const response = await client.get('reports/top-services/export/', {
+    headers,
     params: queryParams,
-    responseType: 'blob'
+    responseType: 'blob',
   });
-  
+
   return response.data;
 }
 
@@ -134,22 +135,22 @@ export async function exportRevenueReport(params = {}) {
   const { from, to, interval, slug } = params;
   const headers = {};
   const queryParams = {};
-  
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     queryParams.tenant = slug;
   }
-  
+
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
   if (interval) queryParams.interval = interval; // day/week/month
-  
-  const response = await client.get('reports/revenue/export/', { 
-    headers, 
+
+  const response = await client.get('reports/revenue/export/', {
+    headers,
     params: queryParams,
-    responseType: 'blob'
+    responseType: 'blob',
   });
-  
+
   return response.data;
 }
 
