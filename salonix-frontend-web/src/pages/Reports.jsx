@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
+import BasicReportsMetrics from '../components/reports/BasicReportsMetrics';
+import DateFilters from '../components/reports/DateFilters';
+import ExportButton from '../components/reports/ExportButton';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
@@ -14,6 +17,11 @@ export default function Reports() {
   const { user } = useAuth();
   const { staff } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
+  
+  // Estados para filtros de data
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [appliedFilters, setAppliedFilters] = useState({});
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {
@@ -49,7 +57,8 @@ export default function Reports() {
     refetch: refetchReports,
   } = useReportsData({ 
     slug: isOwner ? slug : null,
-    type: activeTab === 'basic' ? 'basic' : 'advanced'
+    type: activeTab === 'basic' ? 'basic' : 'advanced',
+    filters: appliedFilters
   });
 
   // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
@@ -57,6 +66,14 @@ export default function Reports() {
     const planTier = plan?.tier?.toLowerCase();
     return planTier === 'pro' || planTier === 'enterprise';
   }, [plan?.tier]);
+
+  // Funções para lidar com filtros de data
+  const handleApplyFilters = () => {
+    const filters = {};
+    if (fromDate) filters.from = fromDate;
+    if (toDate) filters.to = toDate;
+    setAppliedFilters(filters);
+  };
 
   // Se não for owner, não tem acesso
   if (!isOwner) {
@@ -133,6 +150,16 @@ export default function Reports() {
             </nav>
           </div>
 
+          {/* Filtros de data */}
+          <DateFilters
+            fromDate={fromDate}
+            toDate={toDate}
+            onFromDateChange={setFromDate}
+            onToDateChange={setToDate}
+            onApplyFilters={handleApplyFilters}
+            loading={reportsLoading}
+          />
+
           {/* Conteúdo das tabs */}
           {activeTab === 'basic' && (
             <Card className="p-6">
@@ -184,13 +211,32 @@ export default function Reports() {
 
               {/* Content */}
               {!reportsLoading && !reportsError && !reportsForbidden && (
-                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                  <p className="text-sm text-brand-surfaceForeground/60">
-                    {reportsData?.basicReports ? 
-                      t('reports.basic.data_loaded', 'Dados carregados com sucesso') :
-                      t('reports.basic.coming_soon', 'Em breve: Relatórios básicos de agendamentos, receita e clientes')
-                    }
-                  </p>
+                <div>
+                  {reportsData?.basicReports ? (
+                    <div>
+                      <BasicReportsMetrics data={reportsData.basicReports} />
+                      
+                      {/* Export Button */}
+                      <div className="mt-4 flex justify-end">
+                        <ExportButton 
+                          filters={appliedFilters}
+                          disabled={reportsLoading}
+                        />
+                      </div>
+                      
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 dark:bg-green-900/20 dark:border-green-800 mt-4">
+                        <p className="text-sm text-green-800 dark:text-green-200">
+                          {t('reports.basic.data_loaded', 'Dados carregados com sucesso')}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <p className="text-sm text-brand-surfaceForeground/60">
+                        {t('reports.basic.coming_soon', 'Em breve: Relatórios básicos de agendamentos, receita e clientes')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </Card>

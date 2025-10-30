@@ -446,6 +446,12 @@
       "basic": "Basic",
       "advanced": "Advanced"
     },
+    "metrics": {
+      "total_appointments": "Total Appointments",
+      "completed_appointments": "Completed Appointments",
+      "total_revenue": "Total Revenue",
+      "average_ticket": "Average Ticket"
+    },
     "basic": {
       "title": "Basic Reports",
       "description": "Essential reports to track your salon's performance",
@@ -463,6 +469,17 @@
     "access_denied": {
       "title": "Restricted access",
       "description": "Only owners have access to salon reports."
+    },
+    "filters": {
+      "from_date": "From date",
+      "to_date": "To date",
+      "apply": "Apply filters",
+      "applying": "Applying...",
+      "help": "Select the period to filter report data"
+    },
+    "export": {
+      "csv": "Export CSV",
+      "exporting": "Exporting..."
     }
   }
 }

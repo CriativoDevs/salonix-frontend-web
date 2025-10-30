@@ -461,6 +461,12 @@
       "basic": "Básicos",
       "advanced": "Avançados"
     },
+    "metrics": {
+      "total_appointments": "Total de Agendamentos",
+      "completed_appointments": "Agendamentos Concluídos",
+      "total_revenue": "Receita Total",
+      "average_ticket": "Ticket Médio"
+    },
     "basic": {
       "title": "Relatórios Básicos",
       "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
@@ -474,6 +480,17 @@
       "data_loaded": "Dados avançados carregados com sucesso",
       "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
       "upgrade_button": "Atualizar plano"
+    },
+    "filters": {
+      "from_date": "Data inicial",
+      "to_date": "Data final",
+      "apply": "Aplicar filtros",
+      "applying": "Aplicando...",
+      "help": "Selecione o período para filtrar os dados dos relatórios"
+    },
+    "export": {
+      "csv": "Exportar CSV",
+      "exporting": "Exportando..."
     },
     "access_denied": {
       "title": "Acesso restrito",

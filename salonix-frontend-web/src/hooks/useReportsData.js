@@ -7,7 +7,7 @@ const INITIAL_DATA = {
   advancedReports: null,
 };
 
-export function useReportsData({ slug, type } = {}) {
+export function useReportsData({ slug, type, filters } = {}) {
   const [data, setData] = useState(INITIAL_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -33,18 +33,18 @@ export function useReportsData({ slug, type } = {}) {
 
     try {
       if (type === 'basic') {
-        const result = await fetchBasicReports({ slug });
+        const result = await fetchBasicReports({ slug, ...filters });
         if (!mountedRef.current) return;
         setData(prev => ({ ...prev, basicReports: result }));
       } else if (type === 'advanced') {
-        const result = await fetchAdvancedReports({ slug });
+        const result = await fetchAdvancedReports({ slug, ...filters });
         if (!mountedRef.current) return;
         setData(prev => ({ ...prev, advancedReports: result }));
       } else {
         // Carregar ambos quando type não é especificado ou é 'all'
         const [basicResult, advancedResult] = await Promise.allSettled([
-          fetchBasicReports({ slug }),
-          fetchAdvancedReports({ slug })
+          fetchBasicReports({ slug, ...filters }),
+          fetchAdvancedReports({ slug, ...filters })
         ]);
 
         if (!mountedRef.current) return;
@@ -96,7 +96,7 @@ export function useReportsData({ slug, type } = {}) {
       setError(parsed);
       setLoading(false);
     }
-  }, [slug, type]);
+  }, [slug, type, filters]);
 
   useEffect(() => {
     mountedRef.current = true;

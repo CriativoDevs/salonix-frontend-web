@@ -52,6 +52,31 @@ export async function fetchAdvancedReports(params = {}) {
 }
 
 /**
+ * Exporta relatórios básicos em CSV
+ * Disponível para todos os planos com reports_enabled=true
+ */
+export async function exportBasicReportsCSV(params = {}) {
+  const { from, to, slug } = params;
+  const headers = {};
+  const queryParams = {};
+  
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+  
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+  
+  const response = await client.get('reports/basic/export/', { 
+    headers, 
+    params: queryParams,
+    responseType: 'blob'
+  });
+  return response;
+}
+
+/**
  * Exporta relatório de overview em CSV
  */
 export async function exportOverviewReport(params = {}) {
