@@ -44,7 +44,7 @@ export function useReportsData({ slug, type, filters } = {}) {
   const mountedRef = useRef(true);
 
   // Memoizar filtros para evitar re-renders desnecessários
-  const memoizedFilters = useMemo(() => filters, [JSON.stringify(filters)]);
+  const memoizedFilters = useMemo(() => filters, [filters]);
 
   const load = useCallback(async () => {
     if (!slug) {
