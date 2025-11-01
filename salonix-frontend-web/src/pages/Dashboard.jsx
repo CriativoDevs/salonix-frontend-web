@@ -422,19 +422,8 @@ export default function Dashboard() {
   );
 
   const locale = profile?.language || undefined;
-  const currencyCode = (tenant?.currency || 'EUR').toUpperCase();
 
   const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
-
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency: currencyCode,
-        maximumFractionDigits: 0,
-      }),
-    [currencyCode, locale]
-  );
 
   const dateFormatter = useMemo(() => {
     try {
@@ -478,59 +467,9 @@ export default function Dashboard() {
     [numberFormatter]
   );
 
-  const formatCurrency = useCallback(
-    (value) => {
-      if (value === null || value === undefined) {
-        return null;
-      }
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric)) {
-        return null;
-      }
-      return currencyFormatter.format(numeric);
-    },
-    [currencyFormatter]
-  );
-
   const overviewDaily = dashboardData.overviewDaily;
   const overviewMonthly = dashboardData.overviewMonthly;
   const customersInfo = dashboardData.customers;
-
-  const monthlyRevenueRaw = useMemo(() => {
-    if (
-      overviewMonthly?.revenue_total !== null &&
-      overviewMonthly?.revenue_total !== undefined
-    ) {
-      const numeric = Number(overviewMonthly.revenue_total);
-      if (Number.isFinite(numeric)) {
-        return numeric;
-      }
-    }
-
-    const series = dashboardData?.revenueSeries?.series;
-    if (Array.isArray(series) && series.length) {
-      return series.reduce((acc, entry) => {
-        const numeric = Number(entry?.revenue ?? 0);
-        if (!Number.isFinite(numeric)) {
-          return acc;
-        }
-        return acc + numeric;
-      }, 0);
-    }
-
-    return null;
-  }, [dashboardData?.revenueSeries?.series, overviewMonthly?.revenue_total]);
-
-  const monthlyAvgTicketFallback = useMemo(() => {
-    if (monthlyRevenueRaw === null) {
-      return null;
-    }
-    const completedTotal = Number(overviewMonthly?.appointments_completed ?? 0);
-    if (!Number.isFinite(completedTotal) || completedTotal <= 0) {
-      return null;
-    }
-    return monthlyRevenueRaw / completedTotal;
-  }, [monthlyRevenueRaw, overviewMonthly?.appointments_completed]);
 
   const bookingsValue = useMemo(() => {
     if (loading) return '—';
@@ -554,43 +493,6 @@ export default function Dashboard() {
     }
     return t('dashboard.stats_hint_unavailable', 'Dados indisponíveis');
   }, [completedBookingsCount, error, formatNumber, loading, reportsForbidden, t]);
-
-  const revenueValue = useMemo(() => {
-    if (loading) return '—';
-    const formatted = formatCurrency(monthlyRevenueRaw);
-    return formatted || '—';
-  }, [formatCurrency, loading, monthlyRevenueRaw]);
-
-  const revenueHint = useMemo(() => {
-    if (loading) {
-      return t('dashboard.loading', 'Carregando dados...');
-    }
-    const avgTicket = formatCurrency(
-      overviewMonthly?.avg_ticket ?? monthlyAvgTicketFallback
-    );
-    if (avgTicket) {
-      return t('dashboard.stats_hint_ticket', { value: avgTicket });
-    }
-    if (reportsForbidden) {
-      return t('dashboard.reports_blocked_hint', 'Disponível em planos com relatórios.');
-    }
-    if (error) {
-      return error.message;
-    }
-    if (monthlyRevenueRaw !== null) {
-      return t('dashboard.stats_hint_unavailable', 'Dados indisponíveis');
-    }
-    return t('dashboard.stats_hint_unavailable', 'Dados indisponíveis');
-  }, [
-    error,
-    formatCurrency,
-    loading,
-    monthlyAvgTicketFallback,
-    monthlyRevenueRaw,
-    overviewMonthly?.avg_ticket,
-    reportsForbidden,
-    t,
-  ]);
 
   const customersValue = useMemo(() => {
     if (loading) return '—';
@@ -693,16 +595,11 @@ export default function Dashboard() {
         </Card>
       ) : null}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label={t('dashboard.stats.bookings', 'Agendamentos (hoje)')}
           value={bookingsValue}
           hint={bookingsHint}
-        />
-        <StatCard
-          label={t('dashboard.stats.revenue', 'Receita (mês)')}
-          value={revenueValue}
-          hint={revenueHint}
         />
         <StatCard
           label={t('dashboard.stats.clients', 'Clientes')}
