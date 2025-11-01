@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function RevenueChart({ data, loading, onExport, interval = 'day' }) {
+export default function RevenueChart({ data, loading, interval = 'day' }) {
   const { t } = useTranslation();
 
   // Usar a estrutura correta dos dados: data.revenue.series
@@ -64,23 +64,10 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('reports.advanced.revenue.title', 'Receita por Período')}
-          </h4>
-          <p className="text-sm text-brand-surfaceForeground/60">
-            {t('reports.advanced.revenue.description', 'Evolução da receita ao longo do tempo')}
-          </p>
-        </div>
-        {onExport && (
-          <button
-            onClick={onExport}
-            className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors text-sm"
-          >
-            {t('reports.export.csv', 'Exportar CSV')}
-          </button>
-        )}
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900">
+          {t('reports.revenue_chart', 'Gráfico de Receita')}
+        </h3>
       </div>
 
       {/* Statistics Cards */}

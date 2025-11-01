@@ -1,18 +1,37 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function TopServices({ data, loading, onExport, limit = 25 }) {
+export default function TopServices({ data, loading, limit = 25 }) {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
-        <span className="ml-3 text-brand-surfaceForeground/70">
-          {t('reports.loading', 'Carregando relatórios...')}
-        </span>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 bg-brand-surfaceForeground/10 rounded w-48 animate-pulse" />
+            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-64 mt-2 animate-pulse" />
+          </div>
+          <div className="h-8 bg-brand-surfaceForeground/10 rounded w-24 animate-pulse" />
+        </div>
+
+        {/* Table Loading */}
+        <div className="overflow-hidden rounded-lg border border-brand-border">
+          <div className="bg-brand-light/30 px-6 py-3">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+            </div>
+          </div>
+          <div className="bg-brand-surface p-6">
+            <TableLoadingSpinner rows={8} columns={4} />
+          </div>
+        </div>
       </div>
     );
   }
@@ -53,14 +72,6 @@ export default function TopServices({ data, loading, onExport, limit = 25 }) {
             {t('reports.advanced.top_services.description', 'Ranking dos serviços por número de agendamentos')}
           </p>
         </div>
-        {onExport && (
-          <button
-            onClick={onExport}
-            className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors text-sm"
-          >
-            {t('reports.export.csv', 'Exportar CSV')}
-          </button>
-        )}
       </div>
 
       {/* Table */}

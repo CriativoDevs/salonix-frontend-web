@@ -17,7 +17,6 @@ import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
 import useToast from '../hooks/useToast';
-import { exportTopServicesReport, exportRevenueReport } from '../api/reports';
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -59,35 +58,6 @@ export default function Reports() {
   // Estados para filtros avançados
   const [advancedInterval, setAdvancedInterval] = useState('day');
   const [advancedLimit, setAdvancedLimit] = useState(25);
-
-  // Funções de exportação para relatórios avançados
-  const handleExportTopServices = async () => {
-    try {
-      await exportTopServicesReport({
-        from: appliedFilters.from,
-        to: appliedFilters.to,
-        limit: advancedLimit
-      });
-      showSuccess(t('reports.export.success', 'Relatório exportado com sucesso'));
-    } catch (error) {
-      console.error('Export error:', error);
-      showError(t('reports.export.error', 'Erro ao exportar relatório'));
-    }
-  };
-
-  const handleExportRevenue = async () => {
-    try {
-      await exportRevenueReport({
-        from: appliedFilters.from,
-        to: appliedFilters.to,
-        interval: advancedInterval
-      });
-      showSuccess(t('reports.export.success', 'Relatório exportado com sucesso'));
-    } catch (error) {
-      console.error('Export error:', error);
-      showError(t('reports.export.error', 'Erro ao exportar relatório'));
-    }
-  };
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {
@@ -472,7 +442,6 @@ export default function Reports() {
                               data={reportsData.advancedReports}
                               loading={reportsLoading}
                               limit={advancedLimit}
-                              onExport={handleExportTopServices}
                             />
                           </Card>
 
@@ -482,7 +451,6 @@ export default function Reports() {
                               data={reportsData.advancedReports}
                               loading={reportsLoading}
                               interval={advancedInterval}
-                              onExport={handleExportRevenue}
                             />
                           </Card>
                         </>
