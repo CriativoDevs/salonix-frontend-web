@@ -1,5 +1,40 @@
 # Padrões UI/UX - Salonix Frontend
 
+## 🚨 REGRA FUNDAMENTAL - BOTÕES
+
+### ⚠️ IMPORTANTE: Aparência de Botões
+**TODOS os botões do projeto DEVEM ter aparência de LINKS, não de botões tradicionais.**
+
+#### ✅ Padrão Correto para Botões
+```jsx
+// Botões devem parecer links - sem bordas, sem background sólido
+<button className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors">
+  Atualizar plano
+</button>
+
+// Ou usando elemento <a> com onClick
+<a 
+  href="#" 
+  onClick={handleClick}
+  className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
+>
+  Exportar CSV
+</a>
+```
+
+#### ❌ EVITAR - Aparência de Botão Tradicional
+```jsx
+// NÃO usar - aparência de botão com background e bordas
+<button className="bg-blue-500 text-white px-4 py-2 rounded-lg border">
+  Botão Tradicional
+</button>
+```
+
+### 🌓 Suporte a Temas
+**SEMPRE respeitar os temas claro e escuro usando as variáveis CSS do sistema.**
+
+---
+
 ## 📋 Índice
 - [Sistema de Cores e Temas](#sistema-de-cores-e-temas)
 - [Componentes de Feedback](#componentes-de-feedback)

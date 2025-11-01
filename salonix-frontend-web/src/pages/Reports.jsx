@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
@@ -15,11 +16,12 @@ import useToast from '../hooks/useToast';
 
 export default function Reports() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { plan, slug } = useTenant();
   const { user } = useAuth();
   const { staff } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
-  
+
   // Toast system
   const { toasts, showSuccess, showError, hideToast } = useToast();
 
@@ -163,7 +165,7 @@ export default function Reports() {
         title={t('reports.title', 'Relatórios')}
         subtitle={t(
           'reports.subtitle',
-          'Visualize e exporte dados do seu salão'
+          'Visualize e exporte dados do seu negócio'
         )}
       />
 
@@ -177,7 +179,7 @@ export default function Reports() {
             <p className="text-brand-surfaceForeground/70">
               {t(
                 'reports.access_denied.description',
-                'Apenas proprietários têm acesso aos relatórios do salão.'
+                'Apenas proprietários têm acesso aos relatórios do negócio.'
               )}
             </p>
           </div>
@@ -245,10 +247,10 @@ export default function Reports() {
 
               {/* Error state */}
               {reportsError && !reportsLoading && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
                   <div className="flex items-center">
                     <svg
-                      className="h-5 w-5 text-red-400 mr-2"
+                      className="h-5 w-5 text-red-500 mr-2"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -260,14 +262,14 @@ export default function Reports() {
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <p className="text-sm text-red-800 dark:text-red-200">
+                    <p className="text-sm text-brand-surfaceForeground">
                       {reportsError.message ||
                         t('reports.error', 'Erro ao carregar relatórios')}
                     </p>
                   </div>
                   <button
                     onClick={refetchReports}
-                    className="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                    className="mt-2 text-sm text-brand-primary hover:text-brand-primary/80"
                   >
                     {t('reports.retry', 'Tentar novamente')}
                   </button>
@@ -276,8 +278,8 @@ export default function Reports() {
 
               {/* Forbidden state */}
               {reportsForbidden && !reportsLoading && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                  <p className="text-sm text-brand-surfaceForeground">
                     {t(
                       'reports.forbidden',
                       'Seu plano atual não inclui acesso aos relatórios.'
@@ -330,14 +332,18 @@ export default function Reports() {
 
               {/* Verificar se tem acesso aos relatórios avançados (Pro/Enterprise) */}
               {!hasAdvancedReports ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                  <p className="text-sm text-brand-surfaceForeground mb-3">
                     {t(
                       'reports.advanced.upgrade_required',
                       'Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.'
                     )}
                   </p>
-                  <button className="bg-brand-primary text-brand-primaryForeground px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-primaryHover transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/plans')}
+                    className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
+                  >
                     {t('reports.advanced.upgrade_button', 'Atualizar plano')}
                   </button>
                 </div>
@@ -355,10 +361,10 @@ export default function Reports() {
 
                   {/* Error state */}
                   {reportsError && !reportsLoading && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-800">
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
                       <div className="flex items-center">
                         <svg
-                          className="h-5 w-5 text-red-400 mr-2"
+                          className="h-5 w-5 text-red-500 mr-2"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -370,14 +376,14 @@ export default function Reports() {
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="text-sm text-red-800 dark:text-red-200">
+                        <p className="text-sm text-brand-surfaceForeground">
                           {reportsError.message ||
                             t('reports.error', 'Erro ao carregar relatórios')}
                         </p>
                       </div>
                       <button
                         onClick={refetchReports}
-                        className="mt-2 text-sm text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200"
+                        className="mt-2 text-sm text-brand-primary hover:text-brand-primary/80"
                       >
                         {t('reports.retry', 'Tentar novamente')}
                       </button>
@@ -386,8 +392,8 @@ export default function Reports() {
 
                   {/* Forbidden state */}
                   {reportsForbidden && !reportsLoading && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 dark:bg-yellow-900/20 dark:border-yellow-800">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <p className="text-sm text-brand-surfaceForeground">
                         {t(
                           'reports.forbidden',
                           'Seu plano atual não inclui acesso aos relatórios.'
@@ -422,7 +428,7 @@ export default function Reports() {
           )}
         </div>
       )}
-      
+
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onClose={hideToast} />
     </FullPageLayout>
