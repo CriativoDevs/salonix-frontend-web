@@ -5,7 +5,9 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
   const { t } = useTranslation();
 
   // Usar a estrutura correta dos dados: data.revenue.series
-  const revenueData = data?.revenue?.series || [];
+  const revenueData = useMemo(() => {
+    return data?.revenue?.series || [];
+  }, [data?.revenue?.series]);
   
   // Os dados já vêm filtrados pelo intervalo do backend
   const filteredData = useMemo(() => {

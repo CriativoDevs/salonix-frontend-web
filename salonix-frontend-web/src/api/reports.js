@@ -155,6 +155,32 @@ export async function exportRevenueReport(params = {}) {
 }
 
 /**
+ * Exporta relatórios avançados em CSV (top services + revenue)
+ * Disponível apenas para planos Pro e Enterprise
+ */
+export async function exportAdvancedReportsCSV(params = {}) {
+  const { from, to, interval, slug } = params;
+  const headers = {};
+  const queryParams = {};
+
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+  if (interval) queryParams.interval = interval; // day/week/month
+
+  const response = await client.get('reports/advanced/export/', {
+    headers,
+    params: queryParams,
+    responseType: 'blob',
+  });
+  return response;
+}
+
+/**
  * Utilitário para download de arquivo CSV
  */
 export function downloadCSV(blob, filename) {

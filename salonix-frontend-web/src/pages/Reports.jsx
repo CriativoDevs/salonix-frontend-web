@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import BasicReportsMetrics from '../components/reports/BasicReportsMetrics';
 import DateFilters from '../components/reports/DateFilters';
 import ExportButton from '../components/reports/ExportButton';
+import AdvancedExportButton from '../components/reports/AdvancedExportButton';
 import TopServices from '../components/reports/TopServices';
 import RevenueChart from '../components/reports/RevenueChart';
 import AdvancedFilters from '../components/reports/AdvancedFilters';
@@ -452,6 +453,18 @@ export default function Reports() {
                             onLimitChange={setAdvancedLimit}
                             loading={reportsLoading}
                           />
+
+                          {/* Export Button */}
+                          <div className="flex justify-end">
+                            <AdvancedExportButton
+                              filters={{
+                                from: appliedFilters.from,
+                                to: appliedFilters.to,
+                                interval: advancedInterval
+                              }}
+                              disabled={reportsLoading}
+                            />
+                          </div>
 
                           {/* Top Services */}
                           <Card className="p-6">
