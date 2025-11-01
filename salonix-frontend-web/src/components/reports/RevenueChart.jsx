@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import TableLoadingSpinner from '../ui/TableLoadingSpinner';
 
 export default function RevenueChart({ data, loading, interval = 'day' }) {
   const { t } = useTranslation();
@@ -16,11 +17,29 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
-        <span className="ml-3 text-brand-surfaceForeground/70">
-          {t('reports.loading', 'Carregando relatórios...')}
-        </span>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-6 bg-brand-surfaceForeground/10 rounded w-48 animate-pulse" />
+            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-64 mt-2 animate-pulse" />
+          </div>
+        </div>
+
+        {/* Table Loading */}
+        <div className="overflow-hidden rounded-lg border border-brand-border">
+          <div className="bg-brand-light/30 px-6 py-3">
+            <div className="grid grid-cols-4 gap-4">
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
+            </div>
+          </div>
+          <div className="bg-brand-surface p-6">
+            <TableLoadingSpinner rows={6} columns={4} />
+          </div>
+        </div>
       </div>
     );
   }

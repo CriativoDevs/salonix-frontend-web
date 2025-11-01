@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import TableLoadingSpinner from '../ui/TableLoadingSpinner';
 
 export default function TopServices({ data, loading, limit = 25 }) {
   const { t } = useTranslation();

@@ -17,6 +17,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
 import useToast from '../hooks/useToast';
+import { useDebounce } from '../hooks/useDebounce';
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -55,9 +56,23 @@ export default function Reports() {
     to: getDefaultToDate(),
   });
 
+  // Debounce dos filtros para otimizar chamadas à API
+  const debouncedFromDate = useDebounce(fromDate, 800);
+  const debouncedToDate = useDebounce(toDate, 800);
+
   // Estados para filtros avançados
   const [advancedInterval, setAdvancedInterval] = useState('day');
   const [advancedLimit, setAdvancedLimit] = useState(25);
+
+  // Auto-aplicar filtros quando os valores debounced mudarem
+  useEffect(() => {
+    if (debouncedFromDate || debouncedToDate) {
+      const filters = {};
+      if (debouncedFromDate) filters.from = debouncedFromDate;
+      if (debouncedToDate) filters.to = debouncedToDate;
+      setAppliedFilters(filters);
+    }
+  }, [debouncedFromDate, debouncedToDate]);
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {
