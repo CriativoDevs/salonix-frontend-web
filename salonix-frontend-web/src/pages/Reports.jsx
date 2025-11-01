@@ -7,12 +7,16 @@ import Card from '../components/ui/Card';
 import BasicReportsMetrics from '../components/reports/BasicReportsMetrics';
 import DateFilters from '../components/reports/DateFilters';
 import ExportButton from '../components/reports/ExportButton';
+import TopServices from '../components/reports/TopServices';
+import RevenueChart from '../components/reports/RevenueChart';
+import AdvancedFilters from '../components/reports/AdvancedFilters';
 import ToastContainer from '../components/ui/ToastContainer';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
 import useToast from '../hooks/useToast';
+import { exportTopServicesReport, exportRevenueReport } from '../api/reports';
 
 export default function Reports() {
   const { t } = useTranslation();
@@ -50,6 +54,39 @@ export default function Reports() {
     from: getDefaultFromDate(),
     to: getDefaultToDate(),
   });
+
+  // Estados para filtros avançados
+  const [advancedInterval, setAdvancedInterval] = useState('day');
+  const [advancedLimit, setAdvancedLimit] = useState(25);
+
+  // Funções de exportação para relatórios avançados
+  const handleExportTopServices = async () => {
+    try {
+      await exportTopServicesReport({
+        from: appliedFilters.from,
+        to: appliedFilters.to,
+        limit: advancedLimit
+      });
+      showSuccess(t('reports.export.success', 'Relatório exportado com sucesso'));
+    } catch (error) {
+      console.error('Export error:', error);
+      showError(t('reports.export.error', 'Erro ao exportar relatório'));
+    }
+  };
+
+  const handleExportRevenue = async () => {
+    try {
+      await exportRevenueReport({
+        from: appliedFilters.from,
+        to: appliedFilters.to,
+        interval: advancedInterval
+      });
+      showSuccess(t('reports.export.success', 'Relatório exportado com sucesso'));
+    } catch (error) {
+      console.error('Export error:', error);
+      showError(t('reports.export.error', 'Erro ao exportar relatório'));
+    }
+  };
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {
@@ -404,21 +441,47 @@ export default function Reports() {
 
                   {/* Content */}
                   {!reportsLoading && !reportsError && !reportsForbidden && (
-                    <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
+                    <div className="space-y-8">
                       {reportsData?.advancedReports ? (
-                        <p className="text-sm text-brand-surfaceForeground/60">
-                          {t(
-                            'reports.advanced.data_loaded',
-                            'Dados avançados disponíveis'
-                          )}
-                        </p>
+                        <>
+                          {/* Advanced Filters */}
+                          <AdvancedFilters
+                            interval={advancedInterval}
+                            onIntervalChange={setAdvancedInterval}
+                            limit={advancedLimit}
+                            onLimitChange={setAdvancedLimit}
+                            loading={reportsLoading}
+                          />
+
+                          {/* Top Services */}
+                          <Card className="p-6">
+                            <TopServices 
+                              data={reportsData.advancedReports}
+                              loading={reportsLoading}
+                              limit={advancedLimit}
+                              onExport={handleExportTopServices}
+                            />
+                          </Card>
+
+                          {/* Revenue Chart */}
+                          <Card className="p-6">
+                            <RevenueChart 
+                              data={reportsData.advancedReports}
+                              loading={reportsLoading}
+                              interval={advancedInterval}
+                              onExport={handleExportRevenue}
+                            />
+                          </Card>
+                        </>
                       ) : (
-                        <p className="text-sm text-brand-surfaceForeground/60">
-                          {t(
-                            'reports.advanced.coming_soon',
-                            'Em breve: Análises avançadas, comparativos e insights detalhados'
-                          )}
-                        </p>
+                        <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
+                          <p className="text-sm text-brand-surfaceForeground/60">
+                            {t(
+                              'reports.advanced.coming_soon',
+                              'Em breve: Análises avançadas, comparativos e insights detalhados'
+                            )}
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
