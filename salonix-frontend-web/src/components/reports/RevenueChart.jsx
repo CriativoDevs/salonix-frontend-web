@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function RevenueChart({ data, loading, onExport, interval = 'day' }) {
   const { t } = useTranslation();
-  const [selectedInterval, setSelectedInterval] = useState(interval);
 
   // Usar a estrutura correta dos dados: data.revenue.series
   const revenueData = data?.revenue?.series || [];
@@ -43,7 +42,7 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    switch (selectedInterval) {
+    switch (interval) {
       case 'day':
         return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
       case 'week':
@@ -54,13 +53,6 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
         return date.toLocaleDateString('pt-BR');
     }
   };
-
-  // Filtrar dados por intervalo selecionado - removendo duplicata
-  const intervals = [
-    { value: 'day', label: t('reports.advanced.intervals.day', 'Diário') },
-    { value: 'week', label: t('reports.advanced.intervals.week', 'Semanal') },
-    { value: 'month', label: t('reports.advanced.intervals.month', 'Mensal') }
-  ];
 
   // Calcular estatísticas
   const totalRevenue = filteredData.reduce((sum, item) => sum + (item.revenue || 0), 0);
@@ -87,23 +79,6 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
             {t('reports.export.csv', 'Exportar CSV')}
           </button>
         )}
-      </div>
-
-      {/* Interval Selector */}
-      <div className="flex space-x-2">
-        {intervals.map((interval) => (
-          <button
-            key={interval.value}
-            onClick={() => setSelectedInterval(interval.value)}
-            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-              selectedInterval === interval.value
-                ? 'bg-brand-primary text-brand-primaryForeground'
-                : 'bg-brand-light/30 text-brand-surfaceForeground hover:bg-brand-light/50'
-            }`}
-          >
-            {interval.label}
-          </button>
-        ))}
       </div>
 
       {/* Statistics Cards */}
@@ -134,33 +109,7 @@ export default function RevenueChart({ data, loading, onExport, interval = 'day'
         </div>
       </div>
 
-      {/* Simple Bar Chart */}
-      <div className="bg-brand-light/20 rounded-lg p-6">
-        <div className="space-y-3">
-          {filteredData.map((item, index) => {
-            const percentage = maxRevenue > 0 ? (item.revenue / maxRevenue) * 100 : 0;
-            return (
-              <div key={index} className="flex items-center space-x-4">
-                <div className="w-20 text-sm text-brand-surfaceForeground/70 text-right">
-                  {formatDate(item.period_start)}
-                </div>
-                <div className="flex-1 bg-brand-light/30 rounded-full h-6 relative">
-                  <div
-                    className="bg-brand-primary h-6 rounded-full transition-all duration-300"
-                    style={{ width: `${percentage}%` }}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-brand-surfaceForeground">
-                    {formatCurrency(item.revenue)}
-                  </div>
-                </div>
-                <div className="w-16 text-sm text-brand-surfaceForeground/70">
-                  {item.appointment_count || 0} agend.
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+
 
       {/* Data Table */}
       <div className="overflow-hidden rounded-lg border border-brand-border">

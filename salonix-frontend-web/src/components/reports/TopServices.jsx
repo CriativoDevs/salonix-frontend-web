@@ -64,23 +64,23 @@ export default function TopServices({ data, loading, onExport, limit = 25 }) {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-lg border border-brand-border">
+      <div className="overflow-x-auto rounded-lg border border-brand-border">
         <table className="min-w-full divide-y divide-brand-border">
           <thead className="bg-brand-light/30">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider w-16">
                 #
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider min-w-48">
                 {t('reports.advanced.top_services.service', 'Serviço')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider w-32">
                 {t('reports.advanced.top_services.appointments', 'Agendamentos')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider w-32">
                 {t('reports.advanced.top_services.revenue', 'Receita')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider">
+              <th className="px-4 py-3 text-left text-xs font-medium text-brand-surfaceForeground/70 uppercase tracking-wider w-32">
                 {t('reports.advanced.top_services.avg_price', 'Preço Médio')}
               </th>
             </tr>
@@ -88,21 +88,21 @@ export default function TopServices({ data, loading, onExport, limit = 25 }) {
           <tbody className="bg-brand-surface divide-y divide-brand-border">
             {currentServices.map((service, index) => (
               <tr key={service.service_id || index} className="hover:bg-brand-light/20">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-surfaceForeground">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-surfaceForeground">
                   {startIndex + index + 1}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-4 py-4">
                   <div className="text-sm font-medium text-brand-surfaceForeground">
                     {service.service_name}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-surfaceForeground">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-brand-surfaceForeground">
                   {service.qty || 0}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-surfaceForeground">
+                <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-surfaceForeground">
                   {formatCurrency(service.revenue)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-surfaceForeground">
+                <td className="px-4 py-4 whitespace-nowrap text-sm text-brand-surfaceForeground">
                   {formatCurrency(service.qty > 0 ? service.revenue / service.qty : 0)}
                 </td>
               </tr>
