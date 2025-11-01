@@ -14,6 +14,7 @@ import Bookings from '../pages/Bookings';
 
 import Customers from '../pages/Customers';
 import Team from '../pages/Team';
+import Reports from '../pages/Reports';
 // Chat e Feedback desativados até backend estar pronto
 import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
@@ -85,7 +86,16 @@ function Router() {
         }
       />
 
-
+      <Route
+        path="/reports"
+        element={
+          <PrivateRoute>
+            <RoleProtectedRoute allowedRoles={['owner']}>
+              <Reports />
+            </RoleProtectedRoute>
+          </PrivateRoute>
+        }
+      />
 
       <Route
         path="/settings"

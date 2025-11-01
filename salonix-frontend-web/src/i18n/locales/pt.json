@@ -88,7 +88,9 @@
     "quick_actions": "Ações rápidas",
     "add_slot": "Abrir horários",
     "add_professional": "Adicionar profissional",
-    "add_service": "Cadastrar serviço"
+    "add_service": "Cadastrar serviço",
+    "more": "Mais",
+    "reports": "Relatórios"
   },
   "services": {
     "title": "Serviços",
@@ -444,8 +446,56 @@
     "feedback": "Feedback",
     "settings": "Configurações",
     "more": "Mais",
+    "reports": "Relatórios",
     "close": "Fechar",
     "logout": "Sair"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "subtitle": "Visualize e exporte dados do seu salão",
+    "loading": "Carregando relatórios...",
+    "error": "Erro ao carregar relatórios",
+    "retry": "Tentar novamente",
+    "forbidden": "Seu plano atual não inclui acesso aos relatórios.",
+    "tabs": {
+      "basic": "Básicos",
+      "advanced": "Avançados"
+    },
+    "metrics": {
+      "total_appointments": "Total de Agendamentos",
+      "completed_appointments": "Agendamentos Concluídos",
+      "total_revenue": "Receita Total",
+      "average_ticket": "Ticket Médio"
+    },
+    "basic": {
+      "title": "Relatórios Básicos",
+      "description": "Relatórios essenciais para acompanhar o desempenho do seu negócio",
+      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes",
+      "data_loaded": "Dados carregados com sucesso"
+    },
+    "advanced": {
+      "title": "Relatórios Avançados",
+      "description": "Análises detalhadas e métricas avançadas",
+      "coming_soon": "Em breve: Análises avançadas, comparativos e insights detalhados",
+      "data_loaded": "Dados avançados carregados com sucesso",
+      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
+      "upgrade_button": "Atualizar plano"
+    },
+    "filters": {
+      "from_date": "Data inicial",
+      "to_date": "Data final",
+      "apply": "Aplicar filtros",
+      "applying": "Aplicando...",
+      "help": "Selecione o período para filtrar os dados dos relatórios"
+    },
+    "export": {
+      "csv": "Exportar CSV",
+      "exporting": "Exportando..."
+    },
+    "access_denied": {
+      "title": "Acesso restrito",
+      "description": "Apenas proprietários têm acesso aos relatórios do negócio."
+    }
   },
   "common": {
     "saving": "Salvando...",

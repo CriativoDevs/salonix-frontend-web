@@ -82,7 +82,9 @@
     "quick_actions": "Quick actions",
     "add_slot": "Open slots",
     "add_professional": "Add professional",
-    "add_service": "Register service"
+    "add_service": "Register service",
+    "more": "More",
+    "reports": "Reports"
   },
   "services": {
     "title": "Services",
@@ -296,7 +298,7 @@
     "current_team_heading": "team management",
     "current_role": {
       "label": "You are signed in as {{role}}.",
-      "loading": "Detecting your role in the salon..."
+      "loading": "Detecting your role in the business..."
     },
     "actions": {
       "invite": "Invite member"
@@ -432,5 +434,52 @@
   "common": {
     "saving": "Saving...",
     "save_error": "Failed to save. Please try again."
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "View and export your business data",
+    "loading": "Loading reports...",
+    "error": "Error loading reports",
+    "retry": "Try again",
+    "forbidden": "Your current plan does not include access to reports.",
+    "tabs": {
+      "basic": "Basic",
+      "advanced": "Advanced"
+    },
+    "metrics": {
+      "total_appointments": "Total Appointments",
+      "completed_appointments": "Completed Appointments",
+      "total_revenue": "Total Revenue",
+      "average_ticket": "Average Ticket"
+    },
+    "basic": {
+      "title": "Basic Reports",
+      "description": "Essential reports to track your business's performance",
+      "coming_soon": "Coming soon: Basic reports for appointments, revenue and customers",
+      "data_loaded": "Data loaded successfully"
+    },
+    "advanced": {
+      "title": "Advanced Reports",
+      "description": "Detailed analytics and advanced metrics",
+      "upgrade_required": "Available from Pro plan onwards. Unlock detailed metrics and advanced export.",
+      "upgrade_button": "Upgrade plan",
+      "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
+      "data_loaded": "Advanced data loaded successfully"
+    },
+    "access_denied": {
+      "title": "Restricted access",
+      "description": "Only owners have access to business reports."
+    },
+    "filters": {
+      "from_date": "From date",
+      "to_date": "To date",
+      "apply": "Apply filters",
+      "applying": "Applying...",
+      "help": "Select the period to filter report data"
+    },
+    "export": {
+      "csv": "Export CSV",
+      "exporting": "Exporting..."
+    }
   }
 }

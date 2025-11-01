@@ -9,8 +9,6 @@ import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { useStaff } from '../hooks/useStaff';
-import { describeFeatureRequirement } from '../constants/tenantFeatures';
-import { resolvePlanName } from '../utils/tenantPlan';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
 import useDashboardData from '../hooks/useDashboardData';
 import { fetchSlotDetail } from '../api/slots';
@@ -115,7 +113,7 @@ function normalizeAppointmentPreview(base = {}, detail = {}) {
 export default function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { tenant, plan, profile, flags, slug } = useTenant();
+  const { tenant, profile, flags, slug } = useTenant();
   const { user } = useAuth();
   const { staff } = useStaff({ slug });
 
@@ -179,7 +177,6 @@ export default function Dashboard() {
   const [upcomingLoading, setUpcomingLoading] = useState(false);
   const [upcomingError, setUpcomingError] = useState(null);
 
-  const planName = resolvePlanName(plan);
   const reportsEnabled = flags?.enableReports !== false;
 
   // Verificar se o usuário tem acesso aos relatórios (apenas owner e manager)
@@ -494,10 +491,6 @@ export default function Dashboard() {
     },
     [currencyFormatter]
   );
-
-  const reportsRequirement = !reportsEnabled
-    ? describeFeatureRequirement('enableReports', planName)
-    : null;
 
   const overviewDaily = dashboardData.overviewDaily;
   const overviewMonthly = dashboardData.overviewMonthly;
@@ -820,52 +813,19 @@ export default function Dashboard() {
                 {t('dashboard.add_service', 'Cadastrar serviço')}
               </button>
             )}
+            
+            {currentUserRole === 'owner' && (
+              <button
+                type="button"
+                onClick={() => navigate('/reports')}
+                className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
+              >
+                {t('dashboard.reports', 'Relatórios')}
+              </button>
+            )}
           </div>
         </Card>
 
-        <Card className="p-6 text-brand-surfaceForeground">
-          <h2 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('dashboard.reports_section', 'Relatórios')}
-          </h2>
-          {!hasReportsAccess ? (
-            <div className="mt-4 rounded-lg border border-dashed border-error bg-error/10 px-4 py-3 text-sm text-error">
-              <strong>
-                {t('dashboard.reports_access_denied', 'Acesso negado')}
-              </strong>
-              <p className="mt-1">
-                {t(
-                  'dashboard.reports_access_denied_description',
-                  'Apenas proprietários e gerentes têm acesso aos relatórios.'
-                )}
-              </p>
-            </div>
-          ) : reportsEnabled ? (
-            <div className="mt-4 space-y-3 text-sm text-brand-surfaceForeground/80">
-              <p>
-                {t(
-                  'dashboard.reports_enabled',
-                  'Aceda aos relatórios completos e exporte os dados sempre que precisar.'
-                )}
-              </p>
-              <button className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm font-medium text-brand-surfaceForeground hover:bg-brand-light/70">
-                {t('dashboard.view_reports', 'Ver relatórios')}
-              </button>
-            </div>
-          ) : (
-            <div className="mt-4 rounded-lg border border-dashed border-yellow-400 bg-yellow-50 px-4 py-3 text-sm dark:border-yellow-500 dark:bg-yellow-900/20">
-              <strong className="font-semibold" style={{color: 'var(--text-primary)'}}>
-                {reportsRequirement?.label || t('dashboard.reports_locked', 'Relatórios bloqueados')}
-              </strong>
-              <p className="mt-1" style={{color: 'var(--text-secondary)'}}>
-                {reportsRequirement?.description ||
-                  t(
-                    'dashboard.reports_locked_description',
-                    'Atualize o plano para desbloquear relatórios avançados.'
-                  )}
-              </p>
-            </div>
-          )}
-        </Card>
       </section>
     </FullPageLayout>
   );
