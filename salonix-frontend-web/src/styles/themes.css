@@ -119,6 +119,38 @@
   color: var(--text-muted);
 }
 
+/* Estilos para inputs de data - corrigir ícones no tema escuro */
+input[type="date"] {
+  color-scheme: light dark;
+}
+
+[data-theme="dark"] input[type="date"] {
+  color-scheme: dark;
+}
+
+[data-theme="light"] input[type="date"] {
+  color-scheme: light;
+}
+
+/* Estilos para o popup do datepicker - força visibilidade */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer !important;
+  opacity: 1 !important;
+  display: block !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+  opacity: 1 !important;
+}
+
 .nav {
   background-color: var(--bg-primary);
   border-bottom: 1px solid var(--border-primary);
