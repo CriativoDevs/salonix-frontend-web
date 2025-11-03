@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageCircleIcon, StarIcon, SettingsIcon } from 'lucide-react';
+import { MessageCircleIcon, StarIcon, SettingsIcon, BarChart3Icon } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
@@ -59,6 +59,12 @@ export default function HeaderNav() {
   // Links do menu hamburger (filtrados por permissão)
   const dropdownItems = useMemo(() => {
     const allItems = [
+      {
+        to: '/reports',
+        label: t('nav.reports', 'Relatórios'),
+        icon: BarChart3Icon,
+        roles: ['owner']
+      },
       {
         to: '/settings',
         label: t('nav.settings'),

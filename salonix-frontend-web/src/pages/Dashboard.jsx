@@ -711,15 +711,7 @@ export default function Dashboard() {
               </button>
             )}
             
-            {currentUserRole === 'owner' && (
-              <button
-                type="button"
-                onClick={() => navigate('/reports')}
-                className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light/80"
-              >
-                {t('dashboard.reports', 'Relatórios')}
-              </button>
-            )}
+
           </div>
         </Card>
 
