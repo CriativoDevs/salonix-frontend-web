@@ -1,4 +1,5 @@
 import client from './client';
+import { parsePaginationHeaders } from './pagination';
 
 const normaliseListResponse = (data) => {
   if (Array.isArray(data)) return data;
@@ -6,15 +7,68 @@ const normaliseListResponse = (data) => {
   return [];
 };
 
-export async function fetchProfessionals(slug) {
+export async function fetchProfessionals(slugOrOptions) {
   const headers = {};
-  const params = {};
+  const searchParams = {};
+  let slug;
+  let params;
+
+  if (typeof slugOrOptions === 'string') {
+    slug = slugOrOptions;
+  } else if (slugOrOptions && typeof slugOrOptions === 'object') {
+    slug = slugOrOptions.slug;
+    params = slugOrOptions.params;
+  }
+
+  const p = params || {};
+  if (typeof p.limit === 'number') {
+    searchParams.limit = p.limit;
+  }
+  if (typeof p.offset === 'number') {
+    searchParams.offset = p.offset;
+  }
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
-    params.tenant = slug;
+    searchParams.tenant = slug;
   }
-  const { data } = await client.get('professionals/', { headers, params });
+  const { data } = await client.get('professionals/', { headers, params: searchParams });
   return normaliseListResponse(data);
+}
+
+export async function fetchProfessionalsWithMeta(options = {}) {
+  const headers = {};
+  const searchParams = {};
+  const { slug, params } = options || {};
+  const p = params || {};
+  if (typeof p.limit === 'number') {
+    searchParams.limit = p.limit;
+  }
+  if (typeof p.offset === 'number') {
+    searchParams.offset = p.offset;
+  }
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    searchParams.tenant = slug;
+  }
+  const response = await client.get('professionals/', { headers, params: searchParams });
+  const { data, headers: respHeaders } = response || {};
+  const results = normaliseListResponse(data);
+  const meta = parsePaginationHeaders(respHeaders);
+  const count = meta.totalCount != null ? meta.totalCount : results.length;
+  return { results, count, meta };
 }
 
 export async function createProfessional({ name, specialty, phone, slug, staffMemberId }) {

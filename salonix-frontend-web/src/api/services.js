@@ -1,15 +1,66 @@
 import client from './client';
+import { parsePaginationHeaders } from './pagination';
 
-export async function fetchServices(slug) {
+export async function fetchServices(slugOrOptions) {
   // Listagem: usar endpoint público por tenant (traz todos do salão)
   const headers = {};
-  const params = {};
+  let slug;
+  let params;
+  if (typeof slugOrOptions === 'string') {
+    slug = slugOrOptions;
+  } else if (slugOrOptions && typeof slugOrOptions === 'object') {
+    slug = slugOrOptions.slug;
+    params = slugOrOptions.params;
+  }
+  const searchParams = {};
+  const p = params || {};
+  // Suporte a paginação e ordenação (quando disponível)
+  if (typeof p.limit === 'number') searchParams.limit = p.limit;
+  if (typeof p.offset === 'number') searchParams.offset = p.offset;
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
-    params.tenant = slug;
+    searchParams.tenant = slug;
   }
-  const { data } = await client.get('public/services/', { headers, params });
+  const { data } = await client.get('public/services/', { headers, params: searchParams });
   return Array.isArray(data) ? data : [];
+}
+
+export async function fetchServicesWithMeta(slugOrOptions = {}) {
+  const headers = {};
+  let slug;
+  let params;
+  if (typeof slugOrOptions === 'string') {
+    slug = slugOrOptions;
+  } else if (slugOrOptions && typeof slugOrOptions === 'object') {
+    slug = slugOrOptions.slug;
+    params = slugOrOptions.params;
+  }
+  const searchParams = {};
+  const p = params || {};
+  if (typeof p.limit === 'number') searchParams.limit = p.limit;
+  if (typeof p.offset === 'number') searchParams.offset = p.offset;
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    searchParams.tenant = slug;
+  }
+  const response = await client.get('public/services/', { headers, params: searchParams });
+  const { data, headers: respHeaders } = response || {};
+  const results = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];
+  const meta = parsePaginationHeaders(respHeaders);
+  const count = meta.totalCount != null ? meta.totalCount : results.length;
+  return { results, count, meta };
 }
 
 export async function createService({ name, price, duration, slug }) {

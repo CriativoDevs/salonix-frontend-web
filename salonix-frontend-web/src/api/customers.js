@@ -1,4 +1,5 @@
 import client from './client';
+import { parsePaginationHeaders } from './pagination';
 
 const normalizePaginated = (data) => {
   if (!data) {
@@ -20,21 +21,38 @@ const normalizePaginated = (data) => {
 
 export async function fetchCustomers({ slug, params } = {}) {
   const headers = {};
-  const searchParams = {
-    page_size: 200,
-    ...(params || {}),
-  };
+  const searchParams = { page_size: 200 };
+  const p = params || {};
+
+  // Suporte a limit/offset/ordering com compatibilidade
+  if (typeof p.limit === 'number') {
+    searchParams.limit = p.limit;
+    searchParams.page_size = p.limit;
+  }
+  if (typeof p.offset === 'number') {
+    searchParams.offset = p.offset;
+  }
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     searchParams.tenant = slug;
   }
 
-  const { data } = await client.get('salon/customers/', {
+  const response = await client.get('salon/customers/', {
     headers,
     params: searchParams,
   });
-
-  return normalizePaginated(data);
+  const { data, headers: respHeaders } = response || {};
+  const base = normalizePaginated(data);
+  const meta = parsePaginationHeaders(respHeaders);
+  const count = meta.totalCount != null ? meta.totalCount : base.count;
+  return { ...base, count, meta };
 }
 
 export async function fetchCustomerDetail(id, { slug } = {}) {
