@@ -9,6 +9,7 @@ import { fetchSlots, fetchSlotDetail } from '../api/slots';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
+import PaginationControls from '../components/ui/PaginationControls';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
 
@@ -172,7 +173,9 @@ function Bookings() {
   const [professionals, setProfessionals] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [appointmentsCount, setAppointmentsCount] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [loadingList, setLoadingList] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -184,7 +187,7 @@ function Bookings() {
     customerId: '',
   });
 
-  const [page, setPage] = useState(1);
+  // paginação baseada em limit/offset
 
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formSlots, setFormSlots] = useState([]);
@@ -260,9 +263,10 @@ function Bookings() {
     setLoadingList(true);
     setError(null);
 
+    const page = Math.floor(offset / limit) + 1;
     const params = {
       page,
-      page_size: 20,
+      page_size: limit,
     };
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
@@ -275,7 +279,8 @@ function Bookings() {
       .then(async (payload) => {
         if (!active) return;
         const baseResults = Array.isArray(payload.results) ? payload.results : [];
-        setAppointmentsCount(payload.count || baseResults.length);
+        const count = payload.count || baseResults.length;
+        setTotalCount(count);
 
         const detailed = await Promise.all(
           baseResults.map(async (item) => {
@@ -336,7 +341,7 @@ function Bookings() {
         if (!active) return;
         setError(parseApiError(err, t('common.load_error', 'Falha ao carregar.')));
         setAppointments([]);
-        setAppointmentsCount(0);
+        setTotalCount(0);
       })
       .finally(() => {
         if (!active) return;
@@ -346,7 +351,7 @@ function Bookings() {
     return () => {
       active = false;
     };
-  }, [slug, filters, page, lookupLoading, serviceMap, professionalMap, customerMap, t]);
+  }, [slug, filters, limit, offset, lookupLoading, serviceMap, professionalMap, customerMap, t]);
 
   const resetForm = () => {
     setFormData(INITIAL_FORM);
@@ -395,7 +400,7 @@ function Bookings() {
       await createAppointment(payload, { slug });
       resetForm();
       // reload list
-      setPage(1);
+      setOffset(0);
       // trigger effect by updating filters (force rerender). We'll update to new object to re-run effect.
       setFilters((prev) => ({ ...prev }));
     } catch (err) {
@@ -512,7 +517,7 @@ function Bookings() {
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
-    setPage(1);
+    setOffset(0);
   };
 
   const loading = lookupLoading || loadingList;
@@ -835,32 +840,16 @@ function Bookings() {
             </div>
           )}
 
-          {appointmentsCount > appointments.length && (
-            <div className="mt-4 flex items-center justify-between text-sm text-brand-surfaceForeground/70">
-              <span>
-                {t('bookings.pagination.summary', {
-                  defaultValue: 'Total de {{count}} agendamentos',
-                  count: appointmentsCount,
-                })}
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className="rounded border border-brand-border px-3 py-1 text-brand-surfaceForeground hover:bg-brand-light disabled:opacity-40"
-                >
-                  {t('bookings.pagination.prev', 'Anterior')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPage((prev) => prev + 1)}
-                  className="rounded border border-brand-border px-3 py-1 text-brand-surfaceForeground hover:bg-brand-light"
-                >
-                  {t('bookings.pagination.next', 'Próxima')}
-                </button>
-              </div>
-            </div>
+          {totalCount > 0 && (
+            <PaginationControls
+              totalCount={totalCount}
+              limit={limit}
+              offset={offset}
+              onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+              onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+              onNext={() => setOffset((prev) => (prev + limit < totalCount ? prev + limit : prev))}
+              className="mt-4"
+            />
           )}
         </section>
       </div>

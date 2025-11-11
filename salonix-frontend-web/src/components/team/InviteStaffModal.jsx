@@ -152,21 +152,40 @@ function InviteStaffModal({
 
   const footer = success ? (
     <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-      <FormButton variant="outline" onClick={handleInviteAnother}>
+      <button
+        type="button"
+        onClick={handleInviteAnother}
+        className="text-sm font-medium text-brand-primary hover:underline"
+      >
         {t('team.invite.actions.invite_another', 'Convidar outra pessoa')}
-      </FormButton>
-      <FormButton onClick={onClose}>{t('common.close', 'Fechar')}</FormButton>
+      </button>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-sm font-medium text-brand-surfaceForeground/60 hover:underline"
+      >
+        {t('common.close', 'Fechar')}
+      </button>
     </div>
   ) : (
     <div className="flex justify-end gap-3">
-      <FormButton variant="outline" onClick={onClose}>
+      <button
+        type="button"
+        onClick={onClose}
+        className="text-sm font-medium text-brand-surfaceForeground/60 hover:underline"
+      >
         {t('common.cancel', 'Cancelar')}
-      </FormButton>
-      <FormButton type="submit" form={formId} disabled={submitting}>
+      </button>
+      <button
+        type="submit"
+        form={formId}
+        disabled={submitting}
+        className="text-sm font-medium text-brand-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         {submitting
           ? t('team.invite.actions.sending', 'Enviando...')
           : t('team.invite.actions.submit', 'Enviar convite')}
-      </FormButton>
+      </button>
     </div>
   );
 
@@ -199,13 +218,13 @@ function InviteStaffModal({
           </div>
           {inviteToken ? (
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-brand-surfaceForeground/70">
                 {t(
                   'team.invite.token_hint',
                   'Compartilhe este token com o convidado se precisar aceitar manualmente:',
                 )}
               </p>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs font-mono text-gray-700 break-all">
+              <div className="rounded-lg border border-brand-border bg-brand-light p-3 text-xs font-mono text-brand-surfaceForeground break-all">
                 {inviteToken}
               </div>
             </div>
@@ -218,12 +237,12 @@ function InviteStaffModal({
         </div>
       ) : (
         <form id={formId} onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="space-y-3 rounded-lg border border-brand-border bg-brand-surface p-4">
             <div>
-              <p className="text-sm font-medium text-gray-800">
+              <p className="text-sm font-medium text-brand-surfaceForeground">
                 {t('team.invite.professional.title', 'Dados do profissional')}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-brand-surfaceForeground/70">
                 {t(
                   'team.invite.professional.helper',
                   'Defina como o profissional será apresentado no portal.'
@@ -247,13 +266,13 @@ function InviteStaffModal({
               required
             />
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-brand-surfaceForeground">
                 {t('team.invite.fields.role', 'Papel')}
               </label>
               <select
                 value={form.role}
                 onChange={(event) => handleChange('role', event.target.value)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                className="w-full rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
               >
                 {roleOptions.map((option) => (
                   <option key={option.value} value={option.value} disabled={option.disabled}>
@@ -262,14 +281,14 @@ function InviteStaffModal({
                 ))}
               </select>
               {!canInviteManagers ? (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-brand-surfaceForeground/70">
                   {t(
                     'team.invite.roles.manager_hint',
                     'Somente o owner pode convidar novos managers.',
                   )}
                 </p>
               ) : (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-brand-surfaceForeground/70">
                   {t(
                     'team.invite.roles.helper',
                     'Managers podem gerenciar a equipe; colaboradores têm acesso restrito.',

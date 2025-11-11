@@ -9,7 +9,7 @@ import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import {
-  fetchProfessionals,
+  fetchProfessionalsWithMeta,
   createProfessional,
   updateProfessional,
 } from '../api/professionals';
@@ -17,6 +17,7 @@ import InviteStaffModal from '../components/team/InviteStaffModal';
 import ManageStaffModal from '../components/team/ManageStaffModal';
 import { parseApiError } from '../utils/apiError';
 import { ROLE_BADGE_STYLES, TEAM_STATUS_STYLES } from '../utils/badgeStyles';
+import PaginationControls from '../components/ui/PaginationControls';
 
 const ROLE_LABELS = {
   owner: 'Owner',
@@ -227,6 +228,12 @@ function Team() {
   const [professionalsLoading, setProfessionalsLoading] = useState(false);
   const professionalsMountedRef = useRef(true);
 
+  // paginação e ordenação (server-side)
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const [sortOption, setSortOption] = useState('name');
+  const [, setTotalCount] = useState(0);
+
   useEffect(() => {
     professionalsMountedRef.current = true;
     return () => {
@@ -418,7 +425,7 @@ function Team() {
       }
     }
     
-    const filtered = professionalsToFilter.filter((professional) => {
+    let filtered = professionalsToFilter.filter((professional) => {
       const staffMember = professional.staff_member_data;
       
       // Role filter
@@ -481,9 +488,36 @@ function Team() {
         .toLocaleLowerCase();
       return haystack.includes(term);
     });
-    
+    // Aplicar ordenação local de acordo com sortOption
+    const getDisplayName = (p) => {
+      const staffMember = p.staff_member_data;
+      const baseName = (p.name || '').trim();
+      if (baseName) return baseName.toLocaleLowerCase();
+      const staffName = [staffMember?.first_name || '', staffMember?.last_name || '']
+        .join(' ')
+        .trim()
+        .toLocaleLowerCase();
+      return staffName || (staffMember?.email || staffMember?.username || '').toLocaleLowerCase();
+    };
+    const byNameAsc = (a, b) => {
+      const an = getDisplayName(a);
+      const bn = getDisplayName(b);
+      if (an < bn) return -1;
+      if (an > bn) return 1;
+      return 0;
+    };
+    const byCreatedAsc = (a, b) => {
+      const ad = new Date(a.created_at || 0).getTime();
+      const bd = new Date(b.created_at || 0).getTime();
+      return ad - bd;
+    };
+    if (sortOption === 'name') filtered = filtered.slice().sort(byNameAsc);
+    else if (sortOption === '-name') filtered = filtered.slice().sort((a, b) => -byNameAsc(a, b));
+    else if (sortOption === 'created_at') filtered = filtered.slice().sort(byCreatedAsc);
+    else if (sortOption === '-created_at') filtered = filtered.slice().sort((a, b) => -byCreatedAsc(a, b));
+
     return filtered;
-  }, [professionalsWithStaff, roleFilter, statusFilter, search, currentUserRole, currentStaffMember]);
+  }, [professionalsWithStaff, roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
 
   const professionalsByStaff = useMemo(() => {
     const map = new Map();
@@ -507,6 +541,49 @@ function Team() {
   const activeStaffOptions = useMemo(
     () => staffArray.filter((member) => member?.status === 'active'),
     [staffArray]
+  );
+
+  // paginação e ordenação (server-side)
+  
+
+  // Inicializar a partir da URL
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const l = parseInt(sp.get('limit') || '', 10);
+      const o = parseInt(sp.get('offset') || '', 10);
+      const ord = sp.get('ordering') || '';
+      if (!Number.isNaN(l) && l > 0) setLimit(l);
+      if (!Number.isNaN(o) && o >= 0) setOffset(o);
+      if (ord) setSortOption(ord);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Sincronizar com a URL
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      sp.set('limit', String(limit));
+      sp.set('offset', String(offset));
+      sp.set('ordering', sortOption);
+      const newUrl = `${window.location.pathname}?${sp.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    } catch {
+      // ignore
+    }
+  }, [limit, offset, sortOption]);
+  useEffect(() => {
+    // resetar ao mudar filtros ou ordenação
+    setOffset(0);
+  }, [roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
+
+  // Paginação local sobre a lista filtrada/ordenada
+  const totalCountLocal = filteredProfessionals.length;
+  const pagedProfessionals = useMemo(
+    () => filteredProfessionals.slice(offset, offset + limit),
+    [filteredProfessionals, offset, limit]
   );
 
   const selectableStaffOptions = useMemo(() => {
@@ -552,9 +629,12 @@ function Team() {
     setProfessionalsError(null);
 
     try {
-      const data = await fetchProfessionals(slug);
+      const payload = await fetchProfessionalsWithMeta({ slug, params: { limit, offset, ordering: sortOption } });
       if (!professionalsMountedRef.current) return;
-      setProfessionals(Array.isArray(data) ? data : []);
+      const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      setProfessionals(list);
+      const tc = payload?.meta?.totalCount ?? payload?.count ?? list.length;
+      setTotalCount(tc || 0);
     } catch (err) {
       if (!professionalsMountedRef.current) return;
       setProfessionals([]);
@@ -569,7 +649,7 @@ function Team() {
         setProfessionalsLoading(false);
       }
     }
-  }, [slug, t]);
+  }, [slug, t, limit, offset, sortOption]);
 
   useEffect(() => {
     refetchProfessionals();
@@ -840,6 +920,27 @@ function Team() {
               </select>
             </div>
           </div>
+          {/* Ordenação */}
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              {t('team.filters.ordering', 'Ordenação')}
+            </label>
+            <select
+              value={sortOption}
+              onChange={(event) => setSortOption(event.target.value)}
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border-primary)'
+              }}
+              className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="name">Nome (A→Z)</option>
+              <option value="-name">Nome (Z→A)</option>
+              <option value="created_at">Criado (antigo→recente)</option>
+              <option value="-created_at">Criado (recente→antigo)</option>
+            </select>
+          </div>
 
           {professionalsLoading ? (
             <p className="mb-4 text-xs text-gray-500">
@@ -908,10 +1009,22 @@ function Team() {
             />
           ) : (
             <StaffList
-              items={filteredProfessionals}
+              items={pagedProfessionals}
               onManage={openManageModal}
               currentUserRole={currentUserRole}
               currentStaffMember={currentStaffMember}
+            />
+          )}
+
+          {totalCountLocal > 0 && (
+            <PaginationControls
+              totalCount={totalCountLocal}
+              limit={limit}
+              offset={offset}
+              onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+              onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+              onNext={() => setOffset((prev) => (prev + limit < totalCountLocal ? prev + limit : prev))}
+              className="mt-6"
             />
           )}
 

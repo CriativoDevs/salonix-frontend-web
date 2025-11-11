@@ -1,4 +1,5 @@
 import client from './client';
+import { parsePaginationHeaders } from './pagination';
 
 const normalizePaginated = (data) => {
   if (!data) {
@@ -20,17 +21,39 @@ const normalizePaginated = (data) => {
 
 export async function fetchAppointments({ slug, params } = {}) {
   const headers = {};
-  const searchParams = { page_size: 20, ordering: '-created_at', ...(params || {}) };
+  const searchParams = { page_size: 20, ordering: '-created_at' };
+  const p = params || {};
+
+  // Compatibilidade: aceitar limit/offset/ordering e manter page_size/order atuais
+  if (typeof p.limit === 'number') {
+    searchParams.limit = p.limit;
+    searchParams.page_size = p.limit;
+  }
+  if (typeof p.offset === 'number') {
+    searchParams.offset = p.offset;
+  }
+  if (typeof p.ordering === 'string' && p.ordering.trim() !== '') {
+    searchParams.ordering = p.ordering.trim();
+  }
+  // Copiar demais params (status, date_from, etc.) sem sobrescrever os já definidos
+  Object.keys(p).forEach((k) => {
+    if (searchParams[k] === undefined) searchParams[k] = p[k];
+  });
+
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
     searchParams.tenant = slug;
   }
-  const { data } = await client.get('salon/appointments/', {
+  const response = await client.get('salon/appointments/', {
     headers,
     params: searchParams,
   });
-
-  return normalizePaginated(data);
+  const { data, headers: respHeaders } = response || {};
+  const base = normalizePaginated(data);
+  const meta = parsePaginationHeaders(respHeaders);
+  // Se houver totalCount nos headers, preferir sobre count do payload
+  const count = meta.totalCount != null ? meta.totalCount : base.count;
+  return { ...base, count, meta };
 }
 
 export async function fetchAppointmentDetail(id, { slug } = {}) {

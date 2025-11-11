@@ -18,6 +18,7 @@ import {
   resolveInviteStatusLabel,
   resolveInviteVariant,
 } from '../utils/inviteStatus';
+import PaginationControls from '../components/ui/PaginationControls';
 
 const SORT_RECENT = 'recent';
 const SORT_NAME = 'name';
@@ -72,6 +73,42 @@ function Customers() {
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [sortOption, setSortOption] = useState(SORT_RECENT);
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+
+  // ordenação derivada de sortOption (evita missing deps em efeitos)
+  const orderingFromSort = sortOption === SORT_NAME ? 'name' : '-created_at';
+
+  // Inicializa ordering a partir da URL
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ord = params.get('ordering');
+      if (ord === 'name') {
+        setSortOption(SORT_NAME);
+      } else if (ord === '-created_at') {
+        setSortOption(SORT_RECENT);
+      }
+    } catch {
+      // noop
+    }
+  }, []);
+
+  // Sincroniza ordering na URL e reseta offset ao mudar
+  useEffect(() => {
+    try {
+      const next = orderingFromSort;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('ordering') !== next) {
+        params.set('ordering', next);
+        const url = window.location.pathname + '?' + params.toString();
+        window.history.replaceState(null, '', url);
+      }
+    } catch {
+      // noop
+    }
+    setOffset(0);
+  }, [sortOption, orderingFromSort]);
 
   const updateInviteStatus = useCallback((customerId, status) => {
     if (!customerId) return;
@@ -118,7 +155,7 @@ function Customers() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchCustomers({ slug })
+    fetchCustomers({ slug, params: { limit, offset, ordering: orderingFromSort } })
       .then((payload) => {
         if (cancelled) return;
         const list = Array.isArray(payload?.results) ? payload.results : payload;
@@ -136,7 +173,7 @@ function Customers() {
     return () => {
       cancelled = true;
     };
-  }, [slug, t, closeInviteTooltip]);
+  }, [slug, t, closeInviteTooltip, limit, offset, orderingFromSort]);
 
   const sortedCustomers = useMemo(
     () => sortCustomers(customers, sortOption),
@@ -162,6 +199,12 @@ function Customers() {
       return haystack.includes(term);
     });
   }, [sortedCustomers, search, showInactive]);
+
+  // Página atual (client-side) usando limit/offset
+  const paged = useMemo(
+    () => filtered.slice(offset, offset + limit),
+    [filtered, offset, limit]
+  );
 
   const handleAdd = async (payload) => {
     setCreateBusy(true);
@@ -410,7 +453,7 @@ function Customers() {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <select
                 value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
+                onChange={(e) => { setSortOption(e.target.value); setOffset(0); }}
                 style={{
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
@@ -428,7 +471,7 @@ function Customers() {
               <input
                 type="search"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setOffset(0); }}
                 placeholder={t('customers.list.search', 'Buscar cliente...')}
                 style={{
                   backgroundColor: 'var(--bg-primary)',
@@ -441,11 +484,12 @@ function Customers() {
                 <input
                   type="checkbox"
                   checked={showInactive}
-                  onChange={(e) => setShowInactive(e.target.checked)}
+                  onChange={(e) => { setShowInactive(e.target.checked); setOffset(0); }}
                   className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
                 />
                 {t('customers.list.show_inactive', 'Exibir inativos')}
               </label>
+              {/* Paginação movida para o rodapé */}
             </div>
           </div>
 
@@ -475,7 +519,7 @@ function Customers() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/50">
-                  {filtered.map((customer) => {
+                  {paged.map((customer) => {
                     const isEditing = editingId === customer.id;
                     const disabled = busyId === customer.id;
                     const inviteStatus = inviteStatuses[customer.id];
@@ -819,6 +863,19 @@ function Customers() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {/* Controles de paginação no rodapé da lista */}
+          {!loading && !error && filtered.length > 0 && (
+            <PaginationControls
+              totalCount={filtered.length}
+              limit={limit}
+              offset={offset}
+              onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+              onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+              onNext={() => setOffset((prev) => (prev + limit < filtered.length ? prev + limit : prev))}
+              className="mt-6"
+            />
           )}
         </div>
       </div>

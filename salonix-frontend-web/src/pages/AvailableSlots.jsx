@@ -4,9 +4,10 @@ import FullPageLayout from '../layouts/FullPageLayout';
 import Card from '../components/ui/Card';
 import Label from '../components/ui/Label';
 import { fetchProfessionals } from '../api/professionals';
-import { fetchSlots, createSlot, deleteSlot } from '../api/slots';
+import { fetchSlotsWithMeta, createSlot, deleteSlot } from '../api/slots';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
+import PaginationControls from '../components/ui/PaginationControls';
 
 function AvailableSlots() {
   const { t } = useTranslation();
@@ -20,6 +21,39 @@ function AvailableSlots() {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ date: '', sh: '09', sm: '00', eh: '10', em: '00' });
   const [busyId, setBusyId] = useState(null);
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [sortOption, setSortOption] = useState('-start_time');
+
+  // Inicializar estado a partir da URL
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const l = parseInt(sp.get('limit') || '', 10);
+      const o = parseInt(sp.get('offset') || '', 10);
+      const ord = sp.get('ordering') || '';
+      if (!Number.isNaN(l) && l > 0) setLimit(l);
+      if (!Number.isNaN(o) && o >= 0) setOffset(o);
+      if (ord) setSortOption(ord);
+    } catch {
+      // ignore URL parse errors
+    }
+  }, []);
+
+  // Sincronizar mudanças com a URL
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      sp.set('limit', String(limit));
+      sp.set('offset', String(offset));
+      sp.set('ordering', sortOption);
+      const newUrl = `${window.location.pathname}?${sp.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    } catch {
+      // ignore
+    }
+  }, [limit, offset, sortOption]);
 
   useEffect(() => {
     let cancelled = false;
@@ -45,14 +79,17 @@ function AvailableSlots() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchSlots({ professionalId: selectedProfessional, slug });
-      setSlotItems(data);
+      const payload = await fetchSlotsWithMeta({ professionalId: selectedProfessional, slug, params: { limit, offset, ordering: sortOption } });
+      const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      setSlotItems(list);
+      const tc = payload?.meta?.totalCount ?? payload?.count ?? list.length;
+      setTotalCount(tc || 0);
     } catch (e) {
       setError(parseApiError(e, t('common.load_error')));
     } finally {
       setLoading(false);
     }
-  }, [selectedProfessional, slug, t]);
+  }, [selectedProfessional, slug, t, limit, offset, sortOption]);
 
   useEffect(() => {
     loadSlots();
@@ -195,6 +232,28 @@ function AvailableSlots() {
             ))}
           </select>
         </div>
+
+        <div className="mb-4 form-light">
+          <Label className="mb-1 block">Ordenação</Label>
+          <select
+            value={sortOption}
+            onChange={(e) => { setSortOption(e.target.value); setOffset(0); }}
+            className="w-full"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--border-primary)',
+              borderRadius: '0.375rem',
+              padding: '0.5rem 0.75rem',
+              colorScheme: 'light dark'
+            }}
+          >
+            <option value="-start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Mais recentes primeiro</option>
+            <option value="start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Data mais antiga primeiro</option>
+          </select>
+        </div>
+
+        {/* Controles de paginação movidos para o rodapé */}
 
         <div className="mb-4 form-light">
           <Label className="mb-1 block">{t('slots.select_date')}</Label>
@@ -374,6 +433,17 @@ function AvailableSlots() {
           </ul>
         ) : (
           <p className="text-sm text-gray-700">{t('slots.no_slots')}</p>
+        )}
+        {!loading && !error && totalCount > 0 && (
+          <PaginationControls
+            totalCount={totalCount}
+            limit={limit}
+            offset={offset}
+            onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+            onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+            onNext={() => setOffset((prev) => (prev + limit < totalCount ? prev + limit : prev))}
+            className="mt-6"
+          />
         )}
       </Card>
     </FullPageLayout>
