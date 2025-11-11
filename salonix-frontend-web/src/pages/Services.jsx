@@ -22,7 +22,8 @@ function Services() {
   const SORT_NAME = 'name';
   const [sortOption, setSortOption] = useState(SORT_RECENT);
 
-  const resolveOrdering = () => (sortOption === SORT_NAME ? 'name' : '-created_at');
+  // ordenação derivada de sortOption
+  const orderingFromSort = sortOption === SORT_NAME ? 'name' : '-created_at';
 
   // Inicializa ordering a partir da URL (se presente)
   useEffect(() => {
@@ -37,13 +38,12 @@ function Services() {
     } catch {
       // noop
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sincroniza ordering na URL quando mudar
   useEffect(() => {
     try {
-      const next = resolveOrdering();
+      const next = orderingFromSort;
       const params = new URLSearchParams(window.location.search);
       if (params.get('ordering') !== next) {
         params.set('ordering', next);
@@ -55,14 +55,13 @@ function Services() {
     }
     // reset de offset ao mudar ordenação
     setOffset(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortOption]);
+  }, [sortOption, orderingFromSort]);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchServicesWithMeta({ slug, params: { limit, offset, ordering: resolveOrdering() } })
+    fetchServicesWithMeta({ slug, params: { limit, offset, ordering: orderingFromSort } })
       .then((payload) => {
         if (cancelled) return;
         const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
@@ -73,7 +72,7 @@ function Services() {
     return () => {
       cancelled = true;
     };
-  }, [slug, t, limit, offset, sortOption]);
+  }, [slug, t, limit, offset, sortOption, orderingFromSort]);
 
   const handleAddService = async (newService) => {
     try {
@@ -139,7 +138,12 @@ function Services() {
           </label>
           <select
             id="svc-ordering"
-            className="rounded border border-brand-border px-2 py-1 text-sm"
+            className="rounded border px-2 py-1 text-sm"
+            style={{
+              backgroundColor: 'var(--bg-primary)',
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
           >
@@ -168,19 +172,34 @@ function Services() {
                 {editingId === service.id ? (
                   <div className="grid gap-2 sm:grid-cols-3">
                     <input
-                      className="w-full rounded border border-brand-border px-2 py-1"
+                      className="w-full rounded border px-2 py-1"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)'
+                      }}
                       value={editingForm.name}
                       onChange={(e) => setEditingForm({ ...editingForm, name: e.target.value })}
                     />
                     <input
                       type="number"
-                      className="w-full rounded border border-brand-border px-2 py-1"
+                      className="w-full rounded border px-2 py-1"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)'
+                      }}
                       value={editingForm.price_eur}
                       onChange={(e) => setEditingForm({ ...editingForm, price_eur: e.target.value })}
                     />
                     <input
                       type="number"
-                      className="w-full rounded border border-brand-border px-2 py-1"
+                      className="w-full rounded border px-2 py-1"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)'
+                      }}
                       value={editingForm.duration_minutes}
                       onChange={(e) =>
                         setEditingForm({ ...editingForm, duration_minutes: e.target.value })

@@ -228,6 +228,12 @@ function Team() {
   const [professionalsLoading, setProfessionalsLoading] = useState(false);
   const professionalsMountedRef = useRef(true);
 
+  // paginação e ordenação (server-side)
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
+  const [sortOption, setSortOption] = useState('name');
+  const [, setTotalCount] = useState(0);
+
   useEffect(() => {
     professionalsMountedRef.current = true;
     return () => {
@@ -419,7 +425,7 @@ function Team() {
       }
     }
     
-    const filtered = professionalsToFilter.filter((professional) => {
+    let filtered = professionalsToFilter.filter((professional) => {
       const staffMember = professional.staff_member_data;
       
       // Role filter
@@ -482,9 +488,36 @@ function Team() {
         .toLocaleLowerCase();
       return haystack.includes(term);
     });
-    
+    // Aplicar ordenação local de acordo com sortOption
+    const getDisplayName = (p) => {
+      const staffMember = p.staff_member_data;
+      const baseName = (p.name || '').trim();
+      if (baseName) return baseName.toLocaleLowerCase();
+      const staffName = [staffMember?.first_name || '', staffMember?.last_name || '']
+        .join(' ')
+        .trim()
+        .toLocaleLowerCase();
+      return staffName || (staffMember?.email || staffMember?.username || '').toLocaleLowerCase();
+    };
+    const byNameAsc = (a, b) => {
+      const an = getDisplayName(a);
+      const bn = getDisplayName(b);
+      if (an < bn) return -1;
+      if (an > bn) return 1;
+      return 0;
+    };
+    const byCreatedAsc = (a, b) => {
+      const ad = new Date(a.created_at || 0).getTime();
+      const bd = new Date(b.created_at || 0).getTime();
+      return ad - bd;
+    };
+    if (sortOption === 'name') filtered = filtered.slice().sort(byNameAsc);
+    else if (sortOption === '-name') filtered = filtered.slice().sort((a, b) => -byNameAsc(a, b));
+    else if (sortOption === 'created_at') filtered = filtered.slice().sort(byCreatedAsc);
+    else if (sortOption === '-created_at') filtered = filtered.slice().sort((a, b) => -byCreatedAsc(a, b));
+
     return filtered;
-  }, [professionalsWithStaff, roleFilter, statusFilter, search, currentUserRole, currentStaffMember]);
+  }, [professionalsWithStaff, roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
 
   const professionalsByStaff = useMemo(() => {
     const map = new Map();
@@ -511,10 +544,7 @@ function Team() {
   );
 
   // paginação e ordenação (server-side)
-  const [limit, setLimit] = useState(10);
-  const [offset, setOffset] = useState(0);
-  const [sortOption, setSortOption] = useState('name');
-  const [totalCount, setTotalCount] = useState(0);
+  
 
   // Inicializar a partir da URL
   useEffect(() => {
@@ -549,9 +579,11 @@ function Team() {
     setOffset(0);
   }, [roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
 
+  // Paginação local sobre a lista filtrada/ordenada
+  const totalCountLocal = filteredProfessionals.length;
   const pagedProfessionals = useMemo(
     () => filteredProfessionals.slice(offset, offset + limit),
-    [filteredProfessionals, limit, offset]
+    [filteredProfessionals, offset, limit]
   );
 
   const selectableStaffOptions = useMemo(() => {
@@ -984,14 +1016,14 @@ function Team() {
             />
           )}
 
-          {totalCount > 0 && (
+          {totalCountLocal > 0 && (
             <PaginationControls
-              totalCount={totalCount}
+              totalCount={totalCountLocal}
               limit={limit}
               offset={offset}
               onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
               onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-              onNext={() => setOffset((prev) => (prev + limit < totalCount ? prev + limit : prev))}
+              onNext={() => setOffset((prev) => (prev + limit < totalCountLocal ? prev + limit : prev))}
               className="mt-6"
             />
           )}

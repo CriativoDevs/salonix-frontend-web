@@ -76,10 +76,8 @@ function Customers() {
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
 
-  const resolveOrdering = useCallback(
-    () => (sortOption === SORT_NAME ? 'name' : '-created_at'),
-    [sortOption],
-  );
+  // ordenação derivada de sortOption (evita missing deps em efeitos)
+  const orderingFromSort = sortOption === SORT_NAME ? 'name' : '-created_at';
 
   // Inicializa ordering a partir da URL
   useEffect(() => {
@@ -94,13 +92,12 @@ function Customers() {
     } catch {
       // noop
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Sincroniza ordering na URL e reseta offset ao mudar
   useEffect(() => {
     try {
-      const next = resolveOrdering();
+      const next = orderingFromSort;
       const params = new URLSearchParams(window.location.search);
       if (params.get('ordering') !== next) {
         params.set('ordering', next);
@@ -111,8 +108,7 @@ function Customers() {
       // noop
     }
     setOffset(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortOption]);
+  }, [sortOption, orderingFromSort]);
 
   const updateInviteStatus = useCallback((customerId, status) => {
     if (!customerId) return;
@@ -159,7 +155,7 @@ function Customers() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchCustomers({ slug, params: { limit, offset, ordering: resolveOrdering() } })
+    fetchCustomers({ slug, params: { limit, offset, ordering: orderingFromSort } })
       .then((payload) => {
         if (cancelled) return;
         const list = Array.isArray(payload?.results) ? payload.results : payload;
@@ -177,7 +173,7 @@ function Customers() {
     return () => {
       cancelled = true;
     };
-  }, [slug, t, closeInviteTooltip, limit, offset, resolveOrdering]);
+  }, [slug, t, closeInviteTooltip, limit, offset, orderingFromSort]);
 
   const sortedCustomers = useMemo(
     () => sortCustomers(customers, sortOption),
