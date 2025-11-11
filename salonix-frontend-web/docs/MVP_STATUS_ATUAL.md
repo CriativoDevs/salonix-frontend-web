@@ -1,6 +1,6 @@
 # 🚦 Status Atual do MVP – Frontend Web (FEW) – Outubro 2025
 
-## ✅ Concluído / Estável
+## ✅ Concluído / Estável (≈62%)
 
 - **FEW-201 – Autenticação real com backend** (login/register/refresh/logout + tratamento de erros).
 - **FEW-207 – Landing page institucional** (conteúdo PT, CTA, base SEO).
@@ -16,6 +16,11 @@
 - **FEW-208/209** – wizard de planos + onboarding guiado após registro.
 - **FEW-244/245** – paywall real + UX de 429 refinada.
 - **FEW-246** – documentação CaptchaGate/envs.
+
+## 🔗 Dependências e Integrações
+- Badge de crédito atual (€) atualizado via canal realtime (SSE recomendado; WS opcional conforme necessidade).
+- Endpoints `/api/credits/*` no BE para compra de crédito e histórico.
+- Tabela de planos e limites de crédito atualizados na Landing Page.
 
 ## 🧭 Meta do MVP
 
