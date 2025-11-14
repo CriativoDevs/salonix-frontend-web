@@ -6,10 +6,12 @@ import {
   setRefreshToken,
   triggerLogout,
 } from '../utils/authStorage';
+import { getEnvVar } from '../utils/env';
 
-// Use fallback for Jest environment - hardcoded for now to avoid import.meta issues
+// Base da API: usa env `VITE_API_URL` com fallback para localhost
 const defaultBase = 'http://localhost:8000/api/';
-export const API_BASE_URL = defaultBase.endsWith('/') ? defaultBase : `${defaultBase}/`;
+const configuredBase = getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
+export const API_BASE_URL = configuredBase.endsWith('/') ? configuredBase : `${configuredBase}/`;
 
 const client = axios.create({
   baseURL: API_BASE_URL,
