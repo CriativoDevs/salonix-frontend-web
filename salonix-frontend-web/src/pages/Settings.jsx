@@ -5,6 +5,7 @@ import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
 import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
+import useCreditBalance from '../hooks/useCreditBalance';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
 import {
@@ -133,6 +134,8 @@ function Settings() {
     refetch,
   } = useTenant();
   const [activeTab, setActiveTab] = useState('branding');
+  const { balance, loading: creditLoading, error: creditError, refresh: refreshCredits } = useCreditBalance();
+  // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
     () => buildInitialSettings(profile, channels, branding),
@@ -938,6 +941,22 @@ function Settings() {
             {t('settings.plan_badge', 'Plano')}: {planName}
           </span>
         ) : null}
+        <span
+          role="button"
+          onClick={() => {
+            if (!creditLoading) {
+              refreshCredits();
+            }
+          }}
+          title={
+            creditLoading
+              ? t('credits.loading', 'Carregando créditos...')
+              : t('credits.refresh_hint', 'Clique para atualizar o saldo')
+          }
+          className="cursor-pointer rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
+        >
+          {t('credits.label', 'Créditos')}: {creditLoading ? t('common.loading', 'Carregando') : (creditError ? t('credits.unavailable', 'Indisponível') : (balance?.current_balance ?? '—'))}
+        </span>
       </PageHeader>
 
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
