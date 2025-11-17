@@ -219,9 +219,9 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your business settings",
-    "tabs": {
+  "tabs": {
       "general": "General",
-      "branding": "Branding",
+      "branding": "Logo",
       "notifications": "Notifications",
       "business": "Business"
     },
@@ -263,7 +263,7 @@
       "no_logo": "No logo defined.",
       "preview_alt": "Logo preview",
       "logo_file": "Logo file",
-      "saved": "Branding updated successfully."
+      "saved": "Logo updated successfully."
     }
   },
   "customers": {

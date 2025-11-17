@@ -1,6 +1,5 @@
-import React, { createContext, useEffect, useState, useCallback } from 'react';
+import { createContext, useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useTenant } from '../hooks/useTenant';
 import client from '../api/client';
 import { THEMES, getSystemTheme, resolveTheme } from '../constants/themes';
 
@@ -10,48 +9,31 @@ const ThemeContext = createContext();
 // Provider do contexto de tema
 export const ThemeProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
-  const { branding } = useTenant();
   const [theme, setTheme] = useState(THEMES.SYSTEM);
   const [resolvedTheme, setResolvedTheme] = useState(THEMES.LIGHT);
   const [isLoading, setIsLoading] = useState(true);
 
   // Aplica tema no DOM
-  const applyTheme = useCallback(
-    (theme) => {
-      const root = document.documentElement;
-      const body = document.body;
-      
-      // Remove classes antigas
-      body.removeAttribute('data-theme');
-      root.classList.remove('theme-light', 'theme-dark');
-      
-      // Aplica novo tema usando data-theme
-      body.setAttribute('data-theme', theme);
-      
-      // Aplica branding personalizado se disponível
-      if (branding) {
-        if (branding.primaryColor) {
-          root.style.setProperty('--accent-primary', branding.primaryColor);
-        }
-        if (branding.backgroundColor) {
-          root.style.setProperty('--bg-primary', branding.backgroundColor);
-        }
-        if (branding.textColor) {
-          root.style.setProperty('--text-primary', branding.textColor);
-        }
-      }
+  const applyTheme = useCallback((theme) => {
+    const root = document.documentElement;
+    const body = document.body;
 
-      // Atualiza meta theme-color para mobile
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        const themeColor =
-          branding?.primaryColor ||
-          (theme === THEMES.DARK ? '#0f172a' : '#ffffff');
-        metaThemeColor.setAttribute('content', themeColor);
-      }
-    },
-    [branding]
-  );
+    // Remove classes antigas
+    body.removeAttribute('data-theme');
+    root.classList.remove('theme-light', 'theme-dark');
+
+    // Aplica novo tema usando data-theme
+    body.setAttribute('data-theme', theme);
+
+    // Paleta fixa do tema: sem aplicação de cores de branding (FEW-BRAND-01)
+
+    // Atualiza meta theme-color para mobile
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      const themeColor = theme === THEMES.DARK ? '#0f172a' : '#ffffff';
+      metaThemeColor.setAttribute('content', themeColor);
+    }
+  }, []);
 
   // Carrega tema do usuário autenticado
   const loadUserTheme = useCallback(async () => {
@@ -161,7 +143,7 @@ export const ThemeProvider = ({ children }) => {
     if (resolvedTheme) {
       applyTheme(resolvedTheme);
     }
-  }, [branding, resolvedTheme, applyTheme]);
+  }, [resolvedTheme, applyTheme]);
 
   // Inicialização do tema
   useEffect(() => {

@@ -225,9 +225,9 @@
   "settings": {
     "title": "Configurações",
     "subtitle": "Gerencie as configurações do seu negócio",
-    "tabs": {
+  "tabs": {
       "general": "Geral",
-      "branding": "Branding",
+      "branding": "Logo",
       "notifications": "Notificações",
       "business": "Negócio"
     },
@@ -280,7 +280,7 @@
       "no_logo": "Nenhum logo definido.",
       "preview_alt": "Pré-visualização do logo",
       "logo_file": "Arquivo de logo",
-      "saved": "Branding atualizado com sucesso."
+      "saved": "Logo atualizado com sucesso."
     }
   },
   "customers": {

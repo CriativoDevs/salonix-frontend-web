@@ -62,12 +62,8 @@ export const DEFAULT_TENANT_META = {
     appleTouchIconUrl: null,
     appName: 'TimelyOne',
     shortName: 'Timely',
-    themeColor: '#6B7280',
-    backgroundColor: '#FFFFFF',
     splashScreens: [],
     icons: [],
-    primaryColor: '#6B7280',
-    secondaryColor: '#1F2937',
   },
   flags: {
     enableCustomerPwa: false,
@@ -294,11 +290,6 @@ function normalizeBranding(brandingBlock, rawMeta, fallback) {
     favicon_url: rawMeta?.favicon_url ?? brandingBlock?.favicon_url ?? brandingBlock?.faviconUrl,
     apple_touch_icon_url:
       rawMeta?.apple_touch_icon_url ?? brandingBlock?.apple_touch_icon_url ?? brandingBlock?.appleTouchIconUrl,
-    primary_color: rawMeta?.primary_color ?? brandingBlock?.primary_color ?? brandingBlock?.primaryColor,
-    secondary_color: rawMeta?.secondary_color ?? brandingBlock?.secondary_color ?? brandingBlock?.secondaryColor,
-    theme_color: rawMeta?.theme_color ?? brandingBlock?.theme_color ?? brandingBlock?.themeColor,
-    background_color:
-      rawMeta?.background_color ?? brandingBlock?.background_color ?? brandingBlock?.backgroundColor,
     app_name: rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
     short_name: rawMeta?.short_name ?? brandingBlock?.short_name ?? brandingBlock?.shortName,
     splash_screens: rawMeta?.splash_screens ?? brandingBlock?.splash_screens ?? brandingBlock?.splashScreens,
@@ -317,18 +308,6 @@ function normalizeBranding(brandingBlock, rawMeta, fallback) {
   }
   if (brandingSource.apple_touch_icon_url !== undefined) {
     result.appleTouchIconUrl = brandingSource.apple_touch_icon_url || null;
-  }
-  if (brandingSource.primary_color) {
-    result.primaryColor = brandingSource.primary_color;
-  }
-  if (brandingSource.secondary_color) {
-    result.secondaryColor = brandingSource.secondary_color;
-  }
-  if (brandingSource.theme_color) {
-    result.themeColor = brandingSource.theme_color;
-  }
-  if (brandingSource.background_color) {
-    result.backgroundColor = brandingSource.background_color;
   }
   if (brandingSource.app_name) {
     result.appName = brandingSource.app_name;
