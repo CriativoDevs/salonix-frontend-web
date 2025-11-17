@@ -26,7 +26,7 @@ import {
 } from '../utils/tenantPlan';
 
 const TAB_ITEMS = [
-  { id: 'branding', label: 'settings.tabs.branding', icon: '🎨' },
+  { id: 'branding', label: 'settings.tabs.branding', icon: '🖼️' },
   { id: 'general', label: 'settings.tabs.general', icon: '⚙️' },
   { id: 'notifications', label: 'settings.tabs.notifications', icon: '🔔' },
   { id: 'business', label: 'settings.tabs.business', icon: '🏢' },
@@ -107,12 +107,10 @@ function buildInitialSettings(profile, channels, branding) {
         DEFAULT_TENANT_META.profile.appointmentDuration,
       bufferTime:
         safeProfile.bufferTime ?? DEFAULT_TENANT_META.profile.bufferTime,
-    },
-    branding: {
-      primaryColor: safeBranding.primaryColor || '#6B7280',
-      secondaryColor: safeBranding.secondaryColor || '#1F2937',
+  },
+  branding: {
       logoUrl: safeBranding.logoUrl || '',
-    },
+  },
   };
 }
 
@@ -383,8 +381,6 @@ function Settings() {
 
     try {
       await updateTenantBranding({
-        primaryColor: settings.branding.primaryColor,
-        secondaryColor: settings.branding.secondaryColor,
         logoFile: brandingFile,
         logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
       });
@@ -408,8 +404,6 @@ function Settings() {
     brandingFile,
     refreshTenantData,
     settings.branding.logoUrl,
-    settings.branding.primaryColor,
-    settings.branding.secondaryColor,
     t,
   ]);
 
@@ -569,81 +563,7 @@ function Settings() {
 
   const renderBrandingSettings = () => (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
-            {t('settings.branding.primary_color', 'Cor primária')}
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={settings.branding.primaryColor}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  branding: { ...settings.branding, primaryColor: e.target.value },
-                })
-              }
-              disabled={tenantLoading}
-              className="h-10 w-16 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={settings.branding.primaryColor}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  branding: { ...settings.branding, primaryColor: e.target.value },
-                })
-              }
-              disabled={tenantLoading}
-              className="flex-1 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)'
-              }}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-brand-surfaceForeground">
-            {t('settings.branding.secondary_color', 'Cor secundária')}
-          </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={settings.branding.secondaryColor}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  branding: { ...settings.branding, secondaryColor: e.target.value },
-                })
-              }
-              disabled={tenantLoading}
-              className="h-10 w-16 cursor-pointer"
-            />
-            <input
-              type="text"
-              value={settings.branding.secondaryColor}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  branding: { ...settings.branding, secondaryColor: e.target.value },
-                })
-              }
-              disabled={tenantLoading}
-              className="flex-1 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)'
-              }}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Campos de cor removidos (FEW-BRAND-01) */}
 
       <div className="space-y-3">
         <label className="block text-sm font-medium text-brand-surfaceForeground">

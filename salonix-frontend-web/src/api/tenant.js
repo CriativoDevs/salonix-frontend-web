@@ -15,15 +15,11 @@ export function fetchTenantMeta(slug, config = {}) {
 }
 
 export async function updateTenantBranding({
-  primaryColor,
-  secondaryColor,
   logoFile,
   logoUrl,
 }) {
   if (logoFile instanceof File) {
     const formData = new FormData();
-    if (primaryColor) formData.append('primary_color', primaryColor);
-    if (secondaryColor) formData.append('secondary_color', secondaryColor);
     formData.append('logo', logoFile);
     if (logoUrl && /^https?:\/\//i.test(logoUrl.trim())) {
       formData.append('logo_url', logoUrl.trim());
@@ -36,8 +32,6 @@ export async function updateTenantBranding({
   }
 
   const payload = {};
-  if (primaryColor) payload.primary_color = primaryColor;
-  if (secondaryColor) payload.secondary_color = secondaryColor;
   if (logoUrl && /^https?:\/\//i.test(logoUrl.trim())) {
     payload.logo_url = logoUrl.trim();
   }

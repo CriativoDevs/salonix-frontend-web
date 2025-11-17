@@ -55,35 +55,6 @@ function TenantThemeManager() {
 
     const effectiveTheme = { ...targetTheme };
     
-    // Aplicar cores personalizadas do tenant
-    if (targetBranding?.primaryColor) {
-      effectiveTheme.primary = targetBranding.primaryColor;
-      effectiveTheme.accent = targetBranding.primaryColor;
-      effectiveTheme.border = targetBranding.primaryColor;
-    }
-    
-    if (targetBranding?.secondaryColor) {
-      effectiveTheme.secondary = targetBranding.secondaryColor;
-      effectiveTheme.surfaceForeground = targetBranding.secondaryColor;
-    }
-    
-    // Aplicar cores de destaque personalizadas
-    if (targetBranding?.highlightColor) {
-      effectiveTheme.highlight = targetBranding.highlightColor;
-    }
-    
-    // Aplicar cores de superfície personalizadas
-    if (targetBranding?.surfaceColor) {
-      effectiveTheme.surface = targetBranding.surfaceColor;
-    }
-    
-    // Aplicar cores de texto personalizadas
-    if (targetBranding?.textColor) {
-      effectiveTheme.primaryForeground = targetBranding.textColor;
-      effectiveTheme.secondaryForeground = targetBranding.textColor;
-      effectiveTheme.highlightForeground = targetBranding.textColor;
-    }
-    
     // Garantir que as cores de texto sejam adequadas para o tema atual
     const isDarkTheme = root.classList.contains('theme-dark');
     if (isDarkTheme) {
