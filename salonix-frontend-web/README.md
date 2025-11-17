@@ -84,6 +84,28 @@
 - **Notificações** - Preferências de comunicação
 - **Integrações** - APIs e webhooks
 
+## 🏷️ Branding — EN
+
+- Backend provides `tenant.name` and `branding` fields: `appName`, `shortName`, `logoUrl`, `faviconUrl`, `appleTouchIconUrl`. No color palette is sent from backend.
+- Frontend applies branding dynamically:
+  - Document title uses `tenant.name` with fallback to `branding.appName`/`branding.shortName`.
+  - Favicons and Apple Touch Icon are resolved via `resolveTenantAssetUrl` and injected as `<link rel="icon">`, `<link rel="shortcut icon">`, and `<link id="tenant-apple-touch-icon">`.
+  - PWA manifest is generated/updated at runtime in `App.jsx` (`name`, `short_name`, icons). `theme_color` is controlled by `ThemeContext`.
+  - Apple meta tags (`apple-mobile-web-app-title`, `apple-mobile-web-app-capable`) are updated in `App.jsx`.
+- Do not hardcode colors; use theme variables only. Do not set `meta[name="theme-color"]` outside `ThemeContext`.
+- Testing: mock `AuthProvider`, `TenantProvider`, `Router`, and `URL.createObjectURL`/`revokeObjectURL` when exercising dynamic manifest and branding.
+
+## 🏷️ Branding — PT-BR
+
+- Backend fornece `tenant.name` e campos de `branding`: `appName`, `shortName`, `logoUrl`, `faviconUrl`, `appleTouchIconUrl`. Nenhuma paleta de cores é enviada pelo backend.
+- Frontend aplica o branding dinamicamente:
+  - Título do documento usa `tenant.name` com fallback para `branding.appName`/`branding.shortName`.
+  - Favicons e Apple Touch Icon são resolvidos via `resolveTenantAssetUrl` e injetados como `<link rel="icon">`, `<link rel="shortcut icon">` e `<link id="tenant-apple-touch-icon">`.
+  - Manifest PWA é gerado/atualizado em tempo de execução em `App.jsx` (`name`, `short_name`, ícones). `theme_color` é controlado pelo `ThemeContext`.
+  - Metatags Apple (`apple-mobile-web-app-title`, `apple-mobile-web-app-capable`) são atualizadas em `App.jsx`.
+- Não hardcodeie cores; use apenas variáveis de tema. Não defina `meta[name="theme-color"]` fora do `ThemeContext`.
+- Testes: mockar `AuthProvider`, `TenantProvider`, `Router` e `URL.createObjectURL`/`revokeObjectURL` ao exercitar manifest dinâmico e branding.
+
 ## 🛠️ Stack Tecnológica
 
 ### Frontend

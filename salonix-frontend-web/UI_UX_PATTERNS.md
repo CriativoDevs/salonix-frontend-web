@@ -37,6 +37,7 @@
 
 ## 📋 Índice
 - [Sistema de Cores e Temas](#sistema-de-cores-e-temas)
+- [Branding (sem cores)](#branding-sem-cores)
 - [Componentes de Feedback](#componentes-de-feedback)
 - [Tipografia](#tipografia)
 - [Espaçamento e Layout](#espaçamento-e-layout)
@@ -73,6 +74,26 @@
 // ❌ EVITAR - Cores hardcoded
 <div className="text-green-800">Sucesso</div>
 ```
+
+---
+
+## 🏷️ Branding (sem cores)
+
+### Princípios
+- Branding do backend não inclui paleta de cores.
+- Cores e `theme-color` são controlados no FE via `ThemeContext`.
+
+### Aplicações de Branding
+- **Título do documento**: usar `tenant.name` com fallback em `branding.appName`/`branding.shortName`.
+- **Favicons**: atualizar `<link rel="icon">` e `<link rel="shortcut icon">` usando `resolveTenantAssetUrl`.
+- **Apple Touch Icon**: usar `<link id="tenant-apple-touch-icon">` e resolver via `resolveTenantAssetUrl`.
+- **PWA Manifest**: gerado/atualizado em `App.jsx` com nome, short name e ícones do tenant.
+- **Meta Apple**: `apple-mobile-web-app-title` e `apple-mobile-web-app-capable` gerenciados dinamicamente.
+
+### Regras
+- Não hardcodear cores em componentes; usar variáveis de tema.
+- Não definir `meta[name="theme-color"]` manualmente fora do `ThemeContext`.
+- Revogar `blob:` do manifest ao deslogar para evitar leaks.
 
 ---
 
