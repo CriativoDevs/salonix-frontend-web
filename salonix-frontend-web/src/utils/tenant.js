@@ -58,7 +58,7 @@ export const DEFAULT_TENANT_META = {
   },
   branding: {
     logoUrl: null,
-    faviconUrl: '/vite.svg',
+    faviconUrl: null,
     appleTouchIconUrl: null,
     appName: 'TimelyOne',
     shortName: 'Timely',
@@ -195,10 +195,37 @@ export function extractSlugFromHost(hostname) {
 
 export function resolveTenantAssetUrl(source) {
   if (!source || typeof source !== 'string') return '';
+  const trimmed = source.trim();
+  if (!trimmed) return '';
+
+  // Absolutos e data URLs passam direto
+  if (/^(data:|https?:\/\/)/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Caminhos típicos do backend (Django): /media, /static
+  const isBackendAsset = (
+    trimmed.startsWith('/media/') ||
+    trimmed.startsWith('/static/')
+  );
+
   try {
-    return new URL(source, API_BASE_URL).toString();
+    if (typeof window !== 'undefined') {
+      const frontendBase = new URL(window.location.origin);
+      const apiBase = API_BASE_URL;
+      const base = isBackendAsset ? apiBase : frontendBase;
+      return new URL(trimmed, base).toString();
+    }
   } catch {
-    return source;
+    // noop
+  }
+
+  try {
+    // Fallback: se não houver window, preferimos API para backend assets e origin do API
+    const base = isBackendAsset ? API_BASE_URL : new URL(API_BASE_URL.origin);
+    return new URL(trimmed, base).toString();
+  } catch {
+    return trimmed;
   }
 }
 
