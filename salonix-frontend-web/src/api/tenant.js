@@ -18,12 +18,16 @@ export async function updateTenantBranding({
   logoFile,
   logoUrl,
 }) {
+  const validUrl = typeof logoUrl === 'string' && /^https?:\/\//i.test(logoUrl.trim());
+
+  // Bloqueia envio simultâneo de arquivo e URL
+  if (logoFile instanceof File && validUrl) {
+    throw new Error('Selecione arquivo OU URL de logo, não ambos.');
+  }
+
   if (logoFile instanceof File) {
     const formData = new FormData();
     formData.append('logo', logoFile);
-    if (logoUrl && /^https?:\/\//i.test(logoUrl.trim())) {
-      formData.append('logo_url', logoUrl.trim());
-    }
 
     const response = await client.patch(TENANT_ENDPOINT, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -32,7 +36,7 @@ export async function updateTenantBranding({
   }
 
   const payload = {};
-  if (logoUrl && /^https?:\/\//i.test(logoUrl.trim())) {
+  if (validUrl) {
     payload.logo_url = logoUrl.trim();
   }
 
