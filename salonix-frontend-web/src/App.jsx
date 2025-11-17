@@ -179,8 +179,8 @@ function TenantThemeManager() {
 
       const name = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
       const shortName = targetBranding.shortName || tenant?.name || name;
-      const themeColor = targetBranding.themeColor || effectiveTheme.primary;
-      const backgroundColor = targetBranding.backgroundColor || effectiveTheme.surface;
+      const themeColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
+      const backgroundColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
 
       const manifestPayload = {
         name,
@@ -223,14 +223,12 @@ function TenantThemeManager() {
       manifestLink.setAttribute('href', manifestObjectUrlRef.current);
     };
 
-    const themeColorMeta = ensureMetaTag('theme-color');
     const appleWebAppTitleMeta = ensureMetaTag('apple-mobile-web-app-title');
     const appleCapableMeta = ensureMetaTag('apple-mobile-web-app-capable');
 
     if (isAuthenticated) {
       const tenantTitle = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
       document.title = tenantTitle;
-      themeColorMeta.setAttribute('content', targetBranding.themeColor || effectiveTheme.primary);
       appleWebAppTitleMeta.setAttribute(
         'content',
         targetBranding.shortName || tenant?.name || tenantTitle
@@ -246,11 +244,7 @@ function TenantThemeManager() {
       } else {
         document.title = DEFAULT_TENANT_META.branding.appName;
       }
-      if (originalAssetsRef.current?.themeColor) {
-        themeColorMeta.setAttribute('content', originalAssetsRef.current.themeColor);
-      } else {
-        themeColorMeta.removeAttribute('content');
-      }
+      
       // Metas PWA básicas em público: título segue mesma regra de document.title
       const publicAppTitle = isLanding
         ? DEFAULT_TENANT_META.branding.appName
