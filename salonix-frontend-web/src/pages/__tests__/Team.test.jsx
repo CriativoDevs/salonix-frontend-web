@@ -5,7 +5,7 @@ import { TextEncoder, TextDecoder } from 'util';
 import Team from '../Team';
 import { useTenant } from '../../hooks/useTenant';
 import { useAuth } from '../../hooks/useAuth';
-import { fetchProfessionals } from '../../api/professionals';
+import { fetchProfessionals, fetchProfessionalsWithMeta } from '../../api/professionals';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 
 if (typeof globalThis.TextEncoder === 'undefined') {
@@ -51,6 +51,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('../../api/professionals', () => ({
   fetchProfessionals: jest.fn(() => Promise.resolve([])),
+  fetchProfessionalsWithMeta: jest.fn(() => Promise.resolve({ results: [], meta: { totalCount: 0 } })),
   createProfessional: jest.fn(() => Promise.resolve({})),
   updateProfessional: jest.fn(() => Promise.resolve({})),
   deleteProfessional: jest.fn(() => Promise.resolve(true)),
@@ -62,6 +63,7 @@ describe('Team page', () => {
     useTenant.mockReturnValue({ slug: 'aurora' });
     useAuth.mockReturnValue({ user: { email: 'manager@example.com' } });
     fetchProfessionals.mockResolvedValue([]);
+    fetchProfessionalsWithMeta.mockResolvedValue({ results: [], meta: { totalCount: 0 } });
   });
 
   it('renders team page', async () => {
