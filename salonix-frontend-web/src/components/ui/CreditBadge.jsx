@@ -5,7 +5,6 @@ import useCreditBalance from '../../hooks/useCreditBalance';
 export default function CreditBadge({ className = '' }) {
   const { t } = useTranslation();
   const { balance, loading, error, refresh } = useCreditBalance();
-  // Estado removido: atualização manual basta para este modo
 
   const handleRefresh = () => {
     if (loading) return;
@@ -15,8 +14,12 @@ export default function CreditBadge({ className = '' }) {
   const content = useMemo(() => {
     if (loading) return t('credits.loading', 'Carregando créditos...');
     if (error) return t('credits.unavailable', 'Créditos indisponíveis');
-    if (!balance || typeof balance.current_balance === 'undefined') return '—';
-    return String(balance.current_balance);
+    const current =
+      balance && typeof balance.current_balance !== 'undefined'
+        ? balance.current_balance
+        : null;
+    if (current === null) return '—';
+    return String(current);
   }, [loading, error, balance, t]);
 
   return (
