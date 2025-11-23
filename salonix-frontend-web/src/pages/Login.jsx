@@ -25,7 +25,6 @@ function Login() {
   const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
 
   useEffect(() => {
-    console.log('[Login] enablePlans=', enablePlans, 'isLoading=', isLoading, 'isAuthenticated=', isAuthenticated);
     if (!isLoading && isAuthenticated) {
       const scheduled = consumePostAuthRedirect();
       const target = scheduled || (enablePlans ? '/plans' : '/dashboard');
@@ -51,12 +50,10 @@ function Login() {
     setPopupError(null);
     clearAuthError();
     try {
-      console.log('[Login] Attempting login');
       const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
       const token = bypass || captchaToken || undefined;
       await login({ email, password, captchaToken: token });
     } catch (err) {
-      console.warn('[Login] Login failed', err);
       setPopupError(err);
     } finally {
       setSubmitting(false);

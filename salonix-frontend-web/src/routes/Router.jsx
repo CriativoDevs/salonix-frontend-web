@@ -11,6 +11,7 @@ import Services from '../pages/Services';
 import StaffInviteAccept from '../pages/StaffInviteAccept';
 import AvailableSlots from '../pages/AvailableSlots';
 import Bookings from '../pages/Bookings';
+import Agenda from '../pages/Agenda';
 
 import Customers from '../pages/Customers';
 import Team from '../pages/Team';
@@ -73,6 +74,15 @@ function Router() {
         element={
           <PrivateRoute>
             <AvailableSlots />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/agenda"
+        element={
+          <PrivateRoute>
+            <Agenda />
           </PrivateRoute>
         }
       />

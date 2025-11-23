@@ -76,7 +76,6 @@ function Chat() {
     if (!message.trim() || !selectedChat) return;
 
     // TODO: implementar envio de mensagem
-    console.log('Enviar mensagem:', message);
     setMessage('');
   };
 

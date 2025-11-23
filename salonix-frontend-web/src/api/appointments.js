@@ -78,6 +78,42 @@ export async function createAppointment(payload, { slug } = {}) {
   return data;
 }
 
+// Criação de múltiplos agendamentos em lote (mistura de profissional/serviço possível)
+export async function createAppointmentsBulk(payload, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('appointments/bulk/', payload, { headers, params });
+  return data;
+}
+
+// Criação de múltiplos agendamentos (Mixed Bulk): itens com profissionais/serviços diferentes
+export async function createAppointmentsMixedBulk(payload, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('appointments/bulk/mixed/', payload, { headers, params });
+  return data;
+}
+
+// Criação de série de agendamentos (mesmo profissional/serviço)
+export async function createAppointmentsSeries(payload, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('appointments/series/', payload, { headers, params });
+  return data;
+}
+
 export async function updateAppointment(id, payload, { slug } = {}) {
   const headers = {};
   const params = {};

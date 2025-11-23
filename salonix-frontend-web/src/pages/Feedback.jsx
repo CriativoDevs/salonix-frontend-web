@@ -29,7 +29,6 @@ function Feedback() {
     if (!form.rating || !form.category || !form.message) return;
 
     // TODO: implementar envio de feedback
-    console.log('Feedback enviado:', form);
     setIsSubmitted(true);
   };
 
