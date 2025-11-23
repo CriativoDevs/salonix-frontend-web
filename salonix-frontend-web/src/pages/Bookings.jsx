@@ -890,10 +890,9 @@ function Bookings() {
       slot_id: s.id,
       service_id: s.serviceId ? Number.parseInt(s.serviceId, 10) : NaN,
       professional_id: s.professionalId ? Number.parseInt(s.professionalId, 10) : NaN,
-      customer_id: s.customerId ? Number.parseInt(s.customerId, 10) : Number.parseInt(formData.customerId, 10),
       notes: s.notes?.trim() || multiDefaultNotes.trim() || (formData.notes || '').trim() || undefined,
     }));
-    const invalid = appointments.filter((a) => Number.isNaN(a.customer_id) || Number.isNaN(a.service_id) || Number.isNaN(a.professional_id));
+    const invalid = appointments.filter((a) => Number.isNaN(a.service_id) || Number.isNaN(a.professional_id));
     if (invalid.length > 0) {
       setMultiError({
         message: t(
@@ -928,7 +927,7 @@ function Bookings() {
     } else {
       setMultiFeedback([]);
     }
-    const payload = { items: appointments };
+    const payload = { customer_id: Number.parseInt(formData.customerId, 10), items: appointments };
   try {
       setMultiSubmitting(true);
       const resp = await createAppointmentsMixedBulk(payload, { slug });
