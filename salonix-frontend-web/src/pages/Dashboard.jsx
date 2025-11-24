@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
-import CreditBadge from '../components/ui/CreditBadge';
 import StatCard from '../components/ui/StatCard';
 import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
@@ -574,7 +573,6 @@ export default function Dashboard() {
   return (
     <FullPageLayout>
       <PageHeader title={t('dashboard.title', 'Dashboard')} subtitle={businessSummary}>
-        <CreditBadge />
       </PageHeader>
 
       {(error || reportsForbidden) ? (
