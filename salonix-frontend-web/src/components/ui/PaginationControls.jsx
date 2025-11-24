@@ -46,14 +46,14 @@ export default function PaginationControls({
           <button
             onClick={onPrev}
             disabled={!canPrev}
-            className="rounded border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground disabled:opacity-50"
+            className={`text-sm ${canPrev ? 'text-brand-primary hover:underline' : 'text-brand-surfaceForeground/50 cursor-not-allowed'}`}
           >
             {t('pagination.prev', 'Anterior')}
           </button>
           <button
             onClick={onNext}
             disabled={!canNext}
-            className="rounded bg-brand-primary px-3 py-2 text-sm text-white disabled:opacity-50"
+            className={`text-sm ${canNext ? 'text-brand-primary hover:underline' : 'text-brand-surfaceForeground/50 cursor-not-allowed'}`}
           >
             {t('pagination.next', 'Próximo')}
           </button>

@@ -371,10 +371,10 @@ function Bookings() {
     setLoadingList(true);
     setError(null);
 
-    const page = Math.floor(offset / limit) + 1;
     const params = {
-      page,
-      page_size: limit,
+      limit,
+      offset,
+      ordering: '-start_time',
     };
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
