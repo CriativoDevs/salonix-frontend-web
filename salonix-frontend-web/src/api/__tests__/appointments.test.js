@@ -6,6 +6,7 @@ import {
   fetchAppointmentDetail,
   createAppointment,
   updateAppointment,
+  createAppointmentsMixedBulk,
 } from '../appointments';
 import {
   appointmentListResponse,
@@ -71,5 +72,18 @@ describe('appointments api', () => {
       { status: 'completed' },
       { headers: {}, params: {} },
     );
+  });
+
+  it('createAppointmentsMixedBulk posts to mixed bulk endpoint', async () => {
+    const payload = { items: [{ slot_id: 1, service_id: 2, professional_id: 3 }] };
+    client.post.mockResolvedValueOnce({ data: { success: true, appointments_created: 1 } });
+
+    const resp = await createAppointmentsMixedBulk(payload);
+
+    expect(client.post).toHaveBeenCalledWith('appointments/bulk/mixed/', payload, {
+      headers: {},
+      params: {},
+    });
+    expect(resp.success).toBe(true);
   });
 });

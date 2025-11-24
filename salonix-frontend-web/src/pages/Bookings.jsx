@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
-import { fetchAppointments, fetchAppointmentDetail, createAppointment, updateAppointment } from '../api/appointments';
+import { fetchAppointments, fetchAppointmentDetail, createAppointment, updateAppointment, createAppointmentsSeries, createAppointmentsMixedBulk } from '../api/appointments';
 import { fetchCustomers } from '../api/customers';
 import { fetchServices } from '../api/services';
 import { fetchProfessionals } from '../api/professionals';
@@ -203,9 +203,45 @@ function Bookings() {
   const [editError, setEditError] = useState(null);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
+  // Modal Série/Multi (primeira versão: somente Série)
+  const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
+  const [activeSeriesTab, setActiveSeriesTab] = useState('series'); // 'series' | 'multi'
+  const [seriesSelections, setSeriesSelections] = useState([]); // [{ id, start_time, end_time }]
+  const [seriesSubmitting, setSeriesSubmitting] = useState(false);
+  const [seriesError, setSeriesError] = useState(null);
+  // Estado para Multi (lote)
+  const [multiSelections, setMultiSelections] = useState([]);
+  const [multiSubmitting, setMultiSubmitting] = useState(false);
+  const [multiError, setMultiError] = useState(null);
+  const [multiFeedback, setMultiFeedback] = useState([]);
+  // Defaults e controles próprios da aba Multi
+  const [multiProfessionalId, setMultiProfessionalId] = useState('');
+  const [multiDefaultNotes, setMultiDefaultNotes] = useState('');
+  // Item ativo da aba Multi (para sincronização com seletor global)
+  const [activeMultiSlotId, setActiveMultiSlotId] = useState(null);
+  // logger no-op para manter compatibilidade com chamadas existentes
+  const logMultiEvent = useCallback(() => {}, []);
+  // Removido painel de debug e estados relacionados
+  const [visibleWeekStart, setVisibleWeekStart] = useState(() => {
+    const today = new Date();
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const day = d.getDay(); // 0=Sun
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diffToMonday);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+
+  // Sem overlay: posicionamento final direto do botão
+
   const serviceMap = useMemo(() => buildServiceMap(services), [services]);
   const professionalMap = useMemo(() => buildServiceMap(professionals), [professionals]);
   const customerMap = useMemo(() => buildCustomerMap(customers), [customers]);
+  // Apenas profissionais com serviços atribuídos (evita itens sem oferta)
+  const professionalsWithServices = useMemo(
+    () => professionals.filter((p) => Array.isArray(p?.service_ids) && p.service_ids.length > 0),
+    [professionals]
+  );
 
   const refreshSlotsForProfessional = useCallback(
     (professionalId) => {
@@ -228,6 +264,78 @@ function Bookings() {
     },
     [slug, t],
   );
+
+  // Helpers para validação de itens Multi
+  const slotMap = useMemo(() => {
+    const m = new Map();
+    (formSlots || []).forEach((s) => { if (s?.id != null) m.set(s.id, s); });
+    return m;
+  }, [formSlots]);
+
+  const servicesById = useMemo(() => buildServiceMap(services), [services]);
+  const professionalServices = useMemo(() => {
+    const m = new Map();
+    professionals.forEach((p) => {
+      const ids = Array.isArray(p?.service_ids) ? p.service_ids.map((id) => Number.parseInt(id, 10)) : [];
+      m.set(Number.parseInt(p.id, 10), ids);
+    });
+    return m;
+  }, [professionals]);
+
+  const getSlotMinutes = useCallback((selection) => {
+    const slot = slotMap.get(selection?.id);
+    const start = parseSlotDate(slot?.start_time || selection?.start_time);
+    const end = parseSlotDate(slot?.end_time || selection?.end_time);
+    if (!start || !end) return 0;
+    const diff = (end.getTime() - start.getTime()) / 60000;
+    return Math.max(0, Math.round(diff));
+  }, [slotMap]);
+
+  const formSlotsByStart = useMemo(() => {
+    const m = new Map();
+    (formSlots || []).forEach((s) => {
+      const dt = parseSlotDate(s?.start_time);
+      if (dt) m.set(dt.getTime(), s);
+    });
+    return m;
+  }, [formSlots]);
+
+  const hasContiguousBlockFrom = useCallback((slot, requiredMinutes) => {
+    if (!slot || !requiredMinutes || requiredMinutes <= 0) return true;
+    const start = parseSlotDate(slot.start_time);
+    const end = parseSlotDate(slot.end_time);
+    if (!start || !end) return false;
+    let accumulated = Math.round((end.getTime() - start.getTime()) / 60000);
+    if (accumulated >= requiredMinutes) return true;
+    let cursorEnd = end;
+    let steps = 0;
+    while (accumulated < requiredMinutes && steps < 24) {
+      const next = formSlotsByStart.get(cursorEnd.getTime());
+      if (!next) break;
+      const nStart = parseSlotDate(next.start_time);
+      const nEnd = parseSlotDate(next.end_time);
+      if (!nStart || !nEnd) break;
+      accumulated += Math.round((nEnd.getTime() - nStart.getTime()) / 60000);
+      cursorEnd = nEnd;
+      steps += 1;
+    }
+    return accumulated >= requiredMinutes;
+  }, [formSlotsByStart]);
+
+  const validateMultiItem = useCallback((s) => {
+    const slot = slotMap.get(s.id);
+    const svcId = s.serviceId;
+    const profId = s.professionalId;
+    if (!svcId || !profId) return { code: 'missing', message: t('bookings.multi.missing_fields_item', 'Selecione serviço e profissional.') };
+    const offered = professionalServices.get(Number.parseInt(profId, 10)) || [];
+    if (offered.length > 0 && svcId != null && !offered.includes(Number.parseInt(svcId, 10))) {
+      return { code: 'prof_not_offer', message: t('bookings.multi.prof_not_offer', 'Profissional não oferece o serviço.') };
+    }
+    if (slot?.professional != null && Number.parseInt(slot.professional, 10) !== Number.parseInt(profId, 10)) {
+      return { code: 'slot_wrong_professional', message: t('bookings.multi.slot_wrong_professional', 'Horário pertence a outro profissional.') };
+    }
+    return null;
+  }, [slotMap, professionalServices, t]);
 
   useEffect(() => {
     if (!slug) return;
@@ -263,10 +371,10 @@ function Bookings() {
     setLoadingList(true);
     setError(null);
 
-    const page = Math.floor(offset / limit) + 1;
     const params = {
-      page,
-      page_size: limit,
+      limit,
+      offset,
+      ordering: '-start_time',
     };
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
@@ -357,6 +465,13 @@ function Bookings() {
     setFormData(INITIAL_FORM);
     setFormSlots([]);
     setFormError(null);
+    setSeriesSelections([]);
+    setIsSeriesModalOpen(false);
+    // Limpeza de estado da aba Multi
+    setMultiSelections([]);
+    setMultiFeedback([]);
+    setMultiProfessionalId('');
+    setMultiDefaultNotes('');
   };
 
   const handleFormChange = (field, value) => {
@@ -526,6 +641,345 @@ function Bookings() {
     setSelectedAppointment(null);
   };
 
+  // Série/Multi helpers
+  const openSeriesModal = () => {
+    setSeriesError(null);
+    // Gating atualizado: exigir apenas cliente para abrir o modal.
+    if (!formData.customerId) {
+      setFormError({ message: t('bookings.form.customer_required', 'Selecione o cliente para continuar.') });
+      return;
+    }
+    // Inicializar defaults da aba Multi
+    setMultiProfessionalId(formData.professionalId || '');
+    setMultiDefaultNotes((formData.notes || '').trim());
+    // garantir que slots estejam carregados para o profissional selecionado
+    const profForSlots = formData.professionalId || '';
+    if (formSlots.length === 0 || profForSlots) {
+      refreshSlotsForProfessional(profForSlots);
+    }
+    // Se serviço/profissional não estiverem definidos, abrir diretamente na aba Multi.
+    if (!formData.serviceId || !formData.professionalId) {
+      setActiveSeriesTab('multi');
+    } else {
+      setActiveSeriesTab('series');
+    }
+    setIsSeriesModalOpen(true);
+  };
+
+  const closeSeriesModal = () => {
+    setIsSeriesModalOpen(false);
+    setSeriesSubmitting(false);
+    setSeriesError(null);
+    // Garantir que itens anteriores não persistam ao fechar
+    setMultiSelections([]);
+    setMultiFeedback([]);
+  };
+
+  const isInCurrentWeek = (isoString) => {
+    const s = new Date(isoString);
+    const start = new Date(visibleWeekStart);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+    return s >= start && s < end;
+  };
+
+  const nextWeek = () => {
+    const d = new Date(visibleWeekStart);
+    d.setDate(d.getDate() + 7);
+    setVisibleWeekStart(d);
+  };
+  const prevWeek = () => {
+    const d = new Date(visibleWeekStart);
+    d.setDate(d.getDate() - 7);
+    setVisibleWeekStart(d);
+  };
+
+  const toggleSeriesSelection = (slot) => {
+    setSeriesSelections((prev) => {
+      // Bloquear slots no passado
+      const now = new Date();
+      if (new Date(slot.start_time) < now) {
+        return prev;
+      }
+      const exists = prev.some((s) => s.id === slot.id);
+      if (exists) {
+        return prev.filter((s) => s.id !== slot.id);
+      }
+      if (prev.length >= 20) return prev; // limite superior
+      const next = [...prev, { id: slot.id, start_time: slot.start_time, end_time: slot.end_time }];
+      return next;
+    });
+  };
+
+  const toggleMultiSelection = (slot) => {
+    setMultiSelections((prev) => {
+      const now = new Date();
+      if (new Date(slot.start_time) < now) {
+        logMultiEvent('slot_click_blocked_past', {
+          slot_id: slot.id,
+          professionalId: slot?.professional != null ? String(slot.professional) : (multiProfessionalId || ''),
+          serviceId: '',
+        });
+        return prev;
+      }
+      const exists = prev.some((s) => s.id === slot.id);
+      if (exists) {
+        logMultiEvent('multi_remove', {
+          slot_id: slot.id,
+          professionalId: slot?.professional != null ? String(slot.professional) : (multiProfessionalId || ''),
+          serviceId: '',
+        });
+        return prev.filter((s) => s.id !== slot.id);
+      }
+      if (prev.length >= 20) {
+        logMultiEvent('multi_limit_reached', {
+          slot_id: slot.id,
+          professionalId: slot?.professional != null ? String(slot.professional) : (multiProfessionalId || ''),
+          serviceId: '',
+        });
+        return prev;
+      }
+      const nextItem = {
+        id: slot.id,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        serviceId: '',
+        professionalId: (slot?.professional != null ? String(slot.professional) : (multiProfessionalId || '')),
+        customerId: formData.customerId || '',
+        notes: '',
+      };
+      // Deduplicar por id para evitar duplicações em dev/StrictMode
+      const map = new Map(prev.map((x) => [x.id, x]));
+      map.set(nextItem.id, nextItem);
+      const next = Array.from(map.values());
+      if (next.length > prev.length) {
+        logMultiEvent('multi_add', {
+          slot_id: slot.id,
+          professionalId: nextItem.professionalId || '',
+          serviceId: nextItem.serviceId || '',
+        });
+      }
+      return next;
+    });
+    // Define o item recém-adicionado como ativo
+    setActiveMultiSlotId(slot.id);
+  };
+
+  const updateMultiItemField = (slotId, field, value) => {
+    const current = multiSelections.find((x) => x.id === slotId);
+    logMultiEvent('item_field_change', {
+      slot_id: slotId,
+      field,
+      value,
+      professionalId: field === 'professionalId' ? (value || '') : (current?.professionalId || ''),
+      serviceId: field === 'serviceId' ? (value || '') : (current?.serviceId || ''),
+    });
+    setMultiSelections((prev) => prev.map((s) => (s.id === slotId ? { ...s, [field]: value } : s)));
+  };
+
+  const removeMultiItem = (slotId) => {
+    logMultiEvent('multi_item_remove', {
+      slot_id: slotId,
+    });
+    setMultiSelections((prev) => prev.filter((s) => s.id !== slotId));
+    setMultiFeedback((prev) => prev.filter((r) => r.slot_id !== slotId));
+    setActiveMultiSlotId((current) => (current === slotId ? null : current));
+  };
+
+  // Ao focar em um item, sincroniza o seletor global com o profissional do item
+  const onFocusMultiItem = (slotId) => {
+    setActiveMultiSlotId(slotId);
+    const item = multiSelections.find((x) => x.id === slotId);
+    logMultiEvent('item_focus', {
+      slot_id: slotId,
+      professionalId: item?.professionalId || '',
+      serviceId: item?.serviceId || '',
+    });
+    if (item && (item.professionalId || '') !== multiProfessionalId) {
+      setMultiProfessionalId(item.professionalId || '');
+    }
+  };
+
+  const applySuggestion = (currentSlotId, suggested) => {
+    if (!suggested || !suggested.slot_id) return;
+    logMultiEvent('apply_suggestion_apply', {
+      slot_id: currentSlotId,
+      professionalId: suggested?.professional_id != null ? String(suggested.professional_id) : undefined,
+      serviceId: undefined,
+      suggested_slot_id: suggested.slot_id,
+    });
+    setMultiSelections((prev) => prev.map((s) => (
+      s.id === currentSlotId
+        ? {
+            ...s,
+            id: suggested.slot_id,
+            start_time: suggested.start_time || s.start_time,
+            end_time: suggested.end_time || s.end_time,
+            professionalId: suggested.professional_id != null ? String(suggested.professional_id) : s.professionalId,
+          }
+        : s
+    )));
+    // Recarregar slots para refletir alterações e atualizar validações locais
+    const profToRefresh = suggested?.professional_id != null
+      ? String(suggested.professional_id)
+      : (multiProfessionalId || '');
+    refreshSlotsForProfessional(profToRefresh);
+    setMultiFeedback((prev) => prev.filter((r) => r.slot_id !== currentSlotId));
+  };
+
+  const confirmSeries = async () => {
+    const count = seriesSelections.length;
+    if (count < 2) {
+      setSeriesError({ message: t('bookings.series.min_selection', 'Selecione pelo menos 2 horários.') });
+      return;
+    }
+    if (count > 20) {
+      setSeriesError({ message: t('bookings.series.max_selection', 'Máximo de 20 horários por série.') });
+      return;
+    }
+    // Validação: nenhum horário no passado
+    const now = new Date();
+    const hasPast = seriesSelections.some((s) => new Date(s.start_time) < now);
+    if (hasPast) {
+      setSeriesError({ message: t('bookings.series.past_not_allowed', 'Alguns horários estão no passado. Selecione horários futuros.') });
+      return;
+    }
+    const payload = {
+      service_id: Number.parseInt(formData.serviceId, 10),
+      professional_id: Number.parseInt(formData.professionalId, 10),
+      customer_id: Number.parseInt(formData.customerId, 10),
+      appointments: seriesSelections.map((s) => ({ slot_id: s.id, notes: (formData.notes || '').trim() || undefined })),
+    };
+    try {
+      setSeriesSubmitting(true);
+      await createAppointmentsSeries(payload, { slug });
+      closeSeriesModal();
+      resetForm();
+      // atualizar lista e slots
+      setFilters((prev) => ({ ...prev }));
+      refreshSlotsForProfessional(formData.professionalId);
+    } catch (err) {
+      setSeriesError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
+    } finally {
+      setSeriesSubmitting(false);
+    }
+  };
+  
+  const confirmMulti = async (allowRetry = true) => {
+    const count = multiSelections.length;
+    if (count < 2) {
+      setMultiError({ message: t('bookings.series.min_selection', 'Selecione pelo menos 2 horários.') });
+      return;
+    }
+    if (count > 20) {
+      setMultiError({ message: t('bookings.series.max_selection', 'Máximo de 20 horários por lote.') });
+      return;
+    }
+    const now = new Date();
+    const hasPast = multiSelections.some((s) => new Date(s.start_time) < now);
+    if (hasPast) {
+      setMultiError({ message: t('bookings.series.past_not_allowed', 'Alguns horários estão no passado. Selecione horários futuros.') });
+      return;
+    }
+    // Garantir customer_id presente em todos os itens (fallback do formulário)
+    if (!formData.customerId) {
+      setMultiError({ message: t('bookings.form.customer_required', 'Selecione o cliente para continuar.') });
+      return;
+    }
+    const appointments = multiSelections.map((s) => ({
+      slot_id: s.id,
+      service_id: s.serviceId ? Number.parseInt(s.serviceId, 10) : NaN,
+      professional_id: s.professionalId ? Number.parseInt(s.professionalId, 10) : NaN,
+      notes: s.notes?.trim() || multiDefaultNotes.trim() || (formData.notes || '').trim() || undefined,
+    }));
+    const invalid = appointments.filter((a) => Number.isNaN(a.service_id) || Number.isNaN(a.professional_id));
+    if (invalid.length > 0) {
+      setMultiError({
+        message: t(
+          'bookings.multi.missing_fields',
+          'Informe cliente no formulário e serviço/profissional por item.'
+        ),
+      });
+      return;
+    }
+    // Validação preventiva por item (evitar 400 recorrentes)
+    const itemsWithValidation = multiSelections.map((s) => ({ s, v: validateMultiItem(s) }));
+    const clientInvalids = itemsWithValidation.filter((x) => x.v);
+    const clientWarnings = multiSelections
+      .map((s) => {
+        const svc = s.serviceId ? servicesById.get(Number.parseInt(s.serviceId, 10)) : null;
+        const slotMinutes = getSlotMinutes(s);
+        if (svc && svc.duration_minutes && svc.duration_minutes > slotMinutes) {
+          return { slot_id: s.id, status: 'warning', message: t('bookings.multi.service_not_fit', 'Serviço não cabe no slot.') };
+        }
+        return null;
+      })
+      .filter(Boolean);
+    if (clientInvalids.length > 0) {
+      const errorFeedback = clientInvalids.map(({ s, v }) => ({ slot_id: s.id, status: 'error', message: v.message }));
+      setMultiFeedback([...clientWarnings, ...errorFeedback]);
+      setMultiError({ message: t('bookings.multi.precheck_failed', 'Alguns itens estão inválidos. Corrija os erros destacados abaixo.') });
+      return;
+    }
+    // Avisos não bloqueantes: permitir envio e deixar BE reservar bloco contíguo
+    if (clientWarnings.length > 0) {
+      setMultiFeedback(clientWarnings);
+    } else {
+      setMultiFeedback([]);
+    }
+    const payload = { customer_id: Number.parseInt(formData.customerId, 10), items: appointments };
+  try {
+      setMultiSubmitting(true);
+      const resp = await createAppointmentsMixedBulk(payload, { slug });
+      // Tratar sucesso completo vs. parcial
+      const results = Array.isArray(resp?.results) ? resp.results : [];
+      if (results.length > 0) {
+        setMultiFeedback(results);
+      } else {
+        setMultiFeedback([]);
+      }
+      if (resp && resp.success) {
+        // Sucesso total: fechar modal e resetar
+        closeSeriesModal();
+        resetForm();
+        setFilters((prev) => ({ ...prev }));
+        refreshSlotsForProfessional(formData.professionalId);
+      } else {
+        // Sucesso parcial: tentar auto-aplicar sugestões e reenviar uma vez
+        const suggestibles = results.filter((r) => r.status === 'error' && r.suggested_slot && r.suggested_slot.slot_id);
+        if (allowRetry && suggestibles.length > 0) {
+          suggestibles.forEach((r) => applySuggestion(r.slot_id, r.suggested_slot));
+          setTimeout(() => {
+            confirmMulti(false);
+          }, 0);
+        } else {
+          // manter modal aberto para correções manuais
+          setMultiError({ message: resp?.message || t('bookings.multi.partial_failed', 'Alguns itens falharam. Ajuste abaixo e tente novamente.') });
+        }
+      }
+    } catch (err) {
+      const data = err && err.response && err.response.data;
+      const results = normalizeResults(data);
+      if (results && results.length > 0) {
+        setMultiFeedback(results);
+        // Em erro de validação, também tentar auto-aplicar sugestões uma vez
+        const suggestibles = results.filter((r) => r.status === 'error' && r.suggested_slot && r.suggested_slot.slot_id);
+        if (allowRetry && suggestibles.length > 0) {
+          suggestibles.forEach((r) => applySuggestion(r.slot_id, r.suggested_slot));
+          setTimeout(() => {
+            confirmMulti(false);
+          }, 0);
+        } else {
+          setMultiError({ message: (data && data.message) || t('bookings.multi.partial_failed', 'Alguns itens falharam. Ajuste abaixo e tente novamente.') });
+        }
+      } else {
+        setMultiError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
+      }
+    } finally {
+      setMultiSubmitting(false);
+    }
+  };
+
   return (
     <FullPageLayout>
       <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
@@ -682,25 +1136,33 @@ function Bookings() {
               <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
                 {t('bookings.professional', 'Profissional')}
               </label>
-              <select
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                value={formData.professionalId}
-                onChange={(e) => handleFormChange('professionalId', e.target.value)}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)'
-                }}
-              >
-                <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                  {t('bookings.form.select_professional', 'Selecione um profissional')}
-                </option>
-                {professionals.map((professional) => (
-                  <option key={professional.id} value={professional.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                    {formatProfessionalOption(professional)}
-                  </option>
-                ))}
-              </select>
+              {(() => {
+                const svcId = formData.serviceId ? Number.parseInt(formData.serviceId, 10) : null;
+                const profOptions = svcId
+                  ? professionalsWithServices.filter((p) => Array.isArray(p.service_ids) && p.service_ids.map((id) => Number.parseInt(id, 10)).includes(svcId))
+                  : professionalsWithServices;
+                return (
+                  <select
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                    value={formData.professionalId}
+                    onChange={(e) => handleFormChange('professionalId', e.target.value)}
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      borderColor: 'var(--border-primary)'
+                    }}
+                  >
+                    <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      {t('bookings.form.select_professional', 'Selecione um profissional')}
+                    </option>
+                    {profOptions.map((professional) => (
+                      <option key={professional.id} value={professional.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                        {formatProfessionalOption(professional)}
+                      </option>
+                    ))}
+                  </select>
+                );
+              })()}
             </div>
 
             <div className="col-span-1">
@@ -762,22 +1224,41 @@ function Bookings() {
               />
             </div>
 
-            <div className="col-span-full flex flex-wrap gap-2">
-              <button
-                type="submit"
-                disabled={formSubmitting || customers.length === 0}
-                className="text-brand-primary hover:text-brand-accent underline font-medium transition"
-              >
-                {formSubmitting ? t('common.saving', 'Salvando...') : t('bookings.form.submit', 'Agendar')}
-              </button>
-              <button
-                type="button"
-                onClick={resetForm}
-                style={{ color: '#7F7EED' }}
-                className="hover:text-brand-accent underline font-medium transition"
-              >
-                {t('bookings.form.reset', 'Limpar')}
-              </button>
+            <div className="col-span-full grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-center">
+              <div className="lg:col-span-4 flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={formSubmitting || customers.length === 0}
+                  className="text-brand-primary hover:text-brand-accent underline font-medium transition"
+                >
+                  {formSubmitting ? t('common.saving', 'Salvando...') : t('bookings.form.submit', 'Agendar')}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  style={{ color: '#7F7EED' }}
+                  className="hover:text-brand-accent underline font-medium transition"
+                >
+                  {t('bookings.form.reset', 'Limpar')}
+                </button>
+              </div>
+              <div className="lg:col-start-5 lg:col-span-1 flex lg:justify-end">
+                {(() => {
+                  const disabled = !formData.customerId; // apenas cliente é obrigatório para abrir
+                  const title = disabled ? t('bookings.form.customer_required', 'Selecione o cliente para continuar.') : undefined;
+                  return (
+                    <button
+                      type="button"
+                      onClick={openSeriesModal}
+                      disabled={disabled}
+                      title={title}
+                      className={`font-medium transition ${disabled ? 'text-brand-surfaceForeground/40 cursor-not-allowed' : 'text-brand-surfaceForeground hover:underline'}`}
+                    >
+                      {t('bookings.form.multi_series_short', 'Multi/Série')}
+                    </button>
+                  );
+                })()}
+              </div>
             </div>
           </form>
           {formError && (
@@ -853,6 +1334,548 @@ function Bookings() {
           )}
         </section>
       </div>
+      {/* overlay removido */}
+      {isSeriesModalOpen && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-4xl rounded-lg bg-brand-surface p-6 shadow-xl border border-brand-border flex flex-col max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-brand-surfaceForeground">
+                {activeSeriesTab === 'multi'
+                  ? t('bookings.multi.title', 'Multi agendamento')
+                  : t('bookings.series.title', 'Agendamento em Série')}
+              </h2>
+              <div className="flex gap-2 text-sm">
+                <button
+                  type="button"
+                  className={`px-3 py-1 rounded border ${activeSeriesTab === 'series' ? 'bg-brand-light text-brand-surfaceForeground' : 'text-brand-surfaceForeground/70'}`}
+                  onClick={() => setActiveSeriesTab('series')}
+                >
+                  {t('bookings.series.tab_series', 'Série')}
+                </button>
+                <button
+                  type="button"
+                  className={`px-3 py-1 rounded border ${activeSeriesTab === 'multi' ? 'bg-brand-light text-brand-surfaceForeground' : 'text-brand-surfaceForeground/70'}`}
+                  onClick={() => setActiveSeriesTab('multi')}
+                >
+                  {t('bookings.series.tab_multi', 'Multi')}
+                </button>
+              </div>
+            </div>
+            {activeSeriesTab === 'series' && (
+              <div className="mt-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+                <div className="flex items-center justify-between sticky top-0 z-10 bg-brand-surface/95 backdrop-blur supports-[backdrop-filter]:bg-brand-surface/80 py-2">
+                  <div className="text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.multi.hint', 'Selecione de 2 a 20 horários. Serviço e profissional podem ser definidos por item.')}
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={prevWeek}>
+                      {t('bookings.series.prev_week', 'Semana anterior')}
+                    </button>
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={nextWeek}>
+                      {t('bookings.series.next_week', 'Próxima semana')}
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory md:grid md:grid-cols-7 md:gap-3 md:overflow-visible md:snap-none -mx-2 px-2">
+                  {[0,1,2,3,4,5,6].map((offset) => {
+                    const day = new Date(visibleWeekStart);
+                    day.setDate(day.getDate() + offset);
+                    const dayLabel = day.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit' });
+                    const daySlots = (formSlots || []).filter((s) => isInCurrentWeek(s.start_time) && new Date(s.start_time).getDate() === day.getDate() && new Date(s.start_time).getMonth() === day.getMonth());
+                    return (
+                      <div key={offset} className="min-w-[160px] snap-start rounded border border-brand-border p-2 md:min-w-0">
+                        <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/70">{dayLabel}</div>
+                        <div className="flex flex-col gap-2">
+                          {daySlots.length === 0 ? (
+                            <div className="text-xs text-brand-surfaceForeground/60">{t('bookings.series.no_slots_day', 'Sem horários')}</div>
+                          ) : (
+                            daySlots.map((slot) => {
+                              const selected = seriesSelections.some((s) => s.id === slot.id);
+                              const isPast = new Date(slot.start_time) < new Date();
+                              return (
+                                <button
+                                  key={slot.id}
+                                  type="button"
+                                  onClick={() => { if (!isPast) toggleSeriesSelection(slot); }}
+                                  disabled={isPast}
+                                  className={`w-full rounded border px-2 py-1 text-xs text-left ${
+                                    isPast
+                                      ? 'border-brand-border/60 text-brand-surfaceForeground/40 cursor-not-allowed opacity-50'
+                                      : selected
+                                      ? 'border-brand-primary bg-brand-light/60 text-brand-primary'
+                                      : 'border-brand-border hover:border-brand-primary'
+                                  }`}
+                                >
+                                  {formatDateTimeRange(slot.start_time, slot.end_time)}
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 flex items-center justify-between sticky bottom-0 z-10 bg-brand-surface/95 backdrop-blur supports-[backdrop-filter]:bg-brand-surface/80 py-2">
+                  <div className="text-sm text-brand-surfaceForeground">
+                    {t('bookings.series.count', 'Selecionados:')} {seriesSelections.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={closeSeriesModal}>
+                      {t('common.cancel', 'Cancelar')}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={seriesSubmitting}
+                      onClick={confirmSeries}
+                      className="text-brand-primary hover:underline font-medium transition disabled:opacity-50"
+                    >
+                      {seriesSubmitting ? t('common.saving', 'Salvando...') : t('bookings.series.confirm', 'Confirmar série')}
+                    </button>
+                  </div>
+                </div>
+                {seriesError && (
+                  <p className="mt-2 text-sm text-red-600">{seriesError.message}</p>
+                )}
+              </div>
+            )}
+            {activeSeriesTab === 'multi' && (
+              <div className="mt-4 max-h-[70vh] overflow-y-auto no-scrollbar">
+                <div className="flex items-center justify-between sticky top-0 z-10 bg-brand-surface/95 backdrop-blur supports-[backdrop-filter]:bg-brand-surface/80 py-2">
+                  <div className="text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.series.hint', 'Selecione de 2 a 20 horários. Navegue por semanas.')}
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={prevWeek}>
+                      {t('bookings.series.prev_week', 'Semana anterior')}
+                    </button>
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={nextWeek}>
+                      {t('bookings.series.next_week', 'Próxima semana')}
+                    </button>
+                  </div>
+                </div>
+                {/* Configurações do lote (visualização de horários, notas padrão) */}
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                      {t('bookings.multi.batch_professional', 'Profissional para visualizar horários')}
+                    </label>
+                    <select
+                            value={multiProfessionalId}
+                      onChange={(e) => {
+                          const v = e.target.value;
+                          logMultiEvent('global_professional_change', {
+                            slot_id: activeMultiSlotId,
+                            professionalId: v,
+                            serviceId: (multiSelections.find((s) => s.id === activeMultiSlotId)?.serviceId) || '',
+                          });
+                          // Seletor global: não altera itens existentes. Define default para novas seleções e recarrega slots.
+                          setMultiProfessionalId(v);
+                          refreshSlotsForProfessional(v);
+                        }}
+                      className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)'
+                      }}
+                    >
+                      <option value="">
+                        {t('bookings.multi.batch_professional_default', 'Usar profissional do formulário')}
+                      </option>
+                      {(() => {
+                        // Não filtrar profissionais pelo serviço do item ativo no seletor global.
+                        // O seletor global deve listar todos os profissionais; a validação de compatibilidade é feita ao aplicar no item.
+                        const options = professionalsWithServices;
+                        return options.map((prof) => (
+                          <option key={prof.id} value={prof.id}>
+                            {formatProfessionalOption(prof)}
+                          </option>
+                        ));
+                      })()}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                      {t('bookings.multi.batch_notes', 'Notas padrão (opcional)')}
+                    </label>
+                    <input
+                      type="text"
+                      value={multiDefaultNotes}
+                      onChange={(e) => setMultiDefaultNotes(e.target.value)}
+                      className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                        colorScheme: 'light dark'
+                      }}
+                      placeholder={t('bookings.multi.batch_notes_placeholder', 'Notas aplicadas aos itens sem nota')}
+                    />
+                  </div>
+                </div>
+                {/* Debug Multi removido */}
+                {!multiProfessionalId ? (
+                  <div className="mt-3 text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.multi.pick_professional_hint', 'Selecione um profissional para visualizar horários.')}
+                  </div>
+                ) : (
+                  <div className="mt-3 flex flex-col gap-3 -mx-2 px-2">
+                    {[0,1,2,3,4,5,6].map((offset) => {
+                      const day = new Date(visibleWeekStart);
+                      day.setDate(day.getDate() + offset);
+                      const dayLabel = day.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: '2-digit' });
+                      const daySlots = (formSlots || []).filter((s) => isInCurrentWeek(s.start_time) && new Date(s.start_time).getDate() === day.getDate() && new Date(s.start_time).getMonth() === day.getMonth());
+                      return (
+                        <div key={offset} className="rounded border border-brand-border p-2">
+                          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/70">{dayLabel}</div>
+                          <div className="flex flex-wrap gap-2">
+                            {daySlots.length === 0 ? (
+                              <div className="text-xs text-brand-surfaceForeground/60">{t('bookings.series.no_slots_day', 'Sem horários')}</div>
+                            ) : (
+                              (function(){
+                                const activeItem = multiSelections.find((s) => s.id === activeMultiSlotId);
+                                const svcId = activeItem?.serviceId ? Number.parseInt(activeItem.serviceId, 10) : null;
+                                const itemProfId = activeItem?.professionalId ? Number.parseInt(activeItem.professionalId, 10) : null;
+                                const gridProfId = multiProfessionalId ? Number.parseInt(multiProfessionalId, 10) : null;
+                                const shouldFilter = Boolean(activeItem && svcId && itemProfId && gridProfId && itemProfId === gridProfId);
+                                const duration = shouldFilter ? (servicesById.get(svcId)?.duration_minutes || 0) : 0;
+                                const filteredSlots = daySlots.filter((slot) => {
+                                  const isPast = new Date(slot.start_time) < new Date();
+                                  if (isPast) return false;
+                                  const fits = duration ? hasContiguousBlockFrom(slot, duration) : true;
+                                  return fits;
+                                });
+                                return filteredSlots.map((slot) => {
+                                  const selected = multiSelections.some((s) => s.id === slot.id);
+                                  return (
+                                    <button
+                                      key={slot.id}
+                                      type="button"
+                                      onClick={() => {
+                                        toggleMultiSelection(slot);
+                                      }}
+                                      className={`rounded border px-2 py-1 text-xs ${selected ? 'border-brand-primary bg-brand-light/60 text-brand-primary' : 'border-brand-border hover:border-brand-primary'}`}
+                                    >
+                                      {formatDateTimeRange(slot.start_time, slot.end_time)}
+                                    </button>
+                                  );
+                                });
+                              })()
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Lista editável de itens selecionados (Multi) */}
+                {multiSelections.length > 0 ? (
+                  <div className="mt-4 border-t border-brand-border pt-4">
+                    <h3 className="text-sm font-semibold text-brand-surfaceForeground mb-2">
+                      {t('bookings.multi.items_title', 'Itens selecionados')}
+                    </h3>
+                    {multiFeedback.length > 0 && (
+                      <div className="mb-3 rounded border border-yellow-600/40 bg-yellow-200/10 p-2">
+                        <div className="text-xs text-yellow-700 mb-2">
+                          {t('bookings.multi.feedback_title', 'Observações e erros detectados nos itens')}
+                        </div>
+                        <ul className="space-y-2">
+                          {multiFeedback.map((r) => (
+                            <li key={`fb-${r.slot_id}`} className="text-xs flex items-center justify-between gap-2">
+                              <span className={`${r.status === 'error' ? 'text-red-700' : 'text-yellow-700'}`}>
+                                #{r.slot_id}: {r.message || (r.status === 'error' ? t('bookings.multi.item_error', 'Item com erro') : t('bookings.multi.item_warning', 'Item com observação'))}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                {(() => {
+                                  const s = r.suggested_slot;
+                                  if (!s) {
+                                    return <span className="text-brand-surfaceForeground/60">{t('bookings.multi.no_suggestion', 'Sem sugestão disponível')}</span>;
+                                  }
+                                  const prof = professionals.find((p) => String(p.id) === String(s.professional_id));
+                                  const profName = prof ? prof.name : '';
+                                  const suggestionText = `${t('bookings.multi.suggestion', 'Sugestão:')} ${formatDateTimeRange(s.start_time, s.end_time)}${profName ? ` • ${profName}` : ''}`;
+                                  return (
+                                    <>
+                                      <span className="text-brand-surfaceForeground/70">{suggestionText}</span>
+                                      <button
+                                        type="button"
+                                        className="text-brand-primary hover:underline"
+                                        onClick={() => {
+                                          logMultiEvent('apply_suggestion_click', {
+                                            slot_id: r.slot_id,
+                                            professionalId: undefined,
+                                            serviceId: undefined,
+                                            suggested_slot_id: s.slot_id,
+                                          });
+                                          applySuggestion(r.slot_id, s);
+                                        }}
+                                      >
+                                        {t('bookings.multi.apply_suggestion', 'Aplicar sugestão')}
+                                      </button>
+                                    </>
+                                  );
+                                })()}
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-3">
+                      {multiSelections.map((s) => (
+                        <div key={s.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-start">
+                          <div className="text-xs text-brand-surfaceForeground/80">
+                            {formatDateTimeRange(s.start_time, s.end_time)}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                              {t('bookings.multi.service', 'Serviço')}
+                            </label>
+                            {(() => {
+                              const chosenProfId = s.professionalId || '';
+                              const offered = chosenProfId ? (professionalServices.get(Number.parseInt(chosenProfId, 10)) || []) : [];
+                              const allowedServices = services.filter((svc) => {
+                                const offeredOk = !chosenProfId || offered.includes(Number.parseInt(svc.id, 10));
+                                return offeredOk;
+                              });
+                              return (
+                                <>
+                                <select
+                                  value={s.serviceId || ''}
+                                  onFocus={() => onFocusMultiItem(s.id)}
+                                  onChange={(e) => {
+                                    logMultiEvent('item_service_change', {
+                                      slot_id: s.id,
+                                      serviceId: e.target.value,
+                                      professionalId: s.professionalId || '',
+                                    });
+                                    updateMultiItemField(s.id, 'serviceId', e.target.value);
+                                  }}
+                                  disabled={!chosenProfId}
+                                  className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                                  style={{
+                                    backgroundColor: 'var(--bg-primary)',
+                                    color: 'var(--text-primary)',
+                                    borderColor: 'var(--border-primary)',
+                                    maxWidth: '220px',
+                                    minWidth: '160px'
+                                  }}
+                                >
+                                  <option value="">
+                                    {t('bookings.multi.service_select', 'Selecione um serviço')}
+                                  </option>
+                                  {allowedServices.map((svc) => (
+                                    <option key={svc.id} value={svc.id}>
+                                      {formatServiceOption(svc)}
+                                    </option>
+                                  ))}
+                                </select>
+                                {(() => {
+                                  const svc = s.serviceId ? servicesById.get(Number.parseInt(s.serviceId, 10)) : null;
+                                  const slotMinutes = getSlotMinutes(s);
+                                  if (svc && svc.duration_minutes && svc.duration_minutes > slotMinutes) {
+                                    return (
+                                      <div className="mt-1 text-[11px] text-yellow-700">
+                                        {t('bookings.multi.service_not_fit', 'Serviço não cabe no slot.')}
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })()}
+                                </>
+                              );
+                            })()}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                              {t('bookings.multi.professional', 'Profissional')}
+                            </label>
+                            {(() => {
+                              // Filtra profissionais pelo serviço escolhido (se houver)
+                              const svcId = s.serviceId ? Number.parseInt(s.serviceId, 10) : null;
+                              // Se o slot tiver um profissional vinculado, limitar as opções a ele para evitar seleção inválida
+                              const boundProfId = (() => {
+                                const bound = slotMap.get(s.id)?.professional;
+                                return bound != null ? Number.parseInt(bound, 10) : null;
+                              })();
+                              let profOptions = professionalsWithServices;
+                              if (boundProfId != null) {
+                                profOptions = professionalsWithServices.filter((p) => Number.parseInt(p.id, 10) === boundProfId);
+                              } else if (svcId) {
+                                // Caso não haja profissional vinculado no slot, filtra por serviço escolhido
+                                profOptions = professionalsWithServices.filter((p) => Array.isArray(p.service_ids) && p.service_ids.map((id) => Number.parseInt(id, 10)).includes(svcId));
+                              }
+                              return (
+                                <select
+                                  value={s.professionalId || ''}
+                                  onFocus={() => onFocusMultiItem(s.id)}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    // Se o serviço atual não for oferecido pelo novo profissional ou não couber, limpamos.
+                                    const offered = professionalServices.get(Number.parseInt(v, 10)) || [];
+                                    let nextServiceId = s.serviceId || '';
+                                    if (nextServiceId) {
+                                      const offeredOk = offered.includes(Number.parseInt(nextServiceId, 10));
+                                      if (!offeredOk) {
+                                        nextServiceId = '';
+                                      }
+                                    }
+                                    logMultiEvent('item_professional_change', {
+                                      slot_id: s.id,
+                                      professionalId: v,
+                                      serviceId: nextServiceId || '',
+                                    });
+                                    updateMultiItemField(s.id, 'professionalId', v);
+                                    if (nextServiceId !== (s.serviceId || '')) {
+                                      updateMultiItemField(s.id, 'serviceId', nextServiceId);
+                                    }
+                                  }}
+                                  className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                                  style={{
+                                    backgroundColor: 'var(--bg-primary)',
+                                    color: 'var(--text-primary)',
+                                    borderColor: 'var(--border-primary)',
+                                    maxWidth: '220px',
+                                    minWidth: '160px'
+                                  }}
+                                >
+                                  <option value="">
+                                    {t('bookings.multi.professional_select', 'Selecione um profissional')}
+                                  </option>
+                                  {profOptions.map((prof) => (
+                                    <option key={prof.id} value={prof.id}>
+                                      {formatProfessionalOption(prof)}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()}
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                              {t('bookings.multi.customer', 'Cliente')}
+                            </label>
+                             <select
+                               value={s.customerId || ''}
+                               onFocus={() => onFocusMultiItem(s.id)}
+                               onChange={(e) => {
+                                 logMultiEvent('item_customer_change', {
+                                   slot_id: s.id,
+                                   professionalId: s.professionalId || '',
+                                   serviceId: s.serviceId || '',
+                                 });
+                                 updateMultiItemField(s.id, 'customerId', e.target.value);
+                               }}
+                              className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                              style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border-primary)',
+                                maxWidth: '220px',
+                                minWidth: '160px'
+                              }}
+                             >
+                             <option value="">
+                               {t('bookings.multi.customer_default', 'Usar cliente do formulário')}
+                             </option>
+                             {customers.map((customer) => (
+                               <option key={customer.id} value={customer.id}>
+                                 {customer.name}
+                               </option>
+                             ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                              {t('bookings.multi.notes', 'Notas (opcional)')}
+                            </label>
+                             <input
+                               type="text"
+                               value={s.notes || ''}
+                               onFocus={() => onFocusMultiItem(s.id)}
+                               onChange={(e) => {
+                                 logMultiEvent('item_notes_change', {
+                                   slot_id: s.id,
+                                   professionalId: s.professionalId || '',
+                                   serviceId: s.serviceId || '',
+                                 });
+                                 updateMultiItemField(s.id, 'notes', e.target.value);
+                               }}
+                              className="mt-1 w-full rounded border px-2 py-1 text-xs"
+                              style={{
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border-primary)',
+                                colorScheme: 'light dark',
+                                maxWidth: '280px',
+                                minWidth: '180px'
+                              }}
+                               placeholder={t('bookings.multi.notes_placeholder', 'Adicionar notas para este item')}
+                             />
+                             <div className="mt-2">
+                               <button
+                                 type="button"
+                                 className="text-red-600 hover:underline text-xs font-medium"
+                                 onClick={() => removeMultiItem(s.id)}
+                               >
+                                 {t('bookings.multi.remove_item', 'Remover item')}
+                               </button>
+                             </div>
+                          </div>
+                          {(() => {
+                            const v = validateMultiItem(s);
+                             if (!v) return null;
+                             return (
+                              <div className="md:col-span-5 -mt-1 text-[11px] text-red-500/80">
+                                {v.message}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 border-t border-brand-border pt-4 text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.multi.no_items', 'Nenhum horário selecionado ainda. Selecione na grade acima.')}
+                  </div>
+                )}
+                <div className="mt-4 flex items-center justify-between sticky bottom-0 z-10 bg-brand-surface/95 backdrop-blur supports-[backdrop-filter]:bg-brand-surface/80 py-2">
+                  <div className="text-sm text-brand-surfaceForeground">
+                    {t('bookings.series.count', 'Selecionados:')} {multiSelections.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={closeSeriesModal}>
+                      {t('common.cancel', 'Cancelar')}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={multiSubmitting}
+                      onClick={() => {
+                        logMultiEvent('confirm_multi_click', {
+                          slot_id: activeMultiSlotId,
+                          professionalId: multiProfessionalId || '',
+                          serviceId: (multiSelections.find((s) => s.id === activeMultiSlotId)?.serviceId) || '',
+                          count: multiSelections.length,
+                          ids: multiSelections.map((s) => s.id),
+                        });
+                        confirmMulti();
+                      }}
+                      className="text-brand-primary hover:underline font-medium transition disabled:opacity-50"
+                    >
+                      {multiSubmitting ? t('common.saving', 'Salvando...') : t('bookings.series.confirm_multi', 'Confirmar multi')}
+                    </button>
+                  </div>
+                </div>
+                {multiError && (
+                  <p className="mt-2 text-sm text-red-600">{multiError.message}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {selectedAppointment && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-lg rounded-lg bg-brand-surface p-6 shadow-xl border border-brand-border">
