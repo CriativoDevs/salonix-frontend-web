@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageCircleIcon, StarIcon, SettingsIcon, BarChart3Icon } from 'lucide-react';
+import {
+  MessageCircleIcon,
+  StarIcon,
+  SettingsIcon,
+  BarChart3Icon,
+} from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
@@ -24,20 +29,26 @@ export default function HeaderNav() {
     if (!Array.isArray(staff) || !user) {
       return null;
     }
-    
-    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
-    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
-    
+
+    const email =
+      typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username =
+      typeof user.username === 'string' ? user.username.toLowerCase() : null;
+
     const match = staff.find((member) => {
-      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
-      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
-      
+      const memberEmail =
+        typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername =
+        typeof member.username === 'string'
+          ? member.username.toLowerCase()
+          : null;
+
       return (
         (email && memberEmail === email) ||
         (username && memberUsername === username)
       );
     });
-    
+
     return match?.role || null;
   }, [staff, user]);
 
@@ -46,13 +57,21 @@ export default function HeaderNav() {
     const allLinks = [
       { to: '/slots', label: t('nav.slots', 'Slots') },
       { to: '/bookings', label: t('nav.bookings', 'Agendamentos') },
-      { to: '/services', label: t('nav.services', 'Serviços'), roles: ['owner', 'manager'] },
+      {
+        to: '/services',
+        label: t('nav.services', 'Serviços'),
+        roles: ['owner', 'manager'],
+      },
       { to: '/customers', label: t('nav.customers', 'Clientes') },
-      { to: '/team', label: t('nav.team', 'Equipe'), roles: ['owner', 'manager'] },
+      {
+        to: '/team',
+        label: t('nav.team', 'Equipe'),
+        roles: ['owner', 'manager'],
+      },
     ];
 
-    return allLinks.filter(link => 
-      !link.roles || link.roles.includes(currentUserRole)
+    return allLinks.filter(
+      (link) => !link.roles || link.roles.includes(currentUserRole)
     );
   }, [t, currentUserRole]);
 
@@ -63,24 +82,32 @@ export default function HeaderNav() {
         to: '/reports',
         label: t('nav.reports', 'Relatórios'),
         icon: BarChart3Icon,
-        roles: ['owner']
+        roles: ['owner'],
+      },
+      {
+        to: '/plans',
+        label: t('nav.plans', 'Planos'),
+        icon: StarIcon,
+        roles: ['owner'],
       },
       {
         to: '/settings',
         label: t('nav.settings'),
         icon: SettingsIcon,
-        roles: ['owner']
+        roles: ['owner'],
       },
     ];
 
-    return allItems.filter(item => 
-      !item.roles || item.roles.includes(currentUserRole)
+    return allItems.filter(
+      (item) => !item.roles || item.roles.includes(currentUserRole)
     );
   }, [t, currentUserRole]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
-  const inactive = 'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
-  const active = 'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
+  const inactive =
+    'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
+  const active =
+    'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
 
   return (
     <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible">

@@ -64,6 +64,7 @@ function MobileNav() {
       { to: '/team', icon: UsersIcon, label: t('nav.team', 'Equipe'), roles: ['owner', 'manager'] },
       { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
       { to: '/feedback', icon: StarIcon, label: t('nav.feedback') },
+      { to: '/plans', icon: StarIcon, label: t('nav.plans', 'Planos'), roles: ['owner'] },
       { to: '/settings', icon: SettingsIcon, label: t('nav.settings'), roles: ['owner'] },
     ];
 

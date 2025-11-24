@@ -44,8 +44,9 @@ export const PLAN_OPTIONS = [
   },
 ];
 
-export async function createCheckoutSession(planCode) {
+export async function createCheckoutSession(planCode, options = {}) {
   const billingMockEnabled = getEnvFlag('VITE_BILLING_MOCK');
+  const { slug } = options || {};
 
   console.log('[Billing] env VITE_BILLING_MOCK=', getEnvVar('VITE_BILLING_MOCK'));
   console.log('[Billing] createCheckoutSession mock=', billingMockEnabled, 'plan=', planCode);
@@ -56,9 +57,23 @@ export async function createCheckoutSession(planCode) {
     return { url: `/checkout/mock?plan=${encodeURIComponent(planCode)}` };
   }
 
-  const response = await client.post('payments/checkout/session/', {
-    plan: planCode,
-  });
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+
+  let response;
+  try {
+    response = await client.post('payments/checkout/', { plan: planCode }, { headers, params });
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      response = await client.post('payments/checkout/session/', { plan: planCode }, { headers, params });
+    } else {
+      throw err;
+    }
+  }
   // Backend esperado: { checkout_url }
   const checkoutUrl = response?.data?.checkout_url || response?.data?.url;
   if (!checkoutUrl) {
