@@ -7,7 +7,7 @@ export async function fetchBillingOverview({ slug } = {}) {
     headers['X-Tenant-Slug'] = slug;
     params.tenant = slug;
   }
-  const { data } = await client.get('payments/overview/', { headers, params });
+  const { data } = await client.get('payments/stripe/overview/', { headers, params });
   return data;
 }
 

@@ -34,25 +34,65 @@ export function resolvePlanName(plan, fallbackName = DEFAULT_TENANT_META.plan.na
   return fallbackName;
 }
 
+const MODULE_KEY_ALIASES = {
+  'reports': 'reports',
+  'relatórios avançados': 'reports',
+  'advanced reports': 'reports',
+  'pwa_admin': 'pwa_admin',
+  'painel administrativo (pwa)': 'pwa_admin',
+  'admin pwa': 'pwa_admin',
+  'pwa_client': 'pwa_client',
+  'pwa cliente': 'pwa_client',
+  'pwa client': 'pwa_client',
+  'rn_admin': 'rn_admin',
+  'app admin (react native)': 'rn_admin',
+  'rn admin': 'rn_admin',
+  'rn_client': 'rn_client',
+  'app cliente (react native)': 'rn_client',
+  'rn client': 'rn_client',
+};
+
+function normalizeModuleKey(value) {
+  if (!value) return null;
+  const s = String(value).trim().toLowerCase();
+  if (MODULE_KEY_ALIASES[s]) return MODULE_KEY_ALIASES[s];
+  switch (s) {
+    case 'reports':
+    case 'pwa_admin':
+    case 'pwa_client':
+    case 'rn_admin':
+    case 'rn_client':
+      return s;
+    default:
+      return null;
+  }
+}
+
 export function resolvePlanModules(
   plan,
   modules,
   fallbackModules = DEFAULT_TENANT_META.modules
 ) {
   if (Array.isArray(modules) && modules.length > 0) {
-    return [...new Set(modules)];
+    const normalized = modules.map(normalizeModuleKey).filter(Boolean);
+    if (normalized.length > 0) return [...new Set(normalized)];
   }
 
   const planFeatures = plan && Array.isArray(plan.features) ? plan.features : [];
   const planAddons = plan && Array.isArray(plan.addons) ? plan.addons : [];
-  const combined = [...planFeatures, ...planAddons];
+  const combined = [...planFeatures, ...planAddons]
+    .map(normalizeModuleKey)
+    .filter(Boolean);
 
   if (combined.length > 0) {
     return [...new Set(combined)];
   }
 
   if (Array.isArray(fallbackModules)) {
-    return [...new Set(fallbackModules)];
+    const normalizedFallback = fallbackModules
+      .map(normalizeModuleKey)
+      .filter(Boolean);
+    if (normalizedFallback.length > 0) return [...new Set(normalizedFallback)];
   }
 
   return []; 

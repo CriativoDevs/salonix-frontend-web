@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
-import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
 import useCreditBalance from '../hooks/useCreditBalance';
 import useBillingOverview from '../hooks/useBillingOverview';
@@ -11,12 +10,7 @@ import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
-import {
-  fetchTenantMeta,
-  updateTenantBranding,
-  updateTenantAutoInvite,
-} from '../api/tenant';
-import { fetchTenantBootstrap } from '../api/auth';
+import { updateTenantBranding, updateTenantAutoInvite } from '../api/tenant';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
@@ -68,6 +62,11 @@ const MODULE_CONFIG = {
     flagKey: 'enableNativeClient',
     rawKey: 'rn_client_enabled',
   },
+};
+
+const MODULE_REQUIREMENTS = {
+  reports: 'enableReports',
+  pwa_client: 'enableCustomerPwa',
 };
 
 const resolveModuleLabel = (moduleKey) =>
@@ -131,8 +130,6 @@ function Settings() {
     branding,
     loading: tenantLoading,
     error: tenantError,
-    slug,
-    applyTenantBootstrap,
     refetch,
   } = useTenant();
   const [activeTab, setActiveTab] = useState('branding');
@@ -142,7 +139,8 @@ function Settings() {
     error: creditError,
     refresh: refreshCredits,
   } = useCreditBalance();
-  const { overview: billingOverview } = useBillingOverview();
+  const { overview: billingOverview, refresh: refreshOverview } =
+    useBillingOverview();
   // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
@@ -224,7 +222,11 @@ function Settings() {
     []
   );
 
-  const planName = useMemo(() => resolvePlanName(plan), [plan]);
+  const planName = useMemo(() => {
+    const byOverview = billingOverview?.current_subscription?.plan_name;
+    if (byOverview) return byOverview;
+    return resolvePlanName(plan);
+  }, [billingOverview?.current_subscription?.plan_name, plan]);
   const planTier = useMemo(() => resolvePlanTier(plan), [plan]);
 
   const moduleList = useMemo(() => {
@@ -245,6 +247,18 @@ function Settings() {
       const config = MODULE_CONFIG[moduleKey];
       if (!config) return true;
 
+      const featureKey = MODULE_REQUIREMENTS[moduleKey];
+      if (featureKey) {
+        const requiredPlan =
+          TENANT_FEATURE_REQUIREMENTS[featureKey]?.requiredPlan;
+        if (requiredPlan) {
+          const cmp = comparePlanTiers(requiredPlan, planTier);
+          if (cmp < 0) {
+            return false;
+          }
+        }
+      }
+
       if (
         config.rawKey &&
         featureFlagsRaw?.modules &&
@@ -264,10 +278,9 @@ function Settings() {
         return Boolean(flags[config.flagKey]);
       }
 
-      // Sem informação explícita -> seguir plano (já presente no set)
       return true;
     });
-  }, [plan, modules, flags, featureFlagsRaw]);
+  }, [plan, planTier, modules, flags, featureFlagsRaw]);
 
   const channelCards = useMemo(
     () =>
@@ -360,50 +373,48 @@ function Settings() {
     };
   }, [profile]);
 
+  const lastTenantRefreshRef = useRef(0);
+  const refreshInFlightRef = useRef(false);
   const refreshTenantData = useCallback(async () => {
-    let refreshed = false;
-
-    if (slug) {
-      try {
-        const metaResponse = await fetchTenantMeta(slug);
-        if (metaResponse?.data) {
-          applyTenantBootstrap({
-            ...(metaResponse.data || {}),
-            slug,
-          });
-          refreshed = true;
-        }
-      } catch (metaError) {
-        console.warn('[Settings] fetchTenantMeta refresh falhou:', metaError);
-      }
+    const now = Date.now();
+    if (refreshInFlightRef.current) return false;
+    if (now - lastTenantRefreshRef.current < 60_000) return false;
+    refreshInFlightRef.current = true;
+    try {
+      await refetch();
+      lastTenantRefreshRef.current = Date.now();
+      return true;
+    } catch (err) {
+      console.warn('[Settings] tenant refetch falhou:', err);
+      return false;
+    } finally {
+      refreshInFlightRef.current = false;
     }
+  }, [refetch]);
 
-    if (!refreshed) {
-      try {
-        const bootstrap = await fetchTenantBootstrap();
-        if (bootstrap?.slug) {
-          applyTenantBootstrap(bootstrap);
-          refreshed = true;
-        }
-      } catch (bootstrapError) {
-        console.warn(
-          '[Settings] fetchTenantBootstrap refresh falhou:',
-          bootstrapError
-        );
-      }
+  useEffect(() => {
+    const code = billingOverview?.current_subscription?.plan_code;
+    if (code) {
+      refreshTenantData();
     }
+  }, [billingOverview?.current_subscription?.plan_code, refreshTenantData]);
 
-    if (!refreshed) {
-      try {
-        await refetch();
-        refreshed = true;
-      } catch (refetchError) {
-        console.warn('[Settings] refetch fallback falhou:', refetchError);
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshOverview();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshOverview();
       }
-    }
-
-    return refreshed;
-  }, [applyTenantBootstrap, refetch, slug]);
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [refreshOverview]);
 
   const handleBrandingSave = useCallback(async () => {
     setBrandingSaving(true);
@@ -973,13 +984,7 @@ function Settings() {
             {t('settings.plan_badge', 'Plano')}: {planName}
           </span>
         ) : null}
-        <button
-          type="button"
-          onClick={() => window.location.assign('/plans')}
-          className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
-        >
-          {t('settings.manage_plan', 'Gerir plano')}
-        </button>
+        {/* botão "Gerir plano" removido — usar página de Planos */}
         <span
           role="button"
           onClick={() => {

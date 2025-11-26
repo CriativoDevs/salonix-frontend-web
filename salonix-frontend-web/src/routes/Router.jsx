@@ -20,6 +20,7 @@ import Reports from '../pages/Reports';
 import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
 import PlanCheckoutMock from '../pages/PlanCheckoutMock';
+import BillingSuccess from '../pages/BillingSuccess';
 
 function Router() {
   return (
@@ -123,6 +124,15 @@ function Router() {
         element={
           <PrivateRoute>
             <Plans />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/billing/success"
+        element={
+          <PrivateRoute>
+            <BillingSuccess />
           </PrivateRoute>
         }
       />
