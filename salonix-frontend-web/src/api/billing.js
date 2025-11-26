@@ -66,10 +66,18 @@ export async function createCheckoutSession(planCode, options = {}) {
 
   let response;
   try {
-    response = await client.post('payments/checkout/', { plan: planCode }, { headers, params });
+    response = await client.post('payments/stripe/create-checkout-session/', { plan: planCode }, { headers, params });
   } catch (err) {
     if (err?.response?.status === 404) {
-      response = await client.post('payments/checkout/session/', { plan: planCode }, { headers, params });
+      try {
+        response = await client.post('payments/checkout/', { plan: planCode }, { headers, params });
+      } catch (err2) {
+        if (err2?.response?.status === 404) {
+          response = await client.post('payments/checkout/session/', { plan: planCode }, { headers, params });
+        } else {
+          throw err2;
+        }
+      }
     } else {
       throw err;
     }
@@ -81,4 +89,29 @@ export async function createCheckoutSession(planCode, options = {}) {
     return { url: `/checkout/mock?plan=${encodeURIComponent(planCode)}` };
   }
   return { url: checkoutUrl };
+}
+
+export async function createBillingPortalSession(options = {}) {
+  const billingMockEnabled = getEnvFlag('VITE_BILLING_MOCK');
+  const { slug } = options || {};
+
+  if (billingMockEnabled) {
+    await new Promise((r) => setTimeout(r, 200));
+    return { url: '/billing/mock/portal' };
+  }
+
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+
+  const response = await client.post('payments/stripe/billing-portal/', {}, { headers, params });
+  const portalUrl = response?.data?.portal_url || response?.data?.url;
+  if (!portalUrl) {
+    console.warn('[Billing] portal_url ausente na resposta.');
+    return { url: '/billing/mock/portal' };
+  }
+  return { url: portalUrl };
 }

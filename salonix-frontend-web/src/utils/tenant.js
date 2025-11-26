@@ -68,7 +68,7 @@ export const DEFAULT_TENANT_META = {
   flags: {
     enableCustomerPwa: false,
     enableWebPush: false,
-    enableReports: true,
+    enableReports: false,
     enableAdminPwa: true,
     enableNativeAdmin: false,
     enableNativeClient: false,

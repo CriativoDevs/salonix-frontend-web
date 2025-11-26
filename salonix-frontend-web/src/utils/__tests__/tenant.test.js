@@ -85,7 +85,7 @@ describe('mergeTenantMeta', () => {
     expect(meta.slug).toBe('aurora');
     expect(meta.plan.code).toBe('premium');
     expect(meta.theme.primary).toBeDefined();
-    expect(meta.flags.enableReports).toBe(true);
+    expect(meta.flags.enableReports).toBe(false);
   });
 
   it('returns defaults when payload is invalid', () => {

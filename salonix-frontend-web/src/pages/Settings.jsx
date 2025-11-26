@@ -1,22 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
-import FormButton from '../components/ui/FormButton';
 import { useTenant } from '../hooks/useTenant';
 import useCreditBalance from '../hooks/useCreditBalance';
+import {
+  fetchCreditPackages,
+  createCreditCheckoutSession,
+} from '../api/credits';
+import { updateTenantNotifications } from '../api/tenantNotifications';
+
 import useBillingOverview from '../hooks/useBillingOverview';
 import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
-import {
-  fetchTenantMeta,
-  updateTenantBranding,
-  updateTenantAutoInvite,
-} from '../api/tenant';
-import { fetchTenantBootstrap } from '../api/auth';
+import { updateTenantBranding, updateTenantAutoInvite } from '../api/tenant';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
@@ -27,6 +27,7 @@ import {
   resolvePlanTier,
   comparePlanTiers,
 } from '../utils/tenantPlan';
+// Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
   { id: 'branding', label: 'settings.tabs.branding', icon: '🖼️' },
@@ -68,6 +69,11 @@ const MODULE_CONFIG = {
     flagKey: 'enableNativeClient',
     rawKey: 'rn_client_enabled',
   },
+};
+
+const MODULE_REQUIREMENTS = {
+  reports: 'enableReports',
+  pwa_client: 'enableCustomerPwa',
 };
 
 const resolveModuleLabel = (moduleKey) =>
@@ -131,8 +137,6 @@ function Settings() {
     branding,
     loading: tenantLoading,
     error: tenantError,
-    slug,
-    applyTenantBootstrap,
     refetch,
   } = useTenant();
   const [activeTab, setActiveTab] = useState('branding');
@@ -142,7 +146,8 @@ function Settings() {
     error: creditError,
     refresh: refreshCredits,
   } = useCreditBalance();
-  const { overview: billingOverview } = useBillingOverview();
+  const { overview: billingOverview, refresh: refreshOverview } =
+    useBillingOverview();
   // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
@@ -162,6 +167,7 @@ function Settings() {
   const [autoInviteSaving, setAutoInviteSaving] = useState(false);
   const [autoInviteError, setAutoInviteError] = useState(null);
   const [autoInviteSuccess, setAutoInviteSuccess] = useState('');
+  const [notifRawOverrides, setNotifRawOverrides] = useState({});
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -224,7 +230,11 @@ function Settings() {
     []
   );
 
-  const planName = useMemo(() => resolvePlanName(plan), [plan]);
+  const planName = useMemo(() => {
+    const byOverview = billingOverview?.current_subscription?.plan_name;
+    if (byOverview) return byOverview;
+    return resolvePlanName(plan);
+  }, [billingOverview?.current_subscription?.plan_name, plan]);
   const planTier = useMemo(() => resolvePlanTier(plan), [plan]);
 
   const moduleList = useMemo(() => {
@@ -245,6 +255,18 @@ function Settings() {
       const config = MODULE_CONFIG[moduleKey];
       if (!config) return true;
 
+      const featureKey = MODULE_REQUIREMENTS[moduleKey];
+      if (featureKey) {
+        const requiredPlan =
+          TENANT_FEATURE_REQUIREMENTS[featureKey]?.requiredPlan;
+        if (requiredPlan) {
+          const cmp = comparePlanTiers(requiredPlan, planTier);
+          if (cmp < 0) {
+            return false;
+          }
+        }
+      }
+
       if (
         config.rawKey &&
         featureFlagsRaw?.modules &&
@@ -264,19 +286,37 @@ function Settings() {
         return Boolean(flags[config.flagKey]);
       }
 
-      // Sem informação explícita -> seguir plano (já presente no set)
       return true;
     });
-  }, [plan, modules, flags, featureFlagsRaw]);
+  }, [plan, planTier, modules, flags, featureFlagsRaw]);
 
   const channelCards = useMemo(
     () =>
-      CHANNEL_CONFIG.map(({ key, defaultLabel }) => ({
-        key,
-        label: t(`settings.channels.${key}`, defaultLabel),
-        enabled: Boolean(channels?.[key]),
-      })),
-    [channels, t]
+      CHANNEL_CONFIG.map(({ key, defaultLabel }) => {
+        const override =
+          typeof notifRawOverrides?.[key] === 'boolean'
+            ? Boolean(notifRawOverrides[key])
+            : undefined;
+        const rawEnabled =
+          override !== undefined
+            ? override
+            : key === 'sms'
+              ? Boolean(flags?.enableSms)
+              : key === 'whatsapp'
+                ? Boolean(flags?.enableWhatsapp)
+                : key === 'push_mobile'
+                  ? Boolean(flags?.enableMobilePush)
+                  : key === 'push_web'
+                    ? Boolean(flags?.enableWebPush)
+                    : Boolean(channels?.[key]);
+        return {
+          key,
+          label: t(`settings.channels.${key}`, defaultLabel),
+          enabled: Boolean(channels?.[key]),
+          rawEnabled,
+        };
+      }),
+    [channels, flags, notifRawOverrides, t]
   );
 
   const canPurchaseCredits = useMemo(
@@ -312,6 +352,79 @@ function Settings() {
   }, [moduleList, flags, featureFlagsRaw]);
 
   const canToggleAutoInvite = hasCustomerPwa;
+
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [creditPackages, setCreditPackages] = useState([]);
+  const [creditsLoadingAction, setCreditsLoadingAction] = useState(false);
+  const [selectedCreditAmount, setSelectedCreditAmount] = useState(null);
+
+  const [notifSaving, setNotifSaving] = useState(false);
+
+  const openCreditsModal = useCallback(async () => {
+    setCreditsModalOpen(true);
+    try {
+      const pkgs = await fetchCreditPackages({ slug: tenant?.slug });
+      setCreditPackages(Array.isArray(pkgs) ? pkgs : []);
+      if (!selectedCreditAmount && pkgs?.length) {
+        const first = pkgs[0];
+        const amt = first?.price_eur ?? first?.credits ?? 5;
+        setSelectedCreditAmount(Number(amt));
+      }
+    } catch {
+      // silencioso; mantém modal e permite fallback dev
+    }
+  }, [tenant, selectedCreditAmount]);
+
+  const handleBuyCredits = useCallback(async () => {
+    if (!selectedCreditAmount) return;
+    setCreditsLoadingAction(true);
+    try {
+      const payload = await createCreditCheckoutSession(
+        Number(selectedCreditAmount),
+        { slug: tenant?.slug }
+      );
+      if (payload?.checkout_url) {
+        window.location.href = String(payload.checkout_url);
+        return;
+      }
+    } catch {
+      // noop
+    } finally {
+      setCreditsLoadingAction(false);
+    }
+  }, [selectedCreditAmount, tenant]);
+
+  const handleToggleChannel = useCallback(
+    async (channelKey, nextValue) => {
+      if (!tenant) return;
+      setNotifSaving(true);
+      try {
+        const payload = {};
+        if (channelKey === 'sms') payload.sms_enabled = nextValue;
+        if (channelKey === 'whatsapp') payload.whatsapp_enabled = nextValue;
+        if (channelKey === 'push_mobile')
+          payload.push_mobile_enabled = nextValue;
+        const resp = await updateTenantNotifications(payload, {
+          slug: tenant?.slug,
+        });
+        const nextRaw =
+          channelKey === 'sms'
+            ? Boolean(resp?.sms_enabled ?? nextValue)
+            : channelKey === 'whatsapp'
+              ? Boolean(resp?.whatsapp_enabled ?? nextValue)
+              : channelKey === 'push_mobile'
+                ? Boolean(resp?.push_mobile_enabled ?? nextValue)
+                : Boolean(nextValue);
+        setNotifRawOverrides((prev) => ({ ...prev, [channelKey]: nextRaw }));
+        await refetch();
+      } catch {
+        // noop
+      } finally {
+        setNotifSaving(false);
+      }
+    },
+    [tenant, refetch]
+  );
 
   const hasFlagData = useMemo(
     () => flags && typeof flags === 'object' && Object.keys(flags).length > 0,
@@ -360,50 +473,48 @@ function Settings() {
     };
   }, [profile]);
 
+  const lastTenantRefreshRef = useRef(0);
+  const refreshInFlightRef = useRef(false);
   const refreshTenantData = useCallback(async () => {
-    let refreshed = false;
-
-    if (slug) {
-      try {
-        const metaResponse = await fetchTenantMeta(slug);
-        if (metaResponse?.data) {
-          applyTenantBootstrap({
-            ...(metaResponse.data || {}),
-            slug,
-          });
-          refreshed = true;
-        }
-      } catch (metaError) {
-        console.warn('[Settings] fetchTenantMeta refresh falhou:', metaError);
-      }
+    const now = Date.now();
+    if (refreshInFlightRef.current) return false;
+    if (now - lastTenantRefreshRef.current < 60_000) return false;
+    refreshInFlightRef.current = true;
+    try {
+      await refetch();
+      lastTenantRefreshRef.current = Date.now();
+      return true;
+    } catch (err) {
+      console.warn('[Settings] tenant refetch falhou:', err);
+      return false;
+    } finally {
+      refreshInFlightRef.current = false;
     }
+  }, [refetch]);
 
-    if (!refreshed) {
-      try {
-        const bootstrap = await fetchTenantBootstrap();
-        if (bootstrap?.slug) {
-          applyTenantBootstrap(bootstrap);
-          refreshed = true;
-        }
-      } catch (bootstrapError) {
-        console.warn(
-          '[Settings] fetchTenantBootstrap refresh falhou:',
-          bootstrapError
-        );
-      }
+  useEffect(() => {
+    const code = billingOverview?.current_subscription?.plan_code;
+    if (code) {
+      refreshTenantData();
     }
+  }, [billingOverview?.current_subscription?.plan_code, refreshTenantData]);
 
-    if (!refreshed) {
-      try {
-        await refetch();
-        refreshed = true;
-      } catch (refetchError) {
-        console.warn('[Settings] refetch fallback falhou:', refetchError);
+  useEffect(() => {
+    const handleFocus = () => {
+      refreshOverview();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refreshOverview();
       }
-    }
-
-    return refreshed;
-  }, [applyTenantBootstrap, refetch, slug]);
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [refreshOverview]);
 
   const handleBrandingSave = useCallback(async () => {
     setBrandingSaving(true);
@@ -753,193 +864,286 @@ function Settings() {
   };
 
   const renderNotificationSettings = () => (
-    <div className="space-y-4">
-      {tenantLoading ? (
-        <p className="text-sm text-brand-surfaceForeground/60">
-          {t('common.loading_data', 'Carregando dados...')}
-        </p>
-      ) : null}
+    <>
+      <div className="space-y-4">
+        {tenantLoading ? (
+          <p className="text-sm text-brand-surfaceForeground/60">
+            {t('common.loading_data', 'Carregando dados...')}
+          </p>
+        ) : null}
 
-      <PlanGate featureKey="enableCustomerPwa">
-        <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex-1">
-              <p
-                title={t(
-                  'settings.auto_invite.title',
-                  'Convites automáticos do PWA Cliente'
-                )}
-                className="text-sm font-semibold text-brand-surfaceForeground"
-              >
-                {t(
-                  'settings.auto_invite.title',
-                  'Convites automáticos do PWA Cliente'
-                )}
-              </p>
-              <p
-                title={t(
-                  'settings.auto_invite.description',
-                  'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
-                )}
-                className="mt-1 text-sm text-brand-surfaceForeground/80"
-              >
-                {t(
-                  'settings.auto_invite.description',
-                  'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
-                )}
-              </p>
-              {!canToggleAutoInvite ? (
-                <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+        <PlanGate featureKey="enableCustomerPwa">
+          <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p
+                  title={t(
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
+                  )}
+                  className="text-sm font-semibold text-brand-surfaceForeground"
+                >
                   {t(
-                    'settings.auto_invite.blocked_hint',
-                    'Disponível apenas quando o PWA Cliente está habilitado para o salão.'
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
                   )}
                 </p>
-              ) : null}
-              {autoInviteSaving ? (
-                <p className="mt-2 text-xs text-brand-surfaceForeground/60">
-                  {t('common.saving', 'Salvando...')}
+                <p
+                  title={t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
+                  className="mt-1 text-sm text-brand-surfaceForeground/80"
+                >
+                  {t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
                 </p>
-              ) : null}
-              {autoInviteSuccess ? (
-                <p className="mt-2 text-xs text-emerald-600">
-                  {autoInviteSuccess}
-                </p>
-              ) : null}
-              {autoInviteError ? (
-                <p className="mt-2 text-xs text-rose-600">{autoInviteError}</p>
+                {!canToggleAutoInvite ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t(
+                      'settings.auto_invite.blocked_hint',
+                      'Disponível apenas quando o PWA Cliente está habilitado para o salão.'
+                    )}
+                  </p>
+                ) : null}
+                {autoInviteSaving ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t('common.saving', 'Salvando...')}
+                  </p>
+                ) : null}
+                {autoInviteSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {autoInviteSuccess}
+                  </p>
+                ) : null}
+                {autoInviteError ? (
+                  <p className="mt-2 text-xs text-rose-600">
+                    {autoInviteError}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  title={
+                    autoInviteEnabled
+                      ? t('settings.auto_invite.status_enabled', 'Ativo')
+                      : t('settings.auto_invite.status_disabled', 'Inativo')
+                  }
+                  className={`text-sm font-medium ${
+                    autoInviteEnabled
+                      ? 'text-emerald-600'
+                      : 'text-brand-surfaceForeground/60'
+                  }`}
+                >
+                  {autoInviteEnabled
+                    ? t('settings.auto_invite.status_enabled', 'Ativo')
+                    : t('settings.auto_invite.status_disabled', 'Inativo')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoInviteEnabled}
+                  aria-label={t(
+                    'settings.auto_invite.accessible_label',
+                    'Alternar convites automáticos do PWA'
+                  )}
+                  onClick={handleAutoInviteToggle}
+                  disabled={
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                  } ${
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      autoInviteEnabled ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </PlanGate>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {channelCards.map(({ key, label, enabled, rawEnabled }) => (
+            <div
+              key={key}
+              title={
+                enabled
+                  ? t(
+                      'settings.tooltip.channel_enabled',
+                      'Canal ativo para o salão'
+                    )
+                  : t(
+                      'settings.tooltip.channel_disabled',
+                      'Canal indisponível: requer créditos ou plano compatível'
+                    )
+              }
+              className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-3"
+            >
+              <p
+                title={String(label)}
+                className="text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60"
+              >
+                {label}
+              </p>
+              <p
+                title={
+                  rawEnabled
+                    ? t('settings.channel_enabled', 'Ativo')
+                    : t('settings.channel_disabled', 'Inativo')
+                }
+                className="mt-1 text-sm text-brand-surfaceForeground"
+              >
+                {rawEnabled
+                  ? t('settings.channel_enabled', 'Ativo')
+                  : t('settings.channel_disabled', 'Inativo')}
+              </p>
+              {['sms', 'whatsapp', 'push_mobile'].includes(key) ? (
+                <div className="mt-3 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={rawEnabled}
+                    aria-label={String(label)}
+                    onClick={() => handleToggleChannel(key, !rawEnabled)}
+                    disabled={
+                      notifSaving ||
+                      (key === 'push_mobile' && planTier !== 'enterprise')
+                    }
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      rawEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                    } ${
+                      notifSaving ||
+                      (key === 'push_mobile' && planTier !== 'enterprise')
+                        ? 'cursor-not-allowed opacity-60'
+                        : 'cursor-pointer'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                        rawEnabled ? 'translate-x-5' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                  {key === 'push_mobile' && planTier !== 'enterprise' ? (
+                    <span className="text-xs text-brand-surfaceForeground/60">
+                      Disponível somente no plano Enterprise
+                    </span>
+                  ) : null}
+                </div>
               ) : null}
             </div>
-            <div className="flex items-center gap-3">
-              <span
-                title={
-                  autoInviteEnabled
-                    ? t('settings.auto_invite.status_enabled', 'Ativo')
-                    : t('settings.auto_invite.status_disabled', 'Inativo')
+          ))}
+        </div>
+
+        {!smsAvailable || !whatsappAvailable ? (
+          <div className="mt-4 flex items-center justify-between rounded-lg border border-brand-border bg-brand-light px-4 py-3 text-brand-surfaceForeground">
+            <p className="text-sm">
+              {t(
+                'settings.notifications_paywall_hint',
+                'Canais avançados disponíveis com créditos.'
+              )}
+            </p>
+            <FeatureGate
+              featureKey="enableSms"
+              fallback={
+                canPurchaseCredits ? (
+                  <button
+                    type="button"
+                    title={t(
+                      'settings.tooltip.add_credits',
+                      'Comprar créditos para liberar canais avançados'
+                    )}
+                    className="rounded-md border border-brand-border px-3 py-1 text-xs font-medium"
+                    onClick={openCreditsModal}
+                  >
+                    {t('settings.add_credits', 'Adicionar créditos')}
+                  </button>
+                ) : null
+              }
+            >
+              {creditBalanceValue ? (
+                <span className="text-xs">
+                  {t('settings.credits_available', 'Créditos disponíveis')}{' '}
+                  {String(creditBalanceValue)}
+                </span>
+              ) : null}
+            </FeatureGate>
+          </div>
+        ) : null}
+
+        <p className="text-xs text-brand-surfaceForeground/60">
+          {t(
+            'settings.notifications_readonly_hint',
+            'Gestão fina de canais/alertas ficará disponível em issues específicas (FEW-245/246).'
+          )}
+        </p>
+      </div>
+      {creditsModalOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-md border theme-border theme-shadow theme-bg-primary p-4 theme-text-primary">
+            <h3 className="mb-2 text-sm font-semibold">Adicionar créditos</h3>
+            <p className="mb-3 text-xs theme-text-secondary">
+              Selecione um valor para comprar. Pagamento via Stripe (checkout).
+            </p>
+            <div className="mb-3">
+              <select
+                className="input w-full p-2 text-sm"
+                value={String(selectedCreditAmount || '')}
+                onChange={(e) =>
+                  setSelectedCreditAmount(Number(e.target.value))
                 }
-                className={`text-sm font-medium ${
-                  autoInviteEnabled
-                    ? 'text-emerald-600'
-                    : 'text-brand-surfaceForeground/60'
-                }`}
               >
-                {autoInviteEnabled
-                  ? t('settings.auto_invite.status_enabled', 'Ativo')
-                  : t('settings.auto_invite.status_disabled', 'Inativo')}
-              </span>
+                {(creditPackages?.length
+                  ? creditPackages
+                  : [
+                      { price_eur: 5 },
+                      { price_eur: 10 },
+                      { price_eur: 25 },
+                      { price_eur: 50 },
+                      { price_eur: 100 },
+                    ]
+                ).map((pkg) => (
+                  <option
+                    key={String(pkg.price_eur ?? pkg.credits)}
+                    value={String(pkg.price_eur ?? pkg.credits)}
+                  >
+                    € {String(pkg.price_eur ?? pkg.credits)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2">
               <button
                 type="button"
-                role="switch"
-                aria-checked={autoInviteEnabled}
-                aria-label={t(
-                  'settings.auto_invite.accessible_label',
-                  'Alternar convites automáticos do PWA'
-                )}
-                onClick={handleAutoInviteToggle}
-                disabled={
-                  autoInviteSaving || tenantLoading || !canToggleAutoInvite
-                }
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
-                } ${
-                  autoInviteSaving || tenantLoading || !canToggleAutoInvite
-                    ? 'cursor-not-allowed opacity-60'
-                    : 'cursor-pointer'
-                }`}
+                className="text-brand-primary hover:text-brand-primary/80 font-medium text-xs"
+                onClick={() => setCreditsModalOpen(false)}
               >
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                    autoInviteEnabled ? 'translate-x-5' : 'translate-x-1'
-                  }`}
-                />
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="text-brand-primary hover:text-brand-primary/80 font-medium text-xs"
+                disabled={creditsLoadingAction}
+                onClick={handleBuyCredits}
+              >
+                {creditsLoadingAction ? 'Processando...' : 'Comprar'}
               </button>
             </div>
           </div>
         </div>
-      </PlanGate>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        {channelCards.map(({ key, label, enabled }) => (
-          <div
-            key={key}
-            title={
-              enabled
-                ? t(
-                    'settings.tooltip.channel_enabled',
-                    'Canal ativo para o salão'
-                  )
-                : t(
-                    'settings.tooltip.channel_disabled',
-                    'Canal indisponível: requer créditos ou plano compatível'
-                  )
-            }
-            className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-3"
-          >
-            <p
-              title={String(label)}
-              className="text-xs font-semibold uppercase tracking-wide text-brand-surfaceForeground/60"
-            >
-              {label}
-            </p>
-            <p
-              title={
-                enabled
-                  ? t('settings.channel_enabled', 'Ativo')
-                  : t('settings.channel_disabled', 'Indisponível')
-              }
-              className="mt-1 text-sm text-brand-surfaceForeground"
-            >
-              {enabled
-                ? t('settings.channel_enabled', 'Ativo')
-                : t('settings.channel_disabled', 'Indisponível')}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {!smsAvailable || !whatsappAvailable ? (
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-brand-border bg-brand-light px-4 py-3 text-brand-surfaceForeground">
-          <p className="text-sm">
-            {t(
-              'settings.notifications_paywall_hint',
-              'Canais avançados disponíveis com créditos.'
-            )}
-          </p>
-          <FeatureGate
-            featureKey="enableSms"
-            fallback={
-              canPurchaseCredits ? (
-                <button
-                  type="button"
-                  title={t(
-                    'settings.tooltip.add_credits',
-                    'Comprar créditos para liberar canais avançados'
-                  )}
-                  className="rounded-md border border-brand-border px-3 py-1 text-xs font-medium"
-                  onClick={() => window.location.assign('/plans')}
-                >
-                  {t('settings.add_credits', 'Adicionar créditos')}
-                </button>
-              ) : null
-            }
-          >
-            {creditBalanceValue ? (
-              <span className="text-xs">
-                {t('settings.credits_available', 'Créditos disponíveis')}{' '}
-                {String(creditBalanceValue)}
-              </span>
-            ) : null}
-          </FeatureGate>
-        </div>
       ) : null}
-
-      <p className="text-xs text-brand-surfaceForeground/60">
-        {t(
-          'settings.notifications_readonly_hint',
-          'Gestão fina de canais/alertas ficará disponível em issues específicas (FEW-245/246).'
-        )}
-      </p>
-    </div>
+    </>
   );
 
   const renderBusinessSettings = () => {
@@ -973,13 +1177,7 @@ function Settings() {
             {t('settings.plan_badge', 'Plano')}: {planName}
           </span>
         ) : null}
-        <button
-          type="button"
-          onClick={() => window.location.assign('/plans')}
-          className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
-        >
-          {t('settings.manage_plan', 'Gerir plano')}
-        </button>
+        {/* botão "Gerir plano" removido — usar página de Planos */}
         <span
           role="button"
           onClick={() => {
