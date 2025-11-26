@@ -109,6 +109,17 @@
   - In dev, set `VITE_BILLING_MOCK=true` to simulate redirect (`/checkout/mock?plan=...`).
   - In production, the API should return `{ checkout_url }`.
 
+## Créditos — Checkout Stripe (FEW-265)
+
+- Context: Compra avulsa de créditos via Checkout hospedado (sem `publishable key` no FE).
+- Components:
+  - `src/pages/Settings.jsx` — modal “Adicionar créditos” chama `createCreditCheckoutSession` e redireciona para `checkout_url`.
+  - `src/api/credits.js` — `createCreditCheckoutSession(amountEur)` e `fetchCreditPackages()`.
+- Behaviour:
+  - Após sucesso, webhook aplica créditos (`metadata.type=credit_purchase`) e saldo atualiza ao retornar para o `success_url`.
+- Notes:
+  - Removido fallback dev de compra direta; sempre via Checkout.
+
 ## Team Management (FEW-252)
 
 - Context: enable owners and managers to invite, promote, and disable team members directly in Admin panel, with public invite acceptance flow.

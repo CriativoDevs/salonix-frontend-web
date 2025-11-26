@@ -5,9 +5,12 @@ import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import useCreditBalance from '../hooks/useCreditBalance';
-import { fetchCreditPackages, createCreditPaymentIntent } from '../api/credits';
+import {
+  fetchCreditPackages,
+  createCreditCheckoutSession,
+} from '../api/credits';
 import { updateTenantNotifications } from '../api/tenantNotifications';
-import client from '../api/client';
+
 import useBillingOverview from '../hooks/useBillingOverview';
 import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
@@ -24,6 +27,7 @@ import {
   resolvePlanTier,
   comparePlanTiers,
 } from '../utils/tenantPlan';
+// Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
   { id: 'branding', label: 'settings.tabs.branding', icon: '🖼️' },
@@ -353,10 +357,8 @@ function Settings() {
   const [creditPackages, setCreditPackages] = useState([]);
   const [creditsLoadingAction, setCreditsLoadingAction] = useState(false);
   const [selectedCreditAmount, setSelectedCreditAmount] = useState(null);
+
   const [notifSaving, setNotifSaving] = useState(false);
-  const stripePubKey = (
-    import.meta.env?.VITE_STRIPE_PUBLISHABLE_KEY || ''
-  ).trim();
 
   const openCreditsModal = useCallback(async () => {
     setCreditsModalOpen(true);
@@ -365,7 +367,8 @@ function Settings() {
       setCreditPackages(Array.isArray(pkgs) ? pkgs : []);
       if (!selectedCreditAmount && pkgs?.length) {
         const first = pkgs[0];
-        setSelectedCreditAmount(first?.amount_eur || first?.amount || 5);
+        const amt = first?.price_eur ?? first?.credits ?? 5;
+        setSelectedCreditAmount(Number(amt));
       }
     } catch {
       // silencioso; mantém modal e permite fallback dev
@@ -376,36 +379,20 @@ function Settings() {
     if (!selectedCreditAmount) return;
     setCreditsLoadingAction(true);
     try {
-      if (stripePubKey) {
-        const payload = await createCreditPaymentIntent(
-          Number(selectedCreditAmount),
-          { slug: tenant?.slug }
-        );
-        if (payload?.client_secret) {
-          alert(
-            'Payment intent criado. Integração de cartão será exibida na próxima etapa.'
-          );
-        }
-      } else {
-        const resp = await client.post(
-          'users/credits/purchase/',
-          { amount: String(selectedCreditAmount) },
-          {
-            headers: tenant?.slug ? { 'X-Tenant-Slug': tenant.slug } : {},
-            params: tenant?.slug ? { tenant: tenant.slug } : {},
-          }
-        );
-        if (resp?.data?.status === 'success') {
-          refreshCredits();
-          setCreditsModalOpen(false);
-        }
+      const payload = await createCreditCheckoutSession(
+        Number(selectedCreditAmount),
+        { slug: tenant?.slug }
+      );
+      if (payload?.checkout_url) {
+        window.location.href = String(payload.checkout_url);
+        return;
       }
     } catch {
       // noop
     } finally {
       setCreditsLoadingAction(false);
     }
-  }, [selectedCreditAmount, stripePubKey, tenant, refreshCredits]);
+  }, [selectedCreditAmount, tenant]);
 
   const handleToggleChannel = useCallback(
     async (channelKey, nextValue) => {
@@ -1106,10 +1093,7 @@ function Settings() {
           <div className="w-full max-w-md rounded-md border theme-border theme-shadow theme-bg-primary p-4 theme-text-primary">
             <h3 className="mb-2 text-sm font-semibold">Adicionar créditos</h3>
             <p className="mb-3 text-xs theme-text-secondary">
-              Selecione um valor para comprar.{' '}
-              {stripePubKey
-                ? 'Pagamento via Stripe (cartão).'
-                : 'Modo dev: aplica créditos diretamente.'}
+              Selecione um valor para comprar. Pagamento via Stripe (checkout).
             </p>
             <div className="mb-3">
               <select
@@ -1122,22 +1106,23 @@ function Settings() {
                 {(creditPackages?.length
                   ? creditPackages
                   : [
-                      { amount_eur: 5 },
-                      { amount_eur: 10 },
-                      { amount_eur: 25 },
-                      { amount_eur: 50 },
-                      { amount_eur: 100 },
+                      { price_eur: 5 },
+                      { price_eur: 10 },
+                      { price_eur: 25 },
+                      { price_eur: 50 },
+                      { price_eur: 100 },
                     ]
                 ).map((pkg) => (
                   <option
-                    key={String(pkg.amount_eur || pkg.amount)}
-                    value={String(pkg.amount_eur || pkg.amount)}
+                    key={String(pkg.price_eur ?? pkg.credits)}
+                    value={String(pkg.price_eur ?? pkg.credits)}
                   >
-                    € {String(pkg.amount_eur || pkg.amount)}
+                    € {String(pkg.price_eur ?? pkg.credits)}
                   </option>
                 ))}
               </select>
             </div>
+
             <div className="flex justify-end gap-2">
               <button
                 type="button"

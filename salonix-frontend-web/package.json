@@ -12,6 +12,8 @@
     "smoke": "bash ./scripts/smoke_auth.sh"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "axios": "^1.11.0",
     "i18next": "^25.4.2",
     "lucide-react": "^0.542.0",

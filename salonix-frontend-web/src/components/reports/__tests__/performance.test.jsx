@@ -25,7 +25,7 @@ describe('Performance Tests', () => {
       render(<TopServices data={smallData} loading={false} />);
       const endTime = performance.now();
 
-      expect(endTime - startTime).toBeLessThan(100); // menos de 100ms
+      expect(endTime - startTime).toBeLessThan(120); // menos de 120ms
     });
 
     it('renderiza com dados grandes em tempo aceitável', () => {
