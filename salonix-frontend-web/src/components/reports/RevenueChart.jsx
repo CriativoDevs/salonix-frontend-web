@@ -17,27 +17,13 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="h-6 bg-brand-surfaceForeground/10 rounded w-48 animate-pulse" />
-            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-64 mt-2 animate-pulse" />
-          </div>
-        </div>
-
-        {/* Table Loading */}
-        <div className="overflow-hidden rounded-lg border border-brand-border">
-          <div className="bg-brand-light/30 px-6 py-3">
-            <div className="grid grid-cols-4 gap-4">
-              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
-              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
-              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
-              <div className="h-4 bg-brand-surfaceForeground/10 rounded" />
-            </div>
-          </div>
-          <div className="bg-brand-surface p-6">
-            <TableLoadingSpinner rows={6} columns={4} />
+      <div className="space-y-4">
+        <div className="h-6 bg-brand-surfaceForeground/10 rounded w-40 animate-pulse" />
+        <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
+          <div className="space-y-2">
+            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-full animate-pulse" />
+            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-5/6 animate-pulse" />
+            <div className="h-4 bg-brand-surfaceForeground/10 rounded w-2/3 animate-pulse" />
           </div>
         </div>
       </div>
