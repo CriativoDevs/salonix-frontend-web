@@ -1,8 +1,11 @@
-# 🚦 Current MVP Status – Frontend Web (FEW) – October 2025
+# 🚦 Current MVP Status – Frontend Web (FEW) – November 27, 2025
 
 ## Language / Idiomas
+
 - EN: English version first
 - PT: Versão em Português abaixo
+
+Last updated: 2025-11-27
 
 ## ✅ Completed / Stable (≈62%)
 
@@ -12,23 +15,26 @@
 - FEW-241b — Available hours (slot CRUD integrated with BE).
 - FEW-240 (partial) — Settings reads real branding/plan/modules: single badge in Settings, colors/logo via PATCH, modules reflect plan benefits (e.g., Client PWA always in Standard+).
 - FEW-252 — Team management (owner/managers): invite via modal, update roles/status with permissions, and public invite acceptance page.
+- FEW-318 — Credit badge updated via realtime SSE.
+- FEW-249 — Stripe checkout/portal in test mode wired to plans.
 
 ## 🏗️ In Progress / Next
 
-- FEW-240 — finish: final copy, plan-based blocking messages, theme preferences (depends on BE-270).
-- FEW-241a/242 — CRUD professionals/services/scheduling with backend (100% real panel).
+- FEW-240 — finish: final copy, plan-based blocking messages; theme preferences persisted.
 - FEW-208/209 — plan wizard + guided onboarding after registration.
 - FEW-244/245 — real paywall + refined 429 UX.
 - FEW-246 — CaptchaGate/envs documentation.
 
 ## 🔗 Dependencies & Integrations
-- Current credit badge (€) updated via realtime channel (SSE recommended; WS optional).
+
+- Current credit badge (€) updates automatically on purchase/consumption via SSE; manual refresh on click to avoid server bursts.
 - `/api/credits/*` endpoints in BE for credit purchase and history.
 - Plans table and credit limits updated in the Landing Page.
 
 ## 🧭 MVP Goal
 
 Deliver a self-service experience for business owners in Portugal:
+
 1. Discover the product via landing.
 2. Register, choose plan/trial, and configure the business via onboarding.
 3. Operate scheduling and reports with security and appropriate feedback.
@@ -48,7 +54,9 @@ Current status: flows 1 and 3 work; steps 2 and 4 still depend on open tasks (wi
 
 ---
 
-## 🇵🇹 Status Atual do MVP – Frontend Web (FEW) – Outubro 2025
+## 🇵🇹 Status Atual do MVP – Frontend Web (FEW) – 27 de Novembro de 2025
+
+Última atualização: 2025-11-27
 
 ### ✅ Concluído / Estável (≈62%)
 
@@ -58,24 +66,28 @@ Current status: flows 1 and 3 work; steps 2 and 4 still depend on open tasks (wi
 - **FEW-241b – Horários disponíveis** (CRUD de slots integrado ao BE).
 - **FEW-240 (parcial)** – Settings lê branding/plan/modules reais: badge única no Settings, cores/logo via PATCH, módulos refletem benefícios do plano (ex.: PWA Cliente sempre em Standard+).
 - **FEW-252 – Gestão de equipe (owner/managers)**: convite via modal, atualização de papéis/status com permissões e página pública de aceite de convite.
+- **FEW-318 – Badge de crédito em tempo real (SSE).**
+- **FEW-249 – Checkout/Portal Stripe (modo teste) integrado aos planos.**
+- **FEW-241a/242 – CRUD profissionais/serviços/agendamentos com backend (painel 100% real).**
 
 ### 🏗️ Em Andamento / Próximo
 
-- **FEW-240 – concluir**: permitir copy final, mensagens de bloqueio por plano, preferências de tema (depende do BE-270).
-- **FEW-241a/242** – CRUD profissionais/serviços/agendamentos com backend (painel 100% real).
+- **FEW-240 – concluir**: permitir copy final e mensagens de bloqueio por plano; preferências de tema persistidas.
 - **FEW-208/209** – wizard de planos + onboarding guiado após registro.
 - **FEW-244/245** – paywall real + UX de 429 refinada.
 - **FEW-246** – documentação CaptchaGate/envs.
 
 ### 🔗 Dependências e Integrações
-- Badge de crédito atual (€) atualizado via canal realtime (SSE recomendado; WS opcional conforme necessidade).
+
+- Badge de crédito (€) atualiza automaticamente em compra/consumo via SSE; refresh manual por clique para reduzir requisições.
 - Endpoints `/api/credits/*` no BE para compra de crédito e histórico.
 - Tabela de planos e limites de crédito atualizados na Landing Page.
 
 ### 🧭 Meta do MVP
 
 Entregar uma experiência self-service para proprietários de negócio em Portugal:
-1. Descobrir o produto pela landing.
+
+1. Descobrir o produto pela landing (Devemos atualizar os planos na landing para refletir os planos disponíveis no BE).
 2. Registar, escolher plano/trial e configurar empresa via onboarding.
 3. Operar agenda e relatórios com segurança e feedback apropriado.
 4. Consumir recursos condizentes com o plano (paywall real + canais/ligações ao BE).
