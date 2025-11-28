@@ -45,10 +45,6 @@ const STATUS_OPTIONS = [
   { value: 'disabled', label: 'Desativados' },
 ];
 
-
-
-
-
 const formatDateTime = (value) => {
   if (!value) return null;
   try {
@@ -75,65 +71,84 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
       {items.map((professional) => {
         // Get linked staff member for role and permissions
         const staffMember = professional.staff_member_data;
-        const roleLabel = staffMember ? ROLE_LABELS[staffMember.role] || staffMember.role : '—';
-        
+        const roleLabel = staffMember
+          ? ROLE_LABELS[staffMember.role] || staffMember.role
+          : '—';
+
         // Determine status based on staff member status if available
         let statusLabel, statusBadgeStyle;
-         if (professional.isStaffOnly) {
-           // For staff-only entries, use staff status directly
-           const staffStatus = staffMember?.status || 'active';
-           statusLabel = STATUS_LABELS[staffStatus] || staffStatus;
-           statusBadgeStyle = TEAM_STATUS_STYLES[staffStatus] || 'bg-gray-100 text-gray-600';
-         } else {
-           // For professionals with staff, combine both statuses
-           if (staffMember) {
-             if (staffMember.status === 'invited') {
-               statusLabel = STATUS_LABELS.invited;
-               statusBadgeStyle = TEAM_STATUS_STYLES.invited;
-             } else if (staffMember.status === 'disabled') {
-               statusLabel = STATUS_LABELS.disabled;
-               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
-             } else if (staffMember.status === 'active' && professional.is_active) {
-               statusLabel = STATUS_LABELS.active;
-               statusBadgeStyle = TEAM_STATUS_STYLES.active;
-             } else {
-               statusLabel = STATUS_LABELS.disabled;
-               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
-             }
-           } else {
-             // Professional without staff member
-             statusLabel = professional.is_active ? STATUS_LABELS.active : STATUS_LABELS.disabled;
-             statusBadgeStyle = professional.is_active ? TEAM_STATUS_STYLES.active : TEAM_STATUS_STYLES.disabled;
-           }
-         }
-        
+        if (professional.isStaffOnly) {
+          // For staff-only entries, use staff status directly
+          const staffStatus = staffMember?.status || 'active';
+          statusLabel = STATUS_LABELS[staffStatus] || staffStatus;
+          statusBadgeStyle =
+            TEAM_STATUS_STYLES[staffStatus] || 'bg-gray-100 text-gray-600';
+        } else {
+          // For professionals with staff, combine both statuses
+          if (staffMember) {
+            if (staffMember.status === 'invited') {
+              statusLabel = STATUS_LABELS.invited;
+              statusBadgeStyle = TEAM_STATUS_STYLES.invited;
+            } else if (staffMember.status === 'disabled') {
+              statusLabel = STATUS_LABELS.disabled;
+              statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
+            } else if (
+              staffMember.status === 'active' &&
+              professional.is_active
+            ) {
+              statusLabel = STATUS_LABELS.active;
+              statusBadgeStyle = TEAM_STATUS_STYLES.active;
+            } else {
+              statusLabel = STATUS_LABELS.disabled;
+              statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
+            }
+          } else {
+            // Professional without staff member
+            statusLabel = professional.is_active
+              ? STATUS_LABELS.active
+              : STATUS_LABELS.disabled;
+            statusBadgeStyle = professional.is_active
+              ? TEAM_STATUS_STYLES.active
+              : TEAM_STATUS_STYLES.disabled;
+          }
+        }
+
         const createdAt = formatDateTime(professional.created_at);
         const updatedAt = formatDateTime(professional.updated_at);
-        
+
         const canManage = typeof onManage === 'function';
-        const manageDisabled = staffMember?.role === 'owner' && currentUserRole !== 'owner';
-        
+        const manageDisabled =
+          staffMember?.role === 'owner' && currentUserRole !== 'owner';
+
         // Check if current user can manage this professional
         const canManageThisProfessional = () => {
           // Owners and managers can manage all (except owners can't be managed by managers)
           if (currentUserRole === 'owner') return true;
-          if (currentUserRole === 'manager' && staffMember?.role !== 'owner') return true;
+          if (currentUserRole === 'manager' && staffMember?.role !== 'owner')
+            return true;
           // Collaborators can only manage their own profile
           if (currentUserRole === 'collaborator' && currentStaffMember) {
             return Number(staffMember?.id) === Number(currentStaffMember.id);
           }
           return false;
         };
-        
-        // Use Staff member name if available, otherwise Professional name
-        const staffName = staffMember ? 
-          [staffMember.first_name, staffMember.last_name].filter(Boolean).join(' ').trim() : '';
-        const primaryName = staffName || professional.name || '—';
+
+        // Preferir nome do profissional (editable), fallback para nome do staff
+        const staffName = staffMember
+          ? [staffMember.first_name, staffMember.last_name]
+              .filter(Boolean)
+              .join(' ')
+              .trim()
+          : '';
+        const primaryName = professional.name || staffName || '—';
         const bio = professional.bio || '';
         const email = staffMember?.email || professional.email || '';
-        
+
         return (
-          <Card key={professional.id} className="p-4 bg-brand-surface text-brand-surfaceForeground ring-1 ring-brand-border">
+          <Card
+            key={professional.id}
+            className="p-4 bg-brand-surface text-brand-surfaceForeground ring-1 ring-brand-border"
+          >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="space-y-2">
                 <div>
@@ -164,10 +179,14 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
                   )}
                 </div>
                 {!staffMember && (
-                    <div className="rounded-full border px-2 py-1 text-xs font-medium uppercase border-amber-200 bg-amber-100 text-amber-800"
+                  <div
+                    className="rounded-full border px-2 py-1 text-xs font-medium uppercase border-amber-200 bg-amber-100 text-amber-800"
                     role="alert"
                   >
-                    {t('team.list.no_staff_member', 'Sem membro da equipe vinculado')}
+                    {t(
+                      'team.list.no_staff_member',
+                      'Sem membro da equipe vinculado'
+                    )}
                   </div>
                 )}
               </div>
@@ -176,7 +195,8 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
                 {staffMember && (
                   <span
                     className={`rounded-full border px-2 py-1 text-xs font-medium uppercase ${
-                      ROLE_BADGE_STYLES[staffMember.role] || 'bg-gray-100 text-gray-600'
+                      ROLE_BADGE_STYLES[staffMember.role] ||
+                      'bg-gray-100 text-gray-600'
                     }`}
                   >
                     {roleLabel}
@@ -210,14 +230,14 @@ function Team() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { slug } = useTenant();
-  
+
   // Determine current user role first to conditionally load staff
   const [staff, setStaff] = useState([]);
   const [staffLoading, setStaffLoading] = useState(false);
   const [staffError, setStaffError] = useState(null);
   const [forbidden, setForbidden] = useState(false);
   const [requestId, setRequestId] = useState(null);
-  
+
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('active');
@@ -289,7 +309,9 @@ function Team() {
 
     try {
       const { fetchStaffMembers } = await import('../api/staff');
-      const { staff: staffData, requestId: reqId } = await fetchStaffMembers({ slug });
+      const { staff: staffData, requestId: reqId } = await fetchStaffMembers({
+        slug,
+      });
       if (!professionalsMountedRef.current) return;
       setStaff(Array.isArray(staffData) ? staffData : []);
       setRequestId(reqId || null);
@@ -320,12 +342,17 @@ function Team() {
     async (payload) => {
       try {
         const { inviteStaffMember } = await import('../api/staff');
-        const { staffMember, requestId: reqId } = await inviteStaffMember(payload, { slug });
+        const { staffMember, requestId: reqId } = await inviteStaffMember(
+          payload,
+          { slug }
+        );
         if (!professionalsMountedRef.current) {
           return { success: true, staffMember, requestId: reqId || null };
         }
         setStaff((current) => {
-          const index = current.findIndex((item) => item?.id === staffMember?.id);
+          const index = current.findIndex(
+            (item) => item?.id === staffMember?.id
+          );
           if (index === -1) {
             return [...current, staffMember];
           }
@@ -347,12 +374,18 @@ function Team() {
     async (id, payload) => {
       try {
         const { updateStaffMember } = await import('../api/staff');
-        const { staffMember, requestId: reqId } = await updateStaffMember(id, payload, { slug });
+        const { staffMember, requestId: reqId } = await updateStaffMember(
+          id,
+          payload,
+          { slug }
+        );
         if (!professionalsMountedRef.current) {
           return { success: true, staffMember, requestId: reqId || null };
         }
         setStaff((current) => {
-          const index = current.findIndex((item) => item?.id === staffMember?.id);
+          const index = current.findIndex(
+            (item) => item?.id === staffMember?.id
+          );
           if (index === -1) {
             return [...current, staffMember];
           }
@@ -363,7 +396,10 @@ function Team() {
         return { success: true, staffMember, requestId: reqId || null };
       } catch (err) {
         const { parseApiError } = await import('../utils/apiError');
-        const parsed = parseApiError(err, 'Não foi possível atualizar o membro de equipe.');
+        const parsed = parseApiError(
+          err,
+          'Não foi possível atualizar o membro de equipe.'
+        );
         return { success: false, error: parsed };
       }
     },
@@ -372,71 +408,95 @@ function Team() {
 
   // Create professionals with staff member data included + staff without professionals
   const professionalsWithStaff = useMemo(() => {
-    const professionalsResult = professionals.map(professional => ({
+    const professionalsResult = professionals.map((professional) => ({
       ...professional,
-      staff_member_data: staffArray.find(staff => staff.id === professional.staff_member)
+      staff_member_data: staffArray.find(
+        (staff) => staff.id === professional.staff_member
+      ),
     }));
-    
+
     // Add staff members that don't have professionals
     const staffWithoutProfessionals = staffArray
-      .filter(staff => !professionals.some(prof => prof.staff_member === staff.id))
-      .map(staff => ({
+      .filter(
+        (staff) => !professionals.some((prof) => prof.staff_member === staff.id)
+      )
+      .map((staff) => ({
         id: `staff-${staff.id}`, // Unique ID for staff-only entries
-        name: [staff.first_name, staff.last_name].filter(Boolean).join(' ').trim() || staff.email || staff.username,
+        name:
+          [staff.first_name, staff.last_name]
+            .filter(Boolean)
+            .join(' ')
+            .trim() ||
+          staff.email ||
+          staff.username,
         bio: '',
         is_active: staff.status === 'active',
         staff_member: staff.id,
         staff_member_data: staff,
         created_at: staff.created_at,
         updated_at: staff.updated_at,
-        isStaffOnly: true // Flag to identify staff-only entries
+        isStaffOnly: true, // Flag to identify staff-only entries
       }));
-    
+
     const result = [...professionalsResult, ...staffWithoutProfessionals];
-    
+
     return result;
   }, [professionals, staffArray]);
 
   const filteredProfessionals = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
-    
+
     let professionalsToFilter = professionalsWithStaff;
-    
+
     // For collaborators, only show their own profile
     if (currentUserRole === 'collaborator' && currentStaffMember) {
       professionalsToFilter = professionalsWithStaff.filter((professional) => {
         const staffMember = professional.staff_member_data;
-        return staffMember && Number(staffMember.id) === Number(currentStaffMember.id);
+        return (
+          staffMember &&
+          Number(staffMember.id) === Number(currentStaffMember.id)
+        );
       });
-      
+
       // If collaborator doesn't have a professional profile, create a staff-only entry
       if (professionalsToFilter.length === 0) {
-        professionalsToFilter = [{
-          id: `staff-${currentStaffMember.id}`,
-          name: [currentStaffMember.first_name, currentStaffMember.last_name].filter(Boolean).join(' ').trim() || currentStaffMember.email || currentStaffMember.username,
-          bio: '',
-          is_active: currentStaffMember.status === 'active',
-          staff_member: currentStaffMember.id,
-          staff_member_data: currentStaffMember,
-          created_at: currentStaffMember.created_at,
-          updated_at: currentStaffMember.updated_at,
-          isStaffOnly: true
-        }];
+        professionalsToFilter = [
+          {
+            id: `staff-${currentStaffMember.id}`,
+            name:
+              [currentStaffMember.first_name, currentStaffMember.last_name]
+                .filter(Boolean)
+                .join(' ')
+                .trim() ||
+              currentStaffMember.email ||
+              currentStaffMember.username,
+            bio: '',
+            is_active: currentStaffMember.status === 'active',
+            staff_member: currentStaffMember.id,
+            staff_member_data: currentStaffMember,
+            created_at: currentStaffMember.created_at,
+            updated_at: currentStaffMember.updated_at,
+            isStaffOnly: true,
+          },
+        ];
       }
     }
-    
+
     let filtered = professionalsToFilter.filter((professional) => {
       const staffMember = professional.staff_member_data;
-      
+
       // Role filter
-      if (roleFilter !== 'all' && (!staffMember || staffMember.role !== roleFilter)) {
+      if (
+        roleFilter !== 'all' &&
+        (!staffMember || staffMember.role !== roleFilter)
+      ) {
         return false;
       }
-      
+
       // Status filter - consider both Professional and Staff member status
       if (statusFilter !== 'all') {
         let itemStatus;
-        
+
         if (professional.isStaffOnly) {
           // For staff-only entries, use staff status directly
           itemStatus = staffMember?.status;
@@ -447,7 +507,10 @@ function Team() {
               itemStatus = 'invited';
             } else if (staffMember.status === 'disabled') {
               itemStatus = 'disabled';
-            } else if (staffMember.status === 'active' && professional.is_active) {
+            } else if (
+              staffMember.status === 'active' &&
+              professional.is_active
+            ) {
               itemStatus = 'active';
             } else {
               itemStatus = 'disabled';
@@ -457,7 +520,7 @@ function Team() {
             itemStatus = professional.is_active ? 'active' : 'disabled';
           }
         }
-        
+
         if (statusFilter === 'active' && itemStatus !== 'active') {
           return false;
         }
@@ -468,12 +531,12 @@ function Team() {
           return false;
         }
       }
-      
+
       // Search filter
       if (!term) {
         return true;
       }
-      
+
       const haystack = [
         professional.name,
         professional.bio,
@@ -493,11 +556,17 @@ function Team() {
       const staffMember = p.staff_member_data;
       const baseName = (p.name || '').trim();
       if (baseName) return baseName.toLocaleLowerCase();
-      const staffName = [staffMember?.first_name || '', staffMember?.last_name || '']
+      const staffName = [
+        staffMember?.first_name || '',
+        staffMember?.last_name || '',
+      ]
         .join(' ')
         .trim()
         .toLocaleLowerCase();
-      return staffName || (staffMember?.email || staffMember?.username || '').toLocaleLowerCase();
+      return (
+        staffName ||
+        (staffMember?.email || staffMember?.username || '').toLocaleLowerCase()
+      );
     };
     const byNameAsc = (a, b) => {
       const an = getDisplayName(a);
@@ -512,12 +581,23 @@ function Team() {
       return ad - bd;
     };
     if (sortOption === 'name') filtered = filtered.slice().sort(byNameAsc);
-    else if (sortOption === '-name') filtered = filtered.slice().sort((a, b) => -byNameAsc(a, b));
-    else if (sortOption === 'created_at') filtered = filtered.slice().sort(byCreatedAsc);
-    else if (sortOption === '-created_at') filtered = filtered.slice().sort((a, b) => -byCreatedAsc(a, b));
+    else if (sortOption === '-name')
+      filtered = filtered.slice().sort((a, b) => -byNameAsc(a, b));
+    else if (sortOption === 'created_at')
+      filtered = filtered.slice().sort(byCreatedAsc);
+    else if (sortOption === '-created_at')
+      filtered = filtered.slice().sort((a, b) => -byCreatedAsc(a, b));
 
     return filtered;
-  }, [professionalsWithStaff, roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
+  }, [
+    professionalsWithStaff,
+    roleFilter,
+    statusFilter,
+    search,
+    currentUserRole,
+    currentStaffMember,
+    sortOption,
+  ]);
 
   const professionalsByStaff = useMemo(() => {
     const map = new Map();
@@ -544,7 +624,6 @@ function Team() {
   );
 
   // paginação e ordenação (server-side)
-  
 
   // Inicializar a partir da URL
   useEffect(() => {
@@ -577,7 +656,14 @@ function Team() {
   useEffect(() => {
     // resetar ao mudar filtros ou ordenação
     setOffset(0);
-  }, [roleFilter, statusFilter, search, currentUserRole, currentStaffMember, sortOption]);
+  }, [
+    roleFilter,
+    statusFilter,
+    search,
+    currentUserRole,
+    currentStaffMember,
+    sortOption,
+  ]);
 
   // Paginação local sobre a lista filtrada/ordenada
   const totalCountLocal = filteredProfessionals.length;
@@ -589,9 +675,10 @@ function Team() {
   const selectableStaffOptions = useMemo(() => {
     const formatStaffOption = (member) => ({
       value: member.id,
-      label: member.first_name || member.last_name
-        ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
-        : member.email || member.username || `#${member.id}`
+      label:
+        member.first_name || member.last_name
+          ? `${member.first_name || ''} ${member.last_name || ''}`.trim()
+          : member.email || member.username || `#${member.id}`,
     });
 
     if (canManageAll) {
@@ -602,8 +689,6 @@ function Team() {
     }
     return [];
   }, [activeStaffOptions, canManageAll, currentStaffMember]);
-
-
 
   const canManageProfessional = useCallback(
     (professional) => {
@@ -629,9 +714,16 @@ function Team() {
     setProfessionalsError(null);
 
     try {
-      const payload = await fetchProfessionalsWithMeta({ slug, params: { limit, offset, ordering: sortOption } });
+      const payload = await fetchProfessionalsWithMeta({
+        slug,
+        params: { limit, offset, ordering: sortOption },
+      });
       if (!professionalsMountedRef.current) return;
-      const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      const list = Array.isArray(payload?.results)
+        ? payload.results
+        : Array.isArray(payload)
+          ? payload
+          : [];
       setProfessionals(list);
       const tc = payload?.meta?.totalCount ?? payload?.count ?? list.length;
       setTotalCount(tc || 0);
@@ -733,8 +825,8 @@ function Team() {
           selectedStaffId != null
             ? selectedStaffId
             : staffMember?.id != null
-            ? Number(staffMember.id)
-            : null;
+              ? Number(staffMember.id)
+              : null;
 
         if (targetStaffId != null) {
           const existingList =
@@ -778,7 +870,11 @@ function Team() {
 
       await refetchProfessionals();
       await refetchStaff();
-      return { ...result, success: true, professional: professionalResult?.professional || null };
+      return {
+        ...result,
+        success: true,
+        professional: professionalResult?.professional || null,
+      };
     },
     [
       inviteStaff,
@@ -820,10 +916,12 @@ function Team() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-sm font-medium text-brand-surfaceForeground">
-                  {currentUserRole === 'collaborator' 
-                    ? t('team.current_team_heading_collaborator', 'Meu perfil profissional')
-                    : t('team.current_team_heading', 'Gestão da equipe')
-                  }
+                  {currentUserRole === 'collaborator'
+                    ? t(
+                        'team.current_team_heading_collaborator',
+                        'Meu perfil profissional'
+                      )
+                    : t('team.current_team_heading', 'Gestão da equipe')}
                 </p>
                 {currentRoleLabel ? (
                   <p className="text-xs text-brand-surfaceForeground/70">
@@ -869,7 +967,7 @@ function Team() {
                 style={{
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)'
+                  borderColor: 'var(--border-primary)',
                 }}
                 className="w-full rounded border px-3 py-2 text-sm"
               />
@@ -885,7 +983,7 @@ function Team() {
                   style={{
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
-                    borderColor: 'var(--border-primary)'
+                    borderColor: 'var(--border-primary)',
                   }}
                   className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
@@ -908,7 +1006,7 @@ function Team() {
                 style={{
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)'
+                  borderColor: 'var(--border-primary)',
                 }}
                 className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               >
@@ -931,7 +1029,7 @@ function Team() {
               style={{
                 backgroundColor: 'var(--bg-primary)',
                 color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)'
+                borderColor: 'var(--border-primary)',
               }}
               className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
@@ -998,12 +1096,12 @@ function Team() {
                     </button>
                   )}
                   <button
-                      type="button"
-                      onClick={refetchStaff}
-                      className="text-[#7F7EED] hover:underline font-medium"
-                    >
-                      {t('common.refresh', 'Atualizar')}
-                    </button>
+                    type="button"
+                    onClick={refetchStaff}
+                    className="text-[#7F7EED] hover:underline font-medium"
+                  >
+                    {t('common.refresh', 'Atualizar')}
+                  </button>
                 </div>
               }
             />
@@ -1021,9 +1119,16 @@ function Team() {
               totalCount={totalCountLocal}
               limit={limit}
               offset={offset}
-              onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+              onChangeLimit={(n) => {
+                setLimit(n);
+                setOffset(0);
+              }}
               onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-              onNext={() => setOffset((prev) => (prev + limit < totalCountLocal ? prev + limit : prev))}
+              onNext={() =>
+                setOffset((prev) =>
+                  prev + limit < totalCountLocal ? prev + limit : prev
+                )
+              }
               className="mt-6"
             />
           )}
