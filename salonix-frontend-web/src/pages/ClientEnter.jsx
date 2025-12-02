@@ -4,13 +4,11 @@ import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import CaptchaGate from '../components/security/CaptchaGate';
-import { useTenant } from '../hooks/useTenant';
 import { requestClientAccessLinkPublic } from '../api/clientAccess';
 import { getEnvFlag } from '../utils/env';
 
 export default function ClientEnter() {
   const { t } = useTranslation();
-  const { slug } = useTenant();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -23,10 +21,11 @@ export default function ClientEnter() {
     setLoading(true);
     setError(null);
     try {
-      await requestClientAccessLinkPublic({ tenantSlug: slug, email, captchaBypassToken });
+      await requestClientAccessLinkPublic({ email, captchaBypassToken });
       setSuccess(true);
     } catch (err) {
-      const detail = err?.response?.data?.detail || t('Ocorreu um erro. Tente novamente.');
+      const detail =
+        err?.response?.data?.detail || t('Ocorreu um erro. Tente novamente.');
       setError({ message: detail });
     } finally {
       setLoading(false);
@@ -36,7 +35,9 @@ export default function ClientEnter() {
   return (
     <AuthLayout>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <h1 className="text-xl font-semibold text-center">{t('Entrar (Cliente)')}</h1>
+        <h1 className="text-xl font-semibold text-center">
+          {t('Entrar (Cliente)')}
+        </h1>
         {!success && (
           <>
             <FormInput
@@ -47,17 +48,25 @@ export default function ClientEnter() {
               required
             />
             <CaptchaGate />
-            <FormButton type="submit" disabled={loading || !email}>
+            <FormButton
+              type="submit"
+              variant="link"
+              disabled={loading || !email}
+            >
               {loading ? t('Enviando…') : t('Enviar link de acesso')}
             </FormButton>
             {error && (
-              <p className="text-sm text-red-600 text-center">{error.message}</p>
+              <p className="text-sm text-red-600 text-center">
+                {error.message}
+              </p>
             )}
           </>
         )}
         {success && (
           <div className="text-center space-y-2">
-            <p className="text-green-700">{t('Se existir cadastro, enviaremos o link.')}</p>
+            <p className="text-green-700">
+              {t('Se existir cadastro, enviaremos o link.')}
+            </p>
             <p className="text-sm text-gray-600">
               {t('Verifique seu e-mail e siga as instruções.')}
             </p>
@@ -67,4 +76,3 @@ export default function ClientEnter() {
     </AuthLayout>
   );
 }
-

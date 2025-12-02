@@ -5,7 +5,10 @@ export async function requestClientAccessLinkPublic({ tenantSlug, email, captcha
   if (captchaBypassToken) {
     headers['X-Captcha-Token'] = captchaBypassToken;
   }
-  const payload = { tenant_slug: tenantSlug, email };
+  const payload = { email };
+  if (tenantSlug) {
+    payload.tenant_slug = tenantSlug;
+  }
   const response = await client.post('public/clients/access-link/', payload, { headers });
   return response.data;
 }

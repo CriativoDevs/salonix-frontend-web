@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import FormButton from '../components/ui/FormButton';
@@ -7,20 +7,33 @@ import {
   acceptClientAccessToken,
   refreshClientSession,
 } from '../api/clientAccess';
+import { storeTenantSlug } from '../utils/tenantStorage';
 
 export default function ClientAccess() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
     const token = params.get('token');
+    const qsTenant = params.get('tenant');
     const run = async () => {
+      if (hasRunRef.current) return;
+      hasRunRef.current = true;
       setLoading(true);
       setError(null);
       try {
+        if (qsTenant) {
+          try {
+            storeTenantSlug(qsTenant);
+          } catch {
+            /* ignore */
+          }
+        }
         const data = await acceptClientAccessToken({ token });
         setResult(data);
         await refreshClientSession().catch(() => {});
@@ -29,6 +42,7 @@ export default function ClientAccess() {
         } catch {
           /* ignore */
         }
+        navigate('/client/dashboard', { replace: true });
       } catch (err) {
         const detail =
           err?.response?.data?.detail ||
@@ -43,7 +57,7 @@ export default function ClientAccess() {
       setError({ message: t('Token ausente.') });
       setLoading(false);
     }
-  }, [params, t]);
+  }, [params, t, navigate]);
 
   return (
     <AuthLayout>

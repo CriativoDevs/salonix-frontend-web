@@ -51,4 +51,11 @@ export async function updateTenantAutoInvite(autoInviteEnabled) {
   return response.data;
 }
 
+export async function updateTenantModules({ pwaClientEnabled }) {
+  const response = await client.patch('users/tenant/modules/', {
+    pwa_client_enabled: Boolean(pwaClientEnabled),
+  });
+  return response.data;
+}
+
 export { TENANT_ENDPOINT };

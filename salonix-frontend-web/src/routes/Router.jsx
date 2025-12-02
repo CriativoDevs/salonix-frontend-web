@@ -25,6 +25,8 @@ import ClientEnter from '../pages/ClientEnter';
 import ClientAccess from '../pages/ClientAccess';
 import ClientPrivateRoute from './ClientPrivateRoute';
 import ClientDashboard from '../pages/ClientDashboard';
+import ClientProfile from '../pages/ClientProfile';
+import ClientAppointments from '../pages/ClientAppointments';
 
 function Router() {
   return (
@@ -42,6 +44,22 @@ function Router() {
         element={
           <ClientPrivateRoute>
             <ClientDashboard />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/profile"
+        element={
+          <ClientPrivateRoute>
+            <ClientProfile />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/appointments"
+        element={
+          <ClientPrivateRoute>
+            <ClientAppointments />
           </ClientPrivateRoute>
         }
       />

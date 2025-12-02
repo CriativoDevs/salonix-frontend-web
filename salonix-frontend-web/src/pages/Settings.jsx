@@ -16,7 +16,11 @@ import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
-import { updateTenantBranding, updateTenantAutoInvite } from '../api/tenant';
+import {
+  updateTenantBranding,
+  updateTenantAutoInvite,
+  updateTenantModules,
+} from '../api/tenant';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
@@ -167,6 +171,10 @@ function Settings() {
   const [autoInviteSaving, setAutoInviteSaving] = useState(false);
   const [autoInviteError, setAutoInviteError] = useState(null);
   const [autoInviteSuccess, setAutoInviteSuccess] = useState('');
+  const [pwaClientEnabled, setPwaClientEnabled] = useState(false);
+  const [pwaClientSaving, setPwaClientSaving] = useState(false);
+  const [pwaClientError, setPwaClientError] = useState(null);
+  const [pwaClientSuccess, setPwaClientSuccess] = useState('');
   const [notifRawOverrides, setNotifRawOverrides] = useState({});
 
   useEffect(() => {
@@ -179,6 +187,14 @@ function Settings() {
   useEffect(() => {
     setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
   }, [tenant?.auto_invite_enabled]);
+
+  useEffect(() => {
+    const initial = Boolean(
+      (tenant && tenant.pwa_client_enabled) ??
+        (flags && flags.enableCustomerPwa)
+    );
+    setPwaClientEnabled(initial);
+  }, [tenant, flags]);
 
   useEffect(() => {
     if (brandingFile) {
@@ -289,6 +305,22 @@ function Settings() {
       return true;
     });
   }, [plan, planTier, modules, flags, featureFlagsRaw]);
+
+  useEffect(() => {
+    const modulesFlags = featureFlagsRaw?.modules;
+    let rawEnabled;
+    if (
+      modulesFlags &&
+      Object.prototype.hasOwnProperty.call(modulesFlags, 'pwa_client_enabled')
+    ) {
+      rawEnabled = Boolean(modulesFlags.pwa_client_enabled);
+    } else {
+      rawEnabled = Boolean(flags?.enableCustomerPwa);
+    }
+    const listed =
+      Array.isArray(moduleList) && moduleList.includes('pwa_client');
+    setPwaClientEnabled(Boolean(rawEnabled || listed));
+  }, [featureFlagsRaw?.modules, flags?.enableCustomerPwa, moduleList]);
 
   const channelCards = useMemo(
     () =>
@@ -601,6 +633,40 @@ function Settings() {
     tenantLoading,
   ]);
 
+  const handlePwaClientToggle = useCallback(async () => {
+    if (pwaClientSaving || tenantLoading) return;
+    const nextValue = !pwaClientEnabled;
+    setPwaClientEnabled(nextValue);
+    setPwaClientSaving(true);
+    setPwaClientError(null);
+    setPwaClientSuccess('');
+    try {
+      const resp = await updateTenantModules({ pwaClientEnabled: nextValue });
+      await refreshTenantData();
+      const ok = Boolean(resp?.pwa_client_enabled);
+      setPwaClientSuccess(
+        ok
+          ? t('settings.pwa_client.success_enabled', 'PWA Cliente habilitado.')
+          : t(
+              'settings.pwa_client.success_disabled',
+              'PWA Cliente desabilitado.'
+            )
+      );
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.pwa_client.error',
+          'Não foi possível atualizar o PWA Cliente.'
+        )
+      );
+      setPwaClientError(parsed);
+      setPwaClientEnabled(!nextValue);
+    } finally {
+      setPwaClientSaving(false);
+    }
+  }, [pwaClientEnabled, pwaClientSaving, refreshTenantData, tenantLoading, t]);
+
   const renderPlanSummary = () => (
     <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -830,6 +896,17 @@ function Settings() {
       });
     }
 
+    cardItems.push({
+      key: 'auto_invite',
+      label: t(
+        'settings.auto_invite.title',
+        'Convites automáticos do PWA Cliente'
+      ),
+      value: autoInviteEnabled
+        ? t('settings.auto_invite.status_enabled', 'Ativo')
+        : t('settings.auto_invite.status_disabled', 'Inativo'),
+    });
+
     return (
       <div className="space-y-4">
         {tenantLoading ? (
@@ -837,6 +914,186 @@ function Settings() {
             {t('common.loading_data', 'Carregando dados...')}
           </p>
         ) : null}
+
+        <PlanGate featureKey="enableCustomerPwa">
+          <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p
+                  title={t('settings.pwa_client.title', 'PWA Cliente')}
+                  className="text-sm font-semibold text-brand-surfaceForeground"
+                >
+                  {t('settings.pwa_client.title', 'PWA Cliente')}
+                </p>
+                <p
+                  title={t(
+                    'settings.pwa_client.description',
+                    'Permite acesso dos clientes via PWA personalizado deste salão.'
+                  )}
+                  className="mt-1 text-sm text-brand-surfaceForeground/80"
+                >
+                  {t(
+                    'settings.pwa_client.description',
+                    'Permite acesso dos clientes via PWA personalizado deste salão.'
+                  )}
+                </p>
+                {pwaClientSaving ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t('common.saving', 'Salvando...')}
+                  </p>
+                ) : null}
+                {pwaClientSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {pwaClientSuccess}
+                  </p>
+                ) : null}
+                {pwaClientError ? (
+                  <p className="mt-2 text-xs text-rose-600">
+                    {pwaClientError.message}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  title={
+                    pwaClientEnabled
+                      ? t('settings.pwa_client.status_enabled', 'Ativo')
+                      : t('settings.pwa_client.status_disabled', 'Inativo')
+                  }
+                  className={`text-sm font-medium ${
+                    pwaClientEnabled
+                      ? 'text-emerald-600'
+                      : 'text-brand-surfaceForeground/60'
+                  }`}
+                >
+                  {pwaClientEnabled
+                    ? t('settings.pwa_client.status_enabled', 'Ativo')
+                    : t('settings.pwa_client.status_disabled', 'Inativo')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={pwaClientEnabled}
+                  aria-label={t(
+                    'settings.pwa_client.accessible_label',
+                    'Alternar PWA Cliente'
+                  )}
+                  onClick={handlePwaClientToggle}
+                  disabled={pwaClientSaving || tenantLoading}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    pwaClientEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                  } ${pwaClientSaving || tenantLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      pwaClientEnabled ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </PlanGate>
+
+        <PlanGate featureKey="enableCustomerPwa">
+          <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p
+                  title={t(
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
+                  )}
+                  className="text-sm font-semibold text-brand-surfaceForeground"
+                >
+                  {t(
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
+                  )}
+                </p>
+                <p
+                  title={t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
+                  className="mt-1 text-sm text-brand-surfaceForeground/80"
+                >
+                  {t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
+                </p>
+                {!canToggleAutoInvite ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t(
+                      'settings.auto_invite.blocked_hint',
+                      'Disponível apenas quando o PWA Cliente está habilitado para o salão.'
+                    )}
+                  </p>
+                ) : null}
+                {autoInviteSaving ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t('common.saving', 'Salvando...')}
+                  </p>
+                ) : null}
+                {autoInviteSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {autoInviteSuccess}
+                  </p>
+                ) : null}
+                {autoInviteError ? (
+                  <p className="mt-2 text-xs text-rose-600">
+                    {autoInviteError}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  title={
+                    autoInviteEnabled
+                      ? t('settings.auto_invite.status_enabled', 'Ativo')
+                      : t('settings.auto_invite.status_disabled', 'Inativo')
+                  }
+                  className={`text-sm font-medium ${
+                    autoInviteEnabled
+                      ? 'text-emerald-600'
+                      : 'text-brand-surfaceForeground/60'
+                  }`}
+                >
+                  {autoInviteEnabled
+                    ? t('settings.auto_invite.status_enabled', 'Ativo')
+                    : t('settings.auto_invite.status_disabled', 'Inativo')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoInviteEnabled}
+                  aria-label={t(
+                    'settings.auto_invite.accessible_label',
+                    'Alternar convites automáticos do PWA'
+                  )}
+                  onClick={handleAutoInviteToggle}
+                  disabled={
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                  } ${
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      autoInviteEnabled ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </PlanGate>
 
         {cardItems.length ? (
           <div className="grid gap-4 sm:grid-cols-2">

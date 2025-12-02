@@ -103,6 +103,17 @@
   background-color: var(--bg-hover);
 }
 
+.btn-link {
+  background-color: transparent;
+  color: var(--accent-primary);
+  border: none;
+}
+
+.btn-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
 .input {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-primary);
