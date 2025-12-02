@@ -86,7 +86,7 @@ const ThemeToggle = ({ className = "" }) => {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-brand-surface border border-brand-border rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 bottom-full mb-2 w-48 bg-brand-surface border border-brand-border rounded-lg shadow-lg z-50">
           <div className="py-1">
             {themeOptions.map((option) => {
               const Icon = option.icon;

@@ -6,7 +6,7 @@ export default function ClientLayout({ children }) {
   return (
     <div className="min-h-screen theme-bg-primary theme-text-primary">
       <ClientHeaderNav />
-      <main className="py-6">
+      <main className="py-6 pb-24 overflow-y-auto no-scrollbar">
         <Container>{children}</Container>
       </main>
       <div className="sm:hidden">
@@ -17,4 +17,3 @@ export default function ClientLayout({ children }) {
     </div>
   );
 }
-

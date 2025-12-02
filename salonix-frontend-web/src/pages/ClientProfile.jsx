@@ -18,6 +18,16 @@ export default function ClientProfile() {
     marketing_opt_in: false,
   });
   const [saved, setSaved] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  useEffect(() => {
+    if (saved) {
+      setStatusMessage(t('Salvo'));
+      const timer = setTimeout(() => setSaved(false), 2000);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [saved, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,8 +70,10 @@ export default function ClientProfile() {
         marketing_opt_in: Boolean(updated?.marketing_opt_in),
       });
       setSaved(true);
+      setStatusMessage(t('Perfil salvo com sucesso.'));
     } catch {
       setError({ message: t('Falha ao salvar perfil.') });
+      setStatusMessage(t('Falha ao salvar perfil.'));
     } finally {
       setSaving(false);
     }
@@ -73,7 +85,7 @@ export default function ClientProfile() {
       {loading ? (
         <p className="text-sm text-gray-500">{t('Carregando…')}</p>
       ) : (
-        <form onSubmit={onSubmit} className="mt-6 max-w-xl space-y-4">
+        <form onSubmit={onSubmit} className="mt-6 max-w-xl space-y-4 pb-24">
           <FormInput
             label={t('Nome')}
             value={profile.name}
@@ -101,11 +113,35 @@ export default function ClientProfile() {
             />
             <span>{t('Receber comunicações de marketing')}</span>
           </label>
-          <FormButton type="submit" variant="link" disabled={saving}>
+          <FormButton
+            type="submit"
+            variant="link"
+            disabled={saving}
+            aria-label={saving ? t('Salvando…') : t('Salvar perfil')}
+          >
             {saving ? t('Salvando…') : t('Salvar')}
           </FormButton>
-          {error && <p className="text-sm text-red-600">{error.message}</p>}
-          {saved && <p className="text-sm text-green-700">{t('Salvo')}</p>}
+
+          <div aria-live="polite" role="status" className="mt-2">
+            {saving && (
+              <div className="rounded-md border border-brand-border bg-brand-light px-3 py-2 text-xs text-brand-surfaceForeground">
+                {t('Salvando…')}
+              </div>
+            )}
+            {saved && (
+              <div className="rounded-md border border-emerald-500/60 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400">
+                {statusMessage}
+              </div>
+            )}
+            {error && (
+              <div
+                role="alert"
+                className="rounded-md border border-rose-500/60 bg-rose-500/10 px-3 py-2 text-xs text-rose-400"
+              >
+                {error.message}
+              </div>
+            )}
+          </div>
         </form>
       )}
     </ClientLayout>

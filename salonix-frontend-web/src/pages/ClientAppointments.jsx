@@ -9,6 +9,7 @@ import {
   cancelClientAppointment,
 } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
+import { getAppointmentStatusBadge } from '../utils/badgeStyles';
 
 function parseSlotDate(raw) {
   if (!raw) return null;
@@ -34,46 +35,211 @@ function parseSlotDate(raw) {
   }
 }
 
-function AppointmentRow({ item, onCancel }) {
+function AppointmentCard({ item, onCancel }) {
   const start = item?.slot?.start_time;
+  const end = item?.slot?.end_time;
   const serviceName = item?.service?.name || 'Serviço';
   const professionalName = item?.professional?.name || 'Profissional';
   const canCancel = item?.status === 'scheduled';
   const icsHref = `${API_BASE_URL}public/appointments/${item?.id}/ics/`;
+
+  const dtStart = parseSlotDate(start);
+  const dtEnd = parseSlotDate(end);
+  const dateLabel = dtStart
+    ? `${dtStart.toLocaleDateString()} ${dtStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : '—';
+  const timeRange = dtEnd
+    ? `${dtStart?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${dtEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : null;
+
+  const label = `Agendamento: ${serviceName} com ${professionalName} • ${dateLabel}`;
+
+  const handleKeyDown = (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const key = e.key.toLowerCase();
+    if (key === 'a') {
+      e.preventDefault();
+      const link = e.currentTarget.querySelector('a[data-action="calendar"]');
+      if (link) link.click();
+    } else if (key === 'c' && canCancel) {
+      e.preventDefault();
+      onCancel(item);
+    }
+  };
+
   return (
-    <tr className="border-b">
-      <td className="px-3 py-2">
-        {(() => {
-          const dt = parseSlotDate(start);
-          return dt
-            ? `${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-            : '—';
-        })()}
-      </td>
-      <td className="px-3 py-2">{serviceName}</td>
-      <td className="px-3 py-2">{professionalName}</td>
-      <td className="px-3 py-2">
-        <div className="flex gap-2">
-          <a
-            href={icsHref}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-link text-xs"
-          >
-            Adicionar ao calendário
-          </a>
-          {canCancel && (
-            <FormButton
-              type="button"
-              variant="link"
-              onClick={() => onCancel(item)}
-            >
-              Cancelar
-            </FormButton>
+    <div
+      className="rounded-lg border border-brand-border bg-brand-surface p-3 text-sm"
+      role="group"
+      aria-label={label}
+      aria-keyshortcuts={canCancel ? 'A, C' : 'A'}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-medium">{serviceName}</div>
+          <div className="text-brand-surfaceForeground/70">
+            {professionalName}
+          </div>
+        </div>
+        <div className="text-right">
+          <div>{dateLabel}</div>
+          {timeRange && (
+            <div className="text-brand-surfaceForeground/70">{timeRange}</div>
           )}
         </div>
-      </td>
-    </tr>
+      </div>
+      {/* Ações (desktop) */}
+      <div className="mt-3 hidden sm:flex items-center justify-end gap-3">
+        <a
+          href={icsHref}
+          target="_blank"
+          rel="noreferrer"
+          className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
+          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
+          title="Adicionar ao calendário (atalho: A)"
+          data-action="calendar"
+        >
+          Adicionar ao calendário
+        </a>
+        {canCancel && (
+          <FormButton
+            type="button"
+            variant="link"
+            onClick={() => onCancel(item)}
+            aria-label={`Cancelar: ${serviceName} com ${professionalName} em ${dateLabel}`}
+            aria-keyshortcuts="C"
+            className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
+            title="Cancelar agendamento (atalho: C)"
+          >
+            Cancelar
+          </FormButton>
+        )}
+      </div>
+
+      {/* Dica de atalhos (desktop) */}
+      <div className="mt-2 text-xs text-brand-surfaceForeground/60 hidden sm:block">
+        Dica: A abre calendário; C cancela.
+      </div>
+
+      {/* Ações (mobile) */}
+      <div className="mt-3 flex sm:hidden flex-col gap-2 items-center">
+        <a
+          href={icsHref}
+          target="_blank"
+          rel="noreferrer"
+          className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
+          title="Adicionar ao calendário"
+          data-action="calendar"
+        >
+          Adicionar ao calendário
+        </a>
+        {canCancel && (
+          <FormButton
+            type="button"
+            variant="link"
+            onClick={() => onCancel(item)}
+            aria-label={`Cancelar: ${serviceName} com ${professionalName} em ${dateLabel}`}
+            className="rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground"
+            title="Cancelar agendamento"
+          >
+            Cancelar
+          </FormButton>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HistoryCard({ item }) {
+  const start = item?.slot?.start_time;
+  const end = item?.slot?.end_time;
+  const serviceName = item?.service?.name || 'Serviço';
+  const professionalName = item?.professional?.name || 'Profissional';
+  const icsHref = `${API_BASE_URL}public/appointments/${item?.id}/ics/`;
+
+  const dtStart = parseSlotDate(start);
+  const dtEnd = parseSlotDate(end);
+  const dateLabel = dtStart
+    ? `${dtStart.toLocaleDateString()} ${dtStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : '—';
+  const timeRange = dtEnd
+    ? `${dtStart?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${dtEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : null;
+
+  const label = `Histórico: ${serviceName} com ${professionalName} • ${dateLabel}`;
+
+  const handleKeyDown = (e) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const key = e.key.toLowerCase();
+    if (key === 'a') {
+      e.preventDefault();
+      const link = e.currentTarget.querySelector('a[data-action="calendar"]');
+      if (link) link.click();
+    }
+  };
+
+  return (
+    <div
+      className="rounded-lg border border-brand-border bg-brand-surface p-3 text-sm"
+      role="group"
+      aria-label={label}
+      aria-keyshortcuts="A"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-medium">{serviceName}</div>
+          <div className="text-brand-surfaceForeground/70">
+            {professionalName}
+          </div>
+        </div>
+        <div className="text-right">
+          <div>{dateLabel}</div>
+          {timeRange && (
+            <div className="text-brand-surfaceForeground/70">{timeRange}</div>
+          )}
+          <div
+            className={getAppointmentStatusBadge(item?.status)}
+            style={{ display: 'inline-block', marginTop: '6px' }}
+          >
+            {item?.status}
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 hidden sm:flex items-center justify-end gap-3">
+        <a
+          href={icsHref}
+          target="_blank"
+          rel="noreferrer"
+          className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
+          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
+          title="Adicionar ao calendário (atalho: A)"
+          data-action="calendar"
+        >
+          Adicionar ao calendário
+        </a>
+      </div>
+      <div className="mt-2 text-xs text-brand-surfaceForeground/60 hidden sm:block">
+        Dica: A abre calendário.
+      </div>
+      <div className="mt-3 flex sm:hidden flex-col gap-2 items-center">
+        <a
+          href={icsHref}
+          target="_blank"
+          rel="noreferrer"
+          className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
+          title="Adicionar ao calendário"
+          data-action="calendar"
+        >
+          Adicionar ao calendário
+        </a>
+      </div>
+    </div>
   );
 }
 
@@ -129,7 +295,7 @@ export default function ClientAppointments() {
       {loading ? (
         <p className="text-sm text-gray-500">{t('Carregando…')}</p>
       ) : (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-24">
           <div>
             <h2 className="font-semibold mb-2">{t('Próximos')}</h2>
             {upcoming.length === 0 ? (
@@ -137,25 +303,15 @@ export default function ClientAppointments() {
                 {t('Nenhum agendamento futuro.')}
               </p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left">
-                    <th className="px-3 py-2">{t('Data/Hora')}</th>
-                    <th className="px-3 py-2">{t('Serviço')}</th>
-                    <th className="px-3 py-2">{t('Profissional')}</th>
-                    <th className="px-3 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {upcoming.map((item) => (
-                    <AppointmentRow
-                      key={item.id}
-                      item={item}
-                      onCancel={onCancel}
-                    />
-                  ))}
-                </tbody>
-              </table>
+              <div className="space-y-3">
+                {upcoming.map((item) => (
+                  <AppointmentCard
+                    key={item.id}
+                    item={item}
+                    onCancel={onCancel}
+                  />
+                ))}
+              </div>
             )}
           </div>
           <div>
@@ -165,44 +321,24 @@ export default function ClientAppointments() {
                 {t('Nenhum histórico disponível.')}
               </p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left">
-                    <th className="px-3 py-2">{t('Data/Hora')}</th>
-                    <th className="px-3 py-2">{t('Serviço')}</th>
-                    <th className="px-3 py-2">{t('Profissional')}</th>
-                    <th className="px-3 py-2">{t('Status')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.map((item) => (
-                    <tr key={item.id} className="border-b">
-                      <td className="px-3 py-2">
-                        {(() => {
-                          const dt = parseSlotDate(item?.slot?.start_time);
-                          return dt
-                            ? `${dt.toLocaleDateString()} ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                            : '—';
-                        })()}
-                      </td>
-                      <td className="px-3 py-2">
-                        {item?.service?.name || 'Serviço'}
-                      </td>
-                      <td className="px-3 py-2">
-                        {item?.professional?.name || 'Profissional'}
-                      </td>
-                      <td className="px-3 py-2">{item?.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="space-y-3">
+                {history.map((item) => (
+                  <HistoryCard key={item.id} item={item} />
+                ))}
+              </div>
             )}
           </div>
         </div>
       )}
-      {error && <p className="text-sm text-red-600 mt-4">{error.message}</p>}
+      {error && (
+        <p className="text-sm text-red-600 mt-4" role="alert">
+          {error.message}
+        </p>
+      )}
       {actionError && (
-        <p className="text-sm text-red-600 mt-2">{actionError.message}</p>
+        <p className="text-sm text-red-600 mt-2" role="alert">
+          {actionError.message}
+        </p>
       )}
     </ClientLayout>
   );

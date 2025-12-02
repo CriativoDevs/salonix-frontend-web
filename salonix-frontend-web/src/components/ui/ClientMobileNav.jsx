@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HomeIcon, CalendarIcon, UserIcon } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 export default function ClientMobileNav() {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ export default function ClientMobileNav() {
   ];
 
   return (
-    <nav className="flex items-center justify-between border-t border-brand-border bg-brand-surface px-2 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 flex items-center justify-between border-t border-brand-border bg-brand-surface px-2 py-2">
       {items.map((entry) => {
         const Icon = entry.icon;
         return (
@@ -46,20 +47,23 @@ export default function ClientMobileNav() {
           </NavLink>
         );
       })}
-      <button
-        type="button"
-        onClick={() => {
-          try {
-            localStorage.removeItem('client_session_present');
-          } catch {
-            void 0;
-          }
-          navigate('/client/enter', { replace: true });
-        }}
-        className="rounded-lg border border-brand-border px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
-      >
-        {t('nav.logout', 'Sair')}
-      </button>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              localStorage.removeItem('client_session_present');
+            } catch {
+              void 0;
+            }
+            navigate('/client/enter', { replace: true });
+          }}
+          className="rounded-lg border border-brand-border px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
+        >
+          {t('nav.logout', 'Sair')}
+        </button>
+      </div>
     </nav>
   );
 }
