@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
@@ -9,7 +9,6 @@ import { resolveTenantAssetUrl } from '../../utils/tenant';
 
 export default function ClientHeaderNav() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { tenant, branding } = useTenant();
   const displayName = tenant?.name || branding?.appName || 'TimelyOne';
   const logoUrl = resolveTenantAssetUrl(branding?.logoUrl);
@@ -67,20 +66,6 @@ export default function ClientHeaderNav() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  localStorage.removeItem('client_session_present');
-                } catch {
-                  void 0;
-                }
-                navigate('/client/enter', { replace: true });
-              }}
-              className="rounded-lg border border-brand-border px-3 py-1.5 text-sm font-medium text-brand-surfaceForeground transition hover:bg-brand-light"
-            >
-              {t('nav.logout', 'Sair')}
-            </button>
           </div>
         </div>
       </Container>

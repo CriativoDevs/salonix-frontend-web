@@ -1,11 +1,10 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HomeIcon, CalendarIcon, UserIcon } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 export default function ClientMobileNav() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const items = [
     {
@@ -49,20 +48,6 @@ export default function ClientMobileNav() {
       })}
       <div className="flex items-center gap-2">
         <ThemeToggle />
-        <button
-          type="button"
-          onClick={() => {
-            try {
-              localStorage.removeItem('client_session_present');
-            } catch {
-              void 0;
-            }
-            navigate('/client/enter', { replace: true });
-          }}
-          className="rounded-lg border border-brand-border px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
-        >
-          {t('nav.logout', 'Sair')}
-        </button>
       </div>
     </nav>
   );

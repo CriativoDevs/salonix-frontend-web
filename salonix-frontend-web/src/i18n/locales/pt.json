@@ -225,9 +225,9 @@
   "settings": {
     "title": "Configurações",
     "subtitle": "Gerencie as configurações do seu negócio",
-  "tabs": {
+    "tabs": {
       "general": "Geral",
-      "branding": "Logo",
+      "branding": "Marca e Morada",
       "notifications": "Notificações",
       "business": "Negócio"
     },

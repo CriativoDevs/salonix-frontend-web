@@ -386,10 +386,19 @@ function normalizeProfile(profile, fallback) {
     return fallback;
   }
 
-  return {
+  const merged = {
     ...fallback,
     ...profile,
   };
+
+  if (merged.phone == null && typeof profile.phone_number === 'string') {
+    merged.phone = profile.phone_number;
+  }
+  if (merged.email == null && typeof profile.email_address === 'string') {
+    merged.email = profile.email_address;
+  }
+
+  return merged;
 }
 
 function normalizeFlags(featureFlags, fallback) {

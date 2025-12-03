@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClientLayout from '../layouts/ClientLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -8,11 +9,13 @@ import { fetchClientProfile, updateClientProfile } from '../api/clientMe';
 
 export default function ClientProfile() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [profile, setProfile] = useState({
     name: '',
+    email: '',
     phone_number: '',
     notes: '',
     marketing_opt_in: false,
@@ -39,6 +42,7 @@ export default function ClientProfile() {
         if (!cancelled)
           setProfile({
             name: data?.name || '',
+            email: data?.email || '',
             phone_number: data?.phone_number || '',
             notes: data?.notes || '',
             marketing_opt_in: Boolean(data?.marketing_opt_in),
@@ -65,6 +69,7 @@ export default function ClientProfile() {
       const updated = await updateClientProfile(profile);
       setProfile({
         name: updated?.name || '',
+        email: updated?.email || '',
         phone_number: updated?.phone_number || '',
         notes: updated?.notes || '',
         marketing_opt_in: Boolean(updated?.marketing_opt_in),
@@ -90,6 +95,11 @@ export default function ClientProfile() {
             label={t('Nome')}
             value={profile.name}
             onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+          />
+          <FormInput
+            label={t('E-mail')}
+            value={profile.email}
+            onChange={(e) => setProfile({ ...profile, email: e.target.value })}
           />
           <FormInput
             label={t('Telefone')}
@@ -142,8 +152,26 @@ export default function ClientProfile() {
               </div>
             )}
           </div>
+
         </form>
       )}
+
+      <div className="mt-8 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              localStorage.removeItem('client_session_present');
+            } catch {
+              void 0;
+            }
+            navigate('/client/enter', { replace: true });
+          }}
+          className="text-brand-primary underline font-medium transition hover:text-brand-accent"
+        >
+          {t('nav.logout', 'Sair')}
+        </button>
+      </div>
     </ClientLayout>
   );
 }

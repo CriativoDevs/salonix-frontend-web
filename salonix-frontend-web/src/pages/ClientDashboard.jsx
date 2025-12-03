@@ -1,23 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Phone, MessageCircle } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClientLayout from '../layouts/ClientLayout';
 import PageHeader from '../components/ui/PageHeader';
-import {
-  fetchClientUpcoming,
-  fetchClientHistory,
-  cancelClientAppointment,
-} from '../api/clientMe';
+import { fetchClientUpcoming, cancelClientAppointment } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
-import { getAppointmentStatusBadge } from '../utils/badgeStyles';
+import { useTenant } from '../hooks/useTenant';
 
 export default function ClientDashboard() {
   const { t } = useTranslation();
+  const { tenant, profile } = useTenant();
   const [upcoming, setUpcoming] = useState([]);
-  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const next = upcoming?.[0] || null;
+  const [mapsConfirmOpen, setMapsConfirmOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -25,13 +23,9 @@ export default function ClientDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const [u, h] = await Promise.all([
-          fetchClientUpcoming(),
-          fetchClientHistory(),
-        ]);
+        const u = await fetchClientUpcoming();
         if (!cancelled) {
           setUpcoming(u);
-          setHistory(h);
         }
       } catch {
         if (!cancelled) setError({ message: t('Falha ao carregar dados.') });
@@ -50,9 +44,7 @@ export default function ClientDashboard() {
     try {
       await cancelClientAppointment(next.id);
       const u = await fetchClientUpcoming();
-      const h = await fetchClientHistory();
       setUpcoming(u);
-      setHistory(h);
     } catch {
       setError({ message: t('Não foi possível cancelar.') });
     }
@@ -71,6 +63,48 @@ export default function ClientDashboard() {
       return String(iso || '');
     }
   };
+
+  const addressParts = [
+    [tenant?.address_street, tenant?.address_number].filter(Boolean).join(', '),
+    [tenant?.address_complement, tenant?.address_neighborhood]
+      .filter(Boolean)
+      .join(' - '),
+    [tenant?.address_city, tenant?.address_state, tenant?.address_zip]
+      .filter(Boolean)
+      .join(' - '),
+    tenant?.address_country,
+  ].filter((p) => p && String(p).trim());
+
+  const addressText = addressParts.join('\n');
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : '';
+  const isIOS = useMemo(() => /(iPhone|iPad|iPod)/i.test(ua), [ua]);
+  const isAndroid = useMemo(() => /Android/i.test(ua), [ua]);
+  const buildQuery = () => encodeURIComponent(addressParts.join(', '));
+  const buildAppleMaps = () => `maps://?q=${buildQuery()}`;
+  const buildGoogleMapsIOS = () => `comgooglemaps://?q=${buildQuery()}`;
+  const buildGoogleMapsAndroid = () => `geo:0,0?q=${buildQuery()}`;
+  const buildWaze = () => `waze://?q=${buildQuery()}`;
+  const buildWebFallback = () =>
+    `https://www.google.com/maps/search/?api=1&query=${buildQuery()}`;
+
+  const onRequestAddress = () => {
+    const email = profile?.email || tenant?.profile?.email || '';
+    if (typeof email === 'string' && email.trim()) {
+      const subject = encodeURIComponent('Solicitação de morada do salão');
+      const body = encodeURIComponent(
+        'Olá, poderia informar a morada do salão para abrir no Maps?'
+      );
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    }
+  };
+
+  const tenantEmail = (tenant?.profile?.email || '').trim();
+  const tenantPhoneRaw = (tenant?.profile?.phone || '').trim();
+  const tenantPhoneDigits = tenantPhoneRaw.replace(/\D+/g, '');
+  const telHref = tenantPhoneRaw
+    ? `tel:${tenantPhoneRaw.replace(/\s+/g, '')}`
+    : '';
+  const waHref = tenantPhoneDigits ? `https://wa.me/${tenantPhoneDigits}` : '';
 
   return (
     <ClientLayout>
@@ -145,50 +179,94 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
+        </div>
+      )}
 
-          <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
-            <h2 className="text-lg font-medium text-brand-surfaceForeground">
-              {t('Histórico recente')}
-            </h2>
-            {history && history.length > 0 ? (
-              <ul className="mt-3 space-y-3">
-                {history.slice(0, 3).map((h) => (
-                  <li key={h.id} className="text-sm">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-medium">{h?.service?.name}</div>
-                        <div className="text-brand-surfaceForeground/70">
-                          {h?.professional?.name}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div>{fmt(h?.slot?.start_time)}</div>
-                        <div
-                          className={getAppointmentStatusBadge(h?.status)}
-                          style={{ display: 'inline-block', marginTop: 6 }}
-                        >
-                          {h?.status}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 flex items-center justify-end">
-                      <a
-                        href={`${API_BASE_URL}public/appointments/${h?.id}/ics/`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-brand-primary hover:text-brand-accent underline underline-offset-4"
-                      >
-                        {t('Adicionar ao calendário')}
-                      </a>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="mt-2 text-sm text-brand-surfaceForeground/70">
-                {t('Sem histórico ainda.')}
+      {(tenantEmail || tenantPhoneRaw) && (
+        <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
+            {t('Entre em contacto')}
+          </h2>
+          {tenantEmail && (
+            <div className="mt-2 text-sm">
+              <a
+                href={`mailto:${tenantEmail}`}
+                className="text-brand-primary underline font-medium hover:text-brand-accent"
+              >
+                {tenantEmail}
+              </a>
+            </div>
+          )}
+          {tenantPhoneRaw && (
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="text-sm text-brand-surfaceForeground/80">
+                {tenantPhoneRaw}
               </div>
-            )}
+              <div className="flex items-center gap-3">
+                {telHref && (
+                  <a
+                    href={telHref}
+                    aria-label={t('Chamar')}
+                    title={t('Chamar')}
+                    className="text-brand-primary hover:text-brand-accent"
+                  >
+                    <Phone className="h-5 w-5" />
+                  </a>
+                )}
+                {waHref && (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="WhatsApp"
+                    title="WhatsApp"
+                    className="text-brand-primary hover:text-brand-accent"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {addressParts.length > 0 && (
+        <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
+            {t('Morada do salão')}
+          </h2>
+          <pre className="mt-2 whitespace-pre-wrap text-sm text-brand-surfaceForeground/80">
+            {addressText}
+          </pre>
+          <div className="mt-3 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={() => setMapsConfirmOpen(true)}
+              className="text-brand-primary underline font-medium hover:text-brand-accent"
+            >
+              {t('Abrir no Maps?')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {addressParts.length === 0 && (
+        <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
+          <h2 className="text-lg font-medium text-brand-surfaceForeground">
+            {t('Morada do salão')}
+          </h2>
+          <p className="mt-2 text-sm text-brand-surfaceForeground/80">
+            {t('Endereço não cadastrado.')}
+          </p>
+          <div className="mt-3 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={onRequestAddress}
+              className="text-brand-primary underline font-medium hover:text-brand-accent"
+            >
+              {t('Solicitar endereço')}
+            </button>
           </div>
         </div>
       )}
@@ -197,6 +275,72 @@ export default function ClientDashboard() {
         <p className="mt-4 text-sm text-red-600" role="alert">
           {error.message}
         </p>
+      )}
+
+      {mapsConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/30"
+            onClick={() => setMapsConfirmOpen(false)}
+          />
+          <div className="relative z-10 w-full max-w-sm rounded-lg border border-brand-border bg-brand-surface p-4">
+            <p className="text-sm text-brand-surfaceForeground">
+              {t('Abrir no Maps?')}
+            </p>
+            <div className="mt-3 grid grid-cols-1 gap-2">
+              {isIOS && (
+                <a
+                  href={buildAppleMaps()}
+                  className="text-brand-primary underline font-medium hover:text-brand-accent"
+                  onClick={() => setMapsConfirmOpen(false)}
+                >
+                  {t('Apple Maps')}
+                </a>
+              )}
+              {isIOS && (
+                <a
+                  href={buildGoogleMapsIOS()}
+                  className="text-brand-primary underline font-medium hover:text-brand-accent"
+                  onClick={() => setMapsConfirmOpen(false)}
+                >
+                  {t('Google Maps')}
+                </a>
+              )}
+              {isAndroid && (
+                <a
+                  href={buildGoogleMapsAndroid()}
+                  className="text-brand-primary underline font-medium hover:text-brand-accent"
+                  onClick={() => setMapsConfirmOpen(false)}
+                >
+                  {t('Google Maps')}
+                </a>
+              )}
+              <a
+                href={buildWaze()}
+                className="text-brand-primary underline font-medium hover:text-brand-accent"
+                onClick={() => setMapsConfirmOpen(false)}
+              >
+                {t('Waze')}
+              </a>
+              <a
+                href={buildWebFallback()}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-primary underline font-medium hover:text-brand-accent"
+                onClick={() => setMapsConfirmOpen(false)}
+              >
+                {t('Abrir no navegador')}
+              </a>
+              <button
+                type="button"
+                onClick={() => setMapsConfirmOpen(false)}
+                className="text-brand-primary underline font-medium hover:text-brand-accent"
+              >
+                {t('Cancelar')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </ClientLayout>
   );

@@ -20,7 +20,9 @@ import {
   updateTenantBranding,
   updateTenantAutoInvite,
   updateTenantModules,
+  updateTenantContact,
 } from '../api/tenant';
+import FormInput from '../components/ui/FormInput';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
@@ -91,7 +93,15 @@ const CHANNEL_CONFIG = [
   { key: 'push_mobile', defaultLabel: 'Mobile Push' },
 ];
 
-function buildInitialSettings(profile, channels, branding) {
+function formatPostalCodePT(value) {
+  const digits = String(value || '')
+    .replace(/\D+/g, '')
+    .slice(0, 7);
+  if (digits.length <= 4) return digits;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 7)}`;
+}
+
+function buildInitialSettings(profile, channels, branding, tenant) {
   const safeProfile = { ...DEFAULT_TENANT_META.profile, ...(profile || {}) };
   const safeChannels = { ...DEFAULT_TENANT_META.channels, ...(channels || {}) };
   const safeBranding = { ...DEFAULT_TENANT_META.branding, ...(branding || {}) };
@@ -125,6 +135,16 @@ function buildInitialSettings(profile, channels, branding) {
     branding: {
       logoUrl: safeBranding.logoUrl || '',
     },
+    brandingAddress: {
+      street: tenant?.address_street || '',
+      number: tenant?.address_number || '',
+      complement: tenant?.address_complement || '',
+      neighborhood: tenant?.address_neighborhood || '',
+      city: tenant?.address_city || '',
+      state: tenant?.address_state || '',
+      zip: tenant?.address_zip || '',
+      country: tenant?.address_country || '',
+    },
   };
 }
 
@@ -142,6 +162,7 @@ function Settings() {
     loading: tenantLoading,
     error: tenantError,
     refetch,
+    applyTenantBootstrap,
   } = useTenant();
   const [activeTab, setActiveTab] = useState('branding');
   const {
@@ -155,8 +176,8 @@ function Settings() {
   // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
-    () => buildInitialSettings(profile, channels, branding),
-    [profile, channels, branding]
+    () => buildInitialSettings(profile, channels, branding, tenant),
+    [profile, channels, branding, tenant]
   );
 
   const [settings, setSettings] = useState(initialSettings);
@@ -176,6 +197,9 @@ function Settings() {
   const [pwaClientError, setPwaClientError] = useState(null);
   const [pwaClientSuccess, setPwaClientSuccess] = useState('');
   const [notifRawOverrides, setNotifRawOverrides] = useState({});
+  const [generalSaving, setGeneralSaving] = useState(false);
+  const [generalError, setGeneralError] = useState(null);
+  const [generalSuccess, setGeneralSuccess] = useState('');
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -554,9 +578,23 @@ function Settings() {
     setBrandingSuccess('');
 
     try {
+      const cp = String(settings.brandingAddress.zip || '').trim();
+      if (cp && !/^\d{4}-\d{3}$/.test(cp)) {
+        setBrandingSaving(false);
+        setBrandingError({ message: 'CP inválido. Use 9999-999.' });
+        return;
+      }
       await updateTenantBranding({
         logoFile: brandingFile,
         logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
+        addressStreet: settings.brandingAddress.street,
+        addressNumber: settings.brandingAddress.number,
+        addressComplement: settings.brandingAddress.complement,
+        addressNeighborhood: settings.brandingAddress.neighborhood,
+        addressCity: settings.brandingAddress.city,
+        addressState: settings.brandingAddress.state,
+        addressZip: settings.brandingAddress.zip,
+        addressCountry: settings.brandingAddress.country,
       });
 
       await refreshTenantData();
@@ -574,7 +612,13 @@ function Settings() {
     } finally {
       setBrandingSaving(false);
     }
-  }, [brandingFile, refreshTenantData, settings.branding.logoUrl, t]);
+  }, [
+    brandingFile,
+    refreshTenantData,
+    settings.branding.logoUrl,
+    settings.brandingAddress,
+    t,
+  ]);
 
   const handleLogoFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -697,7 +741,6 @@ function Settings() {
           </div>
         ) : null}
       </div>
-
       <div className="mt-6 space-y-6">
         <div>
           <h4 className="text-sm font-semibold text-brand-surfaceForeground">
@@ -798,6 +841,166 @@ function Settings() {
           <span className="text-xs text-brand-surfaceForeground/60">
             {t('settings.branding.logo_info', 'PNG, JPG ou SVG até 2MB.')}
           </span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-brand-surfaceForeground">
+          Morada do estabelecimento
+        </h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Rua
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.street}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    street: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Número
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.number}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    number: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1 sm:col-span-2">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Complemento
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.complement}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    complement: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Freguesia
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.neighborhood}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    neighborhood: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              CP (Código Postal)
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.zip}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    zip: formatPostalCodePT(e.target.value),
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Distrito
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.state}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    state: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Localidade
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.city}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    city: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              País
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.country}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    country: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
         </div>
       </div>
 
@@ -1110,12 +1313,84 @@ function Settings() {
           </p>
         )}
 
-        <p className="text-xs text-brand-surfaceForeground/60">
-          {t(
-            'settings.readonly_hint',
-            'Edição disponível em tarefas futuras (ver backlog de Settings).'
-          )}
-        </p>
+        <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+          <p className="text-sm font-semibold text-brand-surfaceForeground">
+            {t('settings.title', 'Configurações')}
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-3">
+            <FormInput
+              label={t('settings.email', 'E-mail')}
+              type="email"
+              value={settings.general.email}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  general: { ...prev.general, email: e.target.value },
+                }))
+              }
+            />
+            <FormInput
+              label={t('settings.phone', 'Telefone')}
+              value={settings.general.phone}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  general: { ...prev.general, phone: e.target.value },
+                }))
+              }
+            />
+          </div>
+          {generalError ? (
+            <p className="mt-2 text-xs text-rose-600">{generalError.message}</p>
+          ) : null}
+          {generalSuccess ? (
+            <p className="mt-2 text-xs text-emerald-600">{generalSuccess}</p>
+          ) : null}
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={async () => {
+                if (generalSaving) return;
+                setGeneralSaving(true);
+                setGeneralError(null);
+                setGeneralSuccess('');
+                try {
+                  const saved = await updateTenantContact({
+                    email: settings.general.email,
+                    phone: settings.general.phone,
+                    phone_number: settings.general.phone,
+                  });
+                  setGeneralSuccess(
+                    t('common.saving_done', 'Salvo com sucesso.')
+                  );
+                  const mergedProfile = {
+                    ...(profile || {}),
+                    ...(saved?.profile || {}),
+                    email: settings.general.email,
+                    phone: settings.general.phone,
+                    phone_number: settings.general.phone,
+                  };
+                  applyTenantBootstrap({
+                    slug: tenant?.slug,
+                    profile: mergedProfile,
+                  });
+                } catch {
+                  setGeneralError({
+                    message: t('common.save_failed', 'Falha ao salvar.'),
+                  });
+                } finally {
+                  setGeneralSaving(false);
+                }
+              }}
+              disabled={generalSaving || tenantLoading}
+              className="text-brand-primary underline font-medium transition hover:text-brand-accent disabled:opacity-50"
+            >
+              {generalSaving
+                ? t('common.saving', 'Salvando...')
+                : t('settings.save')}
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
