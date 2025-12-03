@@ -4,7 +4,7 @@ import { resolveTenantAssetUrl } from '../utils/tenant';
 
 export default function AuthLayout({ children }) {
   const { tenant, branding } = useTenant();
-  const displayName = tenant?.name || 'TimelyOne';
+  const displayName = tenant?.name || branding?.appName || 'TimelyOne';
   const logoUrl = resolveTenantAssetUrl(branding?.logoUrl);
 
   return (

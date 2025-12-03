@@ -16,7 +16,13 @@ import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
-import { updateTenantBranding, updateTenantAutoInvite } from '../api/tenant';
+import {
+  updateTenantBranding,
+  updateTenantAutoInvite,
+  updateTenantModules,
+  updateTenantContact,
+} from '../api/tenant';
+import FormInput from '../components/ui/FormInput';
 import {
   TENANT_FEATURE_REQUIREMENTS,
   describeFeatureRequirement,
@@ -87,7 +93,15 @@ const CHANNEL_CONFIG = [
   { key: 'push_mobile', defaultLabel: 'Mobile Push' },
 ];
 
-function buildInitialSettings(profile, channels, branding) {
+function formatPostalCodePT(value) {
+  const digits = String(value || '')
+    .replace(/\D+/g, '')
+    .slice(0, 7);
+  if (digits.length <= 4) return digits;
+  return `${digits.slice(0, 4)}-${digits.slice(4, 7)}`;
+}
+
+function buildInitialSettings(profile, channels, branding, tenant) {
   const safeProfile = { ...DEFAULT_TENANT_META.profile, ...(profile || {}) };
   const safeChannels = { ...DEFAULT_TENANT_META.channels, ...(channels || {}) };
   const safeBranding = { ...DEFAULT_TENANT_META.branding, ...(branding || {}) };
@@ -121,6 +135,16 @@ function buildInitialSettings(profile, channels, branding) {
     branding: {
       logoUrl: safeBranding.logoUrl || '',
     },
+    brandingAddress: {
+      street: tenant?.address_street || '',
+      number: tenant?.address_number || '',
+      complement: tenant?.address_complement || '',
+      neighborhood: tenant?.address_neighborhood || '',
+      city: tenant?.address_city || '',
+      state: tenant?.address_state || '',
+      zip: tenant?.address_zip || '',
+      country: tenant?.address_country || '',
+    },
   };
 }
 
@@ -138,6 +162,7 @@ function Settings() {
     loading: tenantLoading,
     error: tenantError,
     refetch,
+    applyTenantBootstrap,
   } = useTenant();
   const [activeTab, setActiveTab] = useState('branding');
   const {
@@ -151,8 +176,8 @@ function Settings() {
   // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
-    () => buildInitialSettings(profile, channels, branding),
-    [profile, channels, branding]
+    () => buildInitialSettings(profile, channels, branding, tenant),
+    [profile, channels, branding, tenant]
   );
 
   const [settings, setSettings] = useState(initialSettings);
@@ -167,7 +192,14 @@ function Settings() {
   const [autoInviteSaving, setAutoInviteSaving] = useState(false);
   const [autoInviteError, setAutoInviteError] = useState(null);
   const [autoInviteSuccess, setAutoInviteSuccess] = useState('');
+  const [pwaClientEnabled, setPwaClientEnabled] = useState(false);
+  const [pwaClientSaving, setPwaClientSaving] = useState(false);
+  const [pwaClientError, setPwaClientError] = useState(null);
+  const [pwaClientSuccess, setPwaClientSuccess] = useState('');
   const [notifRawOverrides, setNotifRawOverrides] = useState({});
+  const [generalSaving, setGeneralSaving] = useState(false);
+  const [generalError, setGeneralError] = useState(null);
+  const [generalSuccess, setGeneralSuccess] = useState('');
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -179,6 +211,14 @@ function Settings() {
   useEffect(() => {
     setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
   }, [tenant?.auto_invite_enabled]);
+
+  useEffect(() => {
+    const initial = Boolean(
+      (tenant && tenant.pwa_client_enabled) ??
+        (flags && flags.enableCustomerPwa)
+    );
+    setPwaClientEnabled(initial);
+  }, [tenant, flags]);
 
   useEffect(() => {
     if (brandingFile) {
@@ -289,6 +329,22 @@ function Settings() {
       return true;
     });
   }, [plan, planTier, modules, flags, featureFlagsRaw]);
+
+  useEffect(() => {
+    const modulesFlags = featureFlagsRaw?.modules;
+    let rawEnabled;
+    if (
+      modulesFlags &&
+      Object.prototype.hasOwnProperty.call(modulesFlags, 'pwa_client_enabled')
+    ) {
+      rawEnabled = Boolean(modulesFlags.pwa_client_enabled);
+    } else {
+      rawEnabled = Boolean(flags?.enableCustomerPwa);
+    }
+    const listed =
+      Array.isArray(moduleList) && moduleList.includes('pwa_client');
+    setPwaClientEnabled(Boolean(rawEnabled || listed));
+  }, [featureFlagsRaw?.modules, flags?.enableCustomerPwa, moduleList]);
 
   const channelCards = useMemo(
     () =>
@@ -522,9 +578,23 @@ function Settings() {
     setBrandingSuccess('');
 
     try {
+      const cp = String(settings.brandingAddress.zip || '').trim();
+      if (cp && !/^\d{4}-\d{3}$/.test(cp)) {
+        setBrandingSaving(false);
+        setBrandingError({ message: 'CP inválido. Use 9999-999.' });
+        return;
+      }
       await updateTenantBranding({
         logoFile: brandingFile,
         logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
+        addressStreet: settings.brandingAddress.street,
+        addressNumber: settings.brandingAddress.number,
+        addressComplement: settings.brandingAddress.complement,
+        addressNeighborhood: settings.brandingAddress.neighborhood,
+        addressCity: settings.brandingAddress.city,
+        addressState: settings.brandingAddress.state,
+        addressZip: settings.brandingAddress.zip,
+        addressCountry: settings.brandingAddress.country,
       });
 
       await refreshTenantData();
@@ -542,7 +612,13 @@ function Settings() {
     } finally {
       setBrandingSaving(false);
     }
-  }, [brandingFile, refreshTenantData, settings.branding.logoUrl, t]);
+  }, [
+    brandingFile,
+    refreshTenantData,
+    settings.branding.logoUrl,
+    settings.brandingAddress,
+    t,
+  ]);
 
   const handleLogoFileChange = (event) => {
     const file = event.target.files?.[0];
@@ -601,6 +677,40 @@ function Settings() {
     tenantLoading,
   ]);
 
+  const handlePwaClientToggle = useCallback(async () => {
+    if (pwaClientSaving || tenantLoading) return;
+    const nextValue = !pwaClientEnabled;
+    setPwaClientEnabled(nextValue);
+    setPwaClientSaving(true);
+    setPwaClientError(null);
+    setPwaClientSuccess('');
+    try {
+      const resp = await updateTenantModules({ pwaClientEnabled: nextValue });
+      await refreshTenantData();
+      const ok = Boolean(resp?.pwa_client_enabled);
+      setPwaClientSuccess(
+        ok
+          ? t('settings.pwa_client.success_enabled', 'PWA Cliente habilitado.')
+          : t(
+              'settings.pwa_client.success_disabled',
+              'PWA Cliente desabilitado.'
+            )
+      );
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.pwa_client.error',
+          'Não foi possível atualizar o PWA Cliente.'
+        )
+      );
+      setPwaClientError(parsed);
+      setPwaClientEnabled(!nextValue);
+    } finally {
+      setPwaClientSaving(false);
+    }
+  }, [pwaClientEnabled, pwaClientSaving, refreshTenantData, tenantLoading, t]);
+
   const renderPlanSummary = () => (
     <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -631,7 +741,6 @@ function Settings() {
           </div>
         ) : null}
       </div>
-
       <div className="mt-6 space-y-6">
         <div>
           <h4 className="text-sm font-semibold text-brand-surfaceForeground">
@@ -735,6 +844,166 @@ function Settings() {
         </div>
       </div>
 
+      <div className="space-y-3">
+        <h3 className="text-sm font-medium text-brand-surfaceForeground">
+          Morada do estabelecimento
+        </h3>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Rua
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.street}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    street: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Número
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.number}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    number: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1 sm:col-span-2">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Complemento
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.complement}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    complement: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Freguesia
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.neighborhood}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    neighborhood: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              CP (Código Postal)
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.zip}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    zip: formatPostalCodePT(e.target.value),
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Distrito
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.state}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    state: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              Localidade
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.city}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    city: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-brand-surfaceForeground/70">
+              País
+            </label>
+            <input
+              type="text"
+              value={settings.brandingAddress.country}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  brandingAddress: {
+                    ...prev.brandingAddress,
+                    country: e.target.value,
+                  },
+                }))
+              }
+              className="rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
       {brandingError ? (
         <p className="text-sm text-red-600">{brandingError.message}</p>
       ) : null}
@@ -830,6 +1099,17 @@ function Settings() {
       });
     }
 
+    cardItems.push({
+      key: 'auto_invite',
+      label: t(
+        'settings.auto_invite.title',
+        'Convites automáticos do PWA Cliente'
+      ),
+      value: autoInviteEnabled
+        ? t('settings.auto_invite.status_enabled', 'Ativo')
+        : t('settings.auto_invite.status_disabled', 'Inativo'),
+    });
+
     return (
       <div className="space-y-4">
         {tenantLoading ? (
@@ -837,6 +1117,186 @@ function Settings() {
             {t('common.loading_data', 'Carregando dados...')}
           </p>
         ) : null}
+
+        <PlanGate featureKey="enableCustomerPwa">
+          <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p
+                  title={t('settings.pwa_client.title', 'PWA Cliente')}
+                  className="text-sm font-semibold text-brand-surfaceForeground"
+                >
+                  {t('settings.pwa_client.title', 'PWA Cliente')}
+                </p>
+                <p
+                  title={t(
+                    'settings.pwa_client.description',
+                    'Permite acesso dos clientes via PWA personalizado deste salão.'
+                  )}
+                  className="mt-1 text-sm text-brand-surfaceForeground/80"
+                >
+                  {t(
+                    'settings.pwa_client.description',
+                    'Permite acesso dos clientes via PWA personalizado deste salão.'
+                  )}
+                </p>
+                {pwaClientSaving ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t('common.saving', 'Salvando...')}
+                  </p>
+                ) : null}
+                {pwaClientSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {pwaClientSuccess}
+                  </p>
+                ) : null}
+                {pwaClientError ? (
+                  <p className="mt-2 text-xs text-rose-600">
+                    {pwaClientError.message}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  title={
+                    pwaClientEnabled
+                      ? t('settings.pwa_client.status_enabled', 'Ativo')
+                      : t('settings.pwa_client.status_disabled', 'Inativo')
+                  }
+                  className={`text-sm font-medium ${
+                    pwaClientEnabled
+                      ? 'text-emerald-600'
+                      : 'text-brand-surfaceForeground/60'
+                  }`}
+                >
+                  {pwaClientEnabled
+                    ? t('settings.pwa_client.status_enabled', 'Ativo')
+                    : t('settings.pwa_client.status_disabled', 'Inativo')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={pwaClientEnabled}
+                  aria-label={t(
+                    'settings.pwa_client.accessible_label',
+                    'Alternar PWA Cliente'
+                  )}
+                  onClick={handlePwaClientToggle}
+                  disabled={pwaClientSaving || tenantLoading}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    pwaClientEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                  } ${pwaClientSaving || tenantLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      pwaClientEnabled ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </PlanGate>
+
+        <PlanGate featureKey="enableCustomerPwa">
+          <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex-1">
+                <p
+                  title={t(
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
+                  )}
+                  className="text-sm font-semibold text-brand-surfaceForeground"
+                >
+                  {t(
+                    'settings.auto_invite.title',
+                    'Convites automáticos do PWA Cliente'
+                  )}
+                </p>
+                <p
+                  title={t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
+                  className="mt-1 text-sm text-brand-surfaceForeground/80"
+                >
+                  {t(
+                    'settings.auto_invite.description',
+                    'Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.'
+                  )}
+                </p>
+                {!canToggleAutoInvite ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t(
+                      'settings.auto_invite.blocked_hint',
+                      'Disponível apenas quando o PWA Cliente está habilitado para o salão.'
+                    )}
+                  </p>
+                ) : null}
+                {autoInviteSaving ? (
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                    {t('common.saving', 'Salvando...')}
+                  </p>
+                ) : null}
+                {autoInviteSuccess ? (
+                  <p className="mt-2 text-xs text-emerald-600">
+                    {autoInviteSuccess}
+                  </p>
+                ) : null}
+                {autoInviteError ? (
+                  <p className="mt-2 text-xs text-rose-600">
+                    {autoInviteError}
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  title={
+                    autoInviteEnabled
+                      ? t('settings.auto_invite.status_enabled', 'Ativo')
+                      : t('settings.auto_invite.status_disabled', 'Inativo')
+                  }
+                  className={`text-sm font-medium ${
+                    autoInviteEnabled
+                      ? 'text-emerald-600'
+                      : 'text-brand-surfaceForeground/60'
+                  }`}
+                >
+                  {autoInviteEnabled
+                    ? t('settings.auto_invite.status_enabled', 'Ativo')
+                    : t('settings.auto_invite.status_disabled', 'Inativo')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoInviteEnabled}
+                  aria-label={t(
+                    'settings.auto_invite.accessible_label',
+                    'Alternar convites automáticos do PWA'
+                  )}
+                  onClick={handleAutoInviteToggle}
+                  disabled={
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                  } ${
+                    autoInviteSaving || tenantLoading || !canToggleAutoInvite
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      autoInviteEnabled ? 'translate-x-5' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </PlanGate>
 
         {cardItems.length ? (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -853,12 +1313,84 @@ function Settings() {
           </p>
         )}
 
-        <p className="text-xs text-brand-surfaceForeground/60">
-          {t(
-            'settings.readonly_hint',
-            'Edição disponível em tarefas futuras (ver backlog de Settings).'
-          )}
-        </p>
+        <div className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+          <p className="text-sm font-semibold text-brand-surfaceForeground">
+            {t('settings.title', 'Configurações')}
+          </p>
+          <div className="mt-3 grid grid-cols-1 gap-3">
+            <FormInput
+              label={t('settings.email', 'E-mail')}
+              type="email"
+              value={settings.general.email}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  general: { ...prev.general, email: e.target.value },
+                }))
+              }
+            />
+            <FormInput
+              label={t('settings.phone', 'Telefone')}
+              value={settings.general.phone}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  general: { ...prev.general, phone: e.target.value },
+                }))
+              }
+            />
+          </div>
+          {generalError ? (
+            <p className="mt-2 text-xs text-rose-600">{generalError.message}</p>
+          ) : null}
+          {generalSuccess ? (
+            <p className="mt-2 text-xs text-emerald-600">{generalSuccess}</p>
+          ) : null}
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={async () => {
+                if (generalSaving) return;
+                setGeneralSaving(true);
+                setGeneralError(null);
+                setGeneralSuccess('');
+                try {
+                  const saved = await updateTenantContact({
+                    email: settings.general.email,
+                    phone: settings.general.phone,
+                    phone_number: settings.general.phone,
+                  });
+                  setGeneralSuccess(
+                    t('common.saving_done', 'Salvo com sucesso.')
+                  );
+                  const mergedProfile = {
+                    ...(profile || {}),
+                    ...(saved?.profile || {}),
+                    email: settings.general.email,
+                    phone: settings.general.phone,
+                    phone_number: settings.general.phone,
+                  };
+                  applyTenantBootstrap({
+                    slug: tenant?.slug,
+                    profile: mergedProfile,
+                  });
+                } catch {
+                  setGeneralError({
+                    message: t('common.save_failed', 'Falha ao salvar.'),
+                  });
+                } finally {
+                  setGeneralSaving(false);
+                }
+              }}
+              disabled={generalSaving || tenantLoading}
+              className="text-brand-primary underline font-medium transition hover:text-brand-accent disabled:opacity-50"
+            >
+              {generalSaving
+                ? t('common.saving', 'Salvando...')
+                : t('settings.save')}
+            </button>
+          </div>
+        </div>
       </div>
     );
   };

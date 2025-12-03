@@ -21,6 +21,13 @@ import Settings from '../pages/Settings';
 import Plans from '../pages/Plans';
 import PlanCheckoutMock from '../pages/PlanCheckoutMock';
 import BillingSuccess from '../pages/BillingSuccess';
+import ClientEnter from '../pages/ClientEnter';
+import ClientAccess from '../pages/ClientAccess';
+import ClientPrivateRoute from './ClientPrivateRoute';
+import ClientDashboard from '../pages/ClientDashboard';
+import ClientProfile from '../pages/ClientProfile';
+import ClientAppointments from '../pages/ClientAppointments';
+import ClientBookingPage from '../pages/ClientBookingPage';
 
 function Router() {
   return (
@@ -31,6 +38,40 @@ function Router() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/staff/accept" element={<StaffInviteAccept />} />
+      <Route path="/client/enter" element={<ClientEnter />} />
+      <Route path="/client/access" element={<ClientAccess />} />
+      <Route
+        path="/client/dashboard"
+        element={
+          <ClientPrivateRoute>
+            <ClientDashboard />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/profile"
+        element={
+          <ClientPrivateRoute>
+            <ClientProfile />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/appointments"
+        element={
+          <ClientPrivateRoute>
+            <ClientAppointments />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/agendar"
+        element={
+          <ClientPrivateRoute>
+            <ClientBookingPage />
+          </ClientPrivateRoute>
+        }
+      />
 
       <Route
         path="/dashboard"
