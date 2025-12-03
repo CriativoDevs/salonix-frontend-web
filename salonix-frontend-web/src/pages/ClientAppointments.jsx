@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ClientLayout from '../layouts/ClientLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -292,6 +293,14 @@ export default function ClientAppointments() {
   return (
     <ClientLayout>
       <PageHeader title={t('Agendamentos')} />
+      <div className="mt-4 flex items-center justify-end">
+        <NavLink
+          to="/client/agendar"
+          className="text-brand-primary underline font-medium transition hover:text-brand-accent"
+        >
+          {t('Novo agendamento')}
+        </NavLink>
+      </div>
       {loading ? (
         <p className="text-sm text-gray-500">{t('Carregando…')}</p>
       ) : (

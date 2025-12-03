@@ -25,3 +25,7 @@ export async function cancelClientAppointment(id) {
   return data;
 }
 
+export async function createClientAppointment(payload) {
+  const { data } = await client.post('clients/me/appointments/', payload);
+  return data;
+}

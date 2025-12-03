@@ -27,6 +27,7 @@ import ClientPrivateRoute from './ClientPrivateRoute';
 import ClientDashboard from '../pages/ClientDashboard';
 import ClientProfile from '../pages/ClientProfile';
 import ClientAppointments from '../pages/ClientAppointments';
+import ClientBookingPage from '../pages/ClientBookingPage';
 
 function Router() {
   return (
@@ -60,6 +61,14 @@ function Router() {
         element={
           <ClientPrivateRoute>
             <ClientAppointments />
+          </ClientPrivateRoute>
+        }
+      />
+      <Route
+        path="/client/agendar"
+        element={
+          <ClientPrivateRoute>
+            <ClientBookingPage />
           </ClientPrivateRoute>
         }
       />
