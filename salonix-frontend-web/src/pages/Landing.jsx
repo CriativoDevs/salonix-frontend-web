@@ -201,6 +201,14 @@ function Landing() {
               className="mr-2"
             />
             <Link
+              to="/client/enter"
+              className={`font-medium transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              Área do Cliente
+            </Link>
+            <Link
               to="/login"
               className={`font-medium transition hover:opacity-80 ${
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
