@@ -15,6 +15,8 @@ import {
   Building2,
   Globe,
   Plug,
+  Menu,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
@@ -124,6 +126,7 @@ function Landing() {
   const [screenshotsProgress, setScreenshotsProgress] = useState(0);
   const [activeShot, setActiveShot] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleFaq = (i) => {
     setOpenFaqIndex((prev) => (prev === i ? null : i));
@@ -175,7 +178,7 @@ function Landing() {
             : 'border-white/60 bg-white/70'
         }`}
       >
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <Link
             to="/"
             className={`flex items-center gap-2 text-lg font-semibold transition-colors duration-300 ${
@@ -194,7 +197,7 @@ function Landing() {
             <span>TimelyOne</span>
           </Link>
 
-          <div className="flex items-center gap-4 text-sm">
+          <div className="hidden sm:flex items-center gap-4 text-sm">
             <SimpleThemeToggle
               isDark={isDarkTheme}
               onToggle={toggleTheme}
@@ -224,6 +227,67 @@ function Landing() {
             >
               Registar
             </Link>
+          </div>
+
+          <div className="sm:hidden flex items-center gap-2">
+            <SimpleThemeToggle
+              isDark={isDarkTheme}
+              onToggle={toggleTheme}
+              className="mr-1"
+            />
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="landing-mobile-menu"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className={`flex items-center gap-1 font-medium transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+              Menu
+            </button>
+            {mobileMenuOpen && (
+              <div
+                id="landing-mobile-menu"
+                role="menu"
+                className={`absolute right-4 top-full mt-2 w-56 rounded-lg border shadow-lg ${
+                  isDarkTheme
+                    ? 'border-[#2d2d2d] bg-[#181818] text-slate-200'
+                    : 'border-slate-200 bg-white text-slate-700'
+                }`}
+              >
+                <Link
+                  to="/client/enter"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 font-medium hover:opacity-80"
+                  role="menuitem"
+                >
+                  Área do Cliente
+                </Link>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 font-medium hover:opacity-80"
+                  role="menuitem"
+                >
+                  Entrar
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 font-medium hover:opacity-80"
+                  role="menuitem"
+                >
+                  Registar
+                </Link>
+              </div>
+            )}
           </div>
         </nav>
       </header>
@@ -809,6 +873,12 @@ function Landing() {
             <a href="#pricing" className="transition hover:opacity-80">
               Planos
             </a>
+            <Link
+              to="/client/enter"
+              className="transition hover:text-slate-800"
+            >
+              Área do Cliente
+            </Link>
             <Link to="/login" className="transition hover:text-slate-800">
               Entrar
             </Link>
