@@ -189,6 +189,11 @@
     "send": "Send",
     "select_conversation": "Select a conversation to start"
   },
+  "common": {
+    "loading": "Submitting...",
+    "saving": "Saving...",
+    "save_error": "Failed to save. Please try again."
+  },
   "feedback": {
     "title": "Feedback",
     "subtitle": "Client ratings and suggestions",
@@ -214,12 +219,19 @@
     "submit": "Submit feedback",
     "thank_you": "Thank you!",
     "submission_success": "Your feedback has been submitted successfully.",
-    "submit_another": "Submit another feedback"
+    "submit_another": "Submit another feedback",
+    "submit_error": "We couldn't submit your feedback.",
+    "errors": {
+      "rating_required": "Select a rating from 1 to 5.",
+      "category_required": "Select a valid category.",
+      "message_required": "Write a message.",
+      "message_too_long": "Message too long. Maximum 2000 characters."
+    }
   },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your business settings",
-  "tabs": {
+    "tabs": {
       "general": "General",
       "branding": "Logo",
       "notifications": "Notifications",
@@ -430,10 +442,6 @@
     "settings": "Settings",
     "more": "More",
     "close": "Close"
-  },
-  "common": {
-    "saving": "Saving...",
-    "save_error": "Failed to save. Please try again."
   },
   "reports": {
     "title": "Reports",

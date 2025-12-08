@@ -195,6 +195,11 @@
     "send": "Enviar",
     "select_conversation": "Selecione uma conversa para começar"
   },
+  "common": {
+    "loading": "Enviando...",
+    "saving": "Salvando...",
+    "save_error": "Falha ao salvar. Tente novamente."
+  },
   "feedback": {
     "title": "Feedback",
     "subtitle": "Avaliações e sugestões dos clientes",
@@ -220,7 +225,14 @@
     "submit": "Enviar feedback",
     "thank_you": "Obrigado!",
     "submission_success": "Seu feedback foi enviado com sucesso.",
-    "submit_another": "Enviar outro feedback"
+    "submit_another": "Enviar outro feedback",
+    "submit_error": "Não foi possível enviar o feedback.",
+    "errors": {
+      "rating_required": "Selecione uma avaliação de 1 a 5.",
+      "category_required": "Selecione uma categoria válida.",
+      "message_required": "Escreva uma mensagem.",
+      "message_too_long": "Mensagem muito longa. Máximo de 2000 caracteres."
+    }
   },
   "settings": {
     "title": "Configurações",
@@ -496,9 +508,5 @@
       "title": "Acesso restrito",
       "description": "Apenas proprietários têm acesso aos relatórios do negócio."
     }
-  },
-  "common": {
-    "saving": "Salvando...",
-    "save_error": "Falha ao salvar. Tente novamente."
   }
 }

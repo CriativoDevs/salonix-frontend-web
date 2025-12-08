@@ -6,7 +6,8 @@ export default function FeatureGate({ featureKey, children, fallback = null }) {
 
   const enabled = useMemo(() => {
     if (!featureKey) return true;
-    const local = flags && typeof flags === 'object' ? flags[featureKey] : undefined;
+    const local =
+      flags && typeof flags === 'object' ? flags[featureKey] : undefined;
     if (typeof local === 'boolean') return local;
     const raw = featureFlagsRaw || {};
     if (featureKey === 'enableReports') {

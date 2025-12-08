@@ -79,6 +79,12 @@ export default function HeaderNav() {
   const dropdownItems = useMemo(() => {
     const allItems = [
       {
+        to: '/feedback',
+        label: t('nav.feedback', 'Feedback'),
+        icon: StarIcon,
+        roles: ['owner'],
+      },
+      {
         to: '/reports',
         label: t('nav.reports', 'Relatórios'),
         icon: BarChart3Icon,

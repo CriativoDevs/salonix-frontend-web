@@ -74,6 +74,7 @@
 - Notes:
   - If the backend is unavailable, we fall back to `DEFAULT_TENANT_META` and the title resets to “TimelyOne”.
   - Natural next step: use the context to condition sections (e.g., hide premium modules).
+  - Feedback availability: route and menu are always available to `owner`; the frontend does not consume any `feedback_enabled` flag from backend for gating.
 
 ## Settings / Branding (FEW-240)
 
@@ -216,6 +217,7 @@
 - **Notas**:
   - Caso o backend esteja indisponível, caímos em `DEFAULT_TENANT_META` e o título volta para “TimelyOne”.
   - Próximo passo natural: usar o contexto para condicionar seções (ex.: esconder módulos premium).
+  - Disponibilidade do Feedback: rota e menu ficam sempre disponíveis para `owner`; o frontend não usa a flag `feedback_enabled` do backend para gate.
 
 ### Settings / Branding (FEW-240)
 

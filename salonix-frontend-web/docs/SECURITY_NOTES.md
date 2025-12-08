@@ -14,6 +14,7 @@
 ## Backend Dependencies
 - Rate limiting, captcha, and RBAC will be delivered in **BE-212**.
 - Plan feature flags (push, reports) consumed via `/api/tenant/meta`.
+- Feedback visibility is owner-only on the frontend; backend may keep `feedback_enabled` for future use, but FE does not gate by it.
 
 ## Future Actions
 - Implement CAPTCHA and visual lockout (FEW-210).
@@ -37,6 +38,7 @@
 ### Dependências do Backend
 - Rate limiting, captcha e RBAC serão entregues em **BE-212**.
 - Feature flags de planos (push, relatórios) consumidos via `/api/tenant/meta`.
+- Visibilidade do Feedback é apenas para owner no frontend; o backend pode manter `feedback_enabled` para uso futuro, mas o FE não faz gate por essa flag.
 
 ### Ações Futuras
 - Implementar CAPTCHA e lockout visual (FEW-210).
