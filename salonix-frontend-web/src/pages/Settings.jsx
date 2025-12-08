@@ -392,20 +392,12 @@ function DataSettingsStandalone() {
     } catch {
       uploadBlob = file;
     }
-    try {
-      const dbgText = await uploadBlob.text();
-      const dbgLines = dbgText.split(/\r?\n/);
-      console.log('doUpload:header', dbgLines[0]);
-      console.log('doUpload:first_row', dbgLines[1]);
-    } catch {
-      console.log('doUpload:debug_read_error');
-    }
+
     form.append('file', uploadBlob, uploadName);
     const params = { dry_run: dryRun ? 'true' : 'false' };
     try {
       const headers = { 'Content-Type': 'multipart/form-data' };
       if (tenant?.slug) headers['X-Tenant-Slug'] = tenant.slug;
-      console.log('doUpload:posting', entity, params);
       const response = await client.post(`import/${entity}/`, form, {
         headers,
         params,
@@ -431,7 +423,6 @@ function DataSettingsStandalone() {
         props
       );
     } catch (e) {
-      console.log('doUpload:catch', e?.response?.status);
       const status = e?.response?.status;
       const message =
         status === 403
