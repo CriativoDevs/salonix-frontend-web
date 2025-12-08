@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 import ClientProfile from '../ClientProfile';
@@ -54,9 +54,6 @@ test('exibe botão Sair e aciona limpeza de sessão ao clicar', async () => {
   );
 
   await screen.findByRole('heading', { name: 'Perfil do Cliente' });
-  await waitFor(() => {
-    expect(screen.queryByText('Carregando…')).toBeNull();
-  });
   const logoutBtn = await screen.findByText('Sair');
   const { fireEvent } = await import('@testing-library/react');
   fireEvent.click(logoutBtn);

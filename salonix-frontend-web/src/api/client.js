@@ -8,10 +8,17 @@ import {
 } from '../utils/authStorage';
 import { getEnvVar } from '../utils/env';
 
-// Base da API: usa env `VITE_API_URL` com fallback para localhost
 const defaultBase = 'http://localhost:8000/api/';
 const configuredBase = getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
-export const API_BASE_URL = configuredBase.endsWith('/') ? configuredBase : `${configuredBase}/`;
+const mode = String(getEnvVar('MODE', '')).toLowerCase();
+const isDev =
+  Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
+const useProxyBase = isDev && /localhost(:\d+)?/i.test(configuredBase);
+export const API_BASE_URL = useProxyBase
+  ? '/api/'
+  : configuredBase.endsWith('/')
+    ? configuredBase
+    : `${configuredBase}/`;
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -57,7 +64,11 @@ client.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (response.status !== 401 || config._retry || config.url.includes('token/')) {
+    if (
+      response.status !== 401 ||
+      config._retry ||
+      config.url.includes('token/')
+    ) {
       return Promise.reject(error);
     }
 
@@ -84,7 +95,9 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await refreshClient.post('users/token/refresh/', { refresh });
+      const { data } = await refreshClient.post('users/token/refresh/', {
+        refresh,
+      });
       const { access, refresh: newRefresh } = data;
       if (access) {
         setAccessToken(access);
