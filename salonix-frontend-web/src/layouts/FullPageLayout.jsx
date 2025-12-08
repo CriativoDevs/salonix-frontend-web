@@ -7,7 +7,7 @@ export default function FullPageLayout({ children }) {
   return (
     <div className="min-h-screen theme-bg-primary theme-text-primary">
       <HeaderNav />
-      <main className="py-6">
+      <main className="py-6 pb-24 overflow-y-auto no-scrollbar">
         <Container>{children}</Container>
       </main>
 

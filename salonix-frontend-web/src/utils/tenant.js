@@ -35,7 +35,8 @@ const API_BASE_URL = (() => {
   }
 })();
 
-export const DEFAULT_TENANT_SLUG = sanitizeTenantSlug(envDefaultSlug) || 'timelyone';
+export const DEFAULT_TENANT_SLUG =
+  sanitizeTenantSlug(envDefaultSlug) || 'timelyone';
 
 export const DEFAULT_TENANT_META = {
   slug: DEFAULT_TENANT_SLUG,
@@ -154,7 +155,9 @@ export function resolveTenantSlug({ search, hostname, defaultSlug } = {}) {
 export function extractSlugFromQuery(search) {
   if (!search) return '';
   try {
-    const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
+    const params = new URLSearchParams(
+      search.startsWith('?') ? search : `?${search}`
+    );
     const slug = params.get('tenant');
     return sanitizeTenantSlug(slug);
   } catch {
@@ -204,10 +207,8 @@ export function resolveTenantAssetUrl(source) {
   }
 
   // Caminhos típicos do backend (Django): /media, /static
-  const isBackendAsset = (
-    trimmed.startsWith('/media/') ||
-    trimmed.startsWith('/static/')
-  );
+  const isBackendAsset =
+    trimmed.startsWith('/media/') || trimmed.startsWith('/static/');
 
   try {
     if (typeof window !== 'undefined') {
@@ -237,7 +238,10 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
   const metaSlug = sanitizeTenantSlug(rawMeta.slug) || slug;
 
   const rawFeatureFlags = rawMeta.feature_flags || rawMeta.flags;
-  const normalizedFlags = normalizeFlags(rawFeatureFlags, DEFAULT_TENANT_META.flags);
+  const normalizedFlags = normalizeFlags(
+    rawFeatureFlags,
+    DEFAULT_TENANT_META.flags
+  );
 
   return {
     ...DEFAULT_TENANT_META,
@@ -249,7 +253,11 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
       DEFAULT_TENANT_META.plan
     ),
     theme: normalizeTheme(rawMeta.theme, DEFAULT_TENANT_META.theme),
-    branding: normalizeBranding(rawMeta.branding, rawMeta, DEFAULT_TENANT_META.branding),
+    branding: normalizeBranding(
+      rawMeta.branding,
+      rawMeta,
+      DEFAULT_TENANT_META.branding
+    ),
     flags: normalizedFlags,
     featureFlagsRaw: rawFeatureFlags || null,
     modules: normalizeModules(
@@ -289,7 +297,8 @@ function normalizePlan(plan, fallbackTier, fallbackPlan) {
   } else if (normalizedTier && PLAN_NAME_BY_TIER[normalizedTier]) {
     base.name = PLAN_NAME_BY_TIER[normalizedTier];
   } else if (normalizedTier) {
-    base.name = normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
+    base.name =
+      normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
   }
   if (Array.isArray(plan?.addons)) {
     base.addons = plan.addons;
@@ -312,15 +321,31 @@ function normalizeTheme(theme, fallback) {
 
 function normalizeBranding(brandingBlock, rawMeta, fallback) {
   const brandingSource = {
-    ...(typeof brandingBlock === 'object' && brandingBlock ? brandingBlock : {}),
-    logo_url: rawMeta?.logo_url ?? brandingBlock?.logo_url ?? brandingBlock?.logoUrl,
-    favicon_url: rawMeta?.favicon_url ?? brandingBlock?.favicon_url ?? brandingBlock?.faviconUrl,
+    ...(typeof brandingBlock === 'object' && brandingBlock
+      ? brandingBlock
+      : {}),
+    logo_url:
+      rawMeta?.logo_url ?? brandingBlock?.logo_url ?? brandingBlock?.logoUrl,
+    favicon_url:
+      rawMeta?.favicon_url ??
+      brandingBlock?.favicon_url ??
+      brandingBlock?.faviconUrl,
     apple_touch_icon_url:
-      rawMeta?.apple_touch_icon_url ?? brandingBlock?.apple_touch_icon_url ?? brandingBlock?.appleTouchIconUrl,
-    app_name: rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
-    short_name: rawMeta?.short_name ?? brandingBlock?.short_name ?? brandingBlock?.shortName,
-    splash_screens: rawMeta?.splash_screens ?? brandingBlock?.splash_screens ?? brandingBlock?.splashScreens,
-    icon_set: rawMeta?.icon_set ?? brandingBlock?.icon_set ?? brandingBlock?.icons,
+      rawMeta?.apple_touch_icon_url ??
+      brandingBlock?.apple_touch_icon_url ??
+      brandingBlock?.appleTouchIconUrl,
+    app_name:
+      rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
+    short_name:
+      rawMeta?.short_name ??
+      brandingBlock?.short_name ??
+      brandingBlock?.shortName,
+    splash_screens:
+      rawMeta?.splash_screens ??
+      brandingBlock?.splash_screens ??
+      brandingBlock?.splashScreens,
+    icon_set:
+      rawMeta?.icon_set ?? brandingBlock?.icon_set ?? brandingBlock?.icons,
   };
 
   const result = {
