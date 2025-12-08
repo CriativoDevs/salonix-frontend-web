@@ -309,7 +309,7 @@ function Landing() {
                 isDarkTheme ? 'text-slate-100' : 'text-slate-900'
               }`}
             >
-              A plataforma premium de agendamento e gestão para salões modernos.
+              A plataforma premium de agendamento e gestão para negócios modernos.
             </h1>
             <p
               className={`max-w-2xl text-lg transition-colors duration-300 ${
@@ -317,7 +317,7 @@ function Landing() {
               }`}
             >
               O TimelyOne automatiza horários, reduz faltas, melhora a
-              experiência dos clientes e profissionaliza a operação do seu salão
+              experiência dos clientes e profissionaliza a operação do seu negócio
               — tudo num painel rápido, elegante e pronto para equipas de
               qualquer dimensão.
             </p>
@@ -386,7 +386,7 @@ function Landing() {
             <h2
               className={`text-3xl font-semibold text-center ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
             >
-              O dia a dia do seu salão não precisa ser caótico.
+              O dia a dia do seu negócio não precisa ser caótico.
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-2">
               <div
@@ -622,6 +622,11 @@ function Landing() {
                         Mais escolhido
                       </span>
                     )}
+                    {plan.code === 'enterprise' && (
+                      <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
+                        Em breve
+                      </span>
+                    )}
                     <h3 className="text-2xl font-semibold">{plan.name}</h3>
                     <p className="text-3xl font-bold">{plan.price}</p>
                     <ul className="mt-4 space-y-2 text-sm text-slate-300">
@@ -633,12 +638,18 @@ function Landing() {
                       ))}
                     </ul>
                   </div>
-                  <Link
-                    to="/register"
-                    className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
-                  >
-                    Iniciar 14 dias grátis
-                  </Link>
+                  {plan.code === 'enterprise' ? (
+                    <span className="mt-6 inline-block font-medium text-slate-300">
+                      Em breve
+                    </span>
+                  ) : (
+                    <Link
+                      to="/register"
+                      className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
+                    >
+                      Iniciar 14 dias grátis
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>
