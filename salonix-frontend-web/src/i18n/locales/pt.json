@@ -241,7 +241,33 @@
       "general": "Geral",
       "branding": "Marca e Morada",
       "notifications": "Notificações",
-      "business": "Negócio"
+      "business": "Negócio",
+      "data": "Dados"
+    },
+    "data": {
+      "title": "Importação (CSV)",
+      "description": "Importe clientes, serviços ou membros da equipe via arquivo CSV.",
+      "entity": "Tipo de dados",
+      "entity_customers": "Clientes",
+      "entity_services": "Serviços",
+      "entity_staff": "Equipe",
+      "file": "Arquivo CSV",
+      "actions": {
+        "dry_run": "Validar (dry-run)",
+        "import": "Importar",
+        "download_template": "Baixar modelo",
+        "dry_run_tooltip": "Valida o CSV sem importar. Mostra erros e contagens."
+      },
+      "hint": "Disponível apenas para owner.",
+      "result": {
+        "title": "Resultado da validação/importação",
+        "created": "Criados",
+        "updated": "Atualizados",
+        "errors_count": "Erros",
+        "errors_title": "Erros encontrados",
+        "no_errors": "Nenhum erro encontrado",
+        "request_id": "ID da requisição"
+      }
     },
     "coming_soon": "Em breve",
     "coming_soon_hint": "Integração disponível em breve.",
@@ -270,6 +296,10 @@
       "appointmentReminders_description": "Lembretes automáticos de agendamentos",
       "marketingEmails": "E-mails de marketing",
       "marketingEmails_description": "Receber e-mails promocionais"
+    },
+    "business": {
+      "placeholder": "Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.",
+      "business_readonly_hint": "Enquanto isso, utilize o console Ops para ajustes ou contacte o suporte."
     },
     "auto_invite": {
       "title": "Convites automáticos do PWA Cliente",
