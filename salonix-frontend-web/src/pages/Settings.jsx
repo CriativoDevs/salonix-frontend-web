@@ -154,6 +154,7 @@ function buildInitialSettings(profile, channels, branding, tenant) {
 function DataSettingsStandalone() {
   const { t } = useTranslation();
   const { tenant } = useTenant();
+  const [dataTab, setDataTab] = useState('import');
   const [entity, setEntity] = useState('customers');
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState([]);
@@ -165,6 +166,11 @@ function DataSettingsStandalone() {
   const [error, setError] = useState(null);
   const [lastDryRun, setLastDryRun] = useState(null);
   const [dryRunTooltipOpen, setDryRunTooltipOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportEntity, setExportEntity] = useState(null);
+  const [activeOnly, setActiveOnly] = useState(true);
+  const [updatedSince, setUpdatedSince] = useState('');
+  const [cooldown, setCooldown] = useState(0);
   const fileInputRef = useRef(null);
   const previewTableRef = useRef(null);
   const derived = useMemo(() => {
@@ -223,6 +229,84 @@ function DataSettingsStandalone() {
   useEffect(() => {
     console.log('DataSettings:mounted');
   }, []);
+
+  const handleExport = useCallback(
+    async (which) => {
+      if (exportLoading || cooldown > 0) return;
+      const ent = which || entity;
+      setError(null);
+      setExportEntity(ent);
+      setExportLoading(true);
+      try {
+        const headers = {};
+        const params = {};
+        if (tenant?.slug) headers['X-Tenant-Slug'] = tenant.slug;
+        if (ent === 'customers' || ent === 'staff') {
+          if (activeOnly) params.active = true;
+          if (updatedSince) params.updated_since = updatedSince;
+        }
+        track('csv_export_requested', {
+          tenant_slug: tenant?.slug || null,
+          entity: ent,
+          active: ent === 'services' ? null : Boolean(activeOnly),
+          updated_since: ent === 'services' ? null : updatedSince || null,
+        });
+        const response = await client.get(`export/${ent}.csv`, {
+          headers,
+          params,
+          responseType: 'blob',
+        });
+        const blob = response?.data;
+        const cd = String(response?.headers?.['content-disposition'] || '');
+        let filename = `${ent}-export.csv`;
+        const m =
+          cd.match(/filename\*=UTF-8''([^;\n\r]+)/i) ||
+          cd.match(/filename="?([^";\n\r]+)"?/i);
+        if (m && m[1]) {
+          try {
+            filename = decodeURIComponent(m[1]);
+          } catch {
+            filename = m[1];
+          }
+        }
+        const { downloadCSV } = await import('../api/reports');
+        downloadCSV(blob, filename);
+        track('csv_export_success', {
+          tenant_slug: tenant?.slug || null,
+          entity: ent,
+          filename,
+        });
+      } catch (e) {
+        const parsed = parseApiError(
+          e,
+          t('common.save_error', 'Falha ao salvar. Tente novamente.')
+        );
+        setError(parsed);
+        const retryAfter = Number(e?.response?.headers?.['retry-after'] || 0);
+        if (parsed.code === 'RATE_LIMITED' && retryAfter > 0) {
+          setCooldown(retryAfter);
+        }
+        track('csv_export_failure', {
+          tenant_slug: tenant?.slug || null,
+          entity: which || entity,
+          code: parsed.code || null,
+          request_id: parsed.requestId || null,
+        });
+      } finally {
+        setExportLoading(false);
+        setExportEntity(null);
+      }
+    },
+    [activeOnly, cooldown, entity, tenant?.slug, updatedSince, track]
+  );
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => {
+      setCooldown((s) => (s > 1 ? s - 1 : 0));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
 
   const resolveTargetFields = useCallback(() => {
     if (entity === 'customers') return ['name', 'email', 'phone', 'ignore'];
@@ -927,530 +1011,904 @@ function DataSettingsStandalone() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-medium text-brand-surfaceForeground">
-        {t('settings.data.title', 'Importação (CSV)')}
-      </h3>
-      <p className="text-sm text-brand-surfaceForeground/70">
-        {t(
-          'settings.data.description',
-          'Importe clientes, serviços ou membros da equipe via arquivo CSV.'
-        )}
-      </p>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="sm:col-span-1">
-          <label className="block text-xs font-medium text-brand-surfaceForeground/70">
-            {t('settings.data.entity', 'Tipo de dados')}
-          </label>
-          <select
-            value={entity}
-            onChange={(e) => setEntity(e.target.value)}
-            className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
-          >
-            <option value="customers">
-              {t('settings.data.entity_customers', 'Clientes')}
-            </option>
-            <option value="services">
-              {t('settings.data.entity_services', 'Serviços')}
-            </option>
-            <option value="staff">
-              {t('settings.data.entity_staff', 'Equipe')}
-            </option>
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-brand-surfaceForeground/70">
-            {t('settings.data.file', 'Arquivo CSV')}
-          </label>
-          <input
-            ref={fileInputRef}
-            onChange={onFileChange}
-            aria-label={t('settings.data.file', 'Arquivo CSV')}
-            onClick={() => {
-              console.log('fileInput:click');
-              setTimeout(() => {
-                const f = fileInputRef.current?.files?.[0] || null;
-                console.log(
-                  'fileInput:poll_500ms',
-                  f ? { name: f.name, size: f.size, type: f.type } : null
-                );
-              }, 500);
-              setTimeout(() => {
-                const f = fileInputRef.current?.files?.[0] || null;
-                console.log(
-                  'fileInput:poll_1500ms',
-                  f ? { name: f.name, size: f.size, type: f.type } : null
-                );
-              }, 1500);
-            }}
-            onInput={(e) => console.log('fileInput:input', e?.target?.value)}
-            onChangeCapture={(e) =>
-              console.log('fileInput:changeCapture', e?.target?.files)
-            }
-            type="file"
-            id="csvInputStandalone"
-            name="csvInputStandalone"
-            accept="text/csv,.csv"
-            className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
-          />
-          {file ? (
-            <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-              {file.name} ({Math.round(file.size / 1024)} KB)
-            </p>
-          ) : null}
-        </div>
-      </div>
-      {preview.length ? (
-        <div className="overflow-auto rounded border border-brand-border">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand-border bg-brand-surface px-3 py-2 text-xs text-brand-surfaceForeground/80">
-            <span>
-              {t('settings.data.preview.columns', 'Colunas')}: {header.length}
-            </span>
-            <span>
-              {t('settings.data.preview.rows', 'Linhas (preview)')}:{' '}
-              {Math.max(preview.length - 1, 0)}
-            </span>
-            <span>
-              {t('settings.data.preview.delimiter', 'Delimitador')}:{' '}
-              {previewDelimiter === ';' ? ';' : ','}
-            </span>
-          </div>
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-brand-light">
-              <tr>
-                {preview[0].map((h, i) => (
-                  <th
-                    key={`h-${i}`}
-                    className="px-3 py-2 text-xs font-semibold text-brand-surfaceForeground/70"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      {String(h || '').trim()}
-                      <span className="relative">
-                        <button
-                          type="button"
-                          className="rounded border border-brand-border bg-brand-light px-1 text-[10px]"
-                          aria-label={t(
-                            'settings.data.mapping.header_help',
-                            'Ajuda da coluna'
-                          )}
-                          onMouseEnter={(e) => {
-                            const el = e.currentTarget.nextSibling;
-                            if (el) el.style.display = 'block';
-                          }}
-                          onMouseLeave={(e) => {
-                            const el = e.currentTarget.nextSibling;
-                            if (el) el.style.display = 'none';
-                          }}
-                        >
-                          {t('common.help', '?')}
-                        </button>
-                        <div
-                          style={{
-                            display: 'none',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            borderColor: 'var(--border-primary)',
-                            border: '1px solid',
-                          }}
-                          className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-[11px] shadow-lg"
-                        >
-                          <div className="font-semibold">
-                            {t('settings.data.mapping.suggested', 'Sugestão')}:{' '}
-                            {guessField(h)}
-                          </div>
-                          <div className="mt-1">
-                            {getFieldHelp(guessField(h), entity)}
-                          </div>
-                        </div>
-                      </span>
-                    </span>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {preview.slice(1).map((row, ri) => (
-                <tr key={`r-${ri}`} className="odd:bg-brand-surface/50">
-                  {row.map((cell, ci) => (
-                    <td
-                      key={`c-${ri}-${ci}`}
-                      className="px-3 py-2 text-brand-surfaceForeground/80"
-                    >
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-      {header.length ? (
-        <div className="rounded border border-brand-border bg-brand-surface p-3">
-          <p className="text-xs font-medium text-brand-surfaceForeground/70">
-            {t('settings.data.mapping.title', 'Mapeamento de colunas')}
-          </p>
-          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
-            {header.map((h, i) => (
-              <div key={`map-${i}`} className="flex items-center gap-2">
-                <span className="flex-1 truncate text-xs text-brand-surfaceForeground/70">
-                  {h}
-                </span>
-                <select
-                  value={columnMap[i] || 'ignore'}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    const prevVal = columnMap[i] || 'ignore';
-                    setColumnMap((prev) => {
-                      const next = Array.from(prev);
-                      next[i] = v;
-                      return next;
-                    });
-                    track('csv_import_map_change', {
-                      tenant_slug: tenant?.slug || null,
-                      entity,
-                      column_index: i,
-                      from: prevVal,
-                      to: v,
-                    });
-                  }}
-                  aria-label={
-                    t('settings.data.mapping.aria_map_to', 'Mapear coluna') +
-                    ' ' +
-                    h
-                  }
-                  className="w-40 rounded border border-brand-border bg-brand-surface px-2 py-1 text-xs text-brand-surfaceForeground"
-                >
-                  {resolveTargetFields().map((opt) => (
-                    <option key={`opt-${i}-${opt}`} value={opt}>
-                      {opt === 'name'
-                        ? t('settings.data.mapping.name', 'Nome')
-                        : opt === 'email'
-                          ? t('settings.data.mapping.email', 'Email')
-                          : opt === 'phone'
-                            ? t('settings.data.mapping.phone', 'Telefone')
-                            : opt === 'price_eur'
-                              ? t(
-                                  'settings.data.mapping.price_eur',
-                                  'Preço (EUR)'
-                                )
-                              : opt === 'duration_minutes'
-                                ? t(
-                                    'settings.data.mapping.duration_minutes',
-                                    'Duração (min)'
-                                  )
-                                : opt === 'role'
-                                  ? t('settings.data.mapping.role', 'Cargo')
-                                  : t(
-                                      'settings.data.mapping.ignore',
-                                      'Ignorar'
-                                    )}
-                    </option>
-                  ))}
-                </select>
-                <span className="text-[10px] text-brand-surfaceForeground/50">
-                  {t('settings.data.mapping.suggested', 'Sugestão')}:{' '}
-                  {guessField(h)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      <div className="flex flex-wrap gap-2">
-        <div
-          className="relative inline-block"
-          onMouseEnter={() => setDryRunTooltipOpen(true)}
-          onMouseLeave={() => setDryRunTooltipOpen(false)}
+      <div className="border-b border-brand-border">
+        <nav
+          className="-mb-px flex space-x-8"
+          aria-label={t('settings.data.aria_tabs', 'Dados (CSV)')}
+          role="tablist"
         >
           <button
             type="button"
-            onClick={() => doUpload(true)}
-            disabled={!file || loading}
-            className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
-            aria-describedby="dry-run-tooltip"
-            aria-label={t('settings.data.actions.dry_run', 'Validar (dry-run)')}
-            onFocus={() => setDryRunTooltipOpen(true)}
-            onBlur={() => setDryRunTooltipOpen(false)}
+            onClick={() => setDataTab('import')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              dataTab === 'import'
+                ? 'border-brand-primary text-brand-primary'
+                : 'border-transparent text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:border-brand-border'
+            }`}
+            role="tab"
+            aria-selected={dataTab === 'import'}
           >
-            {loading
-              ? t('common.loading', 'Enviando...')
-              : t('settings.data.actions.dry_run', 'Validar (dry-run)')}
+            {t('settings.data.tab_import', 'Importação (CSV)')}
           </button>
-          {dryRunTooltipOpen ? (
-            <div
-              id="dry-run-tooltip"
-              role="tooltip"
-              className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-xs shadow-lg"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-                border: '1px solid',
-              }}
-            >
-              {t(
-                'settings.data.actions.dry_run_tooltip',
-                'Valida o CSV sem importar. Mostra erros e contagens.'
-              )}
-            </div>
-          ) : null}
-        </div>
-        <button
-          type="button"
-          onClick={() => doUpload(false)}
-          disabled={!file || loading}
-          className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
-          aria-label={t('settings.data.actions.import', 'Importar')}
-        >
-          {t('settings.data.actions.import', 'Importar')}
-        </button>
-        <button
-          type="button"
-          onClick={downloadTemplate}
-          disabled={loading}
-          className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
-          aria-label={t(
-            'settings.data.actions.download_template',
-            'Baixar modelo'
-          )}
-        >
-          {t('settings.data.actions.download_template', 'Baixar modelo')}
-        </button>
+          <button
+            type="button"
+            onClick={() => setDataTab('export')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              dataTab === 'export'
+                ? 'border-brand-primary text-brand-primary'
+                : 'border-transparent text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:border-brand-border'
+            }`}
+            role="tab"
+            aria-selected={dataTab === 'export'}
+          >
+            {t('settings.data.tab_export', 'Exportação (CSV)')}
+          </button>
+        </nav>
       </div>
-      {error ? (
-        <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
-          {error.message ||
-            t('common.save_error', 'Falha ao salvar. Tente novamente.')}
-        </div>
-      ) : null}
-      {result ? (
-        <div className="space-y-2" aria-live="polite">
-          <h4 className="text-sm font-semibold text-brand-surfaceForeground">
-            {t(
-              'settings.data.result.title',
-              'Resultado da validação/importação'
-            )}
-          </h4>
-          {lastDryRun === false ? (
-            <div className="rounded border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800">
-              {t('settings.data.import.success', 'Importação concluída')}
+      <p className="text-sm text-brand-surfaceForeground/70">
+        {t(
+          dataTab === 'export'
+            ? 'settings.data.description_export'
+            : 'settings.data.description',
+          dataTab === 'export'
+            ? 'Exporte clientes, serviços ou membros da equipe em arquivo CSV.'
+            : 'Importe clientes, serviços ou membros da equipe via arquivo CSV.'
+        )}
+      </p>
+      {dataTab === 'export' ? (
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="lg:hidden">
+              <label className="block text-xs font-medium text-brand-surfaceForeground/70">
+                {t('settings.data.entity', 'Tipo de dados')}
+              </label>
+              <select
+                value={entity}
+                onChange={(e) => setEntity(e.target.value)}
+                className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
+              >
+                <option value="customers">
+                  {t('settings.data.entity_customers', 'Clientes')}
+                </option>
+                <option value="services">
+                  {t('settings.data.entity_services', 'Serviços')}
+                </option>
+                <option value="staff">
+                  {t('settings.data.entity_staff', 'Equipe')}
+                </option>
+              </select>
+              <div className="mt-3 block sm:hidden">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleExport(entity);
+                  }}
+                  aria-busy={exportLoading}
+                  className={`text-brand-primary hover:text-brand-primary/80 font-medium transition-colors inline-flex items-center ${
+                    exportLoading || cooldown > 0
+                      ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  {exportLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {t('settings.data.export.loading', 'Exportando...')}
+                    </>
+                  ) : (
+                    <>{t('settings.data.export.one', 'Exportar CSV')}</>
+                  )}
+                </a>
+              </div>
             </div>
-          ) : null}
-          <div className="flex flex-wrap gap-3 text-sm">
-            {derived.created !== null ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                {t('settings.data.result.created', 'Criados')}:{' '}
-                {derived.created}
-              </span>
+            {entity !== 'services' ? (
+              <div className="grid grid-cols-2 gap-3 lg:hidden">
+                <div className="flex items-center gap-2">
+                  <input
+                    id="exportActiveOnly"
+                    type="checkbox"
+                    checked={activeOnly}
+                    onChange={(e) => setActiveOnly(e.target.checked)}
+                  />
+                  <label
+                    htmlFor="exportActiveOnly"
+                    className="text-sm text-brand-surfaceForeground"
+                  >
+                    {t('settings.data.filters.active', 'Apenas ativos')}
+                  </label>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-brand-surfaceForeground/70">
+                    {t(
+                      'settings.data.filters.updated_since',
+                      'Atualizados desde'
+                    )}
+                  </label>
+                  <input
+                    type="date"
+                    value={updatedSince}
+                    onChange={(e) => setUpdatedSince(e.target.value)}
+                    className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
+                  />
+                </div>
+              </div>
             ) : null}
-            {derived.updated !== null ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                {t('settings.data.result.updated', 'Atualizados')}:{' '}
-                {derived.updated}
-              </span>
-            ) : null}
-            {Array.isArray(derived.errors) ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                {t('settings.data.result.errors_count', 'Erros')}:{' '}
-                {derived.errors.length}
-              </span>
-            ) : null}
-            {derived.processed !== null ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                Processados: {derived.processed}
-              </span>
-            ) : null}
-            {derived.skipped !== null ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                Ignorados: {derived.skipped}
-              </span>
-            ) : null}
-            {derived.requestId ? (
-              <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
-                {t('settings.data.result.request_id', 'ID da requisição')}:{' '}
-                {derived.requestId}
+            <div className="hidden lg:grid lg:col-span-3 grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <input
+                  id="exportActiveOnlyDesktop"
+                  type="checkbox"
+                  checked={activeOnly}
+                  onChange={(e) => setActiveOnly(e.target.checked)}
+                />
+                <label
+                  htmlFor="exportActiveOnlyDesktop"
+                  className="text-sm text-brand-surfaceForeground"
+                >
+                  {t('settings.data.filters.active', 'Apenas ativos')}
+                </label>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-brand-surfaceForeground/70">
+                  {t(
+                    'settings.data.filters.updated_since',
+                    'Atualizados desde'
+                  )}
+                </label>
+                <input
+                  type="date"
+                  value={updatedSince}
+                  onChange={(e) => setUpdatedSince(e.target.value)}
+                  className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:flex flex-wrap items-center gap-4">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleExport('customers');
+              }}
+              aria-busy={exportLoading && exportEntity === 'customers'}
+              className={`text-brand-primary hover:text-brand-primary/80 font-medium transition-colors inline-flex items-center ${
+                exportLoading || cooldown > 0
+                  ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                  : 'cursor-pointer'
+              }`}
+            >
+              {exportLoading && exportEntity === 'customers' ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {t(
+                    'settings.data.export.customers_loading',
+                    'Exportando clientes...'
+                  )}
+                </>
+              ) : (
+                <>
+                  {t(
+                    'settings.data.export.customers',
+                    'Exportar CSV de Clientes'
+                  )}
+                </>
+              )}
+            </a>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleExport('services');
+              }}
+              aria-busy={exportLoading && exportEntity === 'services'}
+              className={`text-brand-primary hover:text-brand-primary/80 font-medium transition-colors inline-flex items-center ${
+                exportLoading || cooldown > 0
+                  ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                  : 'cursor-pointer'
+              }`}
+            >
+              {exportLoading && exportEntity === 'services' ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {t(
+                    'settings.data.export.services_loading',
+                    'Exportando serviços...'
+                  )}
+                </>
+              ) : (
+                <>
+                  {t(
+                    'settings.data.export.services',
+                    'Exportar CSV de Serviços'
+                  )}
+                </>
+              )}
+            </a>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleExport('staff');
+              }}
+              aria-busy={exportLoading && exportEntity === 'staff'}
+              className={`text-brand-primary hover:text-brand-primary/80 font-medium transition-colors inline-flex items-center ${
+                exportLoading || cooldown > 0
+                  ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                  : 'cursor-pointer'
+              }`}
+            >
+              {exportLoading && exportEntity === 'staff' ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-current inline"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  {t(
+                    'settings.data.export.staff_loading',
+                    'Exportando equipe...'
+                  )}
+                </>
+              ) : (
+                <>
+                  {t(
+                    'settings.data.export.staff',
+                    'Exportar CSV de Profissionais'
+                  )}
+                </>
+              )}
+            </a>
+            {cooldown > 0 ? (
+              <span className="text-xs text-brand-surfaceForeground/60">
+                {t('settings.data.rate_limited', 'Muitas tentativas. Aguarde')}{' '}
+                {cooldown}s
               </span>
             ) : null}
           </div>
-          {Array.isArray(derived.errors) && derived.errors.length ? (
-            <div className="rounded border border-brand-border bg-brand-surface px-3 py-2">
-              <p className="text-xs font-medium text-brand-surfaceForeground/70">
-                {t('settings.data.result.errors_title', 'Erros encontrados')}
+          <p className="text-xs text-brand-surfaceForeground/60 lg:mt-2">
+            {t(
+              'settings.data.filters.hint_entities',
+              'Filtros aplicáveis a Clientes e Profissionais'
+            )}
+          </p>
+          {error ? (
+            <div className="rounded border border-brand-border bg-brand-surface p-3">
+              <p className="text-sm text-brand-surfaceForeground">
+                {error.message}
               </p>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-brand-surfaceForeground/70">
-                    {t('settings.data.result.errors_by_field', 'Por campo')}:
-                  </span>
-                  {Object.entries(errorBreakdown.by_field).map(([k, v]) => (
-                    <span
-                      key={`bf-${k}`}
-                      className="rounded border border-brand-border bg-brand-light px-2 py-1"
-                    >
-                      {k} ({v})
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-brand-surfaceForeground/70">
-                    {t('settings.data.result.errors_by_reason', 'Por motivo')}:
-                  </span>
-                  {Object.entries(errorBreakdown.by_reason).map(([k, v]) => (
-                    <span
-                      key={`br-${k}`}
-                      className="rounded border border-brand-border bg-brand-light px-2 py-1"
-                    >
-                      {k} ({v})
-                    </span>
-                  ))}
-                </div>
+              {error.requestId ? (
+                <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                  {t('common.request_id', 'Request ID')}: {error.requestId}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="sm:col-span-1">
+            <label className="block text-xs font-medium text-brand-surfaceForeground/70">
+              {t('settings.data.entity', 'Tipo de dados')}
+            </label>
+            <select
+              value={entity}
+              onChange={(e) => setEntity(e.target.value)}
+              className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
+            >
+              <option value="customers">
+                {t('settings.data.entity_customers', 'Clientes')}
+              </option>
+              <option value="services">
+                {t('settings.data.entity_services', 'Serviços')}
+              </option>
+              <option value="staff">
+                {t('settings.data.entity_staff', 'Equipe')}
+              </option>
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-brand-surfaceForeground/70">
+              {t('settings.data.file', 'Arquivo CSV')}
+            </label>
+            <input
+              ref={fileInputRef}
+              onChange={onFileChange}
+              aria-label={t('settings.data.file', 'Arquivo CSV')}
+              onClick={() => {
+                console.log('fileInput:click');
+                setTimeout(() => {
+                  const f = fileInputRef.current?.files?.[0] || null;
+                  console.log(
+                    'fileInput:poll_500ms',
+                    f ? { name: f.name, size: f.size, type: f.type } : null
+                  );
+                }, 500);
+                setTimeout(() => {
+                  const f = fileInputRef.current?.files?.[0] || null;
+                  console.log(
+                    'fileInput:poll_1500ms',
+                    f ? { name: f.name, size: f.size, type: f.type } : null
+                  );
+                }, 1500);
+              }}
+              onInput={(e) => console.log('fileInput:input', e?.target?.value)}
+              onChangeCapture={(e) =>
+                console.log('fileInput:changeCapture', e?.target?.files)
+              }
+              type="file"
+              id="csvInputStandalone"
+              name="csvInputStandalone"
+              accept="text/csv,.csv"
+              className="mt-1 w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm text-brand-surfaceForeground"
+            />
+            {file ? (
+              <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                {file.name} ({Math.round(file.size / 1024)} KB)
+              </p>
+            ) : null}
+          </div>
+        </div>
+      )}
+      {dataTab !== 'export' ? (
+        <>
+          {preview.length ? (
+            <div className="overflow-auto rounded border border-brand-border">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand-border bg-brand-surface px-3 py-2 text-xs text-brand-surfaceForeground/80">
+                <span>
+                  {t('settings.data.preview.columns', 'Colunas')}:{' '}
+                  {header.length}
+                </span>
+                <span>
+                  {t('settings.data.preview.rows', 'Linhas (preview)')}:{' '}
+                  {Math.max(preview.length - 1, 0)}
+                </span>
+                <span>
+                  {t('settings.data.preview.delimiter', 'Delimitador')}:{' '}
+                  {previewDelimiter === ';' ? ';' : ','}
+                </span>
               </div>
-              <div className="overflow-auto">
-                <table className="min-w-full text-left text-xs">
-                  <thead className="bg-brand-light">
-                    <tr>
-                      <th className="px-2 py-1">
-                        {t('settings.data.result.line', 'Linha')}
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-brand-light">
+                  <tr>
+                    {preview[0].map((h, i) => (
+                      <th
+                        key={`h-${i}`}
+                        className="px-3 py-2 text-xs font-semibold text-brand-surfaceForeground/70"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          {String(h || '').trim()}
+                          <span className="relative">
+                            <button
+                              type="button"
+                              className="rounded border border-brand-border bg-brand-light px-1 text-[10px]"
+                              aria-label={t(
+                                'settings.data.mapping.header_help',
+                                'Ajuda da coluna'
+                              )}
+                              onMouseEnter={(e) => {
+                                const el = e.currentTarget.nextSibling;
+                                if (el) el.style.display = 'block';
+                              }}
+                              onMouseLeave={(e) => {
+                                const el = e.currentTarget.nextSibling;
+                                if (el) el.style.display = 'none';
+                              }}
+                            >
+                              {t('common.help', '?')}
+                            </button>
+                            <div
+                              style={{
+                                display: 'none',
+                                backgroundColor: 'var(--bg-primary)',
+                                color: 'var(--text-primary)',
+                                borderColor: 'var(--border-primary)',
+                                border: '1px solid',
+                              }}
+                              className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-[11px] shadow-lg"
+                            >
+                              <div className="font-semibold">
+                                {t(
+                                  'settings.data.mapping.suggested',
+                                  'Sugestão'
+                                )}
+                                : {guessField(h)}
+                              </div>
+                              <div className="mt-1">
+                                {getFieldHelp(guessField(h), entity)}
+                              </div>
+                            </div>
+                          </span>
+                        </span>
                       </th>
-                      <th className="px-2 py-1">
-                        {t('settings.data.result.column', 'Coluna')}
-                      </th>
-                      <th className="px-2 py-1">
-                        {t('settings.data.result.reason', 'Motivo')}
-                      </th>
-                      <th className="px-2 py-1">
-                        {t('settings.data.result.hint', 'Dica')}
-                      </th>
-                      <th className="px-2 py-1">
-                        {t('settings.data.result.value', 'Valor')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {derived.errors.map((e, i) => {
-                      const line =
-                        e && typeof e === 'object' ? (e.line ?? null) : null;
-                      const reason =
-                        e && typeof e === 'object'
-                          ? (e.error ?? JSON.stringify(e))
-                          : String(e);
-                      const row = e && typeof e === 'object' ? e.row || {} : {};
-                      const keys = Object.keys(row || {});
-                      let column = null;
-                      if (keys.includes('phone')) column = 'phone';
-                      else if (keys.includes('name')) column = 'name';
-                      else if (keys.includes('email')) column = 'email';
-                      else if (keys.includes('duration_minutes'))
-                        column = 'duration_minutes';
-                      else if (keys.includes('price_eur')) column = 'price_eur';
-                      else column = keys[0] || '';
-                      const value = column ? row[column] : '';
-                      const hint = (() => {
-                        const r = String(reason || '').toLowerCase();
-                        if (column === 'email')
-                          return t(
-                            'settings.data.hints.email',
-                            'Use um e-mail válido: nome@dominio.com'
-                          );
-                        if (column === 'phone')
-                          return t(
-                            'settings.data.hints.phone',
-                            'Use formato internacional, ex: +351912345678'
-                          );
-                        if (column === 'name' && r.includes('obrigatório'))
-                          return t(
-                            'settings.data.hints.name_required',
-                            'Preencha o nome'
-                          );
-                        if (column === 'duration_minutes')
-                          return t(
-                            'settings.data.hints.duration',
-                            'Informe minutos numéricos. Ex: 90'
-                          );
-                        if (column === 'price_eur')
-                          return t(
-                            'settings.data.hints.price',
-                            'Informe número. Ex: 12.50'
-                          );
-                        return '';
-                      })();
-                      const colClass = /inválid|obrigatório/i.test(
-                        String(reason || '')
-                      )
-                        ? 'bg-red-50 text-red-600'
-                        : '';
-                      return (
-                        <tr
-                          key={`err-row-${i}`}
-                          className="odd:bg-brand-surface/50"
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.slice(1).map((row, ri) => (
+                    <tr key={`r-${ri}`} className="odd:bg-brand-surface/50">
+                      {row.map((cell, ci) => (
+                        <td
+                          key={`c-${ri}-${ci}`}
+                          className="px-3 py-2 text-brand-surfaceForeground/80"
                         >
-                          <td className="px-2 py-1">{line ?? ''}</td>
-                          <td className={`px-2 py-1 ${colClass}`}>
-                            {column || ''}
-                          </td>
-                          <td className={`px-2 py-1 ${colClass}`}>{reason}</td>
-                          <td className="px-2 py-1">{hint}</td>
-                          <td className="px-2 py-1">{value || ''}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      const rows = derived.errors.map((e) => {
-                        const line =
-                          e && typeof e === 'object' ? (e.line ?? '') : '';
-                        const reason =
-                          e && typeof e === 'object'
-                            ? (e.error ?? JSON.stringify(e))
-                            : String(e);
-                        const row =
-                          e && typeof e === 'object' ? e.row || {} : {};
-                        const keys = Object.keys(row || {});
-                        let column = '';
-                        if (keys.includes('phone')) column = 'phone';
-                        else if (keys.includes('name')) column = 'name';
-                        else if (keys.includes('email')) column = 'email';
-                        else column = keys[0] || '';
-                        const value = column ? row[column] : '';
-                        const json = JSON.stringify(row);
-                        return `${line},${column},${JSON.stringify(reason)},${JSON.stringify(value)},${JSON.stringify(json)}`;
-                      });
-                      const header = 'line,column,reason,value,row_json';
-                      const csv = [header, ...rows].join('\n');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${entity}_errors.csv`;
-                      document.body.appendChild(a);
-                      a.click();
-                      a.remove();
-                      window.URL.revokeObjectURL(url);
-                    } catch (err) {
-                      void err;
-                    }
-                  }}
-                  className="rounded border border-brand-border bg-brand-light px-2 py-1"
-                >
-                  {t(
-                    'settings.data.result.download_errors',
-                    'Baixar erros (CSV)'
-                  )}
-                </button>
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+          {header.length ? (
+            <div className="rounded border border-brand-border bg-brand-surface p-3">
+              <p className="text-xs font-medium text-brand-surfaceForeground/70">
+                {t('settings.data.mapping.title', 'Mapeamento de colunas')}
+              </p>
+              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {header.map((h, i) => (
+                  <div key={`map-${i}`} className="flex items-center gap-2">
+                    <span className="flex-1 truncate text-xs text-brand-surfaceForeground/70">
+                      {h}
+                    </span>
+                    <select
+                      value={columnMap[i] || 'ignore'}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const prevVal = columnMap[i] || 'ignore';
+                        setColumnMap((prev) => {
+                          const next = Array.from(prev);
+                          next[i] = v;
+                          return next;
+                        });
+                        track('csv_import_map_change', {
+                          tenant_slug: tenant?.slug || null,
+                          entity,
+                          column_index: i,
+                          from: prevVal,
+                          to: v,
+                        });
+                      }}
+                      aria-label={
+                        t(
+                          'settings.data.mapping.aria_map_to',
+                          'Mapear coluna'
+                        ) +
+                        ' ' +
+                        h
+                      }
+                      className="w-40 rounded border border-brand-border bg-brand-surface px-2 py-1 text-xs text-brand-surfaceForeground"
+                    >
+                      {resolveTargetFields().map((opt) => (
+                        <option key={`opt-${i}-${opt}`} value={opt}>
+                          {opt === 'name'
+                            ? t('settings.data.mapping.name', 'Nome')
+                            : opt === 'email'
+                              ? t('settings.data.mapping.email', 'Email')
+                              : opt === 'phone'
+                                ? t('settings.data.mapping.phone', 'Telefone')
+                                : opt === 'price_eur'
+                                  ? t(
+                                      'settings.data.mapping.price_eur',
+                                      'Preço (EUR)'
+                                    )
+                                  : opt === 'duration_minutes'
+                                    ? t(
+                                        'settings.data.mapping.duration_minutes',
+                                        'Duração (min)'
+                                      )
+                                    : opt === 'role'
+                                      ? t('settings.data.mapping.role', 'Cargo')
+                                      : t(
+                                          'settings.data.mapping.ignore',
+                                          'Ignorar'
+                                        )}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[10px] text-brand-surfaceForeground/50">
+                      {t('settings.data.mapping.suggested', 'Sugestão')}:{' '}
+                      {guessField(h)}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : (
-            <p className="text-xs text-brand-surfaceForeground/60">
-              {t('settings.data.result.no_errors', 'Nenhum erro encontrado')}
-            </p>
-          )}
-        </div>
+          ) : null}
+          <div className="flex flex-wrap gap-2">
+            <div
+              className="relative inline-block"
+              onMouseEnter={() => setDryRunTooltipOpen(true)}
+              onMouseLeave={() => setDryRunTooltipOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => doUpload(true)}
+                disabled={!file || loading}
+                className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
+                aria-describedby="dry-run-tooltip"
+                aria-label={t(
+                  'settings.data.actions.dry_run',
+                  'Validar (dry-run)'
+                )}
+                onFocus={() => setDryRunTooltipOpen(true)}
+                onBlur={() => setDryRunTooltipOpen(false)}
+              >
+                {loading
+                  ? t('common.loading', 'Enviando...')
+                  : t('settings.data.actions.dry_run', 'Validar (dry-run)')}
+              </button>
+              {dryRunTooltipOpen ? (
+                <div
+                  id="dry-run-tooltip"
+                  role="tooltip"
+                  className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-xs shadow-lg"
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)',
+                    border: '1px solid',
+                  }}
+                >
+                  {t(
+                    'settings.data.actions.dry_run_tooltip',
+                    'Valida o CSV sem importar. Mostra erros e contagens.'
+                  )}
+                </div>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              onClick={() => doUpload(false)}
+              disabled={!file || loading}
+              className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
+              aria-label={t('settings.data.actions.import', 'Importar')}
+            >
+              {t('settings.data.actions.import', 'Importar')}
+            </button>
+            <button
+              type="button"
+              onClick={downloadTemplate}
+              disabled={loading}
+              className="rounded-lg border border-brand-border bg-brand-light px-3 py-2 text-sm text-brand-surfaceForeground"
+              aria-label={t(
+                'settings.data.actions.download_template',
+                'Baixar modelo'
+              )}
+            >
+              {t('settings.data.actions.download_template', 'Baixar modelo')}
+            </button>
+          </div>
+          {error ? (
+            <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">
+              {error.message ||
+                t('common.save_error', 'Falha ao salvar. Tente novamente.')}
+            </div>
+          ) : null}
+          {result ? (
+            <div className="space-y-2" aria-live="polite">
+              <h4 className="text-sm font-semibold text-brand-surfaceForeground">
+                {t(
+                  'settings.data.result.title',
+                  'Resultado da validação/importação'
+                )}
+              </h4>
+              {lastDryRun === false ? (
+                <div className="rounded border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800">
+                  {t('settings.data.import.success', 'Importação concluída')}
+                </div>
+              ) : null}
+              <div className="flex flex-wrap gap-3 text-sm">
+                {derived.created !== null ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    {t('settings.data.result.created', 'Criados')}:{' '}
+                    {derived.created}
+                  </span>
+                ) : null}
+                {derived.updated !== null ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    {t('settings.data.result.updated', 'Atualizados')}:{' '}
+                    {derived.updated}
+                  </span>
+                ) : null}
+                {Array.isArray(derived.errors) ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    {t('settings.data.result.errors_count', 'Erros')}:{' '}
+                    {derived.errors.length}
+                  </span>
+                ) : null}
+                {derived.processed !== null ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    Processados: {derived.processed}
+                  </span>
+                ) : null}
+                {derived.skipped !== null ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    Ignorados: {derived.skipped}
+                  </span>
+                ) : null}
+                {derived.requestId ? (
+                  <span className="rounded border border-brand-border bg-brand-light px-2 py-1">
+                    {t('settings.data.result.request_id', 'ID da requisição')}:{' '}
+                    {derived.requestId}
+                  </span>
+                ) : null}
+              </div>
+              {Array.isArray(derived.errors) && derived.errors.length ? (
+                <div className="rounded border border-brand-border bg-brand-surface px-3 py-2">
+                  <p className="text-xs font-medium text-brand-surfaceForeground/70">
+                    {t(
+                      'settings.data.result.errors_title',
+                      'Erros encontrados'
+                    )}
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-brand-surfaceForeground/70">
+                        {t('settings.data.result.errors_by_field', 'Por campo')}
+                        :
+                      </span>
+                      {Object.entries(errorBreakdown.by_field).map(([k, v]) => (
+                        <span
+                          key={`bf-${k}`}
+                          className="rounded border border-brand-border bg-brand-light px-2 py-1"
+                        >
+                          {k} ({v})
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-brand-surfaceForeground/70">
+                        {t(
+                          'settings.data.result.errors_by_reason',
+                          'Por motivo'
+                        )}
+                        :
+                      </span>
+                      {Object.entries(errorBreakdown.by_reason).map(
+                        ([k, v]) => (
+                          <span
+                            key={`br-${k}`}
+                            className="rounded border border-brand-border bg-brand-light px-2 py-1"
+                          >
+                            {k} ({v})
+                          </span>
+                        )
+                      )}
+                    </div>
+                  </div>
+                  <div className="overflow-auto">
+                    <table className="min-w-full text-left text-xs">
+                      <thead className="bg-brand-light">
+                        <tr>
+                          <th className="px-2 py-1">
+                            {t('settings.data.result.line', 'Linha')}
+                          </th>
+                          <th className="px-2 py-1">
+                            {t('settings.data.result.column', 'Coluna')}
+                          </th>
+                          <th className="px-2 py-1">
+                            {t('settings.data.result.reason', 'Motivo')}
+                          </th>
+                          <th className="px-2 py-1">
+                            {t('settings.data.result.hint', 'Dica')}
+                          </th>
+                          <th className="px-2 py-1">
+                            {t('settings.data.result.value', 'Valor')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {derived.errors.map((e, i) => {
+                          const line =
+                            e && typeof e === 'object'
+                              ? (e.line ?? null)
+                              : null;
+                          const reason =
+                            e && typeof e === 'object'
+                              ? (e.error ?? JSON.stringify(e))
+                              : String(e);
+                          const row =
+                            e && typeof e === 'object' ? e.row || {} : {};
+                          const keys = Object.keys(row || {});
+                          let column = null;
+                          if (keys.includes('phone')) column = 'phone';
+                          else if (keys.includes('name')) column = 'name';
+                          else if (keys.includes('email')) column = 'email';
+                          else if (keys.includes('duration_minutes'))
+                            column = 'duration_minutes';
+                          else if (keys.includes('price_eur'))
+                            column = 'price_eur';
+                          else column = keys[0] || '';
+                          const value = column ? row[column] : '';
+                          const hint = (() => {
+                            const r = String(reason || '').toLowerCase();
+                            if (column === 'email')
+                              return t(
+                                'settings.data.hints.email',
+                                'Use um e-mail válido: nome@dominio.com'
+                              );
+                            if (column === 'phone')
+                              return t(
+                                'settings.data.hints.phone',
+                                'Use formato internacional, ex: +351912345678'
+                              );
+                            if (column === 'name' && r.includes('obrigatório'))
+                              return t(
+                                'settings.data.hints.name_required',
+                                'Preencha o nome'
+                              );
+                            if (column === 'duration_minutes')
+                              return t(
+                                'settings.data.hints.duration',
+                                'Informe minutos numéricos. Ex: 90'
+                              );
+                            if (column === 'price_eur')
+                              return t(
+                                'settings.data.hints.price',
+                                'Informe número. Ex: 12.50'
+                              );
+                            return '';
+                          })();
+                          const colClass = /inválid|obrigatório/i.test(
+                            String(reason || '')
+                          )
+                            ? 'bg-red-50 text-red-600'
+                            : '';
+                          return (
+                            <tr
+                              key={`err-row-${i}`}
+                              className="odd:bg-brand-surface/50"
+                            >
+                              <td className="px-2 py-1">{line ?? ''}</td>
+                              <td className={`px-2 py-1 ${colClass}`}>
+                                {column || ''}
+                              </td>
+                              <td className={`px-2 py-1 ${colClass}`}>
+                                {reason}
+                              </td>
+                              <td className="px-2 py-1">{hint}</td>
+                              <td className="px-2 py-1">{value || ''}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          const rows = derived.errors.map((e) => {
+                            const line =
+                              e && typeof e === 'object' ? (e.line ?? '') : '';
+                            const reason =
+                              e && typeof e === 'object'
+                                ? (e.error ?? JSON.stringify(e))
+                                : String(e);
+                            const row =
+                              e && typeof e === 'object' ? e.row || {} : {};
+                            const keys = Object.keys(row || {});
+                            let column = '';
+                            if (keys.includes('phone')) column = 'phone';
+                            else if (keys.includes('name')) column = 'name';
+                            else if (keys.includes('email')) column = 'email';
+                            else column = keys[0] || '';
+                            const value = column ? row[column] : '';
+                            const json = JSON.stringify(row);
+                            return `${line},${column},${JSON.stringify(reason)},${JSON.stringify(value)},${JSON.stringify(json)}`;
+                          });
+                          const header = 'line,column,reason,value,row_json';
+                          const csv = [header, ...rows].join('\n');
+                          const blob = new Blob([csv], { type: 'text/csv' });
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${entity}_errors.csv`;
+                          document.body.appendChild(a);
+                          a.click();
+                          a.remove();
+                          window.URL.revokeObjectURL(url);
+                        } catch (err) {
+                          void err;
+                        }
+                      }}
+                      className="rounded border border-brand-border bg-brand-light px-2 py-1"
+                    >
+                      {t(
+                        'settings.data.result.download_errors',
+                        'Baixar erros (CSV)'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-brand-surfaceForeground/60">
+                  {t(
+                    'settings.data.result.no_errors',
+                    'Nenhum erro encontrado'
+                  )}
+                </p>
+              )}
+            </div>
+          ) : null}
+        </>
       ) : null}
     </div>
   );
