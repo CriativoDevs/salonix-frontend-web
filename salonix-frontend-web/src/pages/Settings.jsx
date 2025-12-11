@@ -158,6 +158,7 @@ function DataSettingsStandalone() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState([]);
   const [header, setHeader] = useState([]);
+  const [previewDelimiter, setPreviewDelimiter] = useState(',');
   const [columnMap, setColumnMap] = useState([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -176,6 +177,28 @@ function DataSettingsStandalone() {
     const requestId = result?.request_id || null;
     return { summary, errors, created, updated, processed, skipped, requestId };
   }, [result]);
+
+  const errorBreakdown = useMemo(() => {
+    const byField = {};
+    const byReason = {};
+    (derived.errors || []).forEach((e) => {
+      const reason =
+        e && typeof e === 'object' ? (e.error ?? '') : String(e || '');
+      const row = e && typeof e === 'object' ? e.row || {} : {};
+      const keys = Object.keys(row || {});
+      let field = '';
+      if (keys.includes('phone')) field = 'phone';
+      else if (keys.includes('email')) field = 'email';
+      else if (keys.includes('name')) field = 'name';
+      else if (keys.includes('duration_minutes')) field = 'duration_minutes';
+      else if (keys.includes('price_eur')) field = 'price_eur';
+      else field = keys[0] || '';
+      const r = String(reason).toLowerCase();
+      if (field) byField[field] = (byField[field] || 0) + 1;
+      if (r) byReason[r] = (byReason[r] || 0) + 1;
+    });
+    return { by_field: byField, by_reason: byReason };
+  }, [derived.errors]);
 
   const track = useCallback((event, props = {}) => {
     try {
@@ -203,30 +226,45 @@ function DataSettingsStandalone() {
 
   const resolveTargetFields = useCallback(() => {
     if (entity === 'customers') return ['name', 'email', 'phone', 'ignore'];
-    if (entity === 'services') return ['name', 'price', 'duration', 'ignore'];
-    if (entity === 'staff') return ['name', 'email', 'phone', 'ignore'];
+    if (entity === 'services')
+      return ['name', 'duration_minutes', 'price_eur', 'ignore'];
+    if (entity === 'staff') return ['name', 'email', 'role', 'ignore'];
     return ['ignore'];
   }, [entity]);
 
   const guessField = useCallback(
     (text) => {
       const s = String(text || '').toLowerCase();
-      if (entity === 'customers' || entity === 'staff') {
+      if (entity === 'customers') {
         if (s.includes('email')) return 'email';
         if (
           s.includes('phone') ||
           s.includes('telefone') ||
           s.includes('celular') ||
-          s.includes('telem')
+          s.includes('telem') ||
+          s.includes('tel')
         )
           return 'phone';
         if (s.includes('name') || s.includes('nome')) return 'name';
         return 'ignore';
       }
+      if (entity === 'staff') {
+        if (s.includes('email')) return 'email';
+        if (s.includes('role') || s.includes('cargo') || s.includes('função'))
+          return 'role';
+        if (s.includes('name') || s.includes('nome')) return 'name';
+        return 'ignore';
+      }
       if (entity === 'services') {
         if (s.includes('price') || s.includes('preço') || s.includes('valor'))
-          return 'price';
-        if (s.includes('duration') || s.includes('duração')) return 'duration';
+          return 'price_eur';
+        if (
+          s.includes('duration') ||
+          s.includes('duração') ||
+          s.includes('minutos') ||
+          s.includes('mins')
+        )
+          return 'duration_minutes';
         if (s.includes('name') || s.includes('serviço') || s.includes('nome'))
           return 'name';
         return 'ignore';
@@ -235,6 +273,74 @@ function DataSettingsStandalone() {
     },
     [entity]
   );
+
+  const validateNormalizedCsv = useCallback((text, ent) => {
+    try {
+      const lines = String(text || '')
+        .split(/\r?\n/)
+        .filter((l) => l.trim() !== '');
+      if (!lines.length) return { errors: [], processed: 0 };
+      const headerLine = lines[0];
+      const delimiter = headerLine.includes(';') ? ';' : ',';
+      const headerCols = headerLine
+        .split(delimiter)
+        .map((s) => String(s || '').trim());
+      // header index not needed beyond mapping to rowObj
+      const errors = [];
+      let processed = 0;
+      const pushError = (lineNo, msg, rowObj) => {
+        errors.push({ line: lineNo, error: msg, row: rowObj });
+      };
+      for (let li = 1; li < lines.length; li++) {
+        const line = lines[li];
+        if (!line || !line.trim()) continue;
+        processed += 1;
+        const cols = line.split(delimiter);
+        const rowObj = {};
+        headerCols.forEach((h, i) => {
+          rowObj[h] = (cols[i] ?? '').trim();
+        });
+        if (ent === 'customers') {
+          const name = rowObj['name'] || '';
+          const email = (rowObj['email'] || '').toLowerCase();
+          const phone = rowObj['phone'] || '';
+          if (!name) pushError(li + 1, 'name obrigatório', rowObj);
+          if (email) {
+            const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            if (!ok) pushError(li + 1, 'email inválido', rowObj);
+          }
+          if (phone) {
+            const ok = /^[+]?\d{9,15}$/.test(phone.replace(/\s+/g, ''));
+            if (!ok) pushError(li + 1, 'phone inválido', rowObj);
+          }
+        } else if (ent === 'services') {
+          const name = rowObj['name'] || '';
+          const durationRaw = rowObj['duration_minutes'] || '';
+          const priceRaw = rowObj['price_eur'] || '';
+          if (!name) pushError(li + 1, 'name obrigatório', rowObj);
+          const duration = parseInt(String(durationRaw).trim(), 10);
+          if (!Number.isFinite(duration) || duration <= 0) {
+            pushError(li + 1, 'duration_minutes inválido', rowObj);
+          }
+          const priceNum = parseFloat(String(priceRaw).replace(',', '.'));
+          if (!Number.isFinite(priceNum) || priceNum < 0) {
+            pushError(li + 1, 'price_eur inválido', rowObj);
+          }
+        } else if (ent === 'staff') {
+          const name = rowObj['name'] || '';
+          const email = (rowObj['email'] || '').toLowerCase();
+          const role = (rowObj['role'] || '').toLowerCase();
+          if (!email) pushError(li + 1, 'email obrigatório', rowObj);
+          if (!name) pushError(li + 1, 'name obrigatório', rowObj);
+          const allowed = new Set(['owner', 'manager', 'collaborator']);
+          if (!allowed.has(role)) pushError(li + 1, 'role inválido', rowObj);
+        }
+      }
+      return { errors, processed };
+    } catch {
+      return { errors: [], processed: 0 };
+    }
+  }, []);
 
   const parseCsvPreview = async (f) => {
     try {
@@ -255,6 +361,19 @@ function DataSettingsStandalone() {
       setHeader(hdr);
       const defaults = hdr.map((h) => guessField(h));
       setColumnMap(defaults);
+      setPreviewDelimiter(delimiter);
+      const suggestions = defaults.reduce((acc, v) => {
+        acc[v] = (acc[v] || 0) + 1;
+        return acc;
+      }, {});
+      track('csv_import_preview_ready', {
+        tenant_slug: tenant?.slug || null,
+        entity,
+        columns: hdr.length,
+        rows_preview: Math.max(rows.length - 1, 0),
+        delimiter,
+        suggestions,
+      });
     } catch (e) {
       console.error('parseCsvPreview:error', e);
       setPreview([]);
@@ -268,6 +387,22 @@ function DataSettingsStandalone() {
       previewTableRef.current.focus();
     }
   }, [preview]);
+
+  useEffect(() => {
+    if (!header.length || !Array.isArray(columnMap) || !columnMap.length)
+      return;
+    const dist = columnMap.reduce((acc, v) => {
+      const k = v || 'ignore';
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    track('csv_import_mapping_state', {
+      tenant_slug: tenant?.slug || null,
+      entity,
+      mapped_columns: Object.values(dist).reduce((a, b) => a + b, 0),
+      distribution: dist,
+    });
+  }, [columnMap, header, entity, track, tenant?.slug]);
 
   const onFileChange = async (e) => {
     try {
@@ -287,6 +422,57 @@ function DataSettingsStandalone() {
     }
   };
 
+  const getFieldHelp = useCallback(
+    (field, ent) => {
+      const fe = ent || entity;
+      const f = String(field || '').toLowerCase();
+      if (fe === 'customers') {
+        if (f === 'name')
+          return t('settings.data.mapping.help_name', 'Nome do cliente');
+        if (f === 'email')
+          return t(
+            'settings.data.mapping.help_email',
+            'E-mail válido (ex: nome@dominio.com)'
+          );
+        if (f === 'phone')
+          return t(
+            'settings.data.mapping.help_phone',
+            'Telefone internacional (ex: +351XXXXXXXXX)'
+          );
+      }
+      if (fe === 'services') {
+        if (f === 'name')
+          return t(
+            'settings.data.mapping.help_service_name',
+            'Nome do serviço'
+          );
+        if (f === 'duration_minutes')
+          return t(
+            'settings.data.mapping.help_duration',
+            'Duração em minutos (inteiro > 0)'
+          );
+        if (f === 'price_eur')
+          return t(
+            'settings.data.mapping.help_price',
+            'Preço em EUR (ex: 12.50 ou 12,50)'
+          );
+      }
+      if (fe === 'staff') {
+        if (f === 'name')
+          return t('settings.data.mapping.help_staff_name', 'Nome completo');
+        if (f === 'email')
+          return t('settings.data.mapping.help_email', 'E-mail válido');
+        if (f === 'role')
+          return t(
+            'settings.data.mapping.help_role',
+            'Cargo: owner, manager ou collaborator'
+          );
+      }
+      return t('settings.data.mapping.help_ignore', 'Ignorar coluna');
+    },
+    [entity, t]
+  );
+
   useEffect(() => {
     console.log(
       'DataSettings:file_state_changed',
@@ -303,8 +489,19 @@ function DataSettingsStandalone() {
     const form = new FormData();
     let uploadBlob = null;
     let uploadName = file.name || 'upload.csv';
+    let normalizedTextRef = null;
+    const readTextSafe = async (obj) => {
+      try {
+        if (obj && typeof obj.text === 'function') {
+          return await obj.text();
+        }
+        return await new Response(obj).text();
+      } catch {
+        return '';
+      }
+    };
     try {
-      const text = await file.text();
+      const text = await readTextSafe(file);
       const firstLine = text.split(/\r?\n/)[0] || '';
       const usesSemicolon = firstLine.includes(';');
       let normalizedText = text;
@@ -382,12 +579,136 @@ function DataSettingsStandalone() {
             mapped.join(',') !== 'name,email,phone'
           ) {
             mapped = ['name', 'email', 'phone'].slice(0, cols2.length);
+          } else if (
+            entity === 'services' &&
+            mapped.join(',') !== 'name,duration_minutes,price_eur'
+          ) {
+            mapped = ['name', 'duration_minutes', 'price_eur'].slice(
+              0,
+              cols2.length
+            );
+          } else if (
+            entity === 'staff' &&
+            mapped.join(',') !== 'name,email,role'
+          ) {
+            mapped = ['name', 'email', 'role'].slice(0, cols2.length);
           }
           normalizedText = [mapped.join(delim2), ...lines2.slice(1)].join('\n');
+          const lines3 = normalizedText.split(/\r?\n/);
+          const headerLine3 = (lines3[0] || '').trim();
+          const delim3 = headerLine3.includes(',') ? ',' : ';';
+          const headerCols3 = headerLine3.split(delim3).map((s) =>
+            String(s || '')
+              .trim()
+              .toLowerCase()
+          );
+          const idxDuration = headerCols3.indexOf('duration_minutes');
+          const idxPrice = headerCols3.indexOf('price_eur');
+          const idxDate = (() => {
+            for (let i = 0; i < headerCols3.length; i++) {
+              const c = headerCols3[i];
+              if (
+                c === 'date' ||
+                c === 'data' ||
+                c === 'birthdate' ||
+                c === 'dob'
+              ) {
+                return i;
+              }
+            }
+            return -1;
+          })();
+          const idxEmail = headerCols3.indexOf('email');
+          const idxRole = headerCols3.indexOf('role');
+          const idxPhone2 = headerCols3.indexOf('phone');
+          const normRows = [lines3[0]];
+          for (let li = 1; li < lines3.length; li++) {
+            const line = lines3[li];
+            if (!line || !line.trim()) {
+              continue;
+            }
+            const cols = line.split(delim3).map((c) => String(c || ''));
+            if (idxDuration >= 0) {
+              let v = cols[idxDuration].trim();
+              if (v) {
+                if (/^\d+:\d{1,2}$/.test(v)) {
+                  const [h, m] = v.split(':').map((x) => parseInt(x, 10));
+                  const total =
+                    (Number.isFinite(h) ? h : 0) * 60 +
+                    (Number.isFinite(m) ? m : 0);
+                  cols[idxDuration] = String(total);
+                } else if (/^\d+\s*h(\s*\d+\s*m)?$/i.test(v)) {
+                  const parts = v.toLowerCase().split('h');
+                  const h = parseInt(parts[0].replace(/[^\d]/g, ''), 10);
+                  const m = parseInt(
+                    (parts[1] || '').replace(/[^\d]/g, ''),
+                    10
+                  );
+                  const total =
+                    (Number.isFinite(h) ? h : 0) * 60 +
+                    (Number.isFinite(m) ? m : 0);
+                  cols[idxDuration] = String(total);
+                } else {
+                  const num = parseInt(v.replace(/[^\d]/g, ''), 10);
+                  if (Number.isFinite(num)) cols[idxDuration] = String(num);
+                }
+              }
+            }
+            if (idxPrice >= 0) {
+              let p = cols[idxPrice].trim();
+              if (p) {
+                p = p.replace(/[^\d.,-]/g, '');
+                const num = parseFloat(p.replace(',', '.'));
+                if (Number.isFinite(num)) cols[idxPrice] = String(num);
+              }
+            }
+            if (idxDate >= 0) {
+              let d = cols[idxDate].trim();
+              if (d) {
+                const toIso = (y, m, dd) => {
+                  const mm = String(m).padStart(2, '0');
+                  const ddp = String(dd).padStart(2, '0');
+                  return `${y}-${mm}-${ddp}`;
+                };
+                if (/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/.test(d)) {
+                  const parts = d.split(/[-/.]/).map((x) => parseInt(x, 10));
+                  cols[idxDate] = toIso(parts[0], parts[1], parts[2]);
+                } else if (/^\d{1,2}[-/.]\d{1,2}[-/.]\d{4}$/.test(d)) {
+                  const parts = d.split(/[-/.]/).map((x) => parseInt(x, 10));
+                  const dd = parts[0];
+                  const mm = parts[1];
+                  const yy = parts[2];
+                  cols[idxDate] = toIso(yy, mm, dd);
+                }
+              }
+            }
+            if (idxEmail >= 0) {
+              cols[idxEmail] = cols[idxEmail].trim().toLowerCase();
+            }
+            if (idxRole >= 0) {
+              cols[idxRole] = cols[idxRole].trim().toLowerCase();
+            }
+            if (idxPhone2 >= 0) {
+              const raw = cols[idxPhone2].trim();
+              const digits = raw.replace(/[^\d+]/g, '');
+              let norm = digits;
+              if (digits.startsWith('+')) {
+                norm = digits;
+              } else if (digits.startsWith('00351')) {
+                norm = '+351' + digits.slice(5);
+              } else if (digits.startsWith('351')) {
+                norm = '+351' + digits.slice(3);
+              }
+              cols[idxPhone2] = norm;
+            }
+            normRows.push(cols.join(delim3));
+          }
+          normalizedText = normRows.join('\n');
         }
       } catch {
         // fallback: keep normalizedText as-is
       }
+      normalizedTextRef = normalizedText;
       uploadBlob = new Blob([normalizedText], { type: 'text/csv' });
     } catch {
       uploadBlob = file;
@@ -396,6 +717,98 @@ function DataSettingsStandalone() {
     form.append('file', uploadBlob, uploadName);
     const params = { dry_run: dryRun ? 'true' : 'false' };
     try {
+      const pre = validateNormalizedCsv(
+        normalizedTextRef !== null
+          ? normalizedTextRef
+          : await readTextSafe(uploadBlob),
+        entity
+      );
+      if (pre.errors.length && !dryRun) {
+        setResult({
+          summary: {
+            processed: pre.processed,
+            created: null,
+            updated: null,
+            skipped: null,
+            errors: pre.errors,
+          },
+          request_id: null,
+        });
+        const breakdown = (() => {
+          const byReason = {};
+          const byField = {};
+          for (const err of pre.errors) {
+            const r =
+              (err && typeof err === 'object' ? err.error : String(err)) || '';
+            const row = (err && typeof err === 'object' ? err.row : {}) || {};
+            const keys = Object.keys(row || {});
+            let field = '';
+            if (keys.includes('phone')) field = 'phone';
+            else if (keys.includes('email')) field = 'email';
+            else if (keys.includes('name')) field = 'name';
+            else if (keys.includes('duration_minutes'))
+              field = 'duration_minutes';
+            else if (keys.includes('price_eur')) field = 'price_eur';
+            else field = keys[0] || '';
+            const rr = String(r).toLowerCase();
+            byReason[rr] = (byReason[rr] || 0) + 1;
+            byField[field] = (byField[field] || 0) + 1;
+          }
+          return { by_reason: byReason, by_field: byField };
+        })();
+        track('csv_import_precheck_failed', {
+          tenant_slug: tenant?.slug || null,
+          entity,
+          file_name: uploadName,
+          file_size: file?.size || null,
+          errors_count: pre.errors.length,
+          errors_breakdown: breakdown,
+        });
+        return;
+      }
+      if (pre.errors.length && dryRun) {
+        setResult({
+          summary: {
+            processed: pre.processed,
+            created: null,
+            updated: null,
+            skipped: null,
+            errors: pre.errors,
+          },
+          request_id: null,
+        });
+        const breakdown = (() => {
+          const byReason = {};
+          const byField = {};
+          for (const err of pre.errors) {
+            const r =
+              (err && typeof err === 'object' ? err.error : String(err)) || '';
+            const row = (err && typeof err === 'object' ? err.row : {}) || {};
+            const keys = Object.keys(row || {});
+            let field = '';
+            if (keys.includes('phone')) field = 'phone';
+            else if (keys.includes('email')) field = 'email';
+            else if (keys.includes('name')) field = 'name';
+            else if (keys.includes('duration_minutes'))
+              field = 'duration_minutes';
+            else if (keys.includes('price_eur')) field = 'price_eur';
+            else field = keys[0] || '';
+            const rr = String(r).toLowerCase();
+            byReason[rr] = (byReason[rr] || 0) + 1;
+            byField[field] = (byField[field] || 0) + 1;
+          }
+          return { by_reason: byReason, by_field: byField };
+        })();
+        track('csv_import_precheck_failed', {
+          tenant_slug: tenant?.slug || null,
+          entity,
+          file_name: uploadName,
+          file_size: file?.size || null,
+          errors_count: pre.errors.length,
+          errors_breakdown: breakdown,
+        });
+        return;
+      }
       const headers = { 'Content-Type': 'multipart/form-data' };
       if (tenant?.slug) headers['X-Tenant-Slug'] = tenant.slug;
       const response = await client.post(`import/${entity}/`, form, {
@@ -422,6 +835,38 @@ function DataSettingsStandalone() {
         dryRun ? 'csv_import_dry_run_success' : 'csv_import_success',
         props
       );
+      if (errors.length) {
+        const breakdown = (() => {
+          const byReason = {};
+          const byField = {};
+          for (const err of errors) {
+            const r =
+              (err && typeof err === 'object' ? err.error : String(err)) || '';
+            const row = (err && typeof err === 'object' ? err.row : {}) || {};
+            const keys = Object.keys(row || {});
+            let field = '';
+            if (keys.includes('phone')) field = 'phone';
+            else if (keys.includes('email')) field = 'email';
+            else if (keys.includes('name')) field = 'name';
+            else if (keys.includes('duration_minutes'))
+              field = 'duration_minutes';
+            else if (keys.includes('price_eur')) field = 'price_eur';
+            else field = keys[0] || '';
+            const rr = String(r).toLowerCase();
+            byReason[rr] = (byReason[rr] || 0) + 1;
+            byField[field] = (byField[field] || 0) + 1;
+          }
+          return { by_reason: byReason, by_field: byField };
+        })();
+        track('csv_import_validation_breakdown', {
+          tenant_slug: tenant?.slug || null,
+          entity,
+          dry_run: Boolean(dryRun),
+          file_name: uploadName,
+          errors_count: errors.length,
+          errors_breakdown: breakdown,
+        });
+      }
     } catch (e) {
       const status = e?.response?.status;
       const message =
@@ -556,6 +1001,19 @@ function DataSettingsStandalone() {
       </div>
       {preview.length ? (
         <div className="overflow-auto rounded border border-brand-border">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-brand-border bg-brand-surface px-3 py-2 text-xs text-brand-surfaceForeground/80">
+            <span>
+              {t('settings.data.preview.columns', 'Colunas')}: {header.length}
+            </span>
+            <span>
+              {t('settings.data.preview.rows', 'Linhas (preview)')}:{' '}
+              {Math.max(preview.length - 1, 0)}
+            </span>
+            <span>
+              {t('settings.data.preview.delimiter', 'Delimitador')}:{' '}
+              {previewDelimiter === ';' ? ';' : ','}
+            </span>
+          </div>
           <table className="min-w-full text-left text-sm">
             <thead className="bg-brand-light">
               <tr>
@@ -564,7 +1022,47 @@ function DataSettingsStandalone() {
                     key={`h-${i}`}
                     className="px-3 py-2 text-xs font-semibold text-brand-surfaceForeground/70"
                   >
-                    {String(h || '').trim()}
+                    <span className="inline-flex items-center gap-2">
+                      {String(h || '').trim()}
+                      <span className="relative">
+                        <button
+                          type="button"
+                          className="rounded border border-brand-border bg-brand-light px-1 text-[10px]"
+                          aria-label={t(
+                            'settings.data.mapping.header_help',
+                            'Ajuda da coluna'
+                          )}
+                          onMouseEnter={(e) => {
+                            const el = e.currentTarget.nextSibling;
+                            if (el) el.style.display = 'block';
+                          }}
+                          onMouseLeave={(e) => {
+                            const el = e.currentTarget.nextSibling;
+                            if (el) el.style.display = 'none';
+                          }}
+                        >
+                          {t('common.help', '?')}
+                        </button>
+                        <div
+                          style={{
+                            display: 'none',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            borderColor: 'var(--border-primary)',
+                            border: '1px solid',
+                          }}
+                          className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-[11px] shadow-lg"
+                        >
+                          <div className="font-semibold">
+                            {t('settings.data.mapping.suggested', 'Sugestão')}:{' '}
+                            {guessField(h)}
+                          </div>
+                          <div className="mt-1">
+                            {getFieldHelp(guessField(h), entity)}
+                          </div>
+                        </div>
+                      </span>
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -586,7 +1084,7 @@ function DataSettingsStandalone() {
           </table>
         </div>
       ) : null}
-      {header.length && entity === 'customers' ? (
+      {header.length ? (
         <div className="rounded border border-brand-border bg-brand-surface p-3">
           <p className="text-xs font-medium text-brand-surfaceForeground/70">
             {t('settings.data.mapping.title', 'Mapeamento de colunas')}
@@ -601,10 +1099,18 @@ function DataSettingsStandalone() {
                   value={columnMap[i] || 'ignore'}
                   onChange={(e) => {
                     const v = e.target.value;
+                    const prevVal = columnMap[i] || 'ignore';
                     setColumnMap((prev) => {
                       const next = Array.from(prev);
                       next[i] = v;
                       return next;
+                    });
+                    track('csv_import_map_change', {
+                      tenant_slug: tenant?.slug || null,
+                      entity,
+                      column_index: i,
+                      from: prevVal,
+                      to: v,
                     });
                   }}
                   aria-label={
@@ -612,7 +1118,7 @@ function DataSettingsStandalone() {
                     ' ' +
                     h
                   }
-                  className="w-32 rounded border border-brand-border bg-brand-surface px-2 py-1 text-xs text-brand-surfaceForeground"
+                  className="w-40 rounded border border-brand-border bg-brand-surface px-2 py-1 text-xs text-brand-surfaceForeground"
                 >
                   {resolveTargetFields().map((opt) => (
                     <option key={`opt-${i}-${opt}`} value={opt}>
@@ -622,14 +1128,29 @@ function DataSettingsStandalone() {
                           ? t('settings.data.mapping.email', 'Email')
                           : opt === 'phone'
                             ? t('settings.data.mapping.phone', 'Telefone')
-                            : opt === 'price'
-                              ? t('settings.data.mapping.price', 'Preço')
-                              : opt === 'duration'
-                                ? t('settings.data.mapping.duration', 'Duração')
-                                : t('settings.data.mapping.ignore', 'Ignorar')}
+                            : opt === 'price_eur'
+                              ? t(
+                                  'settings.data.mapping.price_eur',
+                                  'Preço (EUR)'
+                                )
+                              : opt === 'duration_minutes'
+                                ? t(
+                                    'settings.data.mapping.duration_minutes',
+                                    'Duração (min)'
+                                  )
+                                : opt === 'role'
+                                  ? t('settings.data.mapping.role', 'Cargo')
+                                  : t(
+                                      'settings.data.mapping.ignore',
+                                      'Ignorar'
+                                    )}
                     </option>
                   ))}
                 </select>
+                <span className="text-[10px] text-brand-surfaceForeground/50">
+                  {t('settings.data.mapping.suggested', 'Sugestão')}:{' '}
+                  {guessField(h)}
+                </span>
               </div>
             ))}
           </div>
@@ -756,6 +1277,34 @@ function DataSettingsStandalone() {
               <p className="text-xs font-medium text-brand-surfaceForeground/70">
                 {t('settings.data.result.errors_title', 'Erros encontrados')}
               </p>
+              <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-brand-surfaceForeground/70">
+                    {t('settings.data.result.errors_by_field', 'Por campo')}:
+                  </span>
+                  {Object.entries(errorBreakdown.by_field).map(([k, v]) => (
+                    <span
+                      key={`bf-${k}`}
+                      className="rounded border border-brand-border bg-brand-light px-2 py-1"
+                    >
+                      {k} ({v})
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-brand-surfaceForeground/70">
+                    {t('settings.data.result.errors_by_reason', 'Por motivo')}:
+                  </span>
+                  {Object.entries(errorBreakdown.by_reason).map(([k, v]) => (
+                    <span
+                      key={`br-${k}`}
+                      className="rounded border border-brand-border bg-brand-light px-2 py-1"
+                    >
+                      {k} ({v})
+                    </span>
+                  ))}
+                </div>
+              </div>
               <div className="overflow-auto">
                 <table className="min-w-full text-left text-xs">
                   <thead className="bg-brand-light">
@@ -768,6 +1317,9 @@ function DataSettingsStandalone() {
                       </th>
                       <th className="px-2 py-1">
                         {t('settings.data.result.reason', 'Motivo')}
+                      </th>
+                      <th className="px-2 py-1">
+                        {t('settings.data.result.hint', 'Dica')}
                       </th>
                       <th className="px-2 py-1">
                         {t('settings.data.result.value', 'Valor')}
@@ -788,16 +1340,56 @@ function DataSettingsStandalone() {
                       if (keys.includes('phone')) column = 'phone';
                       else if (keys.includes('name')) column = 'name';
                       else if (keys.includes('email')) column = 'email';
+                      else if (keys.includes('duration_minutes'))
+                        column = 'duration_minutes';
+                      else if (keys.includes('price_eur')) column = 'price_eur';
                       else column = keys[0] || '';
                       const value = column ? row[column] : '';
+                      const hint = (() => {
+                        const r = String(reason || '').toLowerCase();
+                        if (column === 'email')
+                          return t(
+                            'settings.data.hints.email',
+                            'Use um e-mail válido: nome@dominio.com'
+                          );
+                        if (column === 'phone')
+                          return t(
+                            'settings.data.hints.phone',
+                            'Use formato internacional, ex: +351912345678'
+                          );
+                        if (column === 'name' && r.includes('obrigatório'))
+                          return t(
+                            'settings.data.hints.name_required',
+                            'Preencha o nome'
+                          );
+                        if (column === 'duration_minutes')
+                          return t(
+                            'settings.data.hints.duration',
+                            'Informe minutos numéricos. Ex: 90'
+                          );
+                        if (column === 'price_eur')
+                          return t(
+                            'settings.data.hints.price',
+                            'Informe número. Ex: 12.50'
+                          );
+                        return '';
+                      })();
+                      const colClass = /inválid|obrigatório/i.test(
+                        String(reason || '')
+                      )
+                        ? 'bg-red-50 text-red-600'
+                        : '';
                       return (
                         <tr
                           key={`err-row-${i}`}
                           className="odd:bg-brand-surface/50"
                         >
                           <td className="px-2 py-1">{line ?? ''}</td>
-                          <td className="px-2 py-1">{column || ''}</td>
-                          <td className="px-2 py-1">{reason}</td>
+                          <td className={`px-2 py-1 ${colClass}`}>
+                            {column || ''}
+                          </td>
+                          <td className={`px-2 py-1 ${colClass}`}>{reason}</td>
+                          <td className="px-2 py-1">{hint}</td>
                           <td className="px-2 py-1">{value || ''}</td>
                         </tr>
                       );
@@ -3133,3 +3725,4 @@ function Settings() {
 }
 
 export default Settings;
+export { DataSettingsStandalone };
