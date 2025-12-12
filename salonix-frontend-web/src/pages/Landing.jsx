@@ -147,6 +147,8 @@ function Landing() {
   const [activeShot, setActiveShot] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [installEvt, setInstallEvt] = useState(null);
+  const [installHelpOpen, setInstallHelpOpen] = useState(false);
 
   const toggleFaq = (i) => {
     setOpenFaqIndex((prev) => (prev === i ? null : i));
@@ -165,6 +167,101 @@ function Landing() {
 
   const toggleTheme = () => {
     setIsDarkTheme(!isDarkTheme);
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setInstallEvt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    const evt = installEvt;
+    if (evt) {
+      setInstallEvt(null);
+      try {
+        await evt.prompt();
+        await evt.userChoice;
+        return;
+      } catch (e) {
+        void e;
+      }
+    }
+    setInstallHelpOpen(true);
+  };
+
+  const renderInstallHelp = () => {
+    const ua = (
+      typeof navigator !== 'undefined' ? navigator.userAgent : ''
+    ).toLowerCase();
+    const isFirefox = ua.includes('firefox');
+    const isEdge = ua.includes('edg');
+    const isChrome =
+      ua.includes('chrome') && !ua.includes('edg') && !ua.includes('opr');
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isSafari = ua.includes('safari') && !ua.includes('chrome');
+    let steps = [];
+    if (isFirefox) {
+      steps = [
+        t('common.install_help.firefox.0', 'Abra o menu do navegador.'),
+        t(
+          'common.install_help.firefox.1',
+          'Escolha “Adicionar à tela inicial”.'
+        ),
+      ];
+    } else if (isChrome || isEdge) {
+      steps = [
+        t(
+          'common.install_help.chrome.0',
+          'Abra o menu ⋮ (Android) ou a barra de endereço (desktop).'
+        ),
+        t(
+          'common.install_help.chrome.1',
+          'Selecione “Instalar app” ou “Adicionar à tela inicial”.'
+        ),
+      ];
+    } else if (isSafari || isIOS) {
+      steps = [
+        t(
+          'common.install_help.safari.0',
+          'Toque em Compartilhar (ícone de seta).'
+        ),
+        t(
+          'common.install_help.safari.1',
+          'Escolha “Adicionar à Tela de Início”.'
+        ),
+      ];
+    } else {
+      steps = [
+        t(
+          'common.install_help.generic.0',
+          'Use o menu do navegador para instalar ou adicionar à tela inicial.'
+        ),
+      ];
+    }
+    return (
+      <Modal
+        open={installHelpOpen}
+        onClose={() => setInstallHelpOpen(false)}
+        title={t('common.install_help.title', 'Instalar aplicação')}
+        description={t(
+          'common.install_help.desc',
+          'Seu navegador pode não suportar o prompt automático. Siga as instruções:'
+        )}
+        size="sm"
+      >
+        <ol
+          className={`list-decimal space-y-2 pl-5 ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
+        >
+          {steps.map((s, i) => (
+            <li key={i}>{s}</li>
+          ))}
+        </ol>
+      </Modal>
+    );
   };
 
   const onScreenshotsScroll = () => {
@@ -224,6 +321,14 @@ function Landing() {
               className="mr-2"
             />
             <LanguageToggle />
+            <button
+              onClick={handleInstallClick}
+              className={`font-medium underline transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {t('landing.install_pwa', 'Instalar')}
+            </button>
             <Link
               to="/client/enter"
               className={`font-medium transition hover:opacity-80 ${
@@ -257,6 +362,14 @@ function Landing() {
               className="mr-1"
             />
             <LanguageToggle />
+            <button
+              onClick={handleInstallClick}
+              className={`font-medium underline transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {t('landing.install_pwa', 'Instalar')}
+            </button>
             <button
               type="button"
               aria-label={t('landing.nav.open_menu', 'Abrir menu')}
@@ -313,6 +426,7 @@ function Landing() {
           </div>
         </nav>
       </header>
+      {installHelpOpen ? renderInstallHelp() : null}
 
       <main>
         <section className="relative overflow-hidden">

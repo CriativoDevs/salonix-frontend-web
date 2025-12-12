@@ -75,7 +75,7 @@ export default function HeaderNav() {
     return allLinks.filter(
       (link) => !link.roles || link.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole, i18n.language]);
+  }, [t, currentUserRole]);
 
   // Links do menu hamburger (filtrados por permissão)
   const dropdownItems = useMemo(() => {
@@ -109,7 +109,7 @@ export default function HeaderNav() {
     return allItems.filter(
       (item) => !item.roles || item.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole, i18n.language]);
+  }, [t, currentUserRole]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
   const inactive =
