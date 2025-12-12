@@ -23,7 +23,7 @@ export default function ClientHeaderNav() {
       },
       { to: '/client/profile', label: t('client.nav.profile', 'Perfil') },
     ];
-  }, [t, i18n.language]);
+  }, [t]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
   const inactive =

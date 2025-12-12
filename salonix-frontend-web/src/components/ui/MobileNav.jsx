@@ -17,7 +17,6 @@ import { useStaff } from '../../hooks/useStaff';
 import BrandLogo from './BrandLogo';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
-import i18n from '../../i18n';
 
 function MobileNav() {
   const { t } = useTranslation();
@@ -74,7 +73,7 @@ function MobileNav() {
       });
     }
     return base;
-  }, [t, currentUserRole, i18n.language]);
+  }, [t, currentUserRole]);
 
   // Links do menu expandido (filtrados por permissão)
   const expandedLinks = useMemo(() => {
@@ -115,7 +114,7 @@ function MobileNav() {
     return allLinks.filter(
       (link) => !link.roles || link.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole, i18n.language]);
+  }, [t, currentUserRole]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 

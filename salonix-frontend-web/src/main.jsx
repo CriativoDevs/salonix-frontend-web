@@ -6,10 +6,12 @@ import './styles/index.css';
 import './styles/themes.css';
 import './i18n';
 import { getEnvVar } from './utils/env';
+import { registerServiceWorker } from './pwa/registerSw';
 
 if (typeof window !== 'undefined') {
   window.__DEFAULT_TENANT_SLUG__ =
-    window.__DEFAULT_TENANT_SLUG__ || getEnvVar('VITE_DEFAULT_TENANT_SLUG', 'timelyone');
+    window.__DEFAULT_TENANT_SLUG__ ||
+    getEnvVar('VITE_DEFAULT_TENANT_SLUG', 'timelyone');
 }
 
 createRoot(document.getElementById('root')).render(
@@ -17,3 +19,4 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>
 );
+registerServiceWorker();
