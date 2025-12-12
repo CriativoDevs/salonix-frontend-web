@@ -23,12 +23,17 @@ function CustomerForm({ onAdd, busy = false }) {
     const email = form.email.trim();
     const phone = form.phone_number.trim();
     if (!name) {
-      setError(t('customers.errors.name_required', 'Informe o nome do cliente.'));
+      setError(
+        t('customers.errors.name_required', 'Informe o nome do cliente.')
+      );
       return;
     }
     if (!email && !phone) {
       setError(
-        t('customers.errors.contact_required', 'Informe e-mail ou telefone para contato.'),
+        t(
+          'customers.errors.contact_required',
+          'Informe e-mail ou telefone para contato.'
+        )
       );
       return;
     }
@@ -53,7 +58,10 @@ function CustomerForm({ onAdd, busy = false }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-brand-border bg-brand-surface/80 p-4 shadow-sm">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-3 rounded-lg border border-brand-border bg-brand-surface/80 p-4 shadow-sm"
+    >
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col text-sm font-medium text-brand-surfaceForeground/80">
           {t('customers.form.name', 'Nome')}
@@ -65,7 +73,7 @@ function CustomerForm({ onAdd, busy = false }) {
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
-              borderColor: 'var(--border-primary)'
+              borderColor: 'var(--border-primary)',
             }}
             className="mt-1 rounded border px-3 py-2 text-sm"
           />
@@ -76,11 +84,14 @@ function CustomerForm({ onAdd, busy = false }) {
             type="email"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="cliente@email.com"
+            placeholder={t(
+              'customers.form.email_placeholder',
+              'cliente@email.com'
+            )}
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
-              borderColor: 'var(--border-primary)'
+              borderColor: 'var(--border-primary)',
             }}
             className="mt-1 rounded border px-3 py-2 text-sm"
           />
@@ -91,11 +102,11 @@ function CustomerForm({ onAdd, busy = false }) {
             type="tel"
             value={form.phone_number}
             onChange={(e) => handleChange('phone_number', e.target.value)}
-            placeholder="+351912345678"
+            placeholder={t('customers.form.phone_placeholder', '+351912345678')}
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
-              borderColor: 'var(--border-primary)'
+              borderColor: 'var(--border-primary)',
             }}
             className="mt-1 rounded border px-3 py-2 text-sm"
           />
@@ -106,11 +117,14 @@ function CustomerForm({ onAdd, busy = false }) {
             type="text"
             value={form.notes}
             onChange={(e) => handleChange('notes', e.target.value)}
-            placeholder={t('customers.form.notes_placeholder', 'Preferências, observações...')}
+            placeholder={t(
+              'customers.form.notes_placeholder',
+              'Preferências, observações...'
+            )}
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
-              borderColor: 'var(--border-primary)'
+              borderColor: 'var(--border-primary)',
             }}
             className="mt-1 rounded border px-3 py-2 text-sm"
           />
@@ -124,7 +138,10 @@ function CustomerForm({ onAdd, busy = false }) {
           onChange={(e) => handleChange('marketing_opt_in', e.target.checked)}
           className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
         />
-        {t('customers.form.marketing_opt_in', 'Aceita receber comunicações de marketing')}
+        {t(
+          'customers.form.marketing_opt_in',
+          'Aceita receber comunicações de marketing'
+        )}
       </label>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -135,7 +152,9 @@ function CustomerForm({ onAdd, busy = false }) {
           disabled={busy}
           className="text-sm font-medium text-[#7F7EED] hover:underline disabled:opacity-50"
         >
-          {busy ? t('common.saving', 'Salvando...') : t('customers.form.submit', 'Adicionar cliente')}
+          {busy
+            ? t('common.saving', 'Salvando...')
+            : t('customers.form.submit', 'Adicionar cliente')}
         </button>
       </div>
     </form>

@@ -640,7 +640,7 @@ function Customers() {
                                 onChange={(e) =>
                                   setEditingForm((prev) => ({ ...prev, email: e.target.value }))
                                 }
-                                placeholder="cliente@email.com"
+                                placeholder={t('customers.form.email_placeholder', 'cliente@email.com')}
                               />
                               <input
                                 className="w-full rounded px-2 py-1 text-sm"
@@ -657,7 +657,7 @@ function Customers() {
                                     phone_number: e.target.value,
                                   }))
                                 }
-                                placeholder="+351912345678"
+                                placeholder={t('customers.form.phone_placeholder', '+351912345678')}
                               />
                             </div>
                           ) : (

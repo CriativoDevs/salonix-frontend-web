@@ -211,7 +211,7 @@ function AvailableSlots() {
         </h1>
 
         <div className="mb-4 form-light">
-          <Label className="mb-1 block">Profissional</Label>
+          <Label className="mb-1 block">{t('slots.professional', 'Profissional')}</Label>
           <select
             value={selectedProfessional}
             onChange={(e) => setSelectedProfessional(e.target.value)}
@@ -234,7 +234,7 @@ function AvailableSlots() {
         </div>
 
         <div className="mb-4 form-light">
-          <Label className="mb-1 block">Ordenação</Label>
+          <Label className="mb-1 block">{t('slots.ordering', 'Ordenação')}</Label>
           <select
             value={sortOption}
             onChange={(e) => { setSortOption(e.target.value); setOffset(0); }}
@@ -248,8 +248,8 @@ function AvailableSlots() {
               colorScheme: 'light dark'
             }}
           >
-            <option value="-start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Mais recentes primeiro</option>
-            <option value="start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>Data mais antiga primeiro</option>
+            <option value="-start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('slots.order_newest', 'Mais recentes primeiro')}</option>
+            <option value="start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('slots.order_oldest', 'Data mais antiga primeiro')}</option>
           </select>
         </div>
 
@@ -301,7 +301,7 @@ function AvailableSlots() {
               />
             </div>
             <div>
-              <Label className="mb-1 block md:mb-0">Início</Label>
+              <Label className="mb-1 block md:mb-0">{t('slots.start_time', 'Início')}</Label>
               <div className="flex gap-2">
                 <select 
                   value={form.sh} 
@@ -396,7 +396,7 @@ function AvailableSlots() {
                 disabled={creating || !selectedProfessional}
                 className="text-sm font-medium text-[#1D29CF] hover:underline disabled:opacity-50"
               >
-                {t('common.create', 'Criar slot')}
+                {t('slots.create_slot', 'Criar slot')}
               </button>
             </div>
           </div>

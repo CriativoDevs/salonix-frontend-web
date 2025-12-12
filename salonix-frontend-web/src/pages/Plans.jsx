@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import {
@@ -12,6 +13,7 @@ import { useTenant } from '../hooks/useTenant';
 import useBillingOverview from '../hooks/useBillingOverview';
 
 function Plans() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { plan, slug } = useTenant();
   const {
@@ -65,14 +67,24 @@ function Plans() {
       if (url) {
         window.location.assign(url);
       } else {
-        setError({ message: 'Não foi possível obter o link de checkout.' });
+        setError({
+          message: t(
+            'plans.checkout_link_error',
+            'Não foi possível obter o link de checkout.'
+          ),
+        });
       }
     } catch (e) {
-      setError(parseApiError(e, 'Falha ao iniciar checkout.'));
+      setError(
+        parseApiError(
+          e,
+          t('plans.checkout_error', 'Falha ao iniciar checkout.')
+        )
+      );
     } finally {
       setLoading(false);
     }
-  }, [selected, slug]);
+  }, [selected, slug, t]);
 
   const onManage = useCallback(async () => {
     setManaging(true);
@@ -82,21 +94,34 @@ function Plans() {
       if (url) {
         window.location.assign(url);
       } else {
-        setError({ message: 'Não foi possível obter o link do portal.' });
+        setError({
+          message: t(
+            'plans.portal_link_error',
+            'Não foi possível obter o link do portal.'
+          ),
+        });
       }
     } catch (e) {
-      setError(parseApiError(e, 'Falha ao abrir o portal de faturação.'));
+      setError(
+        parseApiError(
+          e,
+          t('plans.portal_error', 'Falha ao abrir o portal de faturação.')
+        )
+      );
     } finally {
       setManaging(false);
     }
-  }, [slug]);
+  }, [slug, t]);
 
   return (
     <FullPageLayout>
-      <PageHeader title="Planos" subtitle="Escolha ou gerencie seu plano atual">
+      <PageHeader
+        title={t('plans.title', 'Planos')}
+        subtitle={t('plans.subtitle', 'Escolha ou gerencie seu plano atual')}
+      >
         {overview?.current_subscription?.plan_name || plan?.name ? (
           <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground">
-            Plano atual:{' '}
+            {t('plans.current_badge', 'Plano atual')}:{' '}
             {overview?.current_subscription?.plan_name || plan?.name}
           </span>
         ) : null}
@@ -104,15 +129,21 @@ function Plans() {
       <div className="mx-auto max-w-3xl p-6">
         {!isAuthenticated && (
           <div className="mb-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
-            É necessário iniciar sessão para concluir o checkout.
+            {t(
+              'plans.login_required',
+              'É necessário iniciar sessão para concluir o checkout.'
+            )}
           </div>
         )}
         {!overviewLoading &&
         overview &&
         (overview.trial_exhausted || overview.trial_eligible === false) ? (
           <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-            Aviso: seu período de teste de {overview.trial_days || 14} dias já
-            foi utilizado. A cobrança será imediata ao confirmar o checkout.
+            {t(
+              'plans.trial_exhausted',
+              'Aviso: seu período de teste de {{days}} dias já foi utilizado. A cobrança será imediata ao confirmar o checkout.',
+              { days: overview?.trial_days || 14 }
+            )}
           </div>
         ) : null}
         {!overviewLoading &&
@@ -120,8 +151,10 @@ function Plans() {
           overview.current_subscription &&
           overview.current_subscription.status !== 'trialing' && (
             <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-              Você já possui uma assinatura ativa. Qualquer mensagem de "14 dias
-              grátis" exibida no Stripe não se aplica; a cobrança é imediata.
+              {t(
+                'plans.already_active',
+                'Você já possui uma assinatura ativa. Qualquer mensagem de "14 dias grátis" exibida no Stripe não se aplica; a cobrança é imediata.'
+              )}
             </div>
           )}
         {error && (
@@ -141,12 +174,18 @@ function Plans() {
               }`}
               onClick={() => setSelected(p.code)}
             >
-              <div className="text-lg font-semibold">{p.name}</div>
-              <div className="mt-1 text-sm text-gray-600">{p.price}</div>
+              <div className="text-lg font-semibold">
+                {t(`plans.options.${p.code}.name`, p.name)}
+              </div>
+              <div className="mt-1 text-sm text-gray-600">
+                {t(`plans.options.${p.code}.price`, p.price)}
+              </div>
               {Array.isArray(p.highlights) && p.highlights.length ? (
                 <ul className="mt-2 list-disc pl-4 text-xs text-gray-500">
                   {p.highlights.slice(0, 3).map((h, idx) => (
-                    <li key={idx}>{h}</li>
+                    <li key={idx}>
+                      {t(`plans.options.${p.code}.highlights.${idx}`, h)}
+                    </li>
                   ))}
                 </ul>
               ) : null}
@@ -161,7 +200,9 @@ function Plans() {
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Aguarde…' : 'Continuar para checkout'}
+            {loading
+              ? t('common.processing', 'Aguarde…')
+              : t('plans.continue_checkout', 'Continuar para checkout')}
           </button>
           <span className="mx-2 text-gray-400">•</span>
           <button
@@ -170,12 +211,16 @@ function Plans() {
             onClick={onManage}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {managing ? 'Abrindo…' : 'Gerir plano'}
+            {managing
+              ? t('plans.opening', 'Abrindo…')
+              : t('plans.manage_plan', 'Gerir plano')}
           </button>
         </div>
         <p className="mt-3 text-xs text-gray-500">
-          Dica: defina VITE_BILLING_MOCK=true para simular checkout em
-          desenvolvimento.
+          {t(
+            'plans.dev_hint',
+            'Dica: defina VITE_BILLING_MOCK=true para simular checkout em desenvolvimento.'
+          )}
         </p>
       </div>
     </FullPageLayout>

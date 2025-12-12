@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, Navigate } from 'react-router-dom';
 import {
   CheckCircle,
@@ -20,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
+import LanguageToggle from '../components/ui/LanguageToggle';
 import { PLAN_OPTIONS } from '../api/billing';
 import Modal from '../components/ui/Modal';
 
@@ -109,17 +111,35 @@ const faqs = [
 ];
 
 const screenshots = [
-  { label: 'Agenda diária', src: '/screenshots/agenda.png' },
-  { label: 'Lista de clientes', src: '/screenshots/clientes.png' },
-  { label: 'Relatório mensal', src: '/screenshots/relatorio.png' },
   {
+    key: 'agenda_daily',
+    label: 'Agenda diária',
+    src: '/screenshots/agenda.png',
+  },
+  {
+    key: 'clients_list',
+    label: 'Lista de clientes',
+    src: '/screenshots/clientes.png',
+  },
+  {
+    key: 'monthly_report',
+    label: 'Relatório mensal',
+    src: '/screenshots/relatorio.png',
+  },
+  {
+    key: 'professionals_setup',
     label: 'Configuração de profissionais',
     src: '/screenshots/profissionais.png',
   },
-  { label: 'PWA cliente', src: '/screenshots/pwa-cliente.png' },
+  {
+    key: 'client_pwa',
+    label: 'PWA cliente',
+    src: '/screenshots/pwa-cliente.png',
+  },
 ];
 
 function Landing() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const screenshotsRef = useRef(null);
@@ -203,13 +223,14 @@ function Landing() {
               onToggle={toggleTheme}
               className="mr-2"
             />
+            <LanguageToggle />
             <Link
               to="/client/enter"
               className={`font-medium transition hover:opacity-80 ${
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              Área do Cliente
+              {t('landing.nav.client_area', 'Área do Cliente')}
             </Link>
             <Link
               to="/login"
@@ -217,7 +238,7 @@ function Landing() {
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              Entrar
+              {t('landing.nav.login', 'Entrar')}
             </Link>
             <Link
               to="/register"
@@ -225,7 +246,7 @@ function Landing() {
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              Registar
+              {t('landing.nav.register', 'Registar')}
             </Link>
           </div>
 
@@ -235,9 +256,10 @@ function Landing() {
               onToggle={toggleTheme}
               className="mr-1"
             />
+            <LanguageToggle />
             <button
               type="button"
-              aria-label="Abrir menu"
+              aria-label={t('landing.nav.open_menu', 'Abrir menu')}
               aria-expanded={mobileMenuOpen}
               aria-controls="landing-mobile-menu"
               onClick={() => setMobileMenuOpen((v) => !v)}
@@ -250,7 +272,7 @@ function Landing() {
               ) : (
                 <Menu className="h-5 w-5" />
               )}
-              Menu
+              {t('landing.nav.menu', 'Menu')}
             </button>
             {mobileMenuOpen && (
               <div
@@ -268,7 +290,7 @@ function Landing() {
                   className="block px-4 py-3 font-medium hover:opacity-80"
                   role="menuitem"
                 >
-                  Área do Cliente
+                  {t('landing.nav.client_area', 'Área do Cliente')}
                 </Link>
                 <Link
                   to="/login"
@@ -276,7 +298,7 @@ function Landing() {
                   className="block px-4 py-3 font-medium hover:opacity-80"
                   role="menuitem"
                 >
-                  Entrar
+                  {t('landing.nav.login', 'Entrar')}
                 </Link>
                 <Link
                   to="/register"
@@ -284,7 +306,7 @@ function Landing() {
                   className="block px-4 py-3 font-medium hover:opacity-80"
                   role="menuitem"
                 >
-                  Registar
+                  {t('landing.nav.register', 'Registar')}
                 </Link>
               </div>
             )}
@@ -302,31 +324,46 @@ function Landing() {
                   : 'bg-slate-900/10 text-slate-700'
               }`}
             >
-              Gestão e Agendamento Inteligente
+              {t('landing.hero.tag', 'Gestão e Agendamento Inteligente')}
             </p>
             <h1
               className={`text-4xl font-bold tracking-tight md:text-5xl transition-colors duration-300 ${
                 isDarkTheme ? 'text-slate-100' : 'text-slate-900'
               }`}
             >
-              A plataforma premium de agendamento e gestão para negócios modernos.
+              {t(
+                'landing.hero.title',
+                'A plataforma premium de agendamento e gestão para negócios modernos.'
+              )}
             </h1>
             <p
               className={`max-w-2xl text-lg transition-colors duration-300 ${
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              O TimelyOne automatiza horários, reduz faltas, melhora a
-              experiência dos clientes e profissionaliza a operação do seu negócio
-              — tudo num painel rápido, elegante e pronto para equipas de
-              qualquer dimensão.
+              {t(
+                'landing.hero.subtitle',
+                'O TimelyOne automatiza horários, reduz faltas, melhora a experiência dos clientes e profissionaliza a operação do seu negócio — tudo num painel rápido, elegante e pronto para equipas de qualquer dimensão.'
+              )}
             </p>
             <ul className="mt-2 grid max-w-2xl gap-2 text-sm sm:grid-cols-2">
               {[
-                'Reduza faltas até 35% com lembretes automáticos.',
-                'Agendamentos 24/7, mesmo fora do horário.',
-                'Interface intuitiva para equipa e clientes.',
-                'Pronto para escalar: freelancers → franquias.',
+                t(
+                  'landing.hero.bullets.0',
+                  'Reduza faltas até 35% com lembretes automáticos.'
+                ),
+                t(
+                  'landing.hero.bullets.1',
+                  'Agendamentos 24/7, mesmo fora do horário.'
+                ),
+                t(
+                  'landing.hero.bullets.2',
+                  'Interface intuitiva para equipa e clientes.'
+                ),
+                t(
+                  'landing.hero.bullets.3',
+                  'Pronto para escalar: freelancers → franquias.'
+                ),
               ].map((b) => (
                 <li
                   key={b}
@@ -345,13 +382,13 @@ function Landing() {
                     : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500'
                 }`}
               >
-                Começar período trial (14 dias)
+                {t('landing.hero.cta_start', 'Começar período trial (14 dias)')}
               </Link>
               <a
                 href="#pricing"
                 className={`text-sm font-medium ${isDarkTheme ? 'text-slate-300 hover:text-slate-200' : 'text-slate-700 hover:text-slate-900'}`}
               >
-                Ver planos e preços
+                {t('landing.hero.cta_pricing', 'Ver planos e preços')}
               </a>
             </div>
           </div>
@@ -360,10 +397,10 @@ function Landing() {
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h2 className="text-3xl font-semibold text-center">
-              Resultados que falam por si.
+              {t('landing.results.title', 'Resultados que falam por si.')}
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {metrics.map((m) => (
+              {metrics.map((m, i) => (
                 <div
                   key={m.label}
                   className={`rounded-lg border p-6 text-center transition hover:-translate-y-0.5 hover:shadow-md ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-slate-200 bg-white'}`}
@@ -373,7 +410,7 @@ function Landing() {
                   <p
                     className={`text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
                   >
-                    {m.label}
+                    {t(`landing.results.metrics.${i}`, m.label)}
                   </p>
                 </div>
               ))}
@@ -386,7 +423,10 @@ function Landing() {
             <h2
               className={`text-3xl font-semibold text-center ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
             >
-              O dia a dia do seu negócio não precisa ser caótico.
+              {t(
+                'landing.problem.title',
+                'O dia a dia do seu negócio não precisa ser caótico.'
+              )}
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-2">
               <div
@@ -395,12 +435,42 @@ function Landing() {
                 <ul
                   className={`${isDarkTheme ? 'text-slate-300' : 'text-slate-700'} space-y-2 text-sm`}
                 >
-                  <li>Ligações constantes a pedir horários</li>
-                  <li>Confusão com agendas diferentes</li>
-                  <li>Profissionais a gerir reservas no telemóvel</li>
-                  <li>Faltas de clientes sem aviso</li>
-                  <li>Clientes frustrados ao tentar remarcar</li>
-                  <li>Falta de visibilidade sobre desempenho e faturação</li>
+                  <li>
+                    {t(
+                      'landing.problem.items.0',
+                      'Ligações constantes a pedir horários'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.problem.items.1',
+                      'Confusão com agendas diferentes'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.problem.items.2',
+                      'Profissionais a gerir reservas no telemóvel'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.problem.items.3',
+                      'Faltas de clientes sem aviso'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.problem.items.4',
+                      'Clientes frustrados ao tentar remarcar'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.problem.items.5',
+                      'Falta de visibilidade sobre desempenho e faturação'
+                    )}
+                  </li>
                 </ul>
               </div>
               <div
@@ -409,19 +479,49 @@ function Landing() {
                 <p
                   className={`text-sm font-semibold ${isDarkTheme ? 'text-slate-200' : 'text-slate-800'}`}
                 >
-                  TimelyOne resolve tudo automaticamente:
+                  {t(
+                    'landing.solution.title',
+                    'TimelyOne resolve tudo automaticamente:'
+                  )}
                 </p>
                 <ul
                   className={`${isDarkTheme ? 'text-slate-300' : 'text-slate-700'} mt-3 space-y-2 text-sm`}
                 >
-                  <li>Agenda unificada para toda a equipa</li>
-                  <li>Agendamentos online para clientes</li>
-                  <li>Sincronização automática entre unidades</li>
-                  <li>Lembretes automáticos por email / SMS / WhatsApp</li>
-                  <li>Painel com KPIs, fluxo diário e histórico</li>
                   <li>
-                    Relatórios inteligentes: faturação, serviços, horários,
-                    ocupação
+                    {t(
+                      'landing.solution.items.0',
+                      'Agenda unificada para toda a equipa'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.solution.items.1',
+                      'Agendamentos online para clientes'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.solution.items.2',
+                      'Sincronização automática entre unidades'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.solution.items.3',
+                      'Lembretes automáticos por email / SMS / WhatsApp'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.solution.items.4',
+                      'Painel com KPIs, fluxo diário e histórico'
+                    )}
+                  </li>
+                  <li>
+                    {t(
+                      'landing.solution.items.5',
+                      'Relatórios inteligentes: faturação, serviços, horários, ocupação'
+                    )}
                   </li>
                 </ul>
               </div>
@@ -434,13 +534,15 @@ function Landing() {
         >
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h2 className="text-3xl font-semibold text-center">
-              Veja antes de experimentar.
+              {t('landing.usability.title', 'Veja antes de experimentar.')}
             </h2>
             <p
               className={`mt-2 text-center text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-200'}`}
             >
-              Usabilidade pensada ao detalhe. Rápido, intuitivo e pronto para
-              qualquer equipa.
+              {t(
+                'landing.usability.caption',
+                'Usabilidade pensada ao detalhe. Rápido, intuitivo e pronto para qualquer equipa.'
+              )}
             </p>
             <div className="mt-8">
               <div className="flex items-center justify-between">
@@ -449,14 +551,14 @@ function Landing() {
                   onClick={() => scrollScreenshots('prev')}
                   className="font-medium text-indigo-300 hover:text-indigo-200"
                 >
-                  Anterior
+                  {t('pagination.prev', 'Anterior')}
                 </button>
                 <button
                   type="button"
                   onClick={() => scrollScreenshots('next')}
                   className="font-medium text-indigo-300 hover:text-indigo-200"
                 >
-                  Seguinte
+                  {t('pagination.next', 'Seguinte')}
                 </button>
               </div>
               <div
@@ -474,14 +576,14 @@ function Landing() {
                       <div className="h-40 w-full overflow-hidden rounded-lg">
                         <img
                           src={shot.src}
-                          alt={shot.label}
+                          alt={t(`landing.screenshots.${shot.key}`, shot.label)}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
                       <p
                         className={`mt-3 text-center text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-200'}`}
                       >
-                        {shot.label}
+                        {t(`landing.screenshots.${shot.key}`, shot.label)}
                       </p>
                     </div>
                   ))}
@@ -501,12 +603,18 @@ function Landing() {
           <Modal
             open={!!activeShot}
             onClose={() => setActiveShot(null)}
-            title={activeShot.label}
+            title={t(
+              `landing.screenshots.${activeShot?.key || 'item'}`,
+              activeShot?.label || ''
+            )}
             size="lg"
           >
             <img
               src={activeShot.src}
-              alt={activeShot.label}
+              alt={t(
+                `landing.screenshots.${activeShot?.key || 'item'}`,
+                activeShot?.label || ''
+              )}
               className="max-h-[70vh] w-full rounded-lg object-contain"
             />
             <div className="mt-4 text-right">
@@ -516,7 +624,7 @@ function Landing() {
                 rel="noreferrer"
                 className="font-medium text-indigo-300 hover:text-indigo-200"
               >
-                Abrir em nova aba
+                {t('landing.usability.open_new_tab', 'Abrir em nova aba')}
               </a>
             </div>
           </Modal>
@@ -527,49 +635,100 @@ function Landing() {
             <h2
               className={`text-3xl font-semibold text-center ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
             >
-              A sua operação, totalmente digital.
+              {t(
+                'landing.digital.title',
+                'A sua operação, totalmente digital.'
+              )}
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
                   icon: Calendar,
-                  title: 'Agendamentos 24/7',
-                  desc: 'Reservas online a qualquer hora, com confirmação automática.',
+                  title: t(
+                    'landing.features.items.0.title',
+                    'Agendamentos 24/7'
+                  ),
+                  desc: t(
+                    'landing.features.items.0.desc',
+                    'Reservas online a qualquer hora, com confirmação automática.'
+                  ),
                 },
                 {
                   icon: Users,
-                  title: 'Gestão de Equipa',
-                  desc: 'Horários, folgas, salas, cadeiras e mais.',
+                  title: t(
+                    'landing.features.items.1.title',
+                    'Gestão de Equipa'
+                  ),
+                  desc: t(
+                    'landing.features.items.1.desc',
+                    'Horários, folgas, salas, cadeiras e mais.'
+                  ),
                 },
                 {
                   icon: Bell,
-                  title: 'Lembretes Inteligentes',
-                  desc: 'Email, SMS e WhatsApp para reduzir faltas.',
+                  title: t(
+                    'landing.features.items.2.title',
+                    'Lembretes Inteligentes'
+                  ),
+                  desc: t(
+                    'landing.features.items.2.desc',
+                    'Email, SMS e WhatsApp para reduzir faltas.'
+                  ),
                 },
                 {
                   icon: Smartphone,
-                  title: 'PWA Equipa e Clientes',
-                  desc: 'Instalável no telemóvel, sem lojas tradicionais.',
+                  title: t(
+                    'landing.features.items.3.title',
+                    'PWA Equipa e Clientes'
+                  ),
+                  desc: t(
+                    'landing.features.items.3.desc',
+                    'Instalável no telemóvel, sem lojas tradicionais.'
+                  ),
                 },
                 {
                   icon: BarChart3,
-                  title: 'Relatórios em Tempo Real',
-                  desc: 'Faturação, ocupação e serviços mais vendidos.',
+                  title: t(
+                    'landing.features.items.4.title',
+                    'Relatórios em Tempo Real'
+                  ),
+                  desc: t(
+                    'landing.features.items.4.desc',
+                    'Faturação, ocupação e serviços mais vendidos.'
+                  ),
                 },
                 {
                   icon: Building2,
-                  title: 'Escalável para Franquias',
-                  desc: 'Permissões e relatórios consolidados.',
+                  title: t(
+                    'landing.features.items.5.title',
+                    'Escalável para Franquias'
+                  ),
+                  desc: t(
+                    'landing.features.items.5.desc',
+                    'Permissões e relatórios consolidados.'
+                  ),
                 },
                 {
                   icon: Globe,
-                  title: 'Domínio Personalizado (Pro)',
-                  desc: 'Marca e URL próprios.',
+                  title: t(
+                    'landing.features.items.6.title',
+                    'Domínio Personalizado (Pro)'
+                  ),
+                  desc: t(
+                    'landing.features.items.6.desc',
+                    'Marca e URL próprios.'
+                  ),
                 },
                 {
                   icon: Plug,
-                  title: 'Integrações (Enterprise)',
-                  desc: 'Google Calendar, Stripe e mais.',
+                  title: t(
+                    'landing.features.items.7.title',
+                    'Integrações (Enterprise)'
+                  ),
+                  desc: t(
+                    'landing.features.items.7.desc',
+                    'Google Calendar, Stripe e mais.'
+                  ),
                 },
               ].map((f) => (
                 <div
@@ -599,10 +758,16 @@ function Landing() {
           <div className="mx-auto max-w-6xl px-4 py-20">
             <div className="text-center">
               <h2 className="text-3xl font-semibold">
-                Planos claros. Sem taxas escondidas.
+                {t(
+                  'landing.pricing.title',
+                  'Planos claros. Sem taxas escondidas.'
+                )}
               </h2>
               <p className="mt-2 text-sm text-slate-300">
-                Escolha o plano que acompanha o crescimento do seu negócio.
+                {t(
+                  'landing.pricing.subtitle',
+                  'Escolha o plano que acompanha o crescimento do seu negócio.'
+                )}
               </p>
             </div>
 
@@ -619,35 +784,47 @@ function Landing() {
                   <div className="flex-1 space-y-3">
                     {plan.code === 'standard' && (
                       <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
-                        Mais escolhido
+                        {t('landing.pricing.most_chosen', 'Mais escolhido')}
                       </span>
                     )}
                     {plan.code === 'enterprise' && (
                       <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
-                        Em breve
+                        {t('common.coming_soon', 'Em breve')}
                       </span>
                     )}
-                    <h3 className="text-2xl font-semibold">{plan.name}</h3>
-                    <p className="text-3xl font-bold">{plan.price}</p>
+                    <h3 className="text-2xl font-semibold">
+                      {t(`plans.options.${plan.code}.name`, plan.name)}
+                    </h3>
+                    <p className="text-3xl font-bold">
+                      {t(`plans.options.${plan.code}.price`, plan.price)}
+                    </p>
                     <ul className="mt-4 space-y-2 text-sm text-slate-300">
-                      {plan.highlights.map((highlight) => (
-                        <li key={highlight} className="flex items-start gap-2">
+                      {plan.highlights.map((highlight, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
                           <CheckCircle className="mt-0.5 h-4 w-4 text-emerald-400" />
-                          <span>{highlight}</span>
+                          <span>
+                            {t(
+                              `plans.options.${plan.code}.highlights.${idx}`,
+                              highlight
+                            )}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   </div>
                   {plan.code === 'enterprise' ? (
                     <span className="mt-6 inline-block font-medium text-slate-300">
-                      Em breve
+                      {t('common.coming_soon', 'Em breve')}
                     </span>
                   ) : (
                     <Link
                       to="/register"
                       className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
                     >
-                      Iniciar 14 dias grátis
+                      {t(
+                        'landing.pricing.start_trial',
+                        'Iniciar 14 dias grátis'
+                      )}
                     </Link>
                   )}
                 </div>
@@ -661,7 +838,7 @@ function Landing() {
             <h2
               className={`text-3xl font-semibold text-center ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
             >
-              Começar é simples.
+              {t('landing.steps.title', 'Começar é simples.')}
             </h2>
             <div className="mt-10 grid gap-6 sm:grid-cols-3">
               {[
@@ -693,12 +870,12 @@ function Landing() {
                   <h4
                     className={`mt-3 text-sm font-semibold ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
                   >
-                    {step.title}
+                    {t(`landing.steps.${step.n}.title`, step.title)}
                   </h4>
                   <p
                     className={`mt-1 text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
                   >
-                    {step.desc}
+                    {t(`landing.steps.${step.n}.desc`, step.desc)}
                   </p>
                 </div>
               ))}
@@ -709,24 +886,29 @@ function Landing() {
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24 text-center">
             <h2 className="text-3xl font-semibold">
-              Criado para negócios reais.
+              {t('landing.niches.title', 'Criado para negócios reais.')}
             </h2>
             <p
               className={`mt-2 text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-600'}`}
             >
-              Adapta-se ao seu fluxo — seja qual for o setor.
+              {t(
+                'landing.niches.subtitle',
+                'Adapta-se ao seu fluxo — seja qual for o setor.'
+              )}
             </p>
             <div className="mt-8 grid gap-6 sm:grid-cols-3 lg:grid-cols-5">
-              {niches.map((n) => (
+              {niches.map((n, i) => (
                 <div
                   key={n.title}
                   className={`rounded-lg border p-6 transition hover:-translate-y-0.5 hover:shadow-md ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-slate-200 bg-white'}`}
                 >
-                  <h4 className="text-sm font-semibold">{n.title}</h4>
+                  <h4 className="text-sm font-semibold">
+                    {t(`landing.niches.items.${i}.title`, n.title)}
+                  </h4>
                   <p
                     className={`mt-1 text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}
                   >
-                    {n.desc}
+                    {t(`landing.niches.items.${i}.desc`, n.desc)}
                   </p>
                 </div>
               ))}
@@ -737,13 +919,25 @@ function Landing() {
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h2 className="text-3xl font-semibold text-center">
-              Profissionais reais. Resultados reais.
+              {t(
+                'landing.testimonials.title',
+                'Profissionais reais. Resultados reais.'
+              )}
             </h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
               {[
-                'Reduzimos as faltas em 40% no primeiro mês.',
-                'A minha equipa deixou de gerir horários no WhatsApp.',
-                'O painel é rápido, intuitivo e realmente profissional.',
+                t(
+                  'landing.testimonials.quotes.0',
+                  'Reduzimos as faltas em 40% no primeiro mês.'
+                ),
+                t(
+                  'landing.testimonials.quotes.1',
+                  'A minha equipa deixou de gerir horários no WhatsApp.'
+                ),
+                t(
+                  'landing.testimonials.quotes.2',
+                  'O painel é rápido, intuitivo e realmente profissional.'
+                ),
               ].map((q, i) => (
                 <div
                   key={i}
@@ -761,14 +955,16 @@ function Landing() {
             <p
               className={`mt-6 text-center text-sm ${isDarkTheme ? 'text-slate-400' : 'text-slate-600'}`}
             >
-              Avaliação média: ★ 4.9 / 5.0
+              {t('landing.testimonials.rating', 'Avaliação média: ★ 4.9 / 5.0')}
             </p>
           </div>
         </section>
 
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24">
-            <h2 className="text-3xl font-semibold text-center">FAQ</h2>
+            <h2 className="text-3xl font-semibold text-center">
+              {t('landing.faq.title', 'FAQ')}
+            </h2>
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
               {faqs.map((item, i) => {
                 const isOpen = openFaqIndex === i;
@@ -790,7 +986,7 @@ function Landing() {
                       <span className="flex items-center gap-2">
                         <HelpCircle className="h-5 w-5" />
                         <span className="font-medium text-indigo-300 hover:text-indigo-200">
-                          {item.q}
+                          {t(`landing.faq.items.${i}.q`, item.q)}
                         </span>
                       </span>
                       <ArrowRight
@@ -808,7 +1004,7 @@ function Landing() {
                       <p
                         className={`text-sm ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
                       >
-                        {item.a}
+                        {t(`landing.faq.items.${i}.a`, item.a)}
                       </p>
                     </div>
                   </div>
@@ -823,15 +1019,18 @@ function Landing() {
         >
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h2 className="text-3xl font-semibold">
-              Segurança e privacidade de nível profissional.
+              {t(
+                'landing.security.title',
+                'Segurança e privacidade de nível profissional.'
+              )}
             </h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                'Compatível com RGPD',
-                'Dados encriptados',
-                'Backups recorrentes',
-                'Infraestrutura escalável',
-                'Alojamento europeu opcional',
+                t('landing.security.items.0', 'Compatível com RGPD'),
+                t('landing.security.items.1', 'Dados encriptados'),
+                t('landing.security.items.2', 'Backups recorrentes'),
+                t('landing.security.items.3', 'Infraestrutura escalável'),
+                t('landing.security.items.4', 'Alojamento europeu opcional'),
               ].map((s) => (
                 <div
                   key={s}
@@ -848,7 +1047,10 @@ function Landing() {
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24 text-center">
             <h2 className="text-3xl font-semibold">
-              Crie a sua conta gratuita — leve o seu salão para o próximo nível.
+              {t(
+                'landing.final_cta.title',
+                'Crie a sua conta gratuita — leve o seu salão para o próximo nível.'
+              )}
             </h2>
             <Link
               to="/register"
@@ -858,7 +1060,7 @@ function Landing() {
                   : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500'
               }`}
             >
-              Começar agora (14 dias grátis)
+              {t('landing.final_cta.cta', 'Começar agora (14 dias grátis)')}
             </Link>
           </div>
         </section>
@@ -877,24 +1079,27 @@ function Landing() {
           }`}
         >
           <p>
-            © {new Date().getFullYear()} Criativo Devs. Todos os direitos
-            reservados.
+            {t(
+              'landing.footer.copyright',
+              '© {{year}} Criativo Devs. Todos os direitos reservados.',
+              { year: new Date().getFullYear() }
+            )}
           </p>
           <div className="flex gap-4">
             <a href="#pricing" className="transition hover:opacity-80">
-              Planos
+              {t('landing.footer.pricing', 'Planos')}
             </a>
             <Link
               to="/client/enter"
               className="transition hover:text-slate-800"
             >
-              Área do Cliente
+              {t('landing.footer.client_area', 'Área do Cliente')}
             </Link>
             <Link to="/login" className="transition hover:text-slate-800">
-              Entrar
+              {t('landing.footer.login', 'Entrar')}
             </Link>
             <Link to="/register" className="transition hover:text-slate-800">
-              Registar
+              {t('landing.footer.register', 'Registar')}
             </Link>
           </div>
         </div>

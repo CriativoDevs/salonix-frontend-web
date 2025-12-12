@@ -121,11 +121,14 @@ export default function Reports() {
   // Toast notifications based on data loading state
   useEffect(() => {
     if (reportsError) {
-      showError('Erro ao carregar relatórios. Tente novamente.');
+      showError(t('reports.error', 'Erro ao carregar relatórios'));
     } else if (reportsData && !reportsLoading) {
-      showSuccess('Relatórios carregados com sucesso!');
+      const key = activeTab === 'basic'
+        ? 'reports.basic.data_loaded'
+        : 'reports.advanced.data_loaded';
+      showSuccess(t(key, 'Relatórios carregados com sucesso!'));
     }
-  }, [reportsData, reportsError, reportsLoading, showSuccess, showError]);
+  }, [reportsData, reportsError, reportsLoading, showSuccess, showError, activeTab, t]);
 
   // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
   const hasAdvancedReports = useMemo(() => {

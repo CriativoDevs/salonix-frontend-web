@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 
 function Modal({
@@ -10,6 +11,7 @@ function Modal({
   footer = null,
   size = 'md',
 }) {
+  const { t } = useTranslation();
   useEffect(() => {
     if (!open || typeof document === 'undefined') {
       return undefined;
@@ -68,7 +70,7 @@ function Modal({
           type="button"
           onClick={() => onClose?.()}
           className="absolute right-3 top-3 rounded-full bg-brand-light p-1 text-brand-surfaceForeground/60 hover:bg-brand-light/80 hover:text-brand-surfaceForeground focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
-          aria-label="Fechar"
+          aria-label={t('common.close', 'Fechar')}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import i18n from '../i18n';
 import {
   getAccessToken,
   getRefreshToken,
@@ -41,6 +42,8 @@ client.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  const lang = String(i18n?.language || 'pt').toLowerCase();
+  config.headers['Accept-Language'] = lang === 'pt' ? 'pt-PT' : 'en';
   return config;
 });
 
