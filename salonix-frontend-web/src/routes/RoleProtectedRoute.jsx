@@ -75,10 +75,12 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
         );
         return 'owner';
       }
+      // Novo tenant frequentemente não possui staff listado ainda.
+      // Para não bloquear o owner recém-criado, conceder owner como fallback seguro.
       console.log(
-        '[RoleProtectedRoute] Default user, assigning collaborator role'
+        '[RoleProtectedRoute] Default fallback: granting owner role (new tenant)'
       );
-      return 'collaborator';
+      return 'owner';
     }
 
     const email =
@@ -104,7 +106,21 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
     });
 
     console.log('[RoleProtectedRoute] Match found:', match);
-    return match?.role || null;
+    if (match?.role) return match.role;
+
+    // Fallback adicional: se o tenant possui exatamente um owner ativo,
+    // conceder owner quando não há match explícito (novo tenant recém-criado).
+    const owners = Array.isArray(staff)
+      ? staff.filter((m) => m?.role === 'owner' && m?.status !== 'disabled')
+      : [];
+    if (owners.length === 1) {
+      console.log(
+        '[RoleProtectedRoute] Single owner detected; granting owner role as fallback'
+      );
+      return 'owner';
+    }
+
+    return null;
   }, [staff, user, forbidden, staffError]);
 
   if (isLoading || staffLoading) {

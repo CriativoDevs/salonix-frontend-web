@@ -20,7 +20,7 @@ function Plans() {
     overview,
     loading: overviewLoading,
     refresh: refreshOverview,
-  } = useBillingOverview();
+  } = useBillingOverview({ pollIntervalMs: 3000 });
   const [selected, setSelected] = useState('standard');
   const [loading, setLoading] = useState(false);
   const [managing, setManaging] = useState(false);
