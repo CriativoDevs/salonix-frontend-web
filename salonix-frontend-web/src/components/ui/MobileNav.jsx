@@ -16,6 +16,8 @@ import { useTenant } from '../../hooks/useTenant';
 import { useStaff } from '../../hooks/useStaff';
 import BrandLogo from './BrandLogo';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
+import i18n from '../../i18n';
 
 function MobileNav() {
   const { t } = useTranslation();
@@ -72,7 +74,7 @@ function MobileNav() {
       });
     }
     return base;
-  }, [t, currentUserRole]);
+  }, [t, currentUserRole, i18n.language]);
 
   // Links do menu expandido (filtrados por permissão)
   const expandedLinks = useMemo(() => {
@@ -113,7 +115,7 @@ function MobileNav() {
     return allLinks.filter(
       (link) => !link.roles || link.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole]);
+  }, [t, currentUserRole, i18n.language]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -198,7 +200,10 @@ function MobileNav() {
                   logoUrl={branding?.logoUrl}
                 />
               </Link>
-              <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -225,16 +230,16 @@ function MobileNav() {
 
           <div className="mt-4 border-t border-brand-border pt-4 space-y-2">
             <button
-              onClick={handleLogout}
-              className="w-full py-3 text-sm font-medium text-rose-600 underline underline-offset-4 transition-colors hover:text-rose-700"
-            >
-              {t('nav.logout', 'Sair')}
-            </button>
-            <button
               onClick={toggleMenu}
               className="w-full py-3 text-sm text-brand-surfaceForeground underline underline-offset-4 hover:text-brand-primary transition-colors"
             >
               {t('nav.close')}
+            </button>
+            <button
+              onClick={handleLogout}
+              className="w-full py-3 text-sm font-medium text-rose-600 underline underline-offset-4 transition-colors hover:text-rose-700"
+            >
+              {t('nav.logout', 'Sair')}
             </button>
           </div>
         </div>

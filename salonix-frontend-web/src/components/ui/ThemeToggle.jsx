@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../hooks/useTheme';
 import { THEMES } from '../../constants/themes';
 import { SunIcon, MoonIcon, SystemIcon } from './icons/ThemeIcons';
 
 const ThemeToggle = ({ className = '' }) => {
   const { theme, changeTheme, isLoading } = useTheme();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const dropdownRef = useRef(null);
@@ -40,21 +42,21 @@ const ThemeToggle = ({ className = '' }) => {
   const themeOptions = [
     {
       value: THEMES.LIGHT,
-      label: 'Claro',
+      label: t('nav.theme.light', 'Claro'),
       icon: SunIcon,
-      description: 'Tema claro',
+      description: t('nav.theme.light_desc', 'Tema claro'),
     },
     {
       value: THEMES.DARK,
-      label: 'Escuro',
+      label: t('nav.theme.dark', 'Escuro'),
       icon: MoonIcon,
-      description: 'Tema escuro',
+      description: t('nav.theme.dark_desc', 'Tema escuro'),
     },
     {
       value: THEMES.SYSTEM,
-      label: 'Sistema',
+      label: t('nav.theme.system', 'Sistema'),
       icon: SystemIcon,
-      description: 'Seguir preferência do sistema',
+      description: t('nav.theme.system_desc', 'Seguir preferência do sistema'),
     },
   ];
 
@@ -90,8 +92,8 @@ const ThemeToggle = ({ className = '' }) => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-center p-0 bg-transparent border-0 text-brand-primary underline underline-offset-4 hover:text-brand-accent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
-        title={`Tema atual: ${currentTheme?.label || 'Sistema'}`}
-        aria-label="Alterar tema"
+        title={t('nav.theme.current_title', { defaultValue: 'Tema atual: {{label}}', label: currentTheme?.label || t('nav.theme.system', 'Sistema') })}
+        aria-label={t('nav.change_theme', 'Alterar tema')}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >

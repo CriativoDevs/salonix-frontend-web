@@ -1,4 +1,7 @@
-export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }) {
+import { useTranslation } from 'react-i18next';
+
+export default function ErrorPopup({ error, onClose, title }) {
+  const { t } = useTranslation();
   if (!error) return null;
 
   const { message, code, requestId, details } = error;
@@ -13,6 +16,8 @@ export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }
     });
   })();
 
+  const resolvedTitle = title || t('common.error_generic', 'Algo deu errado');
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
@@ -21,10 +26,10 @@ export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }
     >
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-primary">{title}</h2>
+          <h2 className="text-lg font-semibold text-primary">{resolvedTitle}</h2>
           {code && (
             <p className="mt-1 text-xs uppercase tracking-wide text-gray-400">
-              Código: <span className="font-mono text-gray-500">{code}</span>
+              {t('common.code', 'Código')}: <span className="font-mono text-gray-500">{code}</span>
             </p>
           )}
         </div>
@@ -44,7 +49,7 @@ export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }
 
         {requestId ? (
           <p className="mt-4 text-xs text-gray-400">
-            ID da requisição: <span className="font-mono">{requestId}</span>
+            {t('common.request_id', 'ID da requisição')}: <span className="font-mono">{requestId}</span>
           </p>
         ) : null}
 
@@ -54,7 +59,7 @@ export default function ErrorPopup({ error, onClose, title = 'Algo deu errado' }
             onClick={onClose}
             className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-1"
           >
-            Fechar
+            {t('common.close', 'Fechar')}
           </button>
         </div>
       </div>

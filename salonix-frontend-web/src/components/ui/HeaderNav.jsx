@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,9 +11,11 @@ import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
 import { useStaff } from '../../hooks/useStaff';
+import i18n from '../../i18n';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
@@ -73,7 +75,7 @@ export default function HeaderNav() {
     return allLinks.filter(
       (link) => !link.roles || link.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole]);
+  }, [t, currentUserRole, i18n.language]);
 
   // Links do menu hamburger (filtrados por permissão)
   const dropdownItems = useMemo(() => {
@@ -107,13 +109,33 @@ export default function HeaderNav() {
     return allItems.filter(
       (item) => !item.roles || item.roles.includes(currentUserRole)
     );
-  }, [t, currentUserRole]);
+  }, [t, currentUserRole, i18n.language]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
   const inactive =
     'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
   const active =
     'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
+
+  useEffect(() => {
+    try {
+      const stored =
+        typeof window !== 'undefined' && window.localStorage
+          ? window.localStorage.getItem('salonix_lang')
+          : '';
+      const hasStored = stored === 'pt' || stored === 'en';
+      const defaultLang = String(tenant?.profile?.language || '')
+        .trim()
+        .toLowerCase();
+      if (!hasStored && (defaultLang === 'pt' || defaultLang === 'en')) {
+        if (i18n.language !== defaultLang) {
+          i18n.changeLanguage(defaultLang);
+        }
+      }
+    } catch {
+      /* noop */
+    }
+  }, [tenant]);
 
   return (
     <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible">
@@ -162,6 +184,7 @@ export default function HeaderNav() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <LanguageToggle />
             <button
               type="button"
               onClick={() => {

@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import ThemeToggle from './ThemeToggle';
+import LanguageToggle from './LanguageToggle';
 import { useTenant } from '../../hooks/useTenant';
 import { resolveTenantAssetUrl } from '../../utils/tenant';
+import i18n from '../../i18n';
 
 export default function ClientHeaderNav() {
   const { t } = useTranslation();
@@ -21,13 +23,33 @@ export default function ClientHeaderNav() {
       },
       { to: '/client/profile', label: t('client.nav.profile', 'Perfil') },
     ];
-  }, [t]);
+  }, [t, i18n.language]);
 
   const base = 'rounded-md px-3 py-2 text-sm font-medium transition';
   const inactive =
     'text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground';
   const active =
     'text-brand-surfaceForeground bg-brand-light ring-1 ring-brand-border';
+
+  useEffect(() => {
+    try {
+      const stored =
+        typeof window !== 'undefined' && window.localStorage
+          ? window.localStorage.getItem('salonix_lang')
+          : '';
+      const hasStored = stored === 'pt' || stored === 'en';
+      const defaultLang = String(tenant?.profile?.language || '')
+        .trim()
+        .toLowerCase();
+      if (!hasStored && (defaultLang === 'pt' || defaultLang === 'en')) {
+        if (i18n.language !== defaultLang) {
+          i18n.changeLanguage(defaultLang);
+        }
+      }
+    } catch {
+      /* noop */
+    }
+  }, [tenant]);
 
   return (
     <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible">
@@ -66,6 +88,7 @@ export default function ClientHeaderNav() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <LanguageToggle />
           </div>
         </div>
       </Container>

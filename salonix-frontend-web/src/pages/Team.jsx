@@ -19,32 +19,6 @@ import { parseApiError } from '../utils/apiError';
 import { ROLE_BADGE_STYLES, TEAM_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
 
-const ROLE_LABELS = {
-  owner: 'Owner',
-  manager: 'Manager',
-  collaborator: 'Colaborador',
-};
-
-const STATUS_LABELS = {
-  invited: 'Convite pendente',
-  active: 'Ativo',
-  disabled: 'Desativado',
-};
-
-const ROLE_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'owner', label: 'Owner' },
-  { value: 'manager', label: 'Managers' },
-  { value: 'collaborator', label: 'Colaboradores' },
-];
-
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'active', label: 'Ativos' },
-  { value: 'invited', label: 'Convites pendentes' },
-  { value: 'disabled', label: 'Desativados' },
-];
-
 const formatDateTime = (value) => {
   if (!value) return null;
   try {
@@ -72,46 +46,47 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
         // Get linked staff member for role and permissions
         const staffMember = professional.staff_member_data;
         const roleLabel = staffMember
-          ? ROLE_LABELS[staffMember.role] || staffMember.role
+          ? t(`team.roles.${staffMember.role}`, staffMember.role)
           : '—';
 
         // Determine status based on staff member status if available
-        let statusLabel, statusBadgeStyle;
+        let statusKey = 'active';
+        let statusBadgeStyle;
         if (professional.isStaffOnly) {
           // For staff-only entries, use staff status directly
           const staffStatus = staffMember?.status || 'active';
-          statusLabel = STATUS_LABELS[staffStatus] || staffStatus;
+          statusKey = staffStatus;
           statusBadgeStyle =
             TEAM_STATUS_STYLES[staffStatus] || 'bg-gray-100 text-gray-600';
         } else {
           // For professionals with staff, combine both statuses
           if (staffMember) {
             if (staffMember.status === 'invited') {
-              statusLabel = STATUS_LABELS.invited;
+              statusKey = 'invited';
               statusBadgeStyle = TEAM_STATUS_STYLES.invited;
             } else if (staffMember.status === 'disabled') {
-              statusLabel = STATUS_LABELS.disabled;
+              statusKey = 'disabled';
               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
             } else if (
               staffMember.status === 'active' &&
               professional.is_active
             ) {
-              statusLabel = STATUS_LABELS.active;
+              statusKey = 'active';
               statusBadgeStyle = TEAM_STATUS_STYLES.active;
             } else {
-              statusLabel = STATUS_LABELS.disabled;
+              statusKey = 'disabled';
               statusBadgeStyle = TEAM_STATUS_STYLES.disabled;
             }
           } else {
             // Professional without staff member
-            statusLabel = professional.is_active
-              ? STATUS_LABELS.active
-              : STATUS_LABELS.disabled;
+            statusKey = professional.is_active ? 'active' : 'disabled';
             statusBadgeStyle = professional.is_active
               ? TEAM_STATUS_STYLES.active
               : TEAM_STATUS_STYLES.disabled;
           }
         }
+
+        const statusLabel = t(`team.status.${statusKey}`, statusKey);
 
         const createdAt = formatDateTime(professional.created_at);
         const updatedAt = formatDateTime(professional.updated_at);
@@ -169,12 +144,14 @@ function StaffList({ items, onManage, currentUserRole, currentStaffMember }) {
                 <div className="flex flex-wrap gap-3 text-xs text-brand-surfaceForeground/60">
                   {createdAt && (
                     <span>
-                      Criado em <strong>{createdAt}</strong>
+                      {t('team.meta.created_at', 'Criado em')}{' '}
+                      <strong>{createdAt}</strong>
                     </span>
                   )}
                   {updatedAt && (
                     <span>
-                      Atualizado em <strong>{updatedAt}</strong>
+                      {t('team.meta.updated_at', 'Atualizado em')}{' '}
+                      <strong>{updatedAt}</strong>
                     </span>
                   )}
                 </div>
@@ -321,12 +298,15 @@ function Team() {
       const status = err?.response?.status;
       setForbidden(status === 403);
       const { parseApiError } = await import('../utils/apiError');
-      const parsed = parseApiError(err, 'Não foi possível carregar a equipe.');
+      const parsed = parseApiError(
+        err,
+        t('team.error.load_staff', 'Não foi possível carregar a equipe.')
+      );
       setStaffError(parsed);
       setRequestId(parsed.requestId || null);
       setStaffLoading(false);
     }
-  }, [slug]);
+  }, [slug, t]);
 
   // Load staff when slug is available
   useEffect(() => {
@@ -363,11 +343,14 @@ function Team() {
         return { success: true, staffMember, requestId: reqId || null };
       } catch (err) {
         const { parseApiError } = await import('../utils/apiError');
-        const parsed = parseApiError(err, 'Falha ao enviar o convite.');
+        const parsed = parseApiError(
+          err,
+          t('team.error.invite_failed', 'Falha ao enviar o convite.')
+        );
         return { success: false, error: parsed };
       }
     },
-    [slug]
+    [slug, t]
   );
 
   const updateStaff = useCallback(
@@ -398,12 +381,15 @@ function Team() {
         const { parseApiError } = await import('../utils/apiError');
         const parsed = parseApiError(
           err,
-          'Não foi possível atualizar o membro de equipe.'
+          t(
+            'team.error.update_member',
+            'Não foi possível atualizar o membro de equipe.'
+          )
         );
         return { success: false, error: parsed };
       }
     },
-    [slug]
+    [slug, t]
   );
 
   // Create professionals with staff member data included + staff without professionals
@@ -612,7 +598,7 @@ function Team() {
   }, [professionals]);
 
   const currentRoleLabel = currentUserRole
-    ? ROLE_LABELS[currentUserRole] || currentUserRole
+    ? t(`team.roles.${currentUserRole}`, currentUserRole)
     : null;
 
   const canManageAll =
@@ -621,6 +607,29 @@ function Team() {
   const activeStaffOptions = useMemo(
     () => staffArray.filter((member) => member?.status === 'active'),
     [staffArray]
+  );
+
+  const roleOptions = useMemo(
+    () => [
+      { value: 'all', label: t('team.filters.role_all', 'Todos') },
+      { value: 'owner', label: t('team.roles.owner', 'Owner') },
+      { value: 'manager', label: t('team.roles.manager', 'Manager') },
+      {
+        value: 'collaborator',
+        label: t('team.roles.collaborator', 'Colaborador'),
+      },
+    ],
+    [t]
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { value: 'all', label: t('team.filters.status_all', 'Todos') },
+      { value: 'active', label: t('team.status.active', 'Ativo') },
+      { value: 'invited', label: t('team.status.invited', 'Convite pendente') },
+      { value: 'disabled', label: t('team.status.disabled', 'Desativado') },
+    ],
+    [t]
   );
 
   // paginação e ordenação (server-side)
@@ -987,7 +996,7 @@ function Team() {
                   }}
                   className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
-                  {ROLE_OPTIONS.map((option) => (
+                  {roleOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
@@ -1010,7 +1019,7 @@ function Team() {
                 }}
                 className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               >
-                {STATUS_OPTIONS.map((option) => (
+                {statusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -1033,10 +1042,18 @@ function Team() {
               }}
               className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
-              <option value="name">Nome (A→Z)</option>
-              <option value="-name">Nome (Z→A)</option>
-              <option value="created_at">Criado (antigo→recente)</option>
-              <option value="-created_at">Criado (recente→antigo)</option>
+              <option value="name">
+                {t('team.ordering.name_asc', 'Nome (A→Z)')}
+              </option>
+              <option value="-name">
+                {t('team.ordering.name_desc', 'Nome (Z→A)')}
+              </option>
+              <option value="created_at">
+                {t('team.ordering.created_asc', 'Criado (antigo→recente)')}
+              </option>
+              <option value="-created_at">
+                {t('team.ordering.created_desc', 'Criado (recente→antigo)')}
+              </option>
             </select>
           </div>
 

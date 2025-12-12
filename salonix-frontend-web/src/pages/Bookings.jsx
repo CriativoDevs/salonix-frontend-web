@@ -1402,7 +1402,7 @@ function Bookings() {
               <div className="mt-4 max-h-[70vh] overflow-y-auto no-scrollbar">
                 <div className="flex items-center justify-between sticky top-0 z-10 bg-brand-surface/95 backdrop-blur supports-[backdrop-filter]:bg-brand-surface/80 py-2">
                   <div className="text-sm text-brand-surfaceForeground/70">
-                    {t('bookings.multi.hint', 'Selecione de 2 a 20 horários. Serviço e profissional podem ser definidos por item.')}
+                    {t('bookings.series.hint', 'Selecione de 2 a 20 horários. Navegue por semanas.')}
                   </div>
                   <div className="flex gap-2">
                     <button type="button" className="text-brand-surfaceForeground hover:underline" onClick={prevWeek}>

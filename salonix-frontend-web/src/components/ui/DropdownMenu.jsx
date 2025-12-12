@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { ChevronDownIcon } from 'lucide-react';
 
 function DropdownMenu({ items, trigger, className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,6 +26,9 @@ function DropdownMenu({ items, trigger, className = '' }) {
       <button
         onClick={toggleDropdown}
         className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium text-brand-surfaceForeground/70 transition-all duration-200 hover:bg-brand-light hover:text-brand-surfaceForeground"
+        aria-label={t('nav.open_menu', 'Abrir menu')}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         {trigger}
         <ChevronDownIcon

@@ -28,7 +28,13 @@ export default function ClientDashboard() {
           setUpcoming(u);
         }
       } catch {
-        if (!cancelled) setError({ message: t('Falha ao carregar dados.') });
+        if (!cancelled)
+          setError({
+            message: t(
+              'client.dashboard.load_error',
+              'Falha ao carregar dados.'
+            ),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -46,7 +52,12 @@ export default function ClientDashboard() {
       const u = await fetchClientUpcoming();
       setUpcoming(u);
     } catch {
-      setError({ message: t('Não foi possível cancelar.') });
+      setError({
+        message: t(
+          'client.dashboard.cancel_error',
+          'Não foi possível cancelar.'
+        ),
+      });
     }
   };
 
@@ -108,38 +119,38 @@ export default function ClientDashboard() {
 
   return (
     <ClientLayout>
-      <PageHeader title={t('Área do Cliente')} />
+      <PageHeader title={t('client.dashboard.title', 'Área do Cliente')} />
 
       <div className="mt-2 flex flex-wrap gap-4">
         <NavLink
           to="/client/agendar"
           className="text-brand-primary underline font-medium transition hover:text-brand-accent"
         >
-          {t('Novo agendamento')}
+          {t('client.dashboard.new_booking', 'Novo agendamento')}
         </NavLink>
         <NavLink
           to="/client/appointments"
           className="text-brand-primary underline font-medium transition hover:text-brand-accent"
         >
-          {t('Meus agendamentos')}
+          {t('client.dashboard.my_appointments', 'Meus agendamentos')}
         </NavLink>
         <NavLink
           to="/client/profile"
           className="text-brand-primary underline font-medium transition hover:text-brand-accent"
         >
-          {t('Atualizar perfil')}
+          {t('client.dashboard.update_profile', 'Atualizar perfil')}
         </NavLink>
       </div>
 
       {loading ? (
         <div className="mt-6 text-sm text-brand-surfaceForeground/70">
-          {t('Carregando…')}
+          {t('client.dashboard.loading', 'Carregando…')}
         </div>
       ) : (
         <div className="mt-6 grid grid-cols-1 gap-6">
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <h2 className="text-lg font-medium text-brand-surfaceForeground">
-              {t('Próximo agendamento')}
+              {t('client.dashboard.next_appointment', 'Próximo agendamento')}
             </h2>
             {next ? (
               <div className="mt-3 text-sm text-brand-surfaceForeground">
@@ -161,21 +172,27 @@ export default function ClientDashboard() {
                     rel="noreferrer"
                     className="text-brand-primary hover:text-brand-accent underline underline-offset-4"
                   >
-                    {t('Adicionar ao calendário')}
+                    {t(
+                      'client.dashboard.add_to_calendar',
+                      'Adicionar ao calendário'
+                    )}
                   </a>
                   <button
                     type="button"
                     onClick={onCancel}
                     className="text-brand-primary underline font-medium hover:text-brand-accent"
                   >
-                    {t('Cancelar')}
+                    {t('common.cancel', 'Cancelar')}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="mt-2 text-sm text-brand-surfaceForeground/70">
-                {t('Sem agendamentos futuros.')}{' '}
-                {t('Crie seu primeiro agendamento.')}
+                {t('client.dashboard.no_upcoming', 'Sem agendamentos futuros.')}{' '}
+                {t(
+                  'client.dashboard.create_first',
+                  'Crie seu primeiro agendamento.'
+                )}
               </div>
             )}
           </div>
@@ -185,7 +202,7 @@ export default function ClientDashboard() {
       {(tenantEmail || tenantPhoneRaw) && (
         <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
           <h2 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('Entre em contacto')}
+            {t('client.dashboard.contact_title', 'Entre em contacto')}
           </h2>
           {tenantEmail && (
             <div className="mt-2 text-sm">
@@ -206,8 +223,8 @@ export default function ClientDashboard() {
                 {telHref && (
                   <a
                     href={telHref}
-                    aria-label={t('Chamar')}
-                    title={t('Chamar')}
+                    aria-label={t('client.dashboard.call', 'Chamar')}
+                    title={t('client.dashboard.call', 'Chamar')}
                     className="text-brand-primary hover:text-brand-accent"
                   >
                     <Phone className="h-5 w-5" />
@@ -234,7 +251,7 @@ export default function ClientDashboard() {
       {addressParts.length > 0 && (
         <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
           <h2 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('Morada do salão')}
+            {t('client.dashboard.address_title', 'Morada do salão')}
           </h2>
           <pre className="mt-2 whitespace-pre-wrap text-sm text-brand-surfaceForeground/80">
             {addressText}
@@ -245,7 +262,7 @@ export default function ClientDashboard() {
               onClick={() => setMapsConfirmOpen(true)}
               className="text-brand-primary underline font-medium hover:text-brand-accent"
             >
-              {t('Abrir no Maps?')}
+              {t('client.dashboard.open_maps', 'Abrir no Maps?')}
             </button>
           </div>
         </div>
@@ -254,10 +271,10 @@ export default function ClientDashboard() {
       {addressParts.length === 0 && (
         <div className="mt-6 rounded-lg border border-brand-border bg-brand-surface p-4">
           <h2 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('Morada do salão')}
+            {t('client.dashboard.address_title', 'Morada do salão')}
           </h2>
           <p className="mt-2 text-sm text-brand-surfaceForeground/80">
-            {t('Endereço não cadastrado.')}
+            {t('client.dashboard.address_missing', 'Endereço não cadastrado.')}
           </p>
           <div className="mt-3 flex items-center justify-end">
             <button
@@ -265,7 +282,7 @@ export default function ClientDashboard() {
               onClick={onRequestAddress}
               className="text-brand-primary underline font-medium hover:text-brand-accent"
             >
-              {t('Solicitar endereço')}
+              {t('client.dashboard.request_address', 'Solicitar endereço')}
             </button>
           </div>
         </div>
@@ -285,7 +302,7 @@ export default function ClientDashboard() {
           />
           <div className="relative z-10 w-full max-w-sm rounded-lg border border-brand-border bg-brand-surface p-4">
             <p className="text-sm text-brand-surfaceForeground">
-              {t('Abrir no Maps?')}
+              {t('client.dashboard.open_maps', 'Abrir no Maps?')}
             </p>
             <div className="mt-3 grid grid-cols-1 gap-2">
               {isIOS && (
@@ -294,7 +311,7 @@ export default function ClientDashboard() {
                   className="text-brand-primary underline font-medium hover:text-brand-accent"
                   onClick={() => setMapsConfirmOpen(false)}
                 >
-                  {t('Apple Maps')}
+                  {t('client.maps.apple', 'Apple Maps')}
                 </a>
               )}
               {isIOS && (
@@ -303,7 +320,7 @@ export default function ClientDashboard() {
                   className="text-brand-primary underline font-medium hover:text-brand-accent"
                   onClick={() => setMapsConfirmOpen(false)}
                 >
-                  {t('Google Maps')}
+                  {t('client.maps.google', 'Google Maps')}
                 </a>
               )}
               {isAndroid && (
@@ -312,7 +329,7 @@ export default function ClientDashboard() {
                   className="text-brand-primary underline font-medium hover:text-brand-accent"
                   onClick={() => setMapsConfirmOpen(false)}
                 >
-                  {t('Google Maps')}
+                  {t('client.maps.google', 'Google Maps')}
                 </a>
               )}
               <a
@@ -320,7 +337,7 @@ export default function ClientDashboard() {
                 className="text-brand-primary underline font-medium hover:text-brand-accent"
                 onClick={() => setMapsConfirmOpen(false)}
               >
-                {t('Waze')}
+                {t('client.maps.waze', 'Waze')}
               </a>
               <a
                 href={buildWebFallback()}
@@ -329,14 +346,14 @@ export default function ClientDashboard() {
                 className="text-brand-primary underline font-medium hover:text-brand-accent"
                 onClick={() => setMapsConfirmOpen(false)}
               >
-                {t('Abrir no navegador')}
+                {t('client.dashboard.open_in_browser', 'Abrir no navegador')}
               </a>
               <button
                 type="button"
                 onClick={() => setMapsConfirmOpen(false)}
                 className="text-brand-primary underline font-medium hover:text-brand-accent"
               >
-                {t('Cancelar')}
+                {t('common.cancel', 'Cancelar')}
               </button>
             </div>
           </div>

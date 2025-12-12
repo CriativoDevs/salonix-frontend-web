@@ -5,18 +5,6 @@ import FormButton from '../ui/FormButton';
 import FormInput from '../ui/FormInput';
 import { parseApiError } from '../../utils/apiError';
 
-const ROLE_LABELS = {
-  owner: 'Owner',
-  manager: 'Manager',
-  collaborator: 'Colaborador',
-};
-
-const STATUS_LABELS = {
-  active: 'Ativo',
-  invited: 'Convite pendente',
-  disabled: 'Desativado',
-};
-
 function resolveDisplayName(member) {
   if (!member) return '';
   const nameParts = [member.first_name, member.last_name]
@@ -721,13 +709,13 @@ function ManageStaffModal({
                     <strong>
                       {t('team.manage.summary.status', 'Status atual')}:
                     </strong>{' '}
-                    {STATUS_LABELS[member.status] || member.status}
+                    {t(`team.status.${member.status}`, member.status)}
                   </li>
                   <li>
                     <strong>
                       {t('team.manage.summary.role', 'Papel atual')}:
                     </strong>{' '}
-                    {ROLE_LABELS[member.role] || member.role}
+                    {t(`team.roles.${member.role}`, member.role)}
                   </li>
                 </ul>
               </div>
@@ -763,7 +751,7 @@ function ManageStaffModal({
                                 className="mr-2 text-brand-primary focus:ring-brand-primary"
                               />
                               <span className="text-sm text-brand-surfaceForeground">
-                                {ROLE_LABELS[roleOption] || roleOption}
+                                {t(`team.roles.${roleOption}`, roleOption)}
                               </span>
                             </label>
                           );

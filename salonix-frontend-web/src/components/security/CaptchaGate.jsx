@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
@@ -19,6 +20,7 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
   const containerRef = useRef(null);
   const provider = import.meta.env.VITE_CAPTCHA_PROVIDER || '';
   const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || '';
+  const { t } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -84,7 +86,7 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
         type="checkbox"
         onChange={(e) => onToken?.(e.target.checked ? 'builtin-ok' : null)}
       />
-      <span className="text-brand-surfaceForeground">Eu não sou um robô</span>
+      <span className="text-brand-surfaceForeground">{t('auth.captcha.not_robot', 'Eu não sou um robô')}</span>
     </label>
   );
 }

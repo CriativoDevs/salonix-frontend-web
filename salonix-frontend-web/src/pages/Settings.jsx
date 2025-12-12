@@ -54,27 +54,32 @@ const FEATURE_LIST = Object.entries(TENANT_FEATURE_REQUIREMENTS).map(
 
 const MODULE_CONFIG = {
   reports: {
-    label: 'Relatórios avançados',
+    labelKey: 'settings.modules.reports',
+    defaultLabel: 'Relatórios avançados',
     flagKey: 'enableReports',
     rawKey: 'reports_enabled',
   },
   pwa_admin: {
-    label: 'Painel administrativo (PWA)',
+    labelKey: 'settings.modules.pwa_admin',
+    defaultLabel: 'Painel administrativo (PWA)',
     flagKey: 'enableAdminPwa',
     rawKey: 'pwa_admin_enabled',
   },
   pwa_client: {
-    label: 'PWA Cliente',
+    labelKey: 'settings.modules.pwa_client',
+    defaultLabel: 'PWA Cliente',
     flagKey: 'enableCustomerPwa',
     rawKey: 'pwa_client_enabled',
   },
   rn_admin: {
-    label: 'App Admin (React Native)',
+    labelKey: 'settings.modules.rn_admin',
+    defaultLabel: 'App Admin (React Native)',
     flagKey: 'enableNativeAdmin',
     rawKey: 'rn_admin_enabled',
   },
   rn_client: {
-    label: 'App Cliente (React Native)',
+    labelKey: 'settings.modules.rn_client',
+    defaultLabel: 'App Cliente (React Native)',
     flagKey: 'enableNativeClient',
     rawKey: 'rn_client_enabled',
   },
@@ -85,8 +90,11 @@ const MODULE_REQUIREMENTS = {
   pwa_client: 'enableCustomerPwa',
 };
 
-const resolveModuleLabel = (moduleKey) =>
-  MODULE_CONFIG[moduleKey]?.label || moduleKey;
+const resolveModuleLabel = (moduleKey, t) => {
+  const cfg = MODULE_CONFIG[moduleKey];
+  if (!cfg) return moduleKey;
+  return t(cfg.labelKey, cfg.defaultLabel);
+};
 
 const CHANNEL_CONFIG = [
   { key: 'email', defaultLabel: 'Email' },
@@ -2515,7 +2523,7 @@ function Settings() {
           {moduleList.length ? (
             <ul className="mt-2 space-y-1 text-sm text-brand-surfaceForeground/80">
               {moduleList.map((module) => {
-                const label = resolveModuleLabel(module);
+                const label = resolveModuleLabel(module, t);
                 return <li key={module}>• {label}</li>;
               })}
             </ul>
@@ -2595,7 +2603,7 @@ function Settings() {
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="cursor-pointer text-sm text-brand-primary hover:text-brand-primary/80 underline">
-            Escolher arquivo
+            {t('settings.branding.logo_file', 'Arquivo de logo')}
             <input
               type="file"
               accept="image/png,image/jpeg,image/svg+xml"
@@ -2612,12 +2620,12 @@ function Settings() {
 
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-brand-surfaceForeground">
-          Morada do estabelecimento
+          {t('settings.branding_address.title', 'Morada do estabelecimento')}
         </h3>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Rua
+              {t('settings.branding_address.street', 'Rua')}
             </label>
             <input
               type="text"
@@ -2636,7 +2644,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Número
+              {t('settings.branding_address.number', 'Número')}
             </label>
             <input
               type="text"
@@ -2655,7 +2663,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Complemento
+              {t('settings.branding_address.complement', 'Complemento')}
             </label>
             <input
               type="text"
@@ -2674,7 +2682,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Freguesia
+              {t('settings.branding_address.neighborhood', 'Freguesia')}
             </label>
             <input
               type="text"
@@ -2693,7 +2701,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              CP (Código Postal)
+              {t('settings.branding_address.zip', 'CP (Código Postal)')}
             </label>
             <input
               type="text"
@@ -2712,7 +2720,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Distrito
+              {t('settings.branding_address.state', 'Distrito')}
             </label>
             <input
               type="text"
@@ -2731,7 +2739,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              Localidade
+              {t('settings.branding_address.city', 'Localidade')}
             </label>
             <input
               type="text"
@@ -2750,7 +2758,7 @@ function Settings() {
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-xs text-brand-surfaceForeground/70">
-              País
+              {t('settings.branding_address.country', 'País')}
             </label>
             <input
               type="text"
@@ -3334,7 +3342,10 @@ function Settings() {
                   </button>
                   {key === 'push_mobile' && planTier !== 'enterprise' ? (
                     <span className="text-xs text-brand-surfaceForeground/60">
-                      Disponível somente no plano Enterprise
+                      {t(
+                        'settings.notifications.enterprise_only',
+                        'Disponível somente no plano Enterprise'
+                      )}
                     </span>
                   ) : null}
                 </div>
@@ -3389,9 +3400,14 @@ function Settings() {
       {creditsModalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 p-4">
           <div className="w-full max-w-md rounded-md border theme-border theme-shadow theme-bg-primary p-4 theme-text-primary">
-            <h3 className="mb-2 text-sm font-semibold">Adicionar créditos</h3>
+            <h3 className="mb-2 text-sm font-semibold">
+              {t('settings.add_credits', 'Adicionar créditos')}
+            </h3>
             <p className="mb-3 text-xs theme-text-secondary">
-              Selecione um valor para comprar. Pagamento via Stripe (checkout).
+              {t(
+                'settings.credits.description',
+                'Selecione um valor para comprar. Pagamento via Stripe (checkout).'
+              )}
             </p>
             <div className="mb-3">
               <select
@@ -3427,7 +3443,7 @@ function Settings() {
                 className="text-brand-primary hover:text-brand-primary/80 font-medium text-xs"
                 onClick={() => setCreditsModalOpen(false)}
               >
-                Cancelar
+                {t('common.cancel', 'Cancelar')}
               </button>
               <button
                 type="button"
@@ -3435,7 +3451,9 @@ function Settings() {
                 disabled={creditsLoadingAction}
                 onClick={handleBuyCredits}
               >
-                {creditsLoadingAction ? 'Processando...' : 'Comprar'}
+                {creditsLoadingAction
+                  ? t('common.processing', 'Processando...')
+                  : t('settings.credits.buy', 'Comprar')}
               </button>
             </div>
           </div>

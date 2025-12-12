@@ -20,6 +20,9 @@
     }
   },
   "auth": {
+    "captcha": {
+      "not_robot": "Eu não sou um robô"
+    },
     "register_title": "Crie sua conta",
     "username": "Nome de usuário",
     "salon_name": "Nome da empresa",
@@ -128,7 +131,15 @@
   "slots": {
     "title": "Horários disponíveis",
     "select_date": "Selecionar data",
-    "no_slots": "Nenhum horário disponível para essa data."
+    "no_slots": "Nenhum horário disponível para essa data.",
+    "professional": "Profissional",
+    "ordering": "Ordenação",
+    "order_newest": "Mais recentes primeiro",
+    "order_oldest": "Data mais antiga primeiro",
+    "slot_date": "Data do slot",
+    "start_time": "Início",
+    "end_time": "Término",
+    "create_slot": "Criar slot"
   },
   "bookings": {
     "title": "Agendamentos",
@@ -153,11 +164,18 @@
       "no_slots": "Nenhum horário disponível para este profissional.",
       "submit": "Agendar",
       "reset": "Limpar",
-      "required": "Selecione serviço, profissional e horário."
+      "required": "Selecione serviço, profissional e horário.",
+      "customer": "Cliente",
+      "select_customer": "Selecione um cliente",
+      "empty_customer": "Cadastre clientes antes de criar agendamentos.",
+      "customer_required": "Selecione o cliente para continuar.",
+      "multi_series_short": "Multi/Série"
     },
     "filters": {
       "status": "Status",
       "status_all": "Todos",
+      "customer": "Cliente",
+      "customer_all": "Todos",
       "date_from": "Data inicial",
       "date_to": "Data final"
     },
@@ -180,6 +198,54 @@
       "summary": "Total de {{count}} agendamentos",
       "prev": "Anterior",
       "next": "Próxima"
+    },
+    "series": {
+      "title": "Agendamento em Série",
+      "tab_series": "Série",
+      "tab_multi": "Multi",
+      "prev_week": "Semana anterior",
+      "next_week": "Próxima semana",
+      "no_slots_day": "Sem horários",
+      "count": "Selecionados:",
+      "confirm": "Confirmar série",
+      "confirm_multi": "Confirmar multi",
+      "min_selection": "Selecione pelo menos 2 horários.",
+      "max_selection": "Máximo de 20 horários por série.",
+      "past_not_allowed": "Alguns horários estão no passado. Selecione horários futuros.",
+      "hint": "Selecione de 2 a 20 horários. Navegue por semanas."
+    },
+    "multi": {
+      "title": "Multi agendamento",
+      "hint": "Selecione de 2 a 20 horários. Serviço e profissional podem ser definidos por item.",
+      "batch_professional": "Profissional para visualizar horários",
+      "batch_professional_default": "Usar profissional do formulário",
+      "batch_notes": "Notas padrão (opcional)",
+      "batch_notes_placeholder": "Notas aplicadas aos itens sem nota",
+      "pick_professional_hint": "Selecione um profissional para visualizar horários.",
+      "items_title": "Itens selecionados",
+      "feedback_title": "Observações e erros detectados nos itens",
+      "item_error": "Item com erro",
+      "item_warning": "Item com observação",
+      "no_suggestion": "Sem sugestão disponível",
+      "suggestion": "Sugestão:",
+      "apply_suggestion": "Aplicar sugestão",
+      "service": "Serviço",
+      "service_select": "Selecione um serviço",
+      "service_not_fit": "Serviço não cabe no slot.",
+      "professional": "Profissional",
+      "professional_select": "Selecione um profissional",
+      "customer": "Cliente",
+      "customer_default": "Usar cliente do formulário",
+      "notes": "Notas (opcional)",
+      "notes_placeholder": "Adicionar notas para este item",
+      "remove_item": "Remover item",
+      "no_items": "Nenhum horário selecionado ainda. Selecione na grade acima.",
+      "missing_fields_item": "Selecione serviço e profissional.",
+      "prof_not_offer": "Profissional não oferece o serviço.",
+      "slot_wrong_professional": "Horário pertence a outro profissional.",
+      "missing_fields": "Informe cliente no formulário e serviço/profissional por item.",
+      "precheck_failed": "Alguns itens estão inválidos. Corrija os erros destacados abaixo.",
+      "partial_failed": "Alguns itens falharam. Ajuste abaixo e tente novamente."
     }
   },
   "profile": {
@@ -196,9 +262,32 @@
     "select_conversation": "Selecione uma conversa para começar"
   },
   "common": {
-    "loading": "Enviando...",
+    "loading": "Carregando...",
     "saving": "Salvando...",
-    "save_error": "Falha ao salvar. Tente novamente."
+    "save_error": "Falha ao salvar. Tente novamente.",
+    "delete": "Excluir",
+    "load_error": "Falha ao carregar.",
+    "create": "Criar",
+    "all": "Todas",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "save": "Salvar",
+    "edit": "Editar",
+    "order_by": "Ordenar por",
+    "recent": "Mais recentes",
+    "name": "Nome",
+    "empty_list": "Nenhum serviço cadastrado.",
+    "confirm_delete": "Confirmar exclusão?",
+    "delete_error": "Falha ao excluir.",
+    "refresh": "Atualizar",
+    "try_again": "Tentar novamente",
+    "request_id": "ID da requisição",
+    "code": "Código",
+    "error_generic": "Algo deu errado",
+    "saving_done": "Salvo com sucesso.",
+    "save_failed": "Falha ao salvar.",
+    "processing": "Processando...",
+    "loading_data": "Carregando dados do plano..."
   },
   "feedback": {
     "title": "Feedback",
@@ -247,6 +336,9 @@
     "data": {
       "title": "Importação (CSV)",
       "description": "Importe clientes, serviços ou membros da equipe via arquivo CSV.",
+      "aria_tabs": "Dados (CSV)",
+      "tab_import": "Importação (CSV)",
+      "tab_export": "Exportação (CSV)",
       "entity": "Tipo de dados",
       "entity_customers": "Clientes",
       "entity_services": "Serviços",
@@ -258,6 +350,34 @@
         "download_template": "Baixar modelo",
         "dry_run_tooltip": "Valida o CSV sem importar. Mostra erros e contagens."
       },
+      "export": {
+        "one": "Exportar CSV",
+        "loading": "Exportando..."
+      },
+      "filters": {
+        "active": "Apenas ativos"
+      },
+      "preview": {
+        "columns": "Colunas",
+        "rows": "Linhas (preview)",
+        "delimiter": "Delimitador"
+      },
+      "mapping": {
+        "title": "Mapeamento de colunas",
+        "name": "Nome",
+        "email": "Email",
+        "phone": "Telefone",
+        "role": "Cargo",
+        "suggested": "Sugestão",
+        "help_name": "Nome do cliente",
+        "help_staff_name": "Nome completo",
+        "help_email": "E-mail válido",
+        "help_ignore": "Ignorar coluna"
+      },
+      "import": {
+        "success": "Importação concluída"
+      },
+      "rate_limited": "Muitas tentativas. Aguarde",
       "hint": "Disponível apenas para owner.",
       "result": {
         "title": "Resultado da validação/importação",
@@ -266,6 +386,12 @@
         "errors_count": "Erros",
         "errors_title": "Erros encontrados",
         "no_errors": "Nenhum erro encontrado",
+        "errors_by_field": "Por campo",
+        "line": "Linha",
+        "column": "Coluna",
+        "reason": "Motivo",
+        "hint": "Dica",
+        "value": "Valor",
         "request_id": "ID da requisição"
       }
     },
@@ -323,9 +449,151 @@
       "preview_alt": "Pré-visualização do logo",
       "logo_file": "Arquivo de logo",
       "saved": "Logo atualizado com sucesso."
+    },
+    "branding_address": {
+      "title": "Morada do estabelecimento",
+      "street": "Rua",
+      "number": "Número",
+      "complement": "Complemento",
+      "neighborhood": "Freguesia",
+      "zip": "CP (Código Postal)",
+      "state": "Distrito",
+      "city": "Localidade",
+      "country": "País"
+    },
+    "general": {
+      "tenant_name": "Nome do salão",
+      "slug": "Slug",
+      "business_name": "Nome comercial",
+      "email": "Email de contato",
+      "phone": "Telefone",
+      "timezone": "Fuso horário",
+      "language": "Idioma",
+      "currency": "Moeda padrão",
+      "address": "Endereço"
+    },
+    "plan_title": "Plano atual",
+    "plan_unknown": "Plano não identificado",
+    "plan_modules": "Módulos incluídos",
+    "plan_modules_empty": "Nenhum módulo adicional definido para este plano.",
+    "locked_features": "Recursos bloqueados",
+    "locked_features_empty": "Nenhum recurso bloqueado para este plano.",
+    "locked_features_unavailable": "Sem dados de recursos do plano no momento. Tente atualizar a página.",
+    "requires_plan": "Requer plano",
+    "plan_badge": "Plano",
+    "modules": {
+      "reports": "Relatórios avançados",
+      "pwa_admin": "Painel administrativo (PWA)",
+      "pwa_client": "PWA Cliente",
+      "rn_admin": "App Admin (React Native)",
+      "rn_client": "App Cliente (React Native)"
+    },
+    "auto_invite": {
+      "title": "Convites automáticos do PWA Cliente",
+      "description": "Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.",
+      "blocked_hint": "Disponível apenas quando o PWA Cliente está habilitado para o salão.",
+      "status_enabled": "Ativo",
+      "status_disabled": "Inativo",
+      "success_enabled": "Convites automáticos ativados.",
+      "success_disabled": "Convites automáticos desativados.",
+      "error": "Não foi possível atualizar a preferência.",
+      "accessible_label": "Alternar convites automáticos do PWA"
+    },
+    "pwa_client": {
+      "title": "PWA Cliente",
+      "description": "Permite acesso dos clientes via PWA personalizado deste salão.",
+      "status_enabled": "Ativo",
+      "status_disabled": "Inativo",
+      "accessible_label": "Alternar PWA Cliente",
+      "success_enabled": "PWA Cliente habilitado.",
+      "success_disabled": "PWA Cliente desabilitado.",
+      "error": "Não foi possível atualizar o PWA Cliente."
+    },
+    "notifications_paywall_hint": "Canais avançados disponíveis com créditos.",
+    "tooltip": {
+      "add_credits": "Comprar créditos para liberar canais avançados",
+      "channel_enabled": "Canal ativo para o salão",
+      "channel_disabled": "Canal indisponível: requer créditos ou plano compatível"
+    },
+    "channel_enabled": "Ativo",
+    "channel_disabled": "Inativo",
+    "add_credits": "Adicionar créditos",
+    "credits_available": "Créditos disponíveis",
+    "credits": {
+      "description": "Selecione um valor para comprar. Pagamento via Stripe (checkout).",
+      "buy": "Comprar"
+    },
+    "notifications": {
+      "enterprise_only": "Disponível somente no plano Enterprise"
     }
   },
   "customers": {
+    "title": "Clientes",
+    "subtitle": "Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.",
+    "confirm_delete": "Remover este cliente?",
+    "form": {
+      "name": "Nome",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "notes": "Notas",
+      "name_placeholder": "Nome completo",
+      "email_placeholder": "cliente@email.com",
+      "phone_placeholder": "+351912345678",
+      "notes_placeholder": "Preferências, observações...",
+      "marketing_opt_in": "Aceita receber comunicações de marketing",
+      "submit": "Adicionar cliente"
+    },
+    "list": {
+      "title": "Lista de clientes",
+      "subtitle": "Use a busca para encontrar rapidamente por nome, e-mail ou telefone.",
+      "removal_hint": "Clientes com histórico não podem ser excluídos; desative para manter o cadastro sem aparecer na agenda.",
+      "sort_recent": "Mais recentes",
+      "sort_name": "Nome (A–Z)",
+      "search": "Buscar cliente...",
+      "show_inactive": "Exibir inativos",
+      "empty": "Nenhum cliente cadastrado até o momento.",
+      "no_results": "Nenhum cliente encontrado para esta busca."
+    },
+    "table": {
+      "name": "Cliente",
+      "contact": "Contato",
+      "notes": "Notas",
+      "status": "Status",
+      "actions": "Ações",
+      "created": "Criado em:",
+      "created_unknown": "Data indisponível",
+      "no_notes": "Sem notas."
+    },
+    "status": {
+      "active": "Ativo",
+      "inactive": "Inativo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "deactivate": "Desativar",
+      "activate": "Reativar",
+      "resend_invite": "Reenviar convite",
+      "resending": "Reenviando...",
+      "invite": {
+        "require_active": "Ative o cliente para reenviar convites.",
+        "in_progress": "Reenvio em andamento...",
+        "require_email": "Cadastre um e-mail para reenviar convites."
+      }
+    },
+    "errors": {
+      "name_required": "Informe o nome do cliente.",
+      "contact_required": "Informe e-mail ou telefone para contato.",
+      "delete_failed": "Não foi possível remover o cliente.",
+      "delete_protected": "Clientes com histórico de agendamentos não podem ser excluídos. Utilize a ação \"Desativar\".",
+      "invite_missing_email": "Cadastre um e-mail antes de reenviar o convite.",
+      "invite_inactive": "Ative o cliente para reenviar convites.",
+      "invite_failed": "Não foi possível reenviar o convite.",
+      "invite_unavailable": "Reenvio ainda não disponível. Aguarde a atualização do backend.",
+      "invite_rate_limit": "Muitos convites em sequência. Tente novamente em instantes."
+    },
+    "success": {
+      "invite_sent": "Convite reenviado com sucesso."
+    },
     "invite": {
       "status": {
         "success": "Enviado",
@@ -344,16 +612,11 @@
         "details": "Detalhes",
         "refresh_hint": "O status será atualizado assim que o backend confirmar o envio."
       }
-    },
-    "actions": {
-      "invite": {
-        "require_active": "Ative o cliente para reenviar convites.",
-        "in_progress": "Reenvio em andamento...",
-        "require_email": "Cadastre um e-mail para reenviar convites."
-      }
     }
   },
   "team": {
+    "title": "Equipe",
+    "subtitle": "Convide colaboradores, acompanhe convites pendentes e organize os papéis que cada pessoa desempenha no seu negócio.",
     "current_team_heading": "Gestão da equipe",
     "current_role": {
       "label": "Você está autenticado como {{role}}.",
@@ -365,12 +628,53 @@
     "list": {
       "manage": "Gerenciar",
       "professionals_link": "Profissionais vinculados",
-      "no_professional": "Nenhum profissional vinculado"
+      "no_professional": "Nenhum profissional vinculado",
+      "no_staff_member": "Sem membro da equipe vinculado"
     },
     "professionals_error": "Falha ao carregar profissionais.",
+    "error": {
+      "generic": "Falha ao carregar a equipe.",
+      "load_staff": "Não foi possível carregar a equipe.",
+      "invite_failed": "Falha ao enviar o convite.",
+      "update_member": "Não foi possível atualizar o membro de equipe."
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Manager",
+      "collaborator": "Colaborador"
+    },
+    "status": {
+      "invited": "Convite pendente",
+      "active": "Ativo",
+      "disabled": "Desativado"
+    },
+    "meta": {
+      "created_at": "Criado em",
+      "updated_at": "Atualizado em"
+    },
+    "filters": {
+      "search": "Busca",
+      "search_placeholder": "Procurar por nome ou email",
+      "role": "Papel",
+      "status": "Status",
+      "ordering": "Ordenação",
+      "role_all": "Todos",
+      "status_all": "Todos"
+    },
+    "ordering": {
+      "name_asc": "Nome (A→Z)",
+      "name_desc": "Nome (Z→A)",
+      "created_asc": "Criado (antigo→recente)",
+      "created_desc": "Criado (recente→antigo)"
+    },
     "invite": {
       "title": "Convidar membro da equipe",
       "description": "Envie um convite por e-mail. O convidado receberá instruções para criar a senha e acessar o painel.",
+      "professional": {
+        "title": "Dados do profissional",
+        "helper": "Defina como o profissional será apresentado no portal.",
+        "name": "Nome do profissional"
+      },
       "roles": {
         "collaborator": "Colaborador",
         "manager": "Manager",
@@ -483,14 +787,85 @@
   "nav": {
     "home": "Início",
     "slots": "Horários",
+    "bookings": "Agendamentos",
+    "services": "Serviços",
     "profile": "Perfil",
     "chat": "Chat",
     "feedback": "Feedback",
     "settings": "Configurações",
     "more": "Mais",
+    "open_menu": "Abrir menu",
+    "change_language": "Alterar idioma",
+    "change_theme": "Alterar tema",
+    "language": {
+      "pt_label": "Português (PT‑PT)",
+      "en_label": "English"
+    },
     "reports": "Relatórios",
     "close": "Fechar",
-    "logout": "Sair"
+    "logout": "Sair",
+    "theme": {
+      "light": "Claro",
+      "dark": "Escuro",
+      "system": "Sistema",
+      "light_desc": "Tema claro",
+      "dark_desc": "Tema escuro",
+      "system_desc": "Seguir preferência do sistema",
+      "current_title": "Tema atual: {{label}}"
+    }
+  },
+  "plans": {
+    "title": "Planos",
+    "subtitle": "Escolha ou gerencie seu plano atual",
+    "current_badge": "Plano atual",
+    "login_required": "É necessário iniciar sessão para concluir o checkout.",
+    "trial_exhausted": "Aviso: seu período de teste de {{days}} dias já foi utilizado. A cobrança será imediata ao confirmar o checkout.",
+    "already_active": "Você já possui uma assinatura ativa. Qualquer mensagem de \"14 dias grátis\" exibida no Stripe não se aplica; a cobrança é imediata.",
+    "continue_checkout": "Continuar para checkout",
+    "manage_plan": "Gerir plano",
+    "opening": "Abrindo…",
+    "dev_hint": "Dica: defina VITE_BILLING_MOCK=true para simular checkout em desenvolvimento.",
+    "checkout_link_error": "Não foi possível obter o link de checkout.",
+    "checkout_error": "Falha ao iniciar checkout.",
+    "portal_link_error": "Não foi possível obter o link do portal.",
+    "portal_error": "Falha ao abrir o portal de faturação.",
+    "options": {
+      "basic": {
+        "name": "Basic – 29€ / mês",
+        "price": "€29/mês",
+        "highlights": {
+          "0": "PWA Admin/Manager/Staff",
+          "1": "Relatórios básicos",
+          "2": "Email e web push"
+        }
+      },
+      "standard": {
+        "name": "Standard – 55€ / mês",
+        "price": "€55/mês",
+        "highlights": {
+          "0": "Tudo do Basic",
+          "1": "PWA Cliente",
+          "2": "€5 de crédito incluído"
+        }
+      },
+      "pro": {
+        "name": "Pro – 95€ / mês",
+        "price": "€95/mês",
+        "highlights": {
+          "0": "Tudo do Standard",
+          "1": "White-label + domínio personalizado",
+          "2": "€25 de crédito incluído"
+        }
+      },
+      "enterprise": {
+        "name": "Enterprise – 199€ / mês",
+        "price": "€199/mês",
+        "highlights": {
+          "0": "Apps nativas iOS/Android",
+          "1": "Integrações sob demanda"
+        }
+      }
+    }
   },
   "reports": {
     "title": "Relatórios",
@@ -538,5 +913,246 @@
       "title": "Acesso restrito",
       "description": "Apenas proprietários têm acesso aos relatórios do negócio."
     }
+  },
+  "landing": {
+    "nav": {
+      "client_area": "Área do Cliente",
+      "login": "Entrar",
+      "register": "Registar",
+      "open_menu": "Abrir menu",
+      "menu": "Menu"
+    },
+    "hero": {
+      "tag": "Gestão e Agendamento Inteligente",
+      "title": "A plataforma premium de agendamento e gestão para negócios modernos.",
+      "subtitle": "O TimelyOne automatiza horários, reduz faltas, melhora a experiência dos clientes e profissionaliza a operação do seu negócio — tudo num painel rápido, elegante e pronto para equipas de qualquer dimensão.",
+      "bullets": [
+        "Reduza faltas até 35% com lembretes automáticos.",
+        "Agendamentos 24/7, mesmo fora do horário.",
+        "Interface intuitiva para equipa e clientes.",
+        "Pronto para escalar: freelancers → franquias."
+      ],
+      "cta_start": "Começar período trial (14 dias)",
+      "cta_pricing": "Ver planos e preços"
+    },
+    "results": {
+      "title": "Resultados que falam por si.",
+      "metrics": [
+        "Clientes a reservar online",
+        "Tempo perdido ao telefone",
+        "Receita média por cliente",
+        "Uptime e fiabilidade"
+      ]
+    },
+    "usability": {
+      "title": "Veja antes de experimentar.",
+      "caption": "Usabilidade pensada ao detalhe. Rápido, intuitivo e pronto para qualquer equipa.",
+      "open_new_tab": "Abrir em nova aba"
+    },
+    "screenshots": {
+      "agenda_daily": "Agenda diária",
+      "clients_list": "Lista de clientes",
+      "monthly_report": "Relatório mensal",
+      "professionals_setup": "Configuração de profissionais",
+      "client_pwa": "PWA cliente"
+    },
+    "digital": {
+      "title": "A sua operação, totalmente digital."
+    },
+    "problem": {
+      "title": "O dia a dia do seu negócio não precisa ser caótico.",
+      "items": [
+        "Ligações constantes a pedir horários",
+        "Confusão com agendas diferentes",
+        "Profissionais a gerir reservas no telemóvel",
+        "Faltas de clientes sem aviso",
+        "Clientes frustrados ao tentar remarcar",
+        "Falta de visibilidade sobre desempenho e faturação"
+      ]
+    },
+    "solution": {
+      "title": "TimelyOne resolve tudo automaticamente:",
+      "items": [
+        "Agenda unificada para toda a equipa",
+        "Agendamentos online para clientes",
+        "Sincronização automática entre unidades",
+        "Lembretes automáticos por email / SMS / WhatsApp",
+        "Painel com KPIs, fluxo diário e histórico",
+        "Relatórios inteligentes: faturação, serviços, horários, ocupação"
+      ]
+    },
+    "features": {
+      "items": {
+        "0": { "title": "Agendamentos 24/7", "desc": "Reservas online a qualquer hora, com confirmação automática." },
+        "1": { "title": "Gestão de Equipa", "desc": "Horários, folgas, salas, cadeiras e mais." },
+        "2": { "title": "Lembretes Inteligentes", "desc": "Email, SMS e WhatsApp para reduzir faltas." },
+        "3": { "title": "PWA Equipa e Clientes", "desc": "Instalável no telemóvel, sem lojas tradicionais." },
+        "4": { "title": "Relatórios em Tempo Real", "desc": "Faturação, ocupação e serviços mais vendidos." },
+        "5": { "title": "Escalável para Franquias", "desc": "Permissões e relatórios consolidados." },
+        "6": { "title": "Domínio Personalizado (Pro)", "desc": "Marca e URL próprios." },
+        "7": { "title": "Integrações (Enterprise)", "desc": "Google Calendar, Stripe e mais." }
+      }
+    },
+    "pricing": {
+      "title": "Planos claros. Sem taxas escondidas.",
+      "subtitle": "Escolha o plano que acompanha o crescimento do seu negócio.",
+      "most_chosen": "Mais escolhido",
+      "start_trial": "Iniciar 14 dias grátis"
+    },
+    "faq": {
+      "title": "FAQ",
+      "items": {
+        "0": {
+          "q": "Como funciona o período trial?",
+          "a": "Durante 14 dias tens acesso total ao TimelyOne, sem limites de agendamentos ou profissionais. Não é necessário cartão. Ao final, escolhes um plano ou simplesmente não continuas."
+        },
+        "1": {
+          "q": "Posso mudar de plano a qualquer momento?",
+          "a": "Sim. A alteração é imediata e não perdes nenhum dado. Upgrades desbloqueiam funcionalidades no mesmo instante."
+        },
+        "2": {
+          "q": "Preciso de cartão de crédito para começar?",
+          "a": "Não. O registo é simples e sem compromisso."
+        },
+        "3": {
+          "q": "O TimelyOne funciona no telemóvel?",
+          "a": "Sim. Disponibilizamos uma PWA para equipa e clientes, instalável em iPhone e Android como uma app normal, sem depender das lojas."
+        },
+        "4": {
+          "q": "Posso usar o meu próprio domínio?",
+          "a": "Sim, disponível nos planos Pro e Enterprise. Permite personalização completa da identidade visual."
+        },
+        "5": {
+          "q": "Como funcionam os créditos de SMS/WhatsApp?",
+          "a": "Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel."
+        },
+        "6": {
+          "q": "O TimelyOne é compatível com o RGPD?",
+          "a": "Sim. Dados encriptados, servidores compatíveis com normas europeias e possibilidade de exportação/eliminação de dados."
+        },
+        "7": {
+          "q": "É possível migrar dados do meu sistema atual?",
+          "a": "Sim. Suportamos importação de clientes, serviços e horários através de ficheiros CSV."
+        },
+        "8": {
+          "q": "Quantos profissionais posso adicionar?",
+          "a": "Ilimitados em todos os planos."
+        },
+        "9": {
+          "q": "Os clientes podem cancelar ou remarcar sozinhos?",
+          "a": "Sim. Cada marcação inclui um link seguro para remarcar ou cancelar, reduzindo chamadas e tempo perdido."
+        },
+        "10": {
+          "q": "O sistema suporta várias unidades/filiais?",
+          "a": "Sim, nos planos Pro e Enterprise: gestão multiunidade, permissões avançadas e relatórios consolidados."
+        },
+        "11": {
+          "q": "A minha equipa pode ter acessos diferentes?",
+          "a": "Sim. Perfis de permissão: administrador, gestor e profissional."
+        },
+        "12": {
+          "q": "Posso ver relatórios de faturação e desempenho?",
+          "a": "Sim. O painel inclui métricas de faturação, ocupação, serviços mais vendidos, desempenho por profissional e muito mais."
+        },
+        "13": {
+          "q": "Quanto tempo leva para configurar tudo?",
+          "a": "Entre 10 e 20 minutos, dependendo da quantidade de serviços e profissionais."
+        }
+      }
+    },
+    "steps": {
+      "title": "Começar é simples.",
+      "1": { "title": "Crie a sua conta.", "desc": "Sem cartão, sem compromisso." },
+      "2": { "title": "Configure a equipa e serviços.", "desc": "Tudo pronto em minutos." },
+      "3": { "title": "Ative os agendamentos online.", "desc": "Os clientes começam a reservar." }
+    },
+    "niches": {
+      "title": "Criado para negócios reais.",
+      "subtitle": "Adapta-se ao seu fluxo — seja qual for o setor.",
+      "items": {
+        "0": { "title": "Salões de Beleza", "desc": "Serviços e durações diferentes" },
+        "1": { "title": "Barbearias", "desc": "Rotação rápida de cadeiras" },
+        "2": { "title": "Tatuagem", "desc": "Sessões longas e depósitos" },
+        "3": { "title": "Estética", "desc": "Pacotes e salas de tratamento" },
+        "4": { "title": "Freelancers", "desc": "Visão simples, tudo num lugar" }
+      }
+    },
+    "testimonials": {
+      "title": "Profissionais reais. Resultados reais.",
+      "quotes": [
+        "Reduzimos as faltas em 40% no primeiro mês.",
+        "A minha equipa deixou de gerir horários no WhatsApp.",
+        "O painel é rápido, intuitivo e realmente profissional."
+      ],
+      "rating": "Avaliação média: ★ 4.9 / 5.0"
+    },
+    "security": {
+      "title": "Segurança e privacidade de nível profissional.",
+      "items": [
+        "Compatível com RGPD",
+        "Dados encriptados",
+        "Backups recorrentes",
+        "Infraestrutura escalável",
+        "Alojamento europeu opcional"
+      ]
+    },
+    "final_cta": {
+      "title": "Crie a sua conta gratuita — leve o seu salão para o próximo nível.",
+      "cta": "Começar agora (14 dias grátis)"
+    },
+    "footer": {
+      "pricing": "Planos",
+      "client_area": "Área do Cliente",
+      "login": "Entrar",
+      "register": "Registar",
+      "copyright": "© {{year}} Criativo Devs. Todos os direitos reservados."
+    }
+  },
+  "pagination": {
+    "summary": "Mostrando",
+    "of": "de",
+    "page_size": "Itens por página",
+    "prev": "Anterior",
+    "next": "Próximo"
+  }
+  ,
+  "client": {
+    "nav": {
+      "appointments": "Agendamentos",
+      "profile": "Perfil",
+      "go_to_dashboard": "Ir para a área do cliente"
+    },
+    "dashboard": {
+      "title": "Área do Cliente",
+      "new_booking": "Novo agendamento",
+      "my_appointments": "Meus agendamentos",
+      "update_profile": "Atualizar perfil",
+      "loading": "Carregando…",
+      "next_appointment": "Próximo agendamento",
+      "add_to_calendar": "Adicionar ao calendário",
+      "no_upcoming": "Sem agendamentos futuros.",
+      "create_first": "Crie seu primeiro agendamento.",
+      "contact_title": "Entre em contacto",
+      "call": "Chamar",
+      "address_title": "Morada do salão",
+      "open_maps": "Abrir no Maps?",
+      "open_in_browser": "Abrir no navegador",
+      "load_error": "Falha ao carregar dados.",
+      "cancel_error": "Não foi possível cancelar."
+    },
+    "maps": {
+      "apple": "Apple Maps",
+      "google": "Google Maps",
+      "waze": "Waze"
+    }
+  },
+  "credits": {
+    "label": "Créditos",
+    "loading": "Carregando créditos...",
+    "refresh_hint": "Clique para atualizar o saldo",
+    "unavailable": "Indisponível"
+  },
+  "toast": {
+    "close": "Fechar notificação"
   }
 }
