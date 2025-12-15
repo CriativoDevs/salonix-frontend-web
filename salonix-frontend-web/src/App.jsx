@@ -5,6 +5,7 @@ import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useAuth } from './hooks/useAuth';
 import { useTenant } from './hooks/useTenant';
+import useBillingOverview from './hooks/useBillingOverview';
 import Router from './routes/Router';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from './utils/tenant';
 
@@ -319,6 +320,7 @@ function App() {
       <AuthProvider>
         <ThemeProvider>
           <TenantThemeManager />
+          <BillingSyncManager />
           <BrowserRouter>
             <Router />
           </BrowserRouter>
@@ -330,3 +332,35 @@ function App() {
 
 export default App;
 export { TenantThemeManager };
+
+function BillingSyncManager() {
+  const { overview, refresh } = useBillingOverview();
+  const { plan, refetch } = useTenant();
+
+  useEffect(() => {
+    const handleFocus = () => {
+      refresh();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refresh();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [refresh]);
+
+  useEffect(() => {
+    const code = String(overview?.current_subscription?.plan_code || '').toLowerCase();
+    const tier = String(plan?.tier || plan?.code || '').toLowerCase();
+    if (code && code !== tier) {
+      refetch();
+    }
+  }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code, refetch]);
+
+  return null;
+}

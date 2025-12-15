@@ -3,14 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import useBillingOverview from '../hooks/useBillingOverview';
+import { useTenant } from '../hooks/useTenant';
 
 function BillingSuccess() {
   const navigate = useNavigate();
   const { refresh } = useBillingOverview();
+  const { refetch } = useTenant();
 
   useEffect(() => {
     refresh();
-  }, [refresh]);
+    refetch();
+  }, [refresh, refetch]);
 
   return (
     <FullPageLayout>

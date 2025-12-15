@@ -28,6 +28,7 @@ import ClientDashboard from '../pages/ClientDashboard';
 import ClientProfile from '../pages/ClientProfile';
 import ClientAppointments from '../pages/ClientAppointments';
 import ClientBookingPage from '../pages/ClientBookingPage';
+import RegisterCheckout from '../pages/RegisterCheckout';
 
 function Router() {
   return (
@@ -70,6 +71,15 @@ function Router() {
           <ClientPrivateRoute>
             <ClientBookingPage />
           </ClientPrivateRoute>
+        }
+      />
+
+      <Route
+        path="/register/checkout"
+        element={
+          <PrivateRoute>
+            <RegisterCheckout />
+          </PrivateRoute>
         }
       />
 

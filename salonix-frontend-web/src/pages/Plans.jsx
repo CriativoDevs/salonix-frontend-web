@@ -15,7 +15,7 @@ import useBillingOverview from '../hooks/useBillingOverview';
 function Plans() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { plan, slug } = useTenant();
+  const { plan, slug, refetch } = useTenant();
   const {
     overview,
     loading: overviewLoading,
@@ -58,6 +58,13 @@ function Plans() {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [refreshOverview]);
+
+  useEffect(() => {
+    const code = overview?.current_subscription?.plan_code;
+    if (code) {
+      refetch();
+    }
+  }, [overview?.current_subscription?.plan_code, refetch]);
 
   const onContinue = useCallback(async () => {
     setLoading(true);

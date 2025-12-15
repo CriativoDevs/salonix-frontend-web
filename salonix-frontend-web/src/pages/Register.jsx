@@ -66,10 +66,10 @@ function Register() {
       const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
       try {
         trace('register:auto-login:start');
-        schedulePostAuthRedirect('/plans');
+        schedulePostAuthRedirect('/register/checkout');
         await login({ email: form.email, password: form.password });
         const scheduledTarget = consumePostAuthRedirect();
-        const target = scheduledTarget || (enablePlans ? '/plans' : '/dashboard');
+        const target = scheduledTarget || (enablePlans ? '/register/checkout' : '/dashboard');
         trace('register:auto-login:success', target);
         navigate(target, { replace: true });
       } catch {
