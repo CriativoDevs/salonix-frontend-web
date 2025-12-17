@@ -95,6 +95,16 @@
     "more": "Mais",
     "reports": "Relatórios"
   },
+  "tour": {
+    "welcome": "Bem-vindo ao TimelyOne! Vamos fazer um tour rápido pela plataforma.",
+    "dashboard": "Esta é a sua Dashboard. Aqui você terá uma visão geral do seu negócio.",
+    "slots": "Gerencie seus horários disponíveis e bloqueios aqui.",
+    "bookings": "Acompanhe e gerencie todos os agendamentos.",
+    "customers": "Cadastre e fidelize seus clientes aqui.",
+    "services": "Configure seus serviços e preços aqui.",
+    "team": "Gerencie sua equipe e permissões aqui.",
+    "more": "Acesse Configurações, Relatórios e Planos neste menu."
+  },
   "services": {
     "title": "Serviços",
     "name": "Nome do serviço",
@@ -262,6 +272,10 @@
     "select_conversation": "Selecione uma conversa para começar"
   },
   "common": {
+    "back": "Voltar",
+    "finish": "Concluir",
+    "next": "Próximo",
+    "skip": "Pular",
     "loading": "Carregando...",
     "saving": "Salvando...",
     "save_error": "Falha ao salvar. Tente novamente.",
@@ -421,22 +435,12 @@
       "appointmentReminders": "Lembretes de agendamento",
       "appointmentReminders_description": "Lembretes automáticos de agendamentos",
       "marketingEmails": "E-mails de marketing",
-      "marketingEmails_description": "Receber e-mails promocionais"
+      "marketingEmails_description": "Receber e-mails promocionais",
+      "enterprise_only": "Disponível somente no plano Enterprise"
     },
     "business": {
       "placeholder": "Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.",
       "business_readonly_hint": "Enquanto isso, utilize o console Ops para ajustes ou contacte o suporte."
-    },
-    "auto_invite": {
-      "title": "Convites automáticos do PWA Cliente",
-      "description": "Envie convites automáticos para novos clientes com email válido ao habilitar o PWA Cliente.",
-      "blocked_hint": "Disponível apenas quando o PWA Cliente está habilitado para o salão.",
-      "status_enabled": "Ativo",
-      "status_disabled": "Inativo",
-      "success_enabled": "Convites automáticos ativados.",
-      "success_disabled": "Convites automáticos desativados.",
-      "error": "Não foi possível atualizar a preferência.",
-      "accessible_label": "Alternar convites automáticos do PWA"
     },
     "save": "Salvar",
     "branding": {
@@ -522,9 +526,6 @@
     "credits": {
       "description": "Selecione um valor para comprar. Pagamento via Stripe (checkout).",
       "buy": "Comprar"
-    },
-    "notifications": {
-      "enterprise_only": "Disponível somente no plano Enterprise"
     }
   },
   "customers": {

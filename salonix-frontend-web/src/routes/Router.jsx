@@ -166,7 +166,9 @@ function Router() {
         element={
           <PrivateRoute>
             <RoleProtectedRoute allowedRoles={['owner']}>
-              <Reports />
+              <PlanProtectedRoute featureKey="enableReports">
+                <Reports />
+              </PlanProtectedRoute>
             </RoleProtectedRoute>
           </PrivateRoute>
         }

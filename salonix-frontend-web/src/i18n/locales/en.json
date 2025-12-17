@@ -93,6 +93,16 @@
     "more": "More",
     "reports": "Reports"
   },
+  "tour": {
+    "welcome": "Welcome to TimelyOne! Let's take a quick tour of the platform.",
+    "dashboard": "This is your Dashboard. Here you will have an overview of your business.",
+    "slots": "Manage your available slots and blockages here.",
+    "bookings": "Track and manage all bookings.",
+    "customers": "Register and retain your customers here.",
+    "services": "Configure your services and prices here.",
+    "team": "Manage your team and permissions here.",
+    "more": "Access Settings, Reports, and Plans in this menu."
+  },
   "services": {
     "title": "Services",
     "name": "Service name",
@@ -260,6 +270,10 @@
     "select_conversation": "Select a conversation to start"
   },
   "common": {
+    "back": "Back",
+    "finish": "Finish",
+    "next": "Next",
+    "skip": "Skip",
     "loading": "Loading...",
     "saving": "Saving...",
     "save_error": "Failed to save. Please try again.",
@@ -359,7 +373,8 @@
       "appointmentReminders": "Appointment reminders",
       "appointmentReminders_description": "Automatic appointment reminders",
       "marketingEmails": "Marketing emails",
-      "marketingEmails_description": "Receive promotional emails"
+      "marketingEmails_description": "Receive promotional emails",
+      "enterprise_only": "Available only on the Enterprise plan"
     },
     "save": "Save",
     "branding": {
@@ -445,9 +460,6 @@
     "credits": {
       "description": "Select an amount to purchase. Payment via Stripe (checkout).",
       "buy": "Buy"
-    },
-    "notifications": {
-      "enterprise_only": "Available only on the Enterprise plan"
     },
     "data": {
       "title": "Import (CSV)",
