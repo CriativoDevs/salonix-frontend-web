@@ -145,6 +145,7 @@ export default function HeaderNav() {
             to="/dashboard"
             className="flex items-center gap-2 rounded-md px-2 py-1 transition hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-border"
             aria-label={t('nav.go_to_dashboard', 'Ir para o dashboard')}
+            data-tour="nav-dashboard"
           >
             <BrandLogo
               variant="inline"
@@ -164,6 +165,7 @@ export default function HeaderNav() {
                 className={({ isActive }) =>
                   [base, isActive ? active : inactive].join(' ')
                 }
+                data-tour={`nav-${l.to.replace('/', '')}`}
               >
                 {l.label}
               </NavLink>
@@ -171,14 +173,16 @@ export default function HeaderNav() {
 
             {/* Menu hamburger com novas funcionalidades - só aparece se houver itens */}
             {dropdownItems.length > 0 && (
-              <DropdownMenu
-                items={dropdownItems}
-                trigger={
-                  <div className="flex items-center space-x-2">
-                    <span>{t('nav.more')}</span>
-                  </div>
-                }
-              />
+              <div data-tour="nav-more">
+                <DropdownMenu
+                  items={dropdownItems}
+                  trigger={
+                    <div className="flex items-center space-x-2">
+                      <span>{t('nav.more')}</span>
+                    </div>
+                  }
+                />
+              </div>
             )}
           </nav>
 

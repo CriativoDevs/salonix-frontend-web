@@ -54,7 +54,9 @@ export const AuthProvider = ({ children }) => {
       setFeatureFlags(flags);
     } catch (error) {
       if (hasActionableError(error?.response?.data?.error?.code)) {
-        setAuthError(parseApiError(error, 'Não foi possível carregar suas permissões.'));
+        setAuthError(
+          parseApiError(error, 'Não foi possível carregar suas permissões.')
+        );
       }
     }
   }, []);
@@ -67,7 +69,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
-        console.warn('[Auth] loadCurrentUser failed with auth error. Forcing logout.');
+        console.warn(
+          '[Auth] loadCurrentUser failed with auth error. Forcing logout.'
+        );
         handleLogout();
       } else {
         console.warn('[Auth] loadCurrentUser failed:', error);
@@ -89,7 +93,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const status = error?.response?.status;
       if (status === 404 || status === 403) {
-        console.warn('[Auth] loadTenantBootstrap: user has no tenant or forbidden. status=', status);
+        console.warn(
+          '[Auth] loadTenantBootstrap: user has no tenant or forbidden. status=',
+          status
+        );
         setTenantInfo(null);
         setTenantSlug(DEFAULT_TENANT_META.slug);
         clearStoredTenantSlug();
@@ -147,9 +154,13 @@ export const AuthProvider = ({ children }) => {
       setAuthError(null);
       try {
         const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
-        const { access, refresh, tenant, user } = await loginRequest(email, password, {
-          captchaBypassToken: bypass,
-        });
+        const { access, refresh, tenant, user } = await loginRequest(
+          email,
+          password,
+          {
+            captchaBypassToken: bypass,
+          }
+        );
         if (access) {
           setAccessToken(access);
         }
@@ -157,7 +168,10 @@ export const AuthProvider = ({ children }) => {
           setRefreshToken(refresh);
         }
         if (tenant?.slug) {
-          console.log('[Auth] login payload included tenant. slug=', tenant.slug);
+          console.log(
+            '[Auth] login payload included tenant. slug=',
+            tenant.slug
+          );
           applyTenantBootstrap(tenant);
           storeTenantSlug(tenant.slug);
           setTenantInfo(tenant);
@@ -199,6 +213,7 @@ export const AuthProvider = ({ children }) => {
       tenant: tenantInfo,
       login,
       logout: handleLogout,
+      refreshUser: loadCurrentUser,
       authError,
       clearAuthError,
     }),
@@ -210,6 +225,7 @@ export const AuthProvider = ({ children }) => {
       tenantInfo,
       login,
       handleLogout,
+      loadCurrentUser,
       authError,
       clearAuthError,
     ]

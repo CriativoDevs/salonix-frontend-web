@@ -22,9 +22,9 @@ import { useDebounce } from '../hooks/useDebounce';
 export default function Reports() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { plan, slug } = useTenant();
+  const { slug, profile, plan } = useTenant();
   const { user } = useAuth();
-  const { staff } = useStaff({ slug });
+  const { staff, error: staffError, forbidden } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
 
   // Toast system
@@ -76,15 +76,21 @@ export default function Reports() {
 
   // Determinar papel do usuário atual
   const currentUserRole = useMemo(() => {
-    if (!Array.isArray(staff) || !user) {
+    if (!user) {
       return null;
     }
-
+    if (
+      staffError ||
+      forbidden ||
+      !Array.isArray(staff) ||
+      staff.length === 0
+    ) {
+      return 'owner';
+    }
     const email =
       typeof user.email === 'string' ? user.email.toLowerCase() : null;
     const username =
       typeof user.username === 'string' ? user.username.toLowerCase() : null;
-
     const match = staff.find((member) => {
       const memberEmail =
         typeof member.email === 'string' ? member.email.toLowerCase() : null;
@@ -92,20 +98,26 @@ export default function Reports() {
         typeof member.username === 'string'
           ? member.username.toLowerCase()
           : null;
-
       return (
         (email && memberEmail === email) ||
         (username && memberUsername === username)
       );
     });
-
-    return match?.role || null;
-  }, [staff, user]);
+    if (match?.role) return match.role;
+    const userEmail =
+      typeof user?.email === 'string' ? user.email.toLowerCase() : null;
+    const tenantEmail =
+      typeof profile?.email === 'string' ? profile.email.toLowerCase() : null;
+    if (userEmail && tenantEmail && userEmail === tenantEmail) {
+      return 'owner';
+    }
+    return null;
+  }, [staff, user, staffError, forbidden, profile?.email]);
 
   // Verificar se é owner
   const isOwner = currentUserRole === 'owner';
 
-  // Hook para dados de relatórios (só carrega se for owner)
+  // Hook para dados de relatórios
   const {
     data: reportsData,
     loading: reportsLoading,
@@ -113,7 +125,7 @@ export default function Reports() {
     forbidden: reportsForbidden,
     refetch: refetchReports,
   } = useReportsData({
-    slug: isOwner ? slug : null,
+    slug,
     type: activeTab === 'basic' ? 'basic' : 'advanced',
     filters: appliedFilters,
   });
@@ -123,12 +135,21 @@ export default function Reports() {
     if (reportsError) {
       showError(t('reports.error', 'Erro ao carregar relatórios'));
     } else if (reportsData && !reportsLoading) {
-      const key = activeTab === 'basic'
-        ? 'reports.basic.data_loaded'
-        : 'reports.advanced.data_loaded';
+      const key =
+        activeTab === 'basic'
+          ? 'reports.basic.data_loaded'
+          : 'reports.advanced.data_loaded';
       showSuccess(t(key, 'Relatórios carregados com sucesso!'));
     }
-  }, [reportsData, reportsError, reportsLoading, showSuccess, showError, activeTab, t]);
+  }, [
+    reportsData,
+    reportsError,
+    reportsLoading,
+    showSuccess,
+    showError,
+    activeTab,
+    t,
+  ]);
 
   // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
   const hasAdvancedReports = useMemo(() => {
@@ -448,7 +469,7 @@ export default function Reports() {
                               filters={{
                                 from: appliedFilters.from,
                                 to: appliedFilters.to,
-                                interval: advancedInterval
+                                interval: advancedInterval,
                               }}
                               disabled={reportsLoading}
                             />
@@ -456,7 +477,7 @@ export default function Reports() {
 
                           {/* Top Services */}
                           <Card className="p-6">
-                            <TopServices 
+                            <TopServices
                               data={reportsData.advancedReports}
                               loading={reportsLoading}
                               limit={advancedLimit}
@@ -465,7 +486,7 @@ export default function Reports() {
 
                           {/* Revenue Chart */}
                           <Card className="p-6">
-                            <RevenueChart 
+                            <RevenueChart
                               data={reportsData.advancedReports}
                               loading={reportsLoading}
                               interval={advancedInterval}

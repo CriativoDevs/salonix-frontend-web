@@ -19,7 +19,6 @@ const runtimeDefaultSlug = (() => {
 const envDefaultSlug = String(runtimeDefaultSlug).toLowerCase();
 
 export const PLAN_NAME_BY_TIER = {
-  starter: 'Starter',
   basic: 'Basic',
   standard: 'Standard',
   pro: 'Pro',
@@ -43,10 +42,10 @@ export const DEFAULT_TENANT_META = {
   name: 'TimelyOne',
   auto_invite_enabled: false,
   plan: {
-    code: 'starter',
-    name: 'Starter',
+    code: 'basic',
+    name: 'Basic',
     features: ['pwa_admin'],
-    tier: 'starter',
+    tier: 'basic',
     addons: [],
   },
   theme: {
@@ -76,7 +75,7 @@ export const DEFAULT_TENANT_META = {
     enableMobilePush: false,
     enableSms: false,
     enableWhatsapp: false,
-    planTier: 'starter',
+    planTier: 'basic',
   },
   modules: [],
   channels: {

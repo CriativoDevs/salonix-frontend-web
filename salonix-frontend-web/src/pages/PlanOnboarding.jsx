@@ -1,19 +1,14 @@
 import { useCallback, useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import FullPageLayout from '../layouts/FullPageLayout';
-import PageHeader from '../components/ui/PageHeader';
-import {
-  PLAN_OPTIONS,
-  createCheckoutSession,
-  createBillingPortalSession,
-} from '../api/billing';
+import AuthLayout from '../layouts/AuthLayout';
+import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
 import { parseApiError } from '../utils/apiError';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 import useBillingOverview from '../hooks/useBillingOverview';
 import Modal from '../components/ui/Modal';
 
-function Plans() {
+export default function PlanOnboarding() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { plan, slug, refetch } = useTenant();
@@ -24,7 +19,6 @@ function Plans() {
   } = useBillingOverview({ pollIntervalMs: 3000 });
   const [selected, setSelected] = useState('standard');
   const [loading, setLoading] = useState(false);
-  const [managing, setManaging] = useState(false);
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -107,59 +101,20 @@ function Plans() {
     setConfirmOpen(true);
   }, []);
 
-  const onManage = useCallback(async () => {
-    setManaging(true);
-    setError(null);
-    try {
-      const { url } = await createBillingPortalSession({ slug });
-      if (url) {
-        window.location.assign(url);
-      } else {
-        setError({
-          message: t(
-            'plans.portal_link_error',
-            'Não foi possível obter o link do portal.'
-          ),
-        });
-      }
-    } catch (e) {
-      setError(
-        parseApiError(
-          e,
-          t('plans.portal_error', 'Falha ao abrir o portal de faturação.')
-        )
-      );
-    } finally {
-      setManaging(false);
-    }
-  }, [slug, t]);
-
   return (
-    <FullPageLayout>
-      <PageHeader
-        title={t('plans.title', 'Planos')}
-        subtitle={t('plans.subtitle', 'Escolha ou gerencie seu plano atual')}
-      >
-        {overview?.current_subscription?.plan_name || plan?.name ? (
-          <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground">
-            {t('plans.current_badge', 'Plano atual')}:{" "}
-            {overview?.current_subscription?.plan_name || plan?.name}
-          </span>
-        ) : null}
-      </PageHeader>
-      <div className="mx-auto max-w-3xl p-6">
-        {!isAuthenticated && (
-          <div className="mb-4 rounded border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
-            {t(
-              'plans.login_required',
-              'É necessário iniciar sessão para concluir o checkout.'
-            )}
-          </div>
-        )}
+    <AuthLayout>
+      <div className="space-y-4">
+        <h1 className="text-xl font-semibold text-brand-surfaceForeground">
+          {t('plans.title', 'Planos')}
+        </h1>
+        <p className="text-sm text-brand-surfaceForeground/70">
+          {t('plans.subtitle', 'Escolha o plano para iniciar seu painel')}
+        </p>
+
         {!overviewLoading &&
         overview &&
         (overview.trial_exhausted || overview.trial_eligible === false) ? (
-          <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
             {t(
               'plans.trial_exhausted',
               'Aviso: seu período de teste de {{days}} dias já foi utilizado. A cobrança será imediata ao confirmar o checkout.',
@@ -167,23 +122,14 @@ function Plans() {
             )}
           </div>
         ) : null}
-        {!overviewLoading &&
-          overview &&
-          overview.current_subscription &&
-          overview.current_subscription.status !== 'trialing' && (
-            <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
-              {t(
-                'plans.already_active',
-                'Você já possui uma assinatura ativa. Qualquer mensagem de "14 dias grátis" exibida no Stripe não se aplica; a cobrança é imediata.'
-              )}
-            </div>
-          )}
-        {error && (
-          <div className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+
+        {error ? (
+          <div className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
             {error.message}
           </div>
-        )}
-        <div className="grid gap-4 sm:grid-cols-3">
+        ) : null}
+
+        <div className="grid gap-3 sm:grid-cols-2">
           {plans.map((p) => (
             <button
               key={p.code}
@@ -195,7 +141,7 @@ function Plans() {
               }`}
               onClick={() => setSelected(p.code)}
             >
-              <div className="text-lg font-semibold">
+              <div className="text-base font-semibold">
                 {t(`plans.options.${p.code}.name`, p.name)}
               </div>
               <div className="mt-1 text-sm text-gray-600">
@@ -214,7 +160,7 @@ function Plans() {
           ))}
         </div>
 
-        <div className="mt-6">
+        <div className="pt-2">
           <button
             type="button"
             disabled={loading || !isAuthenticated}
@@ -225,24 +171,7 @@ function Plans() {
               ? t('common.processing', 'Aguarde…')
               : t('plans.continue_checkout', 'Continuar para checkout')}
           </button>
-          <span className="mx-2 text-gray-400">•</span>
-          <button
-            type="button"
-            disabled={managing || !isAuthenticated}
-            onClick={onManage}
-            className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {managing
-              ? t('plans.opening', 'Abrindo…')
-              : t('plans.manage_plan', 'Gerir plano')}
-          </button>
         </div>
-        <p className="mt-3 text-xs text-gray-500">
-          {t(
-            'plans.dev_hint',
-            'Dica: defina VITE_BILLING_MOCK=true para simular checkout em desenvolvimento.'
-          )}
-        </p>
       </div>
 
       <Modal
@@ -295,8 +224,6 @@ function Plans() {
           </div>
         </div>
       </Modal>
-    </FullPageLayout>
+    </AuthLayout>
   );
 }
-
-export default Plans;
