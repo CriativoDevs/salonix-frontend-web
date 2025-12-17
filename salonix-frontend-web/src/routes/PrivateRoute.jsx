@@ -36,7 +36,7 @@ function PrivateRoute({ children }) {
   }
 
   if (enablePlans && location.pathname === '/dashboard') {
-    return <Navigate to="/plans" replace state={{ from: location }} />;
+    return <Navigate to="/onboarding/plan" replace state={{ from: location }} />;
   }
 
   return children;

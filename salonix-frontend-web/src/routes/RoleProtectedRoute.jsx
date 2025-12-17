@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 function RoleProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { slug } = useTenant();
+  const { slug, profile } = useTenant();
   console.log('[RoleProtectedRoute] Tenant slug:', slug);
   const {
     staff,
@@ -27,24 +27,21 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
       return null;
     }
 
-    // Se não há dados de staff ou houve erro (403/429/etc.), usar fallback
+    // Se não há dados de staff ou houve erro (403/429/etc.), usar fallback estrito
     if (
       staffError ||
       forbidden ||
       !Array.isArray(staff) ||
       staff.length === 0
     ) {
-      console.log(
-        '[RoleProtectedRoute] No staff data, using user-based fallback'
-      );
+      console.log('[RoleProtectedRoute] No staff data, using strict fallback');
 
-      // Fallback: assumir que usuários específicos têm roles específicas
+      // Admin users get owner role
       const email =
         typeof user.email === 'string' ? user.email.toLowerCase() : null;
       const username =
         typeof user.username === 'string' ? user.username.toLowerCase() : null;
 
-      // Admin users get owner role
       if (email === 'admin@demo.local' || username === 'admin') {
         console.log(
           '[RoleProtectedRoute] Admin user detected, assigning owner role'
@@ -52,35 +49,16 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
         return 'owner';
       }
 
-      // Manager users get manager role
-      if (email?.includes('manager') || username?.includes('manager')) {
+      // Fallback: considerar owner quando email do usuário coincide com o email do perfil do tenant
+      const tenantOwnerEmail =
+        typeof profile?.email === 'string' ? profile.email.toLowerCase() : null;
+      if (email && tenantOwnerEmail && email === tenantOwnerEmail) {
         console.log(
-          '[RoleProtectedRoute] Manager user detected, assigning manager role'
-        );
-        return 'manager';
-      }
-
-      // Pro users get manager role (for demo purposes)
-      if (email?.includes('pro_') || username?.includes('pro_')) {
-        console.log(
-          '[RoleProtectedRoute] Pro user detected, assigning manager role'
-        );
-        return 'manager';
-      }
-
-      // Ambiente dev: permitir acesso de owner quando staff API bloqueia ou erro
-      if (staffError || forbidden) {
-        console.log(
-          '[RoleProtectedRoute] Staff API forbidden; granting owner role in dev fallback'
+          '[RoleProtectedRoute] Owner detected via tenant profile email'
         );
         return 'owner';
       }
-      // Novo tenant frequentemente não possui staff listado ainda.
-      // Para não bloquear o owner recém-criado, conceder owner como fallback seguro.
-      console.log(
-        '[RoleProtectedRoute] Default fallback: granting owner role (new tenant)'
-      );
-      return 'owner';
+      return null;
     }
 
     const email =
@@ -108,20 +86,9 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
     console.log('[RoleProtectedRoute] Match found:', match);
     if (match?.role) return match.role;
 
-    // Fallback adicional: se o tenant possui exatamente um owner ativo,
-    // conceder owner quando não há match explícito (novo tenant recém-criado).
-    const owners = Array.isArray(staff)
-      ? staff.filter((m) => m?.role === 'owner' && m?.status !== 'disabled')
-      : [];
-    if (owners.length === 1) {
-      console.log(
-        '[RoleProtectedRoute] Single owner detected; granting owner role as fallback'
-      );
-      return 'owner';
-    }
-
+    // Sem match e sem confirmação pelo perfil do tenant: negar
     return null;
-  }, [staff, user, forbidden, staffError]);
+  }, [staff, user, forbidden, staffError, profile?.email]);
 
   if (isLoading || staffLoading) {
     return (

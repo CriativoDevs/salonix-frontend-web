@@ -4,16 +4,19 @@ import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import useBillingOverview from '../hooks/useBillingOverview';
 import { useTenant } from '../hooks/useTenant';
+import useCreditBalance from '../hooks/useCreditBalance';
 
 function BillingSuccess() {
   const navigate = useNavigate();
   const { refresh } = useBillingOverview();
   const { refetch } = useTenant();
+  const { refresh: refreshCredits } = useCreditBalance();
 
   useEffect(() => {
     refresh();
     refetch();
-  }, [refresh, refetch]);
+    refreshCredits();
+  }, [refresh, refetch, refreshCredits]);
 
   return (
     <FullPageLayout>

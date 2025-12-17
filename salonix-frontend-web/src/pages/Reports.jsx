@@ -22,7 +22,7 @@ import { useDebounce } from '../hooks/useDebounce';
 export default function Reports() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { plan, slug } = useTenant();
+  const { slug, profile, plan } = useTenant();
   const { user } = useAuth();
   const { staff, error: staffError, forbidden } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
@@ -104,14 +104,15 @@ export default function Reports() {
       );
     });
     if (match?.role) return match.role;
-    const owners = Array.isArray(staff)
-      ? staff.filter((m) => m?.role === 'owner' && m?.status !== 'disabled')
-      : [];
-    if (owners.length === 1) {
+    const userEmail =
+      typeof user?.email === 'string' ? user.email.toLowerCase() : null;
+    const tenantEmail =
+      typeof profile?.email === 'string' ? profile.email.toLowerCase() : null;
+    if (userEmail && tenantEmail && userEmail === tenantEmail) {
       return 'owner';
     }
     return null;
-  }, [staff, user, staffError, forbidden]);
+  }, [staff, user, staffError, forbidden, profile?.email]);
 
   // Verificar se é owner
   const isOwner = currentUserRole === 'owner';

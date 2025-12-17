@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
+import PlanProtectedRoute from './PlanProtectedRoute';
 import RoleProtectedRoute from './RoleProtectedRoute';
 import Dashboard from '../pages/Dashboard';
 import Landing from '../pages/Landing';
@@ -29,6 +30,7 @@ import ClientProfile from '../pages/ClientProfile';
 import ClientAppointments from '../pages/ClientAppointments';
 import ClientBookingPage from '../pages/ClientBookingPage';
 import RegisterCheckout from '../pages/RegisterCheckout';
+import PlanOnboarding from '../pages/PlanOnboarding';
 
 function Router() {
   return (
@@ -186,6 +188,15 @@ function Router() {
         element={
           <PrivateRoute>
             <Plans />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/onboarding/plan"
+        element={
+          <PrivateRoute>
+            <PlanOnboarding />
           </PrivateRoute>
         }
       />
