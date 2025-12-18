@@ -236,7 +236,7 @@ function DataSettingsStandalone() {
   }, []);
 
   useEffect(() => {
-    console.log('DataSettings:mounted');
+    // console.log('DataSettings:mounted');
   }, []);
 
   const handleExport = useCallback(
@@ -576,10 +576,10 @@ function DataSettingsStandalone() {
   );
 
   useEffect(() => {
-    console.log(
+    /* console.log(
       'DataSettings:file_state_changed',
       file ? { name: file.name, size: file.size, type: file.type } : null
-    );
+    ); */
   }, [file]);
 
   const doUpload = async (dryRun) => {
@@ -2416,7 +2416,7 @@ function Settings() {
     if (now - lastTenantRefreshRef.current < 60_000) return false;
     refreshInFlightRef.current = true;
     try {
-      await refetch();
+      await refetch({ silent: true });
       lastTenantRefreshRef.current = Date.now();
       return true;
     } catch (err) {

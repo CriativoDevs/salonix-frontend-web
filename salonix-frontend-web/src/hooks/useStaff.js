@@ -24,10 +24,19 @@ const mergeStaffMember = (list, member) => {
 
 export function useStaff({ slug } = {}) {
   const [staff, setStaff] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!!slug);
   const [error, setError] = useState(null);
   const [requestId, setRequestId] = useState(null);
   const [forbidden, setForbidden] = useState(false);
+  const [prevSlug, setPrevSlug] = useState(slug);
+
+  if (slug !== prevSlug) {
+    setPrevSlug(slug);
+    setLoading(!!slug);
+    setStaff([]);
+    setError(null);
+    setForbidden(false);
+  }
 
   const mountedRef = useRef(true);
 
@@ -47,7 +56,9 @@ export function useStaff({ slug } = {}) {
     setForbidden(false);
 
     try {
-      const { staff: staffData, requestId: reqId } = await fetchStaffMembers({ slug });
+      const { staff: staffData, requestId: reqId } = await fetchStaffMembers({
+        slug,
+      });
       if (!mountedRef.current) return;
       setStaff(Array.isArray(staffData) ? staffData : []);
       setRequestId(reqId || null);
@@ -79,7 +90,10 @@ export function useStaff({ slug } = {}) {
   const invite = useCallback(
     async (payload) => {
       try {
-        const { staffMember, requestId: reqId } = await inviteStaffMember(payload, { slug });
+        const { staffMember, requestId: reqId } = await inviteStaffMember(
+          payload,
+          { slug }
+        );
         if (!mountedRef.current) {
           return { success: true, staffMember, requestId: reqId || null };
         }
@@ -96,14 +110,21 @@ export function useStaff({ slug } = {}) {
   const update = useCallback(
     async (id, payload) => {
       try {
-        const { staffMember, requestId: reqId } = await updateStaffMember(id, payload, { slug });
+        const { staffMember, requestId: reqId } = await updateStaffMember(
+          id,
+          payload,
+          { slug }
+        );
         if (!mountedRef.current) {
           return { success: true, staffMember, requestId: reqId || null };
         }
         setStaff((current) => mergeStaffMember(current, staffMember));
         return { success: true, staffMember, requestId: reqId || null };
       } catch (err) {
-        const parsed = parseApiError(err, 'Não foi possível atualizar o membro de equipe.');
+        const parsed = parseApiError(
+          err,
+          'Não foi possível atualizar o membro de equipe.'
+        );
         return { success: false, error: parsed };
       }
     },
@@ -113,7 +134,9 @@ export function useStaff({ slug } = {}) {
   const disable = useCallback(
     async (id) => {
       try {
-        const { success, requestId: reqId } = await disableStaffMember(id, { slug });
+        const { success, requestId: reqId } = await disableStaffMember(id, {
+          slug,
+        });
         if (!success) {
           return {
             success: false,
@@ -130,7 +153,10 @@ export function useStaff({ slug } = {}) {
         }
         return { success: true, requestId: reqId || null };
       } catch (err) {
-        const parsed = parseApiError(err, 'Não foi possível desativar o membro de equipe.');
+        const parsed = parseApiError(
+          err,
+          'Não foi possível desativar o membro de equipe.'
+        );
         return { success: false, error: parsed };
       }
     },
