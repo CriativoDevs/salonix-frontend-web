@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 function RoleProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { slug, profile } = useTenant();
+  const { slug, profile, loading: tenantLoading } = useTenant();
   console.log('[RoleProtectedRoute] Tenant slug:', slug);
   const {
     staff,
@@ -90,7 +90,7 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
     return null;
   }, [staff, user, forbidden, staffError, profile?.email]);
 
-  if (isLoading || staffLoading) {
+  if (isLoading || staffLoading || tenantLoading) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-gray-500">
         Carregando...
