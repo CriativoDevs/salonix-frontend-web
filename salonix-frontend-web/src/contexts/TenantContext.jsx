@@ -147,7 +147,7 @@ export function TenantProvider({ children }) {
       setError(null);
       setLoading(false);
       storeTenantSlug(merged.slug);
-      loadTenant(merged.slug, { silent: true });
+      
       if (!slugChanged) {
         skipNextLoadRef.current = false;
       }

@@ -102,4 +102,17 @@ describe('mergeTenantMeta', () => {
     const meta = mergeTenantMeta({ auto_invite_enabled: true }, 'aurora');
     expect(meta.auto_invite_enabled).toBe(true);
   });
+
+  it('correctly merges nested feature flags from backend', () => {
+    const raw = {
+      slug: 'test',
+      feature_flags: {
+        modules: { reports_enabled: true },
+        notifications: { sms: true },
+      },
+    };
+    const meta = mergeTenantMeta(raw, 'test');
+    expect(meta.flags.enableReports).toBe(true);
+    expect(meta.flags.enableSms).toBe(true);
+  });
 });
