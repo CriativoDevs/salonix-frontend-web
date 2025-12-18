@@ -440,20 +440,29 @@ function normalizeFlags(featureFlags, fallback) {
 
   const mergedModules = {
     ...(featureFlags.modules || {}),
-    reports_enabled: featureFlags.reports_enabled,
-    pwa_admin_enabled: featureFlags.pwa_admin_enabled,
-    pwa_client_enabled: featureFlags.pwa_client_enabled,
-    rn_admin_enabled: featureFlags.rn_admin_enabled,
-    rn_client_enabled: featureFlags.rn_client_enabled,
   };
+  if (featureFlags.reports_enabled !== undefined)
+    mergedModules.reports_enabled = featureFlags.reports_enabled;
+  if (featureFlags.pwa_admin_enabled !== undefined)
+    mergedModules.pwa_admin_enabled = featureFlags.pwa_admin_enabled;
+  if (featureFlags.pwa_client_enabled !== undefined)
+    mergedModules.pwa_client_enabled = featureFlags.pwa_client_enabled;
+  if (featureFlags.rn_admin_enabled !== undefined)
+    mergedModules.rn_admin_enabled = featureFlags.rn_admin_enabled;
+  if (featureFlags.rn_client_enabled !== undefined)
+    mergedModules.rn_client_enabled = featureFlags.rn_client_enabled;
 
   const mergedNotifications = {
     ...(featureFlags.notifications || {}),
-    push_web: featureFlags.push_web_enabled,
-    push_mobile: featureFlags.push_mobile_enabled,
-    sms: featureFlags.sms_enabled,
-    whatsapp: featureFlags.whatsapp_enabled,
   };
+  if (featureFlags.push_web_enabled !== undefined)
+    mergedNotifications.push_web = featureFlags.push_web_enabled;
+  if (featureFlags.push_mobile_enabled !== undefined)
+    mergedNotifications.push_mobile = featureFlags.push_mobile_enabled;
+  if (featureFlags.sms_enabled !== undefined)
+    mergedNotifications.sms = featureFlags.sms_enabled;
+  if (featureFlags.whatsapp_enabled !== undefined)
+    mergedNotifications.whatsapp = featureFlags.whatsapp_enabled;
 
   if ('reports_enabled' in mergedModules) {
     base.enableReports = Boolean(mergedModules.reports_enabled);
