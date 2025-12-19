@@ -36,6 +36,8 @@ import OpsLogin from '../pages/ops/Login';
 import OpsDashboard from '../pages/ops/Dashboard';
 import OpsTenantsList from '../pages/ops/TenantsList';
 import OpsTenantDetail from '../pages/ops/TenantDetail';
+import OpsSupport from '../pages/ops/Support';
+import OpsUsers from '../pages/ops/Users';
 import OpsLayout from '../layouts/OpsLayout';
 import OpsPrivateRoute from './OpsPrivateRoute';
 
@@ -60,6 +62,8 @@ function Router() {
                 <Route path="dashboard" element={<OpsDashboard />} />
                 <Route path="tenants" element={<OpsTenantsList />} />
                 <Route path="tenants/:id" element={<OpsTenantDetail />} />
+                <Route path="support" element={<OpsSupport />} />
+                <Route path="users" element={<OpsUsers />} />
               </Route>
             </Routes>
           </OpsAuthProvider>

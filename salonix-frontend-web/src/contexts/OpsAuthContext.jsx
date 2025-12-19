@@ -9,18 +9,6 @@ export const OpsAuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Create api instance once
-  const api = useMemo(
-    () =>
-      axios.create({
-        baseURL: '/api/ops',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }),
-    []
-  );
-
   // Token management helpers
   const getAccessToken = () => localStorage.getItem('ops_access_token');
   const getRefreshToken = () => localStorage.getItem('ops_refresh_token');
@@ -36,19 +24,41 @@ export const OpsAuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // Setup interceptors
-  useEffect(() => {
-    const reqInterceptor = api.interceptors.request.use(
+  // Create api instance once with request interceptor
+  const api = useMemo(() => {
+    const instance = axios.create({
+      baseURL: '/api/ops',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    // Add Authorization header to every request
+    instance.interceptors.request.use(
       (config) => {
         const token = getAccessToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+        } else if (user) {
+          // We think we are logged in, but have no token. This is a state inconsistency.
+          // Cancel request and logout.
+          clearTokens();
+          navigate('/ops/login');
+          // Cancel request
+          const controller = new AbortController();
+          config.signal = controller.signal;
+          controller.abort('No token found');
         }
         return config;
       },
       (error) => Promise.reject(error)
     );
 
+    return instance;
+  }, []);
+
+  // Setup response interceptor for token refresh
+  useEffect(() => {
     const resInterceptor = api.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -84,7 +94,6 @@ export const OpsAuthProvider = ({ children }) => {
     );
 
     return () => {
-      api.interceptors.request.eject(reqInterceptor);
       api.interceptors.response.eject(resInterceptor);
     };
   }, [api, navigate]);
@@ -118,15 +127,15 @@ export const OpsAuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/login/', { username, password });
       const { access, refresh, ops_role, user_id } = response.data;
-      
+
       setTokens(access, refresh);
-      
+
       setUser({
         id: user_id,
         username,
         ops_role,
       });
-      
+
       navigate('/ops/dashboard');
       return true;
     } catch (err) {

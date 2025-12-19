@@ -21,6 +21,7 @@ const OpsLayout = () => {
   const navItems = [
     { path: '/ops/dashboard', label: 'Visão Geral', icon: LayoutDashboard },
     { path: '/ops/tenants', label: 'Tenants', icon: Building2 },
+    { path: '/ops/support', label: 'Suporte', icon: Bell },
     { path: '/ops/users', label: 'Usuários Ops', icon: Users },
     { path: '/ops/settings', label: 'Configurações', icon: Settings },
   ];
