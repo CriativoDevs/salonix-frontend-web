@@ -1,99 +1,278 @@
-import React, { useState, useEffect } from 'react';
-import { useOpsAuth } from '../../hooks/useOpsAuth';
-import { Users, Shield, Mail, UserPlus } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useOpsUsers } from '../../hooks/useOpsUsers';
+import { Users, Mail, UserPlus, X, Save, AlertCircle } from 'lucide-react';
 
-const OpsUsers = () => {
-  const { api } = useOpsAuth();
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const UserModal = ({ isOpen, onClose, onSubmit, user, loading, error }) => {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    ops_role: 'ops_support',
+    password: '',
+    is_active: true,
+  });
 
   useEffect(() => {
-    let mounted = true;
+    if (user) {
+      setFormData({
+        username: user.username,
+        email: user.email,
+        ops_role: user.ops_role,
+        is_active: user.is_active,
+        password: '', // Password only for creation or reset (not handled here yet)
+      });
+    } else {
+      setFormData({
+        username: '',
+        email: '',
+        ops_role: 'ops_support',
+        password: '',
+        is_active: true,
+      });
+    }
+  }, [user, isOpen]);
 
-    const fetchUsers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Assuming endpoint exists, if not it will be caught
-        const response = await api.get('/users/');
-        if (mounted) {
-          setUsers(response.data);
-          setError(null); // Ensure error is cleared on success
-        }
-      } catch (err) {
-        if (!mounted) return;
+  if (!isOpen) return null;
 
-        // Check for auth error first to avoid noise
-        if (
-          err.response?.status === 401 ||
-          err.response?.data?.code === 'E001'
-        ) {
-          // Auth error, context will handle redirect
-          return;
-        }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
-        console.error('Error fetching ops users:', err);
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 w-full max-w-md">
+        <div className="flex justify-between items-center p-6 border-b border-gray-700">
+          <h2 className="text-xl font-bold text-white">
+            {user ? 'Editar Usuário' : 'Novo Usuário'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
 
-        // Fallback or specific error handling
-        if (err.response && err.response.status === 404) {
-          // Mock data if endpoint not ready yet, to show UI
-          setUsers([
-            {
-              id: 1,
-              username: 'admin',
-              email: 'admin@salonix.com',
-              ops_role: 'admin',
-              is_active: true,
-            },
-            {
-              id: 2,
-              username: 'suporte',
-              email: 'suporte@salonix.com',
-              ops_role: 'support',
-              is_active: true,
-            },
-          ]);
-          setError(
-            `Endpoint /ops/users/ retornou 404. Exibindo dados simulados.`
-          );
-        } else {
-          setError(
-            `Falha ao carregar usuários do Ops: ${
-              err.response?.data?.detail || err.message
-            }`
-          );
-        }
-      } finally {
-        if (mounted) setLoading(false);
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-900/30 border border-red-700 text-red-200 p-3 rounded flex items-center gap-2 text-sm">
+              <AlertCircle size={16} />
+              {error.response?.data?.message ||
+                error.response?.data?.detail ||
+                'Erro ao salvar usuário'}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Nome de Usuário
+            </label>
+            <input
+              type="text"
+              required
+              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 focus:outline-none"
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 focus:outline-none"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+            />
+          </div>
+
+          {!user && (
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Senha Inicial
+              </label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 focus:outline-none"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-1">
+              Permissão (Role)
+            </label>
+            <select
+              className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white focus:border-purple-500 focus:outline-none"
+              value={formData.ops_role}
+              onChange={(e) =>
+                setFormData({ ...formData, ops_role: e.target.value })
+              }
+            >
+              <option value="ops_support">Suporte</option>
+              <option value="ops_admin">Admin</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="is_active"
+              className="w-4 h-4 rounded bg-gray-900 border-gray-700 text-purple-600 focus:ring-purple-500"
+              checked={formData.is_active}
+              onChange={(e) =>
+                setFormData({ ...formData, is_active: e.target.checked })
+              }
+            />
+            <label htmlFor="is_active" className="text-sm text-gray-300">
+              Usuário Ativo
+            </label>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors disabled:opacity-50"
+            >
+              {loading ? (
+                'Salvando...'
+              ) : (
+                <>
+                  <Save size={18} />
+                  Salvar
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const OpsUsers = () => {
+  const { listUsers, createUser, updateUser, loading, error } = useOpsUsers();
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [modalError, setModalError] = useState(null);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const data = await listUsers();
+      let allUsers = [];
+      if (data && data.results) {
+        allUsers = data.results;
+      } else if (Array.isArray(data)) {
+        allUsers = data;
       }
-    };
+      setUsers(allUsers);
+      setFilteredUsers(allUsers);
+    } catch {
+      // Error handled by hook
+    }
+  }, [listUsers]);
 
+  useEffect(() => {
     fetchUsers();
+  }, [fetchUsers]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [api]);
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredUsers(users);
+    } else {
+      const lower = searchTerm.toLowerCase();
+      setFilteredUsers(
+        users.filter(
+          (u) =>
+            u.username.toLowerCase().includes(lower) ||
+            u.email.toLowerCase().includes(lower)
+        )
+      );
+    }
+  }, [searchTerm, users]);
+
+  const handleCreate = () => {
+    setEditingUser(null);
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setModalError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (formData) => {
+    setModalError(null);
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, formData);
+      } else {
+        await createUser(formData);
+      }
+      setIsModalOpen(false);
+      fetchUsers();
+    } catch (err) {
+      setModalError(err);
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">Usuários Ops</h1>
-        <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors">
+        <button
+          onClick={handleCreate}
+          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded flex items-center gap-2 transition-colors"
+        >
           <UserPlus size={18} />
           Novo Usuário
         </button>
       </div>
 
-      {error && (
+      <div className="relative">
+        <input
+          type="text"
+          placeholder="Buscar por nome ou email..."
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-purple-500"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {error && !isModalOpen && (
         <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 p-4 rounded">
-          {error}
+          {error.message || 'Erro ao carregar usuários'}
         </div>
       )}
 
       <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-        {loading ? (
+        {loading && !isModalOpen ? (
           <div className="p-8 text-center text-gray-400">
             Carregando usuários...
           </div>
@@ -109,7 +288,7 @@ const OpsUsers = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <tr
                   key={user.id}
                   className="hover:bg-gray-750 transition-colors"
@@ -131,26 +310,33 @@ const OpsUsers = () => {
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                        user.ops_role === 'admin'
+                        user.ops_role === 'ops_admin'
                           ? 'bg-purple-900 text-purple-200'
                           : 'bg-blue-900 text-blue-200'
                       }`}
                     >
-                      {user.ops_role || 'Staff'}
+                      {user.ops_role === 'ops_admin' ? 'Admin' : 'Suporte'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`flex items-center gap-1 text-xs ${user.is_active ? 'text-green-400' : 'text-red-400'}`}
+                      className={`flex items-center gap-1 text-xs ${
+                        user.is_active ? 'text-green-400' : 'text-red-400'
+                      }`}
                     >
                       <div
-                        className={`w-2 h-2 rounded-full ${user.is_active ? 'bg-green-400' : 'bg-red-400'}`}
+                        className={`w-2 h-2 rounded-full ${
+                          user.is_active ? 'bg-green-400' : 'bg-red-400'
+                        }`}
                       />
                       {user.is_active ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-gray-400 hover:text-white transition-colors">
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
                       Editar
                     </button>
                   </td>
@@ -167,6 +353,15 @@ const OpsUsers = () => {
           </table>
         )}
       </div>
+
+      <UserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        user={editingUser}
+        loading={loading}
+        error={modalError}
+      />
     </div>
   );
 };
