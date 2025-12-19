@@ -11,14 +11,16 @@ export default function useBillingOverview(options = {}) {
   const pollRef = useRef(null);
 
   const load = useCallback(async () => {
-    if (!enabled) return;
+    if (!enabled || !slug) return;
     setLoading(true);
     setError(null);
     try {
       const payload = await fetchBillingOverview({ slug });
       setData(payload || null);
     } catch (e) {
-      setError(e);
+      if (e?.response?.status !== 401) {
+        setError(e);
+      }
     } finally {
       setLoading(false);
     }

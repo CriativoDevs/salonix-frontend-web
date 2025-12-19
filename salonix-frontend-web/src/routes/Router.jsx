@@ -31,10 +31,37 @@ import ClientAppointments from '../pages/ClientAppointments';
 import ClientBookingPage from '../pages/ClientBookingPage';
 import RegisterCheckout from '../pages/RegisterCheckout';
 import PlanOnboarding from '../pages/PlanOnboarding';
+import { OpsAuthProvider } from '../contexts/OpsAuthContext';
+import OpsLogin from '../pages/ops/Login';
+import OpsDashboard from '../pages/ops/Dashboard';
+import OpsLayout from '../layouts/OpsLayout';
+import OpsPrivateRoute from './OpsPrivateRoute';
 
 function Router() {
   return (
     <Routes>
+      {/* Ops Console Routes - Isolated Scope */}
+      <Route
+        path="/ops/*"
+        element={
+          <OpsAuthProvider>
+            <Routes>
+              <Route path="login" element={<OpsLogin />} />
+              <Route
+                element={
+                  <OpsPrivateRoute>
+                    <OpsLayout />
+                  </OpsPrivateRoute>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<OpsDashboard />} />
+              </Route>
+            </Routes>
+          </OpsAuthProvider>
+        }
+      />
+
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

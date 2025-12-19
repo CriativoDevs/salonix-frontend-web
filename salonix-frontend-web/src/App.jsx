@@ -60,15 +60,17 @@ function TenantThemeManager() {
     const hasExplicitSlug = !!slug && slug !== DEFAULT_TENANT_META.slug;
 
     const effectiveTheme = { ...targetTheme };
-    
+
     // Garantir que as cores de texto sejam adequadas para o tema atual
     const isDarkTheme = root.classList.contains('theme-dark');
     if (isDarkTheme) {
       // No tema escuro, usar cores claras para texto
-      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#f8fafc';
+      effectiveTheme.surfaceForeground =
+        effectiveTheme.surfaceForeground || '#f8fafc';
     } else {
       // No tema claro, usar cores escuras para texto
-      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#0f172a';
+      effectiveTheme.surfaceForeground =
+        effectiveTheme.surfaceForeground || '#0f172a';
     }
 
     if (!originalAssetsRef.current) {
@@ -98,8 +100,11 @@ function TenantThemeManager() {
     }
 
     const updateFavicon = () => {
-      const brandIconSrc = targetBranding.faviconUrl || targetBranding.logoUrl || '';
-      const brandIconHref = brandIconSrc ? resolveTenantAssetUrl(brandIconSrc) : '';
+      const brandIconSrc =
+        targetBranding.faviconUrl || targetBranding.logoUrl || '';
+      const brandIconHref = brandIconSrc
+        ? resolveTenantAssetUrl(brandIconSrc)
+        : '';
 
       let faviconEl = document.querySelector('link[rel="icon"]');
       if (!faviconEl) {
@@ -137,10 +142,13 @@ function TenantThemeManager() {
       }
 
       const appleRawSrc = targetBranding.appleTouchIconUrl || brandIconSrc;
-      const appleIconHref = appleRawSrc ? resolveTenantAssetUrl(appleRawSrc) : FALLBACK_FAVICON_PNG_DATA_URL;
+      const appleIconHref = appleRawSrc
+        ? resolveTenantAssetUrl(appleRawSrc)
+        : FALLBACK_FAVICON_PNG_DATA_URL;
 
       let appleIconLink = document.getElementById(APPLE_TOUCH_ICON_ID);
-      const shouldShowAppleIcon = isAuthenticated || (hasExplicitSlug && !!appleRawSrc);
+      const shouldShowAppleIcon =
+        isAuthenticated || (hasExplicitSlug && !!appleRawSrc);
       if (shouldShowAppleIcon) {
         if (!appleIconLink) {
           appleIconLink = document.createElement('link');
@@ -173,15 +181,25 @@ function TenantThemeManager() {
             manifestLink.setAttribute('rel', 'manifest');
             document.head.appendChild(manifestLink);
           }
-          manifestLink.setAttribute('href', originalAssetsRef.current.manifestHref);
+          manifestLink.setAttribute(
+            'href',
+            originalAssetsRef.current.manifestHref
+          );
         }
         return;
       }
 
-      const name = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      const name =
+        tenant?.name ||
+        targetBranding.appName ||
+        DEFAULT_TENANT_META.branding.appName;
       const shortName = targetBranding.shortName || tenant?.name || name;
-      const themeColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
-      const backgroundColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
+      const themeColor = root.classList.contains('theme-dark')
+        ? '#0f172a'
+        : '#ffffff';
+      const backgroundColor = root.classList.contains('theme-dark')
+        ? '#0f172a'
+        : '#ffffff';
 
       const manifestPayload = {
         name,
@@ -192,15 +210,17 @@ function TenantThemeManager() {
         theme_color: themeColor,
         icons:
           targetBranding.icons && targetBranding.icons.length
-            ? targetBranding.icons.map(icon => ({
+            ? targetBranding.icons.map((icon) => ({
                 ...icon,
-                src: icon.src.startsWith('http') ? icon.src : window.location.origin + icon.src
+                src: icon.src.startsWith('http')
+                  ? icon.src
+                  : window.location.origin + icon.src,
               }))
             : [
                 targetBranding.logoUrl
                   ? {
-                      src: targetBranding.logoUrl.startsWith('http') 
-                        ? targetBranding.logoUrl 
+                      src: targetBranding.logoUrl.startsWith('http')
+                        ? targetBranding.logoUrl
                         : window.location.origin + targetBranding.logoUrl,
                       sizes: '512x512',
                       type: 'image/png',
@@ -226,15 +246,20 @@ function TenantThemeManager() {
 
     const appleWebAppTitleMeta = ensureMetaTag('apple-mobile-web-app-title');
     const appleCapableMeta = ensureMetaTag('apple-mobile-web-app-capable');
+    const mobileCapableMeta = ensureMetaTag('mobile-web-app-capable');
 
     if (isAuthenticated) {
-      const tenantTitle = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      const tenantTitle =
+        tenant?.name ||
+        targetBranding.appName ||
+        DEFAULT_TENANT_META.branding.appName;
       document.title = tenantTitle;
       appleWebAppTitleMeta.setAttribute(
         'content',
         targetBranding.shortName || tenant?.name || tenantTitle
       );
       appleCapableMeta.setAttribute('content', 'yes');
+      mobileCapableMeta.setAttribute('content', 'yes');
     } else {
       // Regra: Landing sempre TimelyOne; Telas públicas com slug mostram nome do tenant; sem slug, TimelyOne
       const isLanding = pathname === '/';
@@ -245,7 +270,7 @@ function TenantThemeManager() {
       } else {
         document.title = DEFAULT_TENANT_META.branding.appName;
       }
-      
+
       // Metas PWA básicas em público: título segue mesma regra de document.title
       const publicAppTitle = isLanding
         ? DEFAULT_TENANT_META.branding.appName
@@ -256,13 +281,17 @@ function TenantThemeManager() {
       // Só marcamos como "capable" em público quando houver slug explícito
       if (hasExplicitSlug) {
         appleCapableMeta.setAttribute('content', 'yes');
+        mobileCapableMeta.setAttribute('content', 'yes');
       } else {
         appleCapableMeta.removeAttribute('content');
+        mobileCapableMeta.removeAttribute('content');
       }
     }
 
     const updateSplashScreens = () => {
-      const existingSplashes = document.querySelectorAll(`link[${APPLE_SPLASH_ATTR}="true"]`);
+      const existingSplashes = document.querySelectorAll(
+        `link[${APPLE_SPLASH_ATTR}="true"]`
+      );
       existingSplashes.forEach((link) => link.remove());
 
       if (!isAuthenticated) {
@@ -334,10 +363,15 @@ export default App;
 export { TenantThemeManager };
 
 function BillingSyncManager() {
-  const { overview, refresh } = useBillingOverview();
+  const { isAuthenticated } = useAuth();
+  const { overview, refresh } = useBillingOverview({
+    enabled: isAuthenticated,
+  });
   const { plan, refetch } = useTenant();
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const handleFocus = () => {
       refresh();
     };
@@ -352,15 +386,25 @@ function BillingSyncManager() {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [refresh]);
+  }, [refresh, isAuthenticated]);
 
   useEffect(() => {
-    const code = String(overview?.current_subscription?.plan_code || '').toLowerCase();
+    if (!isAuthenticated) return;
+
+    const code = String(
+      overview?.current_subscription?.plan_code || ''
+    ).toLowerCase();
     const tier = String(plan?.tier || plan?.code || '').toLowerCase();
     if (code && code !== tier) {
       refetch();
     }
-  }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code, refetch]);
+  }, [
+    overview?.current_subscription?.plan_code,
+    plan?.tier,
+    plan?.code,
+    refetch,
+    isAuthenticated,
+  ]);
 
   return null;
 }
