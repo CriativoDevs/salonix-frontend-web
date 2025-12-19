@@ -27,10 +27,14 @@ const TenantsList = () => {
       if (filters.plan_tier) params.plan_tier = filters.plan_tier;
 
       const data = await listTenants(params);
-      setTenants(data.results);
-      setCount(data.count);
+      const results = data.results || (Array.isArray(data) ? data : []);
+      const totalCount = data.count || (Array.isArray(data) ? data.length : 0);
+      
+      setTenants(results);
+      setCount(totalCount);
     } catch (err) {
       console.error(err);
+      setTenants([]);
     }
   }, [page, pageSize, filters, listTenants]);
 

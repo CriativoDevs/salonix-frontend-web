@@ -186,6 +186,13 @@ export function TenantProvider({ children }) {
   );
 
   useEffect(() => {
+    // Skip tenant loading for Ops routes
+    const pathname = window.location?.pathname || '';
+    if (pathname.startsWith('/ops')) {
+      setLoading(false);
+      return;
+    }
+
     if (skipNextLoadRef.current) {
       skipNextLoadRef.current = false;
       return () => {
