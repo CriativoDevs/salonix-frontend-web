@@ -34,6 +34,8 @@ import PlanOnboarding from '../pages/PlanOnboarding';
 import { OpsAuthProvider } from '../contexts/OpsAuthContext';
 import OpsLogin from '../pages/ops/Login';
 import OpsDashboard from '../pages/ops/Dashboard';
+import OpsTenantsList from '../pages/ops/TenantsList';
+import OpsTenantDetail from '../pages/ops/TenantDetail';
 import OpsLayout from '../layouts/OpsLayout';
 import OpsPrivateRoute from './OpsPrivateRoute';
 
@@ -56,6 +58,8 @@ function Router() {
               >
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<OpsDashboard />} />
+                <Route path="tenants" element={<OpsTenantsList />} />
+                <Route path="tenants/:id" element={<OpsTenantDetail />} />
               </Route>
             </Routes>
           </OpsAuthProvider>
