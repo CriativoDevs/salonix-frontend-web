@@ -249,6 +249,13 @@ function TenantThemeManager() {
     const mobileCapableMeta = ensureMetaTag('mobile-web-app-capable');
 
     if (isAuthenticated) {
+      // Se estiver no /ops, manter identidade do Ops
+      if (pathname.startsWith('/ops')) {
+        document.title = 'Ops Console';
+        // Opcional: Resetar favicon/meta para padrão do Ops se tiver assets específicos
+        return;
+      }
+
       const tenantTitle =
         tenant?.name ||
         targetBranding.appName ||
@@ -263,8 +270,8 @@ function TenantThemeManager() {
     } else {
       // Regra: Landing sempre TimelyOne; Telas públicas com slug mostram nome do tenant; sem slug, TimelyOne
       const isLanding = pathname === '/';
-      if (isLanding) {
-        document.title = DEFAULT_TENANT_META.branding.appName;
+      if (isLanding || pathname.startsWith('/ops')) { // Ops Login também deve ser neutro/Ops
+        document.title = pathname.startsWith('/ops') ? 'Ops Console' : DEFAULT_TENANT_META.branding.appName;
       } else if (hasExplicitSlug && (tenant?.name || '').length > 0) {
         document.title = tenant.name;
       } else {
