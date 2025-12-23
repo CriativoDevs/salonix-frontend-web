@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOpsUsers } from '../../hooks/useOpsUsers';
-import { Users, Mail, UserPlus, X, Save, AlertCircle } from 'lucide-react';
+import {
+  Users,
+  Mail,
+  UserPlus,
+  X,
+  Save,
+  AlertCircle,
+  Edit,
+} from 'lucide-react';
 
 const UserModal = ({ isOpen, onClose, onSubmit, user, loading, error }) => {
   const [formData, setFormData] = useState({
@@ -271,86 +279,159 @@ const OpsUsers = () => {
         </div>
       )}
 
-      <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
         {loading && !isModalOpen ? (
           <div className="p-8 text-center text-gray-400">
             Carregando usuários...
           </div>
         ) : (
-          <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-gray-900 text-gray-500 uppercase font-medium">
-              <tr>
-                <th className="px-6 py-4">Usuário</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-gray-750 transition-colors"
-                >
-                  <td className="px-6 py-4 flex items-center gap-3">
-                    <div className="bg-gray-700 p-2 rounded-full">
-                      <Users size={16} className="text-gray-300" />
-                    </div>
-                    <span className="font-medium text-white">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-gray-400">
+              <thead className="bg-gray-900 text-gray-500 uppercase font-medium">
+                <tr>
+                  <th className="px-6 py-4">Usuário</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Role</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {filteredUsers.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-gray-750 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gray-700 p-2 rounded-full">
+                          <Users size={16} className="text-gray-300" />
+                        </div>
+                        <div className="font-medium text-white">
+                          {user.username}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Mail size={14} />
+                        {user.email}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                          user.ops_role === 'ops_admin'
+                            ? 'bg-purple-900 text-purple-200'
+                            : 'bg-blue-900 text-blue-200'
+                        }`}
+                      >
+                        {user.ops_role === 'ops_admin' ? 'Admin' : 'Suporte'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`flex items-center gap-1 text-xs ${
+                          user.is_active ? 'text-green-400' : 'text-red-400'
+                        }`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            user.is_active ? 'bg-green-400' : 'bg-red-400'
+                          }`}
+                        />
+                        {user.is_active ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {users.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-8 text-center">
+                      Nenhum usuário encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Cards View */}
+      <div className="md:hidden space-y-4">
+        {loading && !isModalOpen ? (
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center text-gray-400">
+            Carregando usuários...
+          </div>
+        ) : (
+          filteredUsers.map((user) => (
+            <div
+              key={user.id}
+              className="bg-gray-800 rounded-lg border border-gray-700 p-4 space-y-3"
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gray-700 p-2 rounded-full">
+                    <Users size={20} className="text-gray-300" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-white text-base">
                       {user.username}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Mail size={14} />
+                    </div>
+                    <div className="text-sm text-gray-500 flex items-center gap-1">
+                      <Mail size={12} />
                       {user.email}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                        user.ops_role === 'ops_admin'
-                          ? 'bg-purple-900 text-purple-200'
-                          : 'bg-blue-900 text-blue-200'
-                      }`}
-                    >
-                      {user.ops_role === 'ops_admin' ? 'Admin' : 'Suporte'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`flex items-center gap-1 text-xs ${
-                        user.is_active ? 'text-green-400' : 'text-red-400'
-                      }`}
-                    >
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          user.is_active ? 'bg-green-400' : 'bg-red-400'
-                        }`}
-                      />
-                      {user.is_active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="text-gray-400 hover:text-white transition-colors"
-                    >
-                      Editar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {users.length === 0 && !loading && (
-                <tr>
-                  <td colSpan="5" className="px-6 py-8 text-center">
-                    Nenhum usuário encontrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleEdit(user)}
+                  className="bg-gray-700 p-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-600 transition-colors"
+                >
+                  <Edit size={18} />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between border-t border-gray-700 pt-3">
+                <span
+                  className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                    user.ops_role === 'ops_admin'
+                      ? 'bg-purple-900 text-purple-200'
+                      : 'bg-blue-900 text-blue-200'
+                  }`}
+                >
+                  {user.ops_role === 'ops_admin' ? 'Admin' : 'Suporte'}
+                </span>
+                <span
+                  className={`flex items-center gap-1 text-sm ${
+                    user.is_active ? 'text-green-400' : 'text-red-400'
+                  }`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      user.is_active ? 'bg-green-400' : 'bg-red-400'
+                    }`}
+                  />
+                  {user.is_active ? 'Ativo' : 'Inativo'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+        {!loading && filteredUsers.length === 0 && (
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-8 text-center text-gray-400">
+            Nenhum usuário encontrado.
+          </div>
         )}
       </div>
 
