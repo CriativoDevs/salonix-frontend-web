@@ -34,6 +34,21 @@ jest.mock('../../api/billing', () => ({
 }));
 
 describe('PlanOnboarding', () => {
+  const originalError = console.error;
+
+  beforeAll(() => {
+    console.error = (...args) => {
+      if (/Not implemented: navigation/.test(args[0])) {
+        return;
+      }
+      originalError.call(console, ...args);
+    };
+  });
+
+  afterAll(() => {
+    console.error = originalError;
+  });
+
   it('abre modal de confirmação e inicia checkout ao confirmar', async () => {
     render(
       <MemoryRouter>

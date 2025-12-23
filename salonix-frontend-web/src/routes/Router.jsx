@@ -39,6 +39,8 @@ import OpsTenantDetail from '../pages/ops/TenantDetail';
 import OpsSupport from '../pages/ops/Support';
 import OpsUsers from '../pages/ops/Users';
 import OpsSettings from '../pages/ops/Settings';
+import OpsGlobalSettings from '../pages/ops/GlobalSettings';
+import OpsNotificationTemplates from '../pages/ops/NotificationTemplates';
 import OpsAuditLogs from '../pages/ops/AuditLogs';
 import OpsLayout from '../layouts/OpsLayout';
 import OpsPrivateRoute from './OpsPrivateRoute';
@@ -67,6 +69,11 @@ function Router() {
                 <Route path="support" element={<OpsSupport />} />
                 <Route path="users" element={<OpsUsers />} />
                 <Route path="settings" element={<OpsSettings />} />
+                <Route path="settings/global" element={<OpsGlobalSettings />} />
+                <Route
+                  path="settings/notifications"
+                  element={<OpsNotificationTemplates />}
+                />
                 <Route path="settings/audit" element={<OpsAuditLogs />} />
               </Route>
             </Routes>
