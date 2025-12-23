@@ -12,6 +12,8 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const OpsLayout = () => {
   const { user, logout } = useOpsAuth();

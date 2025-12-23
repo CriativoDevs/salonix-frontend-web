@@ -28,31 +28,37 @@ const Settings = () => {
           </div>
         </Link>
 
-        {/* Placeholder for Global Vars */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 opacity-75 cursor-not-allowed">
+        {/* Global Vars */}
+        <Link
+          to="/ops/settings/global"
+          className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-purple-500 transition-colors group"
+        >
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-gray-900 rounded-lg">
-              <Globe className="text-gray-400" size={24} />
+            <div className="p-3 bg-gray-900 rounded-lg group-hover:bg-purple-900/30 transition-colors">
+              <Globe className="text-purple-400" size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-300">Variáveis Globais</h3>
-              <p className="text-sm text-gray-500">Em breve</p>
+              <h3 className="text-lg font-semibold text-white">Variáveis Globais</h3>
+              <p className="text-sm text-gray-400">Gerencie configurações do sistema</p>
             </div>
           </div>
-        </div>
+        </Link>
 
-        {/* Placeholder for Notifications */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 opacity-75 cursor-not-allowed">
+        {/* Notifications */}
+        <Link
+          to="/ops/settings/notifications"
+          className="bg-gray-800 p-6 rounded-lg border border-gray-700 hover:border-purple-500 transition-colors group"
+        >
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-gray-900 rounded-lg">
-              <Bell className="text-gray-400" size={24} />
+            <div className="p-3 bg-gray-900 rounded-lg group-hover:bg-purple-900/30 transition-colors">
+              <Bell className="text-purple-400" size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-300">Notificações</h3>
-              <p className="text-sm text-gray-500">Em breve</p>
+              <h3 className="text-lg font-semibold text-white">Notificações</h3>
+              <p className="text-sm text-gray-400">Templates de e-mail e mensagens</p>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
     </div>
   );
