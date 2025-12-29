@@ -8,6 +8,7 @@ import {
   triggerLogout,
 } from '../utils/authStorage';
 import { getEnvVar } from '../utils/env';
+import { RATE_LIMIT_EVENT } from '../constants/events';
 
 const defaultBase = 'http://localhost:8000/api/';
 const configuredBase = getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
@@ -68,6 +69,31 @@ client.interceptors.response.use(
   async (error) => {
     const { response, config } = error;
     if (!response) {
+      return Promise.reject(error);
+    }
+
+    // Handle 429 Rate Limit
+    if (response.status === 429) {
+      const retryAfterHeader = response.headers['retry-after'];
+      let seconds = 60; // default
+
+      if (retryAfterHeader) {
+        seconds = parseInt(retryAfterHeader, 10);
+      } else if (response.data && response.data.detail) {
+        // DRF often returns: "Request was throttled. Expected available in 56 seconds."
+        const match = response.data.detail.match(/available in (\d+) seconds/);
+        if (match) {
+          seconds = parseInt(match[1], 10);
+        }
+      }
+      
+      // Dispatch event for UI
+      window.dispatchEvent(
+        new CustomEvent('api-rate-limit', { 
+          detail: { retryAfter: seconds || 60 } 
+        })
+      );
+      
       return Promise.reject(error);
     }
 

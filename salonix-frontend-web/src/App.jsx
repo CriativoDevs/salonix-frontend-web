@@ -3,10 +3,12 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { RateLimitProvider } from './contexts/RateLimitContext';
 import { useAuth } from './hooks/useAuth';
 import { useTenant } from './hooks/useTenant';
 import useBillingOverview from './hooks/useBillingOverview';
 import Router from './routes/Router';
+import RateLimitWarning from './components/ui/RateLimitWarning';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from './utils/tenant';
 
 const THEME_VARIABLES = {
@@ -270,8 +272,11 @@ function TenantThemeManager() {
     } else {
       // Regra: Landing sempre TimelyOne; Telas públicas com slug mostram nome do tenant; sem slug, TimelyOne
       const isLanding = pathname === '/';
-      if (isLanding || pathname.startsWith('/ops')) { // Ops Login também deve ser neutro/Ops
-        document.title = pathname.startsWith('/ops') ? 'Ops Console' : DEFAULT_TENANT_META.branding.appName;
+      if (isLanding || pathname.startsWith('/ops')) {
+        // Ops Login também deve ser neutro/Ops
+        document.title = pathname.startsWith('/ops')
+          ? 'Ops Console'
+          : DEFAULT_TENANT_META.branding.appName;
       } else if (hasExplicitSlug && (tenant?.name || '').length > 0) {
         document.title = tenant.name;
       } else {
@@ -352,17 +357,20 @@ function TenantThemeManager() {
 
 function App() {
   return (
-    <TenantProvider>
-      <AuthProvider>
-        <ThemeProvider>
-          <TenantThemeManager />
-          <BillingSyncManager />
-          <BrowserRouter>
-            <Router />
-          </BrowserRouter>
-        </ThemeProvider>
-      </AuthProvider>
-    </TenantProvider>
+    <RateLimitProvider>
+      <TenantProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <TenantThemeManager />
+            <BillingSyncManager />
+            <BrowserRouter>
+              <Router />
+              <RateLimitWarning />
+            </BrowserRouter>
+          </ThemeProvider>
+        </AuthProvider>
+      </TenantProvider>
+    </RateLimitProvider>
   );
 }
 
