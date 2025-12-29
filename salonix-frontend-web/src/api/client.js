@@ -27,6 +27,8 @@ const client = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken',
 });
 
 const refreshClient = axios.create({
@@ -35,6 +37,8 @@ const refreshClient = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken',
 });
 
 client.interceptors.request.use((config) => {
