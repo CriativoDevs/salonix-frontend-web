@@ -7,13 +7,14 @@ import FormButton from '../components/ui/FormButton';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
 import { consumePostAuthRedirect } from '../utils/navigation';
-import { getEnvFlag } from '../utils/env';
+import { getEnvFlag, getEnvVar } from '../utils/env';
 import CaptchaGate from '../components/security/CaptchaGate';
 
 function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login, authError, isLoading, isAuthenticated, clearAuthError } = useAuth();
+  const { login, authError, isLoading, isAuthenticated, clearAuthError } =
+    useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,27 +33,33 @@ function Login() {
     }
   }, [isLoading, isAuthenticated, enablePlans, navigate]);
 
-  const validate = () => {
-    const newErrors = {};
-    if (!email) newErrors.email = t('login.errors.email_required');
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = t('login.errors.email_invalid');
-
-    if (!password) newErrors.password = t('login.errors.password_required');
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    const cleanEmail = email.trim();
+    setEmail(cleanEmail); // Update state to reflect trimmed value
+
+    if (!cleanEmail) {
+      setErrors({ email: t('login.errors.email_required') });
+      return;
+    }
+    // Simple regex check, matching validate() logic but using cleanEmail
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrors({ email: t('login.errors.email_invalid') });
+      return;
+    }
+    if (!password) {
+      setErrors({ password: t('login.errors.password_required') });
+      return;
+    }
+    setErrors({}); // Clear errors if valid
+
     setSubmitting(true);
     setPopupError(null);
     clearAuthError();
     try {
-      const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
+      const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN');
       const token = bypass || captchaToken || undefined;
-      await login({ email, password, captchaToken: token });
+      await login({ email: cleanEmail, password, captchaToken: token });
     } catch (err) {
       setPopupError(err);
     } finally {
@@ -94,26 +101,32 @@ function Login() {
         />
 
         <div className="text-right text-sm">
-          <Link to="/forgot-password" className="text-brand-primary hover:text-brand-primary/80 underline">
+          <Link
+            to="/forgot-password"
+            className="text-brand-primary hover:text-brand-primary/80 underline"
+          >
             {t('login.forgot_password')}
           </Link>
         </div>
 
-      <div className="text-center">
-        <button 
-          type="submit" 
-          disabled={submitting}
-          className="text-brand-primary hover:text-brand-primary/80 underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {submitting ? t('common.loading') : t('login.submit')}
-        </button>
-      </div>
+        <div className="text-center">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="text-brand-primary hover:text-brand-primary/80 underline font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {submitting ? t('common.loading') : t('login.submit')}
+          </button>
+        </div>
 
         <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
 
         <div className="mt-4 text-sm text-center">
           {t('login.no_account')}{' '}
-          <Link to="/register" className="text-brand-primary hover:text-brand-primary/80 underline">
+          <Link
+            to="/register"
+            className="text-brand-primary hover:text-brand-primary/80 underline"
+          >
             {t('login.register')}
           </Link>
         </div>
