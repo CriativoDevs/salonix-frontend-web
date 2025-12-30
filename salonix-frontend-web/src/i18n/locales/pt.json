@@ -287,7 +287,12 @@
     "close": "Fechar",
     "actions": "Ações",
     "rate_limit_warning": "Muitas tentativas. Aguarde {{seconds}}s...",
-    "please_wait": "Por favor, aguarde o contador antes de tentar novamente."
+    "please_wait": "Por favor, aguarde o contador antes de tentar novamente.",
+    "active": "Ativa",
+    "inactive": "Inativa",
+    "cancelled": "Cancelada",
+    "saving": "Salvando...",
+    "loading_data": "Carregando dados do plano..."
   },
   "feedback": {
     "title": "Feedback",
@@ -372,6 +377,11 @@
         "help_name": "Nome do cliente",
         "help_staff_name": "Nome completo",
         "help_email": "E-mail válido",
+        "help_phone": "Telefone internacional (ex: +351XXXXXXXXX)",
+        "help_service_name": "Nome do serviço",
+        "help_duration": "Duração em minutos (inteiro > 0)",
+        "help_price": "Preço em EUR (ex: 12.50 ou 12,50)",
+        "help_role": "Cargo: owner, manager ou collaborator",
         "help_ignore": "Ignorar coluna"
       },
       "import": {
@@ -460,7 +470,12 @@
       "timezone": "Fuso horário",
       "language": "Idioma",
       "currency": "Moeda padrão",
-      "address": "Endereço"
+      "address": "Endereço",
+      "info_title": "Informações Gerais",
+      "edit_title": "Editar Informações",
+      "edit_business_name": "Nome Comercial",
+      "edit_email": "Email de Contato",
+      "edit_phone": "Telefone"
     },
     "plan_title": "Plano atual",
     "plan_unknown": "Plano não identificado",
@@ -497,7 +512,23 @@
       "accessible_label": "Alternar PWA Cliente",
       "success_enabled": "PWA Cliente habilitado.",
       "success_disabled": "PWA Cliente desabilitado.",
-      "error": "Não foi possível atualizar o PWA Cliente."
+      "error": "Não foi possível atualizar o PWA Cliente.",
+      "auto_invite_label": "Convites automáticos:",
+      "auto_invite_toggle_label": "Alternar convites automáticos"
+    },
+    "auto_renewal": {
+      "title": "Renovação Automática",
+      "description": "Gerencie a renovação automática do seu plano de assinatura.",
+      "cancelled": "Renovação automática cancelada com sucesso.",
+      "reactivated": "Renovação automática reativada com sucesso."
+    },
+    "auto_renewal_status": "Renovação automática",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "push_web": "Web Push",
+      "push_mobile": "Mobile Push"
     },
     "notifications_paywall_hint": "Canais avançados disponíveis com créditos.",
     "tooltip": {
