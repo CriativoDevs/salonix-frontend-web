@@ -13,17 +13,24 @@ function BillingSuccess() {
   const { refresh: refreshCredits } = useCreditBalance();
 
   useEffect(() => {
-    refresh();
-    refetch();
-    refreshCredits();
+    const timer = setTimeout(() => {
+      refresh();
+      refetch({ silent: true });
+      refreshCredits();
+    }, 1500); // Aguarda um pouco para o webhook do backend processar o Stripe
+    return () => clearTimeout(timer);
   }, [refresh, refetch, refreshCredits]);
 
   return (
     <FullPageLayout>
-      <PageHeader title="Pagamento concluído" subtitle="Sua assinatura foi atualizada." />
+      <PageHeader
+        title="Pagamento concluído"
+        subtitle="Sua assinatura foi atualizada."
+      />
       <div className="mx-auto max-w-xl p-6 text-brand-surfaceForeground">
         <p className="text-sm">
-          Obrigado! Processamos seu checkout. Caso o plano não apareça atualizado, clique em voltar.
+          Obrigado! Processamos seu checkout. Caso o plano não apareça
+          atualizado, clique em voltar.
         </p>
         <div className="mt-6 flex gap-3">
           <button

@@ -245,8 +245,21 @@ export function TenantProvider({ children }) {
     applyTenantBootstrap,
   ]);
 
+  // Create a stable refetch function to avoid unnecessary re-renders
+  const stableRefetch = useCallback(
+    (options) => loadTenant(slug, options),
+    [loadTenant, slug]
+  );
+
+  const contextValueWithStableRefetch = useMemo(() => {
+    return {
+      ...contextValue,
+      refetch: stableRefetch,
+    };
+  }, [contextValue, stableRefetch]);
+
   return (
-    <TenantContext.Provider value={contextValue}>
+    <TenantContext.Provider value={contextValueWithStableRefetch}>
       {children}
     </TenantContext.Provider>
   );
