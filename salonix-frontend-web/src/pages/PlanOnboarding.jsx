@@ -58,7 +58,7 @@ export default function PlanOnboarding() {
   useEffect(() => {
     const code = overview?.current_subscription?.plan_code;
     if (code) {
-      refetch();
+      refetch({ silent: true });
     }
   }, [overview?.current_subscription?.plan_code, refetch]);
 

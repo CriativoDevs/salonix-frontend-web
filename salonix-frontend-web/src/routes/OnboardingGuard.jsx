@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useTenant } from '../hooks/useTenant';
+import { DEFAULT_TENANT_SLUG } from '../utils/tenant';
 
 const ONBOARDING_ROUTES = {
   setup: '/setup',
@@ -11,7 +12,12 @@ export default function OnboardingGuard({ children }) {
   const { tenant, loading } = useTenant();
   const location = useLocation();
 
-  if (loading) {
+  // Só bloqueia a renderização se for o carregamento inicial (sem dados de tenant)
+  // Refetchs subsequentes (loading=true mas com tenant válido) não devem desmontar a tela
+  const isInitialLoad =
+    loading && (!tenant || tenant.slug === DEFAULT_TENANT_SLUG);
+
+  if (isInitialLoad) {
     return null; // Deixa o PrivateRoute lidar com loading UI se necessário
   }
 
@@ -39,7 +45,12 @@ export default function OnboardingGuard({ children }) {
     // ou se a rota atual for uma sub-rota permitida do fluxo (ex: /plans/checkout)
     const isAllowedSubRoute = location.pathname.startsWith(requiredRoute);
 
-    if (!isAllowedSubRoute) {
+    // Permitir /register/checkout se estivermos em billing_pending (fluxo alternativo de wizard)
+    const isRegisterCheckout =
+      location.pathname === '/register/checkout' &&
+      onboardingState === 'billing_pending';
+
+    if (!isAllowedSubRoute && !isRegisterCheckout) {
       console.log(
         `[OnboardingGuard] Redirecting from ${location.pathname} to ${requiredRoute} (state: ${onboardingState})`
       );

@@ -1,5 +1,4 @@
 import client from './client';
-import { getEnvFlag, getEnvVar } from '../utils/env';
 
 export const PLAN_OPTIONS = [
   {
@@ -37,25 +36,7 @@ export const PLAN_OPTIONS = [
 ];
 
 export async function createCheckoutSession(planCode, options = {}) {
-  const billingMockEnabled = getEnvFlag('VITE_BILLING_MOCK');
   const { slug } = options || {};
-
-  console.log(
-    '[Billing] env VITE_BILLING_MOCK=',
-    getEnvVar('VITE_BILLING_MOCK')
-  );
-  console.log(
-    '[Billing] createCheckoutSession mock=',
-    billingMockEnabled,
-    'plan=',
-    planCode
-  );
-
-  if (billingMockEnabled) {
-    // Simula latência
-    await new Promise((r) => setTimeout(r, 300));
-    return { url: `/checkout/mock?plan=${encodeURIComponent(planCode)}` };
-  }
 
   const headers = {};
   const params = {};
@@ -64,55 +45,23 @@ export async function createCheckoutSession(planCode, options = {}) {
     params.tenant = slug;
   }
 
-  let response;
-  try {
-    response = await client.post(
-      'payments/stripe/create-checkout-session/',
-      { plan: planCode },
-      { headers, params }
-    );
-  } catch (err) {
-    if (err?.response?.status === 404) {
-      try {
-        response = await client.post(
-          'payments/checkout/',
-          { plan: planCode },
-          { headers, params }
-        );
-      } catch (err2) {
-        if (err2?.response?.status === 404) {
-          response = await client.post(
-            'payments/checkout/session/',
-            { plan: planCode },
-            { headers, params }
-          );
-        } else {
-          throw err2;
-        }
-      }
-    } else {
-      throw err;
-    }
-  }
-  // Backend esperado: { checkout_url }
+  // Problema 3: Removendo fallbacks em cascata para garantir que erros reais do backend apareçam
+  // e usem o endpoint correto: payments/stripe/create-checkout-session/
+  const response = await client.post(
+    'payments/stripe/create-checkout-session/',
+    { plan: planCode },
+    { headers, params }
+  );
+
   const checkoutUrl = response?.data?.checkout_url || response?.data?.url;
   if (!checkoutUrl) {
-    console.warn(
-      '[Billing] checkout_url ausente na resposta. Retornando mock.'
-    );
-    return { url: `/checkout/mock?plan=${encodeURIComponent(planCode)}` };
+    throw new Error('Checkout URL not found in response');
   }
   return { url: checkoutUrl };
 }
 
 export async function createBillingPortalSession(options = {}) {
-  const billingMockEnabled = getEnvFlag('VITE_BILLING_MOCK');
   const { slug } = options || {};
-
-  if (billingMockEnabled) {
-    await new Promise((r) => setTimeout(r, 200));
-    return { url: '/billing/mock/portal' };
-  }
 
   const headers = {};
   const params = {};
@@ -128,8 +77,7 @@ export async function createBillingPortalSession(options = {}) {
   );
   const portalUrl = response?.data?.portal_url || response?.data?.url;
   if (!portalUrl) {
-    console.warn('[Billing] portal_url ausente na resposta.');
-    return { url: '/billing/mock/portal' };
+    throw new Error('Portal URL not found in response');
   }
   return { url: portalUrl };
 }
