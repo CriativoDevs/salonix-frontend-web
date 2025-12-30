@@ -382,7 +382,8 @@ function BillingSyncManager() {
   const { overview, refresh } = useBillingOverview({
     enabled: isAuthenticated,
   });
-  const { plan, refetch } = useTenant();
+  const { plan, refetch, loading: tenantLoading } = useTenant();
+  const lastSyncRef = useRef(0);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -404,13 +405,18 @@ function BillingSyncManager() {
   }, [refresh, isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || tenantLoading) return;
 
     const code = String(
       overview?.current_subscription?.plan_code || ''
     ).toLowerCase();
     const tier = String(plan?.tier || plan?.code || '').toLowerCase();
-    if (code && code !== tier) {
+
+    // Evitar loop infinito se o backend demorar para propagar a alteração
+    // Adiciona um cooldown de 5 segundos entre tentativas de sincronização
+    const now = Date.now();
+    if (code && code !== tier && now - lastSyncRef.current > 5000) {
+      lastSyncRef.current = now;
       refetch();
     }
   }, [
@@ -419,6 +425,7 @@ function BillingSyncManager() {
     plan?.code,
     refetch,
     isAuthenticated,
+    tenantLoading,
   ]);
 
   return null;
