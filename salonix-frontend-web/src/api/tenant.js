@@ -94,7 +94,13 @@ export async function updateTenantModules({ pwaClientEnabled }) {
   return response.data;
 }
 
-export async function updateTenantContact({ email, phone, phone_number }) {
+export async function updateTenantContact({
+  email,
+  phone,
+  phone_number,
+  businessName,
+  address,
+}) {
   const payload = {};
   if (typeof email === 'string') payload.email = email;
   const phoneValue =
@@ -104,6 +110,9 @@ export async function updateTenantContact({ email, phone, phone_number }) {
         ? phone_number
         : undefined;
   if (typeof phoneValue === 'string') payload.phone = phoneValue;
+  if (typeof businessName === 'string') payload.businessName = businessName;
+  if (typeof address === 'string') payload.address = address;
+
   const response = await client.patch('users/tenant/profile/', payload);
   return response.data;
 }

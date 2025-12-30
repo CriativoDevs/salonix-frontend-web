@@ -301,7 +301,10 @@
     "saving_done": "Saved successfully.",
     "save_failed": "Failed to save.",
     "processing": "Processing...",
-    "loading_data": "Loading plan data..."
+    "loading_data": "Loading plan data...",
+    "active": "Active",
+    "inactive": "Inactive",
+    "cancelled": "Cancelled"
   },
   "feedback": {
     "title": "Feedback",
@@ -408,7 +411,12 @@
       "timezone": "Timezone",
       "language": "Language",
       "currency": "Default currency",
-      "address": "Address"
+      "address": "Address",
+      "info_title": "General Information",
+      "edit_title": "Edit Information",
+      "edit_business_name": "Business Name",
+      "edit_email": "Contact Email",
+      "edit_phone": "Phone"
     },
     "plan_title": "Current plan",
     "plan_unknown": "Plan not identified",
@@ -445,7 +453,23 @@
       "accessible_label": "Toggle Client PWA",
       "success_enabled": "Client PWA enabled.",
       "success_disabled": "Client PWA disabled.",
-      "error": "Could not update Client PWA."
+      "error": "Could not update Client PWA.",
+      "auto_invite_label": "Auto-invites:",
+      "auto_invite_toggle_label": "Toggle auto-invites"
+    },
+    "auto_renewal": {
+      "title": "Auto Renewal",
+      "description": "Manage the auto-renewal of your subscription plan.",
+      "cancelled": "Auto-renewal cancelled successfully.",
+      "reactivated": "Auto-renewal reactivated successfully."
+    },
+    "auto_renewal_status": "Auto-renewal",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "push_web": "Web Push",
+      "push_mobile": "Mobile Push"
     },
     "notifications_paywall_hint": "Advanced channels available with credits.",
     "tooltip": {
@@ -499,6 +523,11 @@
         "help_name": "Customer name",
         "help_staff_name": "Full name",
         "help_email": "Valid email",
+        "help_phone": "International phone (e.g. +351XXXXXXXXX)",
+        "help_service_name": "Service name",
+        "help_duration": "Duration in minutes (integer > 0)",
+        "help_price": "Price in EUR (e.g. 12.50)",
+        "help_role": "Role: owner, manager or collaborator",
         "help_ignore": "Ignore column"
       },
       "import": {

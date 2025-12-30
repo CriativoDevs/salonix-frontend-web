@@ -11,6 +11,20 @@ export async function fetchBillingOverview({ slug } = {}) {
   return data;
 }
 
+export async function updateSubscriptionAction({ action, slug }) {
+  const headers = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+  }
+  const { data } = await client.post(
+    'payments/stripe/subscription/action/',
+    { action },
+    { headers }
+  );
+  return data;
+}
+
 export default {
   fetchBillingOverview,
+  updateSubscriptionAction,
 };
