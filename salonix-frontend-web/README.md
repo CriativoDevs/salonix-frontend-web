@@ -191,6 +191,8 @@ VITE_CAPTCHA_BYPASS_TOKEN=dev-bypass
 # VITE_HCAPTCHA_SITEKEY=...   # se usar hcaptcha
 ```
 
+Para detalhes de segurança e configuração de captcha, consulte [docs/SECURITY_NOTES.md](docs/SECURITY_NOTES.md).
+
 ### Staging
 ```env
 VITE_API_URL=https://api-staging.salonix.com
