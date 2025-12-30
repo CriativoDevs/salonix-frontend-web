@@ -204,6 +204,10 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
   }, []);
 
+  const onboardingState = useMemo(() => {
+    return tenantInfo?.onboarding_state || 'completed';
+  }, [tenantInfo]);
+
   const value = useMemo(
     () => ({
       isAuthenticated,
@@ -211,6 +215,7 @@ export const AuthProvider = ({ children }) => {
       featureFlags,
       user: userInfo,
       tenant: tenantInfo,
+      onboardingState,
       login,
       logout: handleLogout,
       refreshUser: loadCurrentUser,
@@ -223,6 +228,7 @@ export const AuthProvider = ({ children }) => {
       featureFlags,
       userInfo,
       tenantInfo,
+      onboardingState,
       login,
       handleLogout,
       loadCurrentUser,
