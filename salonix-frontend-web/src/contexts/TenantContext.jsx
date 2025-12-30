@@ -27,6 +27,7 @@ const defaultContextValue = {
   branding: DEFAULT_TENANT_META.branding,
   channels: DEFAULT_TENANT_META.channels,
   profile: DEFAULT_TENANT_META.profile,
+  onboarding_state: DEFAULT_TENANT_META.onboarding_state,
   featureFlagsRaw: null,
   loading: true,
   error: null,

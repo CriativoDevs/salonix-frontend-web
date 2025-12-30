@@ -6,6 +6,7 @@ export const AuthContext = createContext({
   user: null,
   featureFlags: null,
   tenant: null,
+  onboardingState: 'completed',
   login: async () => {},
   logout: () => {},
   clearAuthError: () => {},

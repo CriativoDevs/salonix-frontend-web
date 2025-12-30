@@ -7,7 +7,7 @@ import FormButton from '../components/ui/FormButton';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
 import { consumePostAuthRedirect } from '../utils/navigation';
-import { getEnvFlag, getEnvVar } from '../utils/env';
+import { getEnvVar } from '../utils/env';
 import CaptchaGate from '../components/security/CaptchaGate';
 
 function Login() {
@@ -23,15 +23,15 @@ function Login() {
   const [popupError, setPopupError] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
 
-  const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
-
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       const scheduled = consumePostAuthRedirect();
-      const target = scheduled || (enablePlans ? '/plans' : '/dashboard');
+      // Se houver redirect agendado, respeitamos.
+      // Caso contrário, mandamos para dashboard e o OnboardingGuard decide o resto.
+      const target = scheduled || '/dashboard';
       navigate(target, { replace: true });
     }
-  }, [isLoading, isAuthenticated, enablePlans, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

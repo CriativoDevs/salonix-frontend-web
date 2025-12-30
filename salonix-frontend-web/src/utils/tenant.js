@@ -105,6 +105,7 @@ export const DEFAULT_TENANT_META = {
     appointmentDuration: 60,
     bufferTime: 15,
   },
+  onboarding_state: 'completed',
 };
 
 export function sanitizeTenantSlug(value) {
