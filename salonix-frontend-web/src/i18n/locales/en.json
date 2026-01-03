@@ -72,7 +72,8 @@
       "bookings": "Bookings (today)",
       "revenue": "Revenue (month)",
       "clients": "Clients",
-      "util": "Utilization"
+      "util": "Utilization",
+      "credits": "Credits"
     },
     "stats_hint_completed": "{{count}} completed",
     "stats_hint_ticket": "Average ticket {{value}}",
@@ -91,7 +92,10 @@
     "add_professional": "Add professional",
     "add_service": "Register service",
     "more": "More",
-    "reports": "Reports"
+    "reports": "Reports",
+    "credits_critical": "Credits exhausted",
+    "credits_low": "Low balance",
+    "credits_good": "Available balance"
   },
   "tour": {
     "welcome": "Welcome to TimelyOne! Let's take a quick tour of the platform.",
