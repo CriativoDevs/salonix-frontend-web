@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import StatCard from '../components/ui/StatCard';
+import CreditStatusCard from '../components/dashboard/CreditStatusCard';
 import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
@@ -648,7 +649,8 @@ export default function Dashboard() {
         </Card>
       ) : null}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CreditStatusCard />
         <StatCard
           label={t('dashboard.stats.bookings', 'Agendamentos (hoje)')}
           value={bookingsValue}

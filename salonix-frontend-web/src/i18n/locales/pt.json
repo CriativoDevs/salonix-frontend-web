@@ -93,7 +93,10 @@
     "add_professional": "Adicionar profissional",
     "add_service": "Cadastrar serviço",
     "more": "Mais",
-    "reports": "Relatórios"
+    "reports": "Relatórios",
+    "credits_critical": "Saldo esgotado",
+    "credits_low": "Saldo baixo",
+    "credits_good": "Saldo disponível"
   },
   "tour": {
     "welcome": "Bem-vindo ao TimelyOne! Vamos fazer um tour rápido pela plataforma.",
@@ -292,7 +295,9 @@
     "inactive": "Inativa",
     "cancelled": "Cancelada",
     "saving": "Salvando...",
-    "loading_data": "Carregando dados do plano..."
+    "loading_data": "Carregando dados do plano...",
+    "delete_error": "Falha ao excluir.",
+    "refresh": "Atualizar"
   },
   "feedback": {
     "title": "Feedback",
