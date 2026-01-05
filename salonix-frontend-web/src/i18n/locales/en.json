@@ -309,6 +309,7 @@
     "saving_done": "Saved successfully.",
     "save_failed": "Failed to save.",
     "processing": "Processing...",
+    "credits": "credits",
     "loading_data": "Loading plan data...",
     "active": "Active",
     "inactive": "Inactive",
@@ -385,7 +386,17 @@
       "data": "Data"
     },
     "billing": {
-      "title": "Credit History"
+      "title": "Credit History",
+      "success": {
+        "credits_title": "Credit purchase completed",
+        "subscription_title": "Payment completed",
+        "credits_subtitle": "Your credits have been added to your account.",
+        "subscription_subtitle": "Your subscription has been updated.",
+        "credits_message": "Thank you! Your credit purchase was processed successfully. You can use them now.",
+        "subscription_message": "Thank you! We processed your checkout. If the plan does not appear updated, click back.",
+        "back_settings": "Back to Settings",
+        "go_plans": "Go to Plans"
+      }
     },
     "features": {
       "pwa": {
@@ -537,7 +548,11 @@
     "add_credits": "Add credits",
     "credits_available": "Credits available",
     "credits": {
+      "add_credits": "Add credits",
       "description": "Select an amount to purchase. Payment via Stripe (checkout).",
+      "current_balance": "Current balance",
+      "new_balance": "New balance",
+      "purchase_amount": "+ Buy",
       "buy": "Buy"
     },
     "data": {

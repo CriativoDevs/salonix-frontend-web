@@ -276,6 +276,8 @@
   },
   "common": {
     "loading": "Carregando...",
+    "processing": "Processando...",
+    "credits": "créditos",
     "error": "Ocorreu um erro",
     "save": "Salvar",
     "cancel": "Cancelar",
@@ -371,7 +373,25 @@
       "data": "Dados"
     },
     "billing": {
-      "title": "Histórico de Créditos"
+      "title": "Histórico de Créditos",
+      "success": {
+        "credits_title": "Compra de créditos concluída",
+        "subscription_title": "Pagamento concluído",
+        "credits_subtitle": "Seus créditos foram adicionados à sua conta.",
+        "subscription_subtitle": "Sua assinatura foi atualizada.",
+        "credits_message": "Obrigado! Sua compra de créditos foi processada com sucesso. Você já pode utilizá-los.",
+        "subscription_message": "Obrigado! Processamos seu checkout. Caso o plano não apareça atualizado, clique em voltar.",
+        "back_settings": "Voltar para Configurações",
+        "go_plans": "Ir para Planos"
+      }
+    },
+    "credits": {
+      "add_credits": "Adicionar créditos",
+      "description": "Selecione um valor para comprar. Pagamento via Stripe (checkout).",
+      "current_balance": "Saldo atual",
+      "new_balance": "Novo saldo",
+      "purchase_amount": "+ Compra",
+      "buy": "Comprar"
     },
     "features": {
       "pwa": {
@@ -592,11 +612,7 @@
     "channel_enabled": "Ativo",
     "channel_disabled": "Inativo",
     "add_credits": "Adicionar créditos",
-    "credits_available": "Créditos disponíveis",
-    "credits": {
-      "description": "Selecione um valor para comprar. Pagamento via Stripe (checkout).",
-      "buy": "Comprar"
-    }
+    "credits_available": "Créditos disponíveis"
   },
   "customers": {
     "title": "Clientes",

@@ -7,10 +7,6 @@ import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import RoleProtectedRoute from '../routes/RoleProtectedRoute';
 import useCreditBalance from '../hooks/useCreditBalance';
-import {
-  fetchCreditPackages,
-  createCreditCheckoutSession,
-} from '../api/credits';
 import { updateTenantNotifications } from '../api/tenantNotifications';
 
 import { toast } from 'react-toastify';
@@ -38,8 +34,8 @@ import {
   comparePlanTiers,
 } from '../utils/tenantPlan';
 import client from '../api/client';
-import Modal from '../components/ui/Modal';
 import CreditHistoryList from '../components/settings/CreditHistoryList';
+import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
 // Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
@@ -2197,9 +2193,6 @@ function Settings() {
   const canToggleAutoInvite = hasCustomerPwa;
 
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
-  const [creditPackages, setCreditPackages] = useState([]);
-  const [creditsLoadingAction, setCreditsLoadingAction] = useState(false);
-  const [selectedCreditAmount, setSelectedCreditAmount] = useState(null);
 
   const [notifSaving, setNotifSaving] = useState(false);
   const [autoRenewalSaving, setAutoRenewalSaving] = useState(false);
@@ -2240,39 +2233,9 @@ function Settings() {
     }
   };
 
-  const openCreditsModal = useCallback(async () => {
+  const openCreditsModal = useCallback(() => {
     setCreditsModalOpen(true);
-    try {
-      const pkgs = await fetchCreditPackages({ slug: tenant?.slug });
-      setCreditPackages(Array.isArray(pkgs) ? pkgs : []);
-      if (!selectedCreditAmount && pkgs?.length) {
-        const first = pkgs[0];
-        const amt = first?.price_eur ?? first?.credits ?? 5;
-        setSelectedCreditAmount(Number(amt));
-      }
-    } catch {
-      // silencioso; mantém modal e permite fallback dev
-    }
-  }, [tenant, selectedCreditAmount]);
-
-  const handleBuyCredits = useCallback(async () => {
-    if (!selectedCreditAmount) return;
-    setCreditsLoadingAction(true);
-    try {
-      const payload = await createCreditCheckoutSession(
-        Number(selectedCreditAmount),
-        { slug: tenant?.slug }
-      );
-      if (payload?.checkout_url) {
-        window.location.href = String(payload.checkout_url);
-        return;
-      }
-    } catch {
-      // noop
-    } finally {
-      setCreditsLoadingAction(false);
-    }
-  }, [selectedCreditAmount, tenant]);
+  }, []);
 
   const handleToggleChannel = useCallback(
     async (channelKey, nextValue) => {
@@ -3300,68 +3263,10 @@ function Settings() {
           </div>
         ) : null}
       </div>
-      {creditsModalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-md border theme-border theme-shadow theme-bg-primary p-4 theme-text-primary">
-            <h3 className="mb-2 text-sm font-semibold">
-              {t('settings.add_credits', 'Adicionar créditos')}
-            </h3>
-            <p className="mb-3 text-xs theme-text-secondary">
-              {t(
-                'settings.credits.description',
-                'Selecione um valor para comprar. Pagamento via Stripe (checkout).'
-              )}
-            </p>
-            <div className="mb-3">
-              <select
-                className="input w-full p-2 text-sm"
-                value={String(selectedCreditAmount || '')}
-                onChange={(e) =>
-                  setSelectedCreditAmount(Number(e.target.value))
-                }
-              >
-                {(creditPackages?.length
-                  ? creditPackages
-                  : [
-                      { price_eur: 5 },
-                      { price_eur: 10 },
-                      { price_eur: 25 },
-                      { price_eur: 50 },
-                      { price_eur: 100 },
-                    ]
-                ).map((pkg) => (
-                  <option
-                    key={String(pkg.price_eur ?? pkg.credits)}
-                    value={String(pkg.price_eur ?? pkg.credits)}
-                  >
-                    € {String(pkg.price_eur ?? pkg.credits)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                className="text-brand-primary hover:text-brand-primary/80 font-medium text-xs"
-                onClick={() => setCreditsModalOpen(false)}
-              >
-                {t('common.cancel', 'Cancelar')}
-              </button>
-              <button
-                type="button"
-                className="text-brand-primary hover:text-brand-primary/80 font-medium text-xs"
-                disabled={creditsLoadingAction}
-                onClick={handleBuyCredits}
-              >
-                {creditsLoadingAction
-                  ? t('common.processing', 'Processando...')
-                  : t('settings.credits.buy', 'Comprar')}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <CreditPurchaseModal
+        open={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+      />
     </>
   );
 
@@ -4097,12 +4002,13 @@ function Settings() {
                       <h3 className="text-lg font-semibold text-brand-surfaceForeground">
                         {t('settings.billing.title', 'Histórico de Créditos')}
                       </h3>
-                      <Link
-                        to="/settings/credits"
+                      <button
+                        type="button"
+                        onClick={openCreditsModal}
                         className="text-sm font-semibold text-brand-primary hover:text-brand-primary/80 hover:underline"
                       >
                         {t('settings.add_credits', 'Adicionar créditos')}
-                      </Link>
+                      </button>
                     </div>
                     <CreditHistoryList />
                   </div>
@@ -4117,6 +4023,10 @@ function Settings() {
           </div>
         </div>
       </div>
+      <CreditPurchaseModal
+        open={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+      />
     </FullPageLayout>
   );
 }
