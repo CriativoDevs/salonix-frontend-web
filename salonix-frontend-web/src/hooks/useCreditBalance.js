@@ -26,6 +26,14 @@ export default function useCreditBalance(options = {}) {
 
   const fetchBalance = useCallback(async () => {
     if (!enabled) return;
+
+    // --- TESTING MODE: Uncomment lines below to simulate balances ---
+    // setData({ current_balance: 5, pending_balance: 0 }); // Low Balance (Warning)
+    // setData({ current_balance: 0, pending_balance: 0 }); // Exhausted (Critical)
+    // setLoading(false);
+    // return;
+    // -----------------------------------------------------------
+
     setLoading(true);
     setError(null);
     try {

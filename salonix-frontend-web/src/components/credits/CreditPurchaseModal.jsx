@@ -52,17 +52,16 @@ export default function CreditPurchaseModal({ open, onClose }) {
     <Modal
       open={open}
       onClose={onClose}
-      title={t('settings.credits.add_credits', 'Adicionar créditos')}
+      title={t('credits.add_credits', 'Adicionar créditos')}
       size="sm"
     >
       <div className="space-y-4">
         <p className="text-sm text-brand-surfaceForeground/80">
           {t(
-            'settings.credits.description',
+            'credits.description',
             'Selecione um valor para comprar. Pagamento via Stripe (checkout).'
           )}
         </p>
-
         {error && (
           <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
             {t('common.error', 'Ocorreu um erro')}:{' '}
@@ -102,17 +101,22 @@ export default function CreditPurchaseModal({ open, onClose }) {
           <div className="mt-4 p-3 bg-brand-surface border border-brand-border rounded-md text-sm">
             <div className="flex justify-between mb-1">
               <span className="text-brand-surfaceForeground/60">
-                {t('settings.credits.current_balance', 'Saldo atual')}:
+                {t('credits.current_balance', 'Saldo atual')}:
               </span>
               <span className="font-medium">{currentBalance}</span>
             </div>
             <div className="flex justify-between mb-1 text-emerald-600">
-              <span>{t('settings.credits.purchase_amount', '+ Compra')}:</span>
+              <span>
+                {t('credits.purchase_amount', '+ Compra', {
+                  amount: creditsToAdd,
+                })}
+                :
+              </span>
               <span className="font-medium">+{creditsToAdd}</span>
             </div>
             <div className="border-t border-brand-border my-2"></div>
             <div className="flex justify-between font-semibold text-brand-surfaceForeground">
-              <span>{t('settings.credits.new_balance', 'Novo saldo')}:</span>
+              <span>{t('credits.new_balance', 'Novo saldo')}:</span>
               <span className="font-medium">{finalBalance}</span>
             </div>
           </div>
@@ -135,7 +139,7 @@ export default function CreditPurchaseModal({ open, onClose }) {
           >
             {purchaseLoading
               ? t('common.processing', 'Processando...')
-              : t('settings.credits.buy', 'Comprar')}
+              : t('credits.buy', 'Comprar')}
           </button>
         </div>
       </div>
