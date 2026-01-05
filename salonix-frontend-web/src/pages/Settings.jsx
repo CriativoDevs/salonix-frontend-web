@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
 import RoleProtectedRoute from '../routes/RoleProtectedRoute';
 import useCreditBalance from '../hooks/useCreditBalance';
+import useCreditAlerts from '../hooks/useCreditAlerts';
 import { updateTenantNotifications } from '../api/tenantNotifications';
 
 import { toast } from 'react-toastify';
@@ -1958,6 +1959,8 @@ function Settings() {
   } = useCreditBalance();
   const { overview: billingOverview, refresh: refreshOverview } =
     useBillingOverview();
+  const { settings: alertSettings, updateSettings: updateAlertSettings } =
+    useCreditAlerts();
   // SSE desativado: atualização manual via badge (CreditBadge)
 
   const initialSettings = useMemo(
@@ -3262,6 +3265,68 @@ function Settings() {
             </FeatureGate>
           </div>
         ) : null}
+
+        {/* Credit Alerts Configuration */}
+        <Card className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-brand-surfaceForeground">
+                {t('credits.alert.settings_title', 'Configuração de Alertas')}
+              </p>
+              <p className="mt-1 text-sm text-brand-surfaceForeground/80">
+                {t(
+                  'credits.alert.enable_label',
+                  'Ativar alertas de saldo baixo'
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={alertSettings.enabled}
+                onClick={() =>
+                  updateAlertSettings({ enabled: !alertSettings.enabled })
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  alertSettings.enabled ? 'bg-brand-primary' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    alertSettings.enabled ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+          {alertSettings.enabled && (
+            <div className="mt-4 border-t border-brand-border pt-4">
+              <label className="block text-sm font-medium text-brand-surfaceForeground">
+                {t(
+                  'credits.alert.threshold_label',
+                  'Alertar quando o saldo for menor que:'
+                )}
+              </label>
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  value={alertSettings.threshold}
+                  onChange={(e) =>
+                    updateAlertSettings({
+                      threshold: parseInt(e.target.value, 10) || 0,
+                    })
+                  }
+                  className="block w-24 rounded-md border border-brand-border bg-brand-surface px-3 py-2 text-sm shadow-sm focus:border-brand-primary focus:ring-brand-primary text-brand-surfaceForeground"
+                />
+                <span className="text-sm text-brand-surfaceForeground/60">
+                  créditos
+                </span>
+              </div>
+            </div>
+          )}
+        </Card>
       </div>
       <CreditPurchaseModal
         open={creditsModalOpen}

@@ -350,6 +350,12 @@
     }
   },
   "credits": {
+    "add_credits": "Add credits",
+    "description": "Select an amount to purchase. Payment via Stripe (checkout).",
+    "current_balance": "Current balance",
+    "new_balance": "New balance",
+    "purchase_amount": "+ {{amount}}",
+    "buy": "Buy",
     "history_title": "Transaction History",
     "history_empty": "No transactions found.",
     "history_error": "Error loading transaction history.",
@@ -372,6 +378,14 @@
       "refund": "Refund",
       "bonus": "Bonus credits",
       "bonus_initial": "Initial plan credits"
+    },
+    "alert": {
+      "critical_title": "Your credit balance is exhausted!",
+      "low_title": "Your credit balance is low.",
+      "message": "Current balance: {{balance}} credits.",
+      "settings_title": "Alert Configuration",
+      "enable_label": "Enable low balance alerts",
+      "threshold_label": "Alert when balance is below:"
     }
   },
   "settings": {
@@ -547,14 +561,7 @@
     "channel_disabled": "Inactive",
     "add_credits": "Add credits",
     "credits_available": "Credits available",
-    "credits": {
-      "add_credits": "Add credits",
-      "description": "Select an amount to purchase. Payment via Stripe (checkout).",
-      "current_balance": "Current balance",
-      "new_balance": "New balance",
-      "purchase_amount": "+ Buy",
-      "buy": "Buy"
-    },
+
     "data": {
       "title": "Import (CSV)",
       "description": "Import customers, services or team members via CSV file.",
