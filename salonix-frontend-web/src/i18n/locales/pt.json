@@ -282,6 +282,7 @@
     "delete": "Excluir",
     "edit": "Editar",
     "view": "Visualizar",
+    "balance": "Saldo",
     "create": "Criar",
     "search": "Buscar",
     "back": "Voltar",
@@ -333,6 +334,31 @@
       "message_too_long": "Mensagem muito longa. Máximo de 2000 caracteres."
     }
   },
+  "credits": {
+    "history_title": "Histórico de Transações",
+    "history_empty": "Nenhuma transação encontrada.",
+    "history_error": "Erro ao carregar histórico.",
+    "transaction_no_desc": "Sem descrição",
+    "export_csv": "Exportar CSV",
+    "filters": {
+      "from_date": "De",
+      "to_date": "Até",
+      "type": "Tipo"
+    },
+    "types": {
+      "purchase": "Compra de créditos",
+      "purchase_stripe": "Compra de créditos via Stripe Checkout",
+      "purchase_amount": "Compra de {{amount}} em créditos",
+      "purchase_extras": "Compra de créditos extras",
+      "consumption": "Uso de créditos",
+      "consumption_whatsapp": "Envio de mensagem WhatsApp",
+      "consumption_sms": "Envio de SMS para cliente",
+      "expiration": "Expiração de créditos",
+      "refund": "Reembolso",
+      "bonus": "Créditos bônus",
+      "bonus_initial": "Créditos iniciais do plano"
+    }
+  },
   "settings": {
     "title": "Configurações",
     "subtitle": "Gerencie as configurações do seu negócio",
@@ -340,8 +366,30 @@
       "general": "Geral",
       "branding": "Marca e Morada",
       "notifications": "Notificações",
+      "billing": "Histórico de Créditos",
       "business": "Negócio",
       "data": "Dados"
+    },
+    "billing": {
+      "title": "Histórico de Créditos"
+    },
+    "features": {
+      "pwa": {
+        "label": "PWA Cliente",
+        "description": "Disponível a partir do plano Standard. Permite que clientes reservem diretamente pelo PWA personalizado."
+      },
+      "webpush": {
+        "label": "Notificações Web Push",
+        "description": "Disponível a partir do plano Standard. Ative alertas de lembrete e marketing via navegador."
+      },
+      "reports": {
+        "label": "Relatórios avançados",
+        "description": "Disponível a partir do plano Pro. Desbloqueia métricas detalhadas e exportação avançada."
+      },
+      "generic": {
+        "description": "Funcionalidade disponível em planos superiores."
+      },
+      "plan_current_suffix": "Plano atual: {{plan}}."
     },
     "data": {
       "title": "Importação (CSV)",
@@ -1168,12 +1216,6 @@
       "google": "Google Maps",
       "waze": "Waze"
     }
-  },
-  "credits": {
-    "label": "Créditos",
-    "loading": "Carregando créditos...",
-    "refresh_hint": "Clique para atualizar o saldo",
-    "unavailable": "Indisponível"
   },
   "toast": {
     "close": "Fechar notificação"

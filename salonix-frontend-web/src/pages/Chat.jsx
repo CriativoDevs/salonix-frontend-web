@@ -86,13 +86,22 @@ function Chat() {
       {!webPushEnabled ? (
         <Card className="px-4 py-3">
           <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-700">
-            <strong>{webPushRequirement?.label || t('chat.webpush_locked', 'Web Push indisponível')}</strong>
+            <strong>
+              {webPushRequirement?.labelKey
+                ? t(webPushRequirement.labelKey)
+                : t('chat.webpush_locked', 'Web Push indisponível')}
+            </strong>
             <p className="mt-1">
-              {webPushRequirement?.description ||
-                t(
-                  'chat.webpush_locked_description',
-                  'Atualize o plano para enviar notificações e mensagens automáticas.'
-                )}
+              {webPushRequirement?.descriptionKey
+                ? t(webPushRequirement.descriptionKey) +
+                  ' ' +
+                  t('settings.features.plan_current_suffix', {
+                    plan: webPushRequirement.currentPlanName || 'desconhecido',
+                  })
+                : t(
+                    'chat.webpush_locked_description',
+                    'Atualize o plano para enviar notificações e mensagens automáticas.'
+                  )}
             </p>
           </div>
         </Card>

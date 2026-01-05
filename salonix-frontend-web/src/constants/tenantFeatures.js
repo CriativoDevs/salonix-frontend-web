@@ -1,20 +1,18 @@
 export const TENANT_FEATURE_REQUIREMENTS = {
   enableCustomerPwa: {
-    label: 'PWA Cliente',
+    labelKey: 'settings.features.pwa.label',
     requiredPlan: 'Standard',
-    description:
-      'Disponível a partir do plano Standard. Permite que clientes reservem diretamente pelo PWA personalizado.',
+    descriptionKey: 'settings.features.pwa.description',
   },
   enableWebPush: {
-    label: 'Notificações Web Push',
+    labelKey: 'settings.features.webpush.label',
     requiredPlan: 'Standard',
-    description:
-      'Disponível a partir do plano Standard. Ative alertas de lembrete e marketing via navegador.',
+    descriptionKey: 'settings.features.webpush.description',
   },
   enableReports: {
-    label: 'Relatórios avançados',
+    labelKey: 'settings.features.reports.label',
     requiredPlan: 'Pro',
-    description: 'Disponível a partir do plano Pro. Desbloqueia métricas detalhadas e exportação avançada.',
+    descriptionKey: 'settings.features.reports.description',
   },
 };
 
@@ -22,14 +20,16 @@ export function describeFeatureRequirement(featureKey, currentPlanName) {
   const requirement = TENANT_FEATURE_REQUIREMENTS[featureKey];
   if (!requirement) {
     return {
-      label: featureKey,
+      labelKey: `settings.features.${featureKey}.label`,
       requiredPlan: null,
-      description: `Funcionalidade disponível em planos superiores. Plano atual: ${currentPlanName || 'desconhecido'}.`,
+      descriptionKey: 'settings.features.generic.description',
+      currentPlanName,
+      isUnknown: true,
     };
   }
 
   return {
     ...requirement,
-    description: `${requirement.description} Plano atual: ${currentPlanName || 'desconhecido'}.`,
+    currentPlanName,
   };
 }

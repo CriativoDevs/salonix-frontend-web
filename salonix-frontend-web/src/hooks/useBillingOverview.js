@@ -10,13 +10,16 @@ export default function useBillingOverview(options = {}) {
   const [error, setError] = useState(null);
   const pollRef = useRef(null);
 
+  const hasDataRef = useRef(false);
+
   const load = useCallback(async () => {
     if (!enabled || !slug) return;
-    setLoading(true);
+    if (!hasDataRef.current) setLoading(true);
     setError(null);
     try {
       const payload = await fetchBillingOverview({ slug });
       setData(payload || null);
+      hasDataRef.current = true;
     } catch (e) {
       if (e?.response?.status !== 401) {
         setError(e);

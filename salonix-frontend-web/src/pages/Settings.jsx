@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
@@ -38,12 +39,14 @@ import {
 } from '../utils/tenantPlan';
 import client from '../api/client';
 import Modal from '../components/ui/Modal';
+import CreditHistoryList from '../components/settings/CreditHistoryList';
 // Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
   { id: 'branding', label: 'settings.tabs.branding', icon: '🖼️' },
   { id: 'general', label: 'settings.tabs.general', icon: '⚙️' },
   { id: 'notifications', label: 'settings.tabs.notifications', icon: '🔔' },
+  { id: 'billing', label: 'settings.tabs.billing', icon: '💳' },
   // { id: 'business', label: 'settings.tabs.business', icon: '🏢' }, // Ocultado conforme solicitação
   { id: 'data', label: 'settings.tabs.data', icon: '📊' },
 ];
@@ -2308,11 +2311,6 @@ function Settings() {
     [flags]
   );
 
-  const activeFeatures = useMemo(() => {
-    if (!hasFlagData) return [];
-    return FEATURE_LIST.filter(({ key }) => flags?.[key]);
-  }, [flags, hasFlagData]);
-
   const lockedFeatures = useMemo(() => {
     return FEATURE_LIST.filter(({ requiredPlan }) => {
       if (!requiredPlan) {
@@ -2576,19 +2574,6 @@ function Settings() {
             </p>
           ) : null}
         </div>
-
-        {activeFeatures.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {activeFeatures.map(({ key, label }) => (
-              <span
-                key={key}
-                className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground"
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-        ) : null}
       </div>
       <div className="mt-6 space-y-6">
         <div>
@@ -2619,8 +2604,23 @@ function Settings() {
           {hasFlagData ? (
             lockedFeatures.length ? (
               <ul className="mt-2 space-y-2 text-sm text-amber-700">
-                {lockedFeatures.map(({ key, label }) => {
+                {lockedFeatures.map(({ key }) => {
                   const requirement = describeFeatureRequirement(key, planName);
+                  const label = requirement.labelKey
+                    ? t(requirement.labelKey, key)
+                    : key;
+                  const description = t(
+                    requirement.descriptionKey,
+                    requirement.isUnknown
+                      ? 'Funcionalidade disponível em planos superiores.'
+                      : ''
+                  );
+                  const planCurrent = t(
+                    'settings.features.plan_current_suffix',
+                    'Plano atual: {{plan}}.',
+                    { plan: requirement.currentPlanName || 'desconhecido' }
+                  );
+
                   return (
                     <li
                       key={key}
@@ -2630,7 +2630,7 @@ function Settings() {
                       {requirement.requiredPlan
                         ? ` — ${t('settings.requires_plan', 'Requer plano')} ${requirement.requiredPlan}.`
                         : ''}{' '}
-                      {requirement.description}
+                      {description} {planCurrent}
                     </li>
                   );
                 })}
@@ -4090,6 +4090,24 @@ function Settings() {
               {activeTab === 'general' && renderGeneralSettings()}
               {activeTab === 'notifications' && renderNotificationSettings()}
               {activeTab === 'business' && renderBusinessSettings()}
+              {activeTab === 'billing' && (
+                <RoleProtectedRoute allowedRoles={['owner']}>
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-brand-surfaceForeground">
+                        {t('settings.billing.title', 'Histórico de Créditos')}
+                      </h3>
+                      <Link
+                        to="/settings/credits"
+                        className="text-sm font-semibold text-brand-primary hover:text-brand-primary/80 hover:underline"
+                      >
+                        {t('settings.add_credits', 'Adicionar créditos')}
+                      </Link>
+                    </div>
+                    <CreditHistoryList />
+                  </div>
+                </RoleProtectedRoute>
+              )}
               {activeTab === 'data' && (
                 <RoleProtectedRoute allowedRoles={['owner']}>
                   <DataSettingsStandalone />
