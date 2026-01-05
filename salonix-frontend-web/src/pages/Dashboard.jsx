@@ -227,6 +227,17 @@ export default function Dashboard() {
     return currentUserRole === 'owner' || currentUserRole === 'manager';
   }, [currentUserRole, user]);
 
+  const isOwner = useMemo(() => {
+    if (currentUserRole === 'manager') return false;
+    if (currentUserRole === 'owner') return true;
+    // Fallback para admin/pro users que atuam como owner
+    const email = user?.email?.toLowerCase() || '';
+    const username = user?.username?.toLowerCase() || '';
+    if (username === 'admin' || email === 'admin@demo.local') return true;
+    if (username.startsWith('pro_') || email.startsWith('pro_')) return true;
+    return false;
+  }, [currentUserRole, user]);
+
   const {
     data: dashboardData,
     loading,
@@ -650,7 +661,7 @@ export default function Dashboard() {
       ) : null}
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <CreditStatusCard />
+        {isOwner ? <CreditStatusCard /> : null}
         <StatCard
           label={t('dashboard.stats.bookings', 'Agendamentos (hoje)')}
           value={bookingsValue}
