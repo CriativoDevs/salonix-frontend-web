@@ -1,4 +1,8 @@
 {
+  "date": {
+    "today": "Hoje",
+    "tomorrow": "Amanhã"
+  },
   "hello": "Olá, mundo!",
   "login": {
     "title": "Entrar",
@@ -155,6 +159,18 @@
     "create_slot": "Criar slot"
   },
   "bookings": {
+    "actions": {
+      "cancel": "Cancelar",
+      "reschedule": "Reagendar",
+      "details": "Detalhes",
+      "cancel_confirm": "Tem certeza que deseja cancelar este agendamento?",
+      "copy_contact": "Copiar Contato",
+      "contact_copied": "Contato copiado!",
+      "no_contact": "Sem contato",
+      "title": "Ações",
+      "manage": "Gerir",
+      "save": "Salvar alterações"
+    },
     "title": "Agendamentos",
     "client": "Cliente",
     "service": "Serviço",
@@ -191,12 +207,6 @@
       "customer_all": "Todos",
       "date_from": "Data inicial",
       "date_to": "Data final"
-    },
-    "actions": {
-      "title": "Ações",
-      "manage": "Gerir",
-      "cancel": "Cancelar",
-      "save": "Salvar alterações"
     },
     "edit": {
       "keep_slot": "Manter horário atual"
