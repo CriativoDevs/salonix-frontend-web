@@ -37,6 +37,8 @@ import {
 import client from '../api/client';
 import CreditHistoryList from '../components/settings/CreditHistoryList';
 import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
+import CreditBlockModal from '../components/credits/CreditBlockModal';
+import useCreditGate from '../hooks/useCreditGate';
 // Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
@@ -2236,6 +2238,10 @@ function Settings() {
     }
   };
 
+  const { checkCredits } = useCreditGate();
+  const [blockModalOpen, setBlockModalOpen] = useState(false);
+  const [blockAction, setBlockAction] = useState(null);
+
   const openCreditsModal = useCallback(() => {
     setCreditsModalOpen(true);
   }, []);
@@ -2243,6 +2249,31 @@ function Settings() {
   const handleToggleChannel = useCallback(
     async (channelKey, nextValue) => {
       if (!tenant) return;
+
+      // Credit check for enabling expensive channels
+      if (
+        nextValue === true &&
+        (channelKey === 'sms' || channelKey === 'whatsapp')
+      ) {
+        const action = channelKey === 'sms' ? 'sms' : 'whatsapp';
+        // Check if we have enough credits to even start using it (e.g. > 0 or specific cost)
+        // For enabling, we might just check if they have ANY credits or positive balance?
+        // Or strictly check against the cost of 1 message as a baseline requirement?
+        // Using checkCredits(action) checks against the cost of 1 unit.
+        if (!checkCredits(action)) {
+          setBlockAction(
+            channelKey === 'sms'
+              ? t('settings.channels.sms', 'SMS')
+              : t('settings.channels.whatsapp', 'WhatsApp')
+          );
+          setBlockModalOpen(true);
+          // Revert the UI state if it was optimistically toggled?
+          // The UI uses notifRawOverrides which we set below.
+          // Since we return early here, we don't set it, so the UI should remain as is (disabled).
+          return;
+        }
+      }
+
       setNotifSaving(true);
       try {
         const payload = {};
@@ -2262,14 +2293,14 @@ function Settings() {
                 ? Boolean(resp?.push_mobile_enabled ?? nextValue)
                 : Boolean(nextValue);
         setNotifRawOverrides((prev) => ({ ...prev, [channelKey]: nextRaw }));
-        await refetch();
+        await refetch({ silent: true });
       } catch {
         // noop
       } finally {
         setNotifSaving(false);
       }
     },
-    [tenant, refetch]
+    [tenant, refetch, checkCredits, t]
   );
 
   const hasFlagData = useMemo(
@@ -3074,7 +3105,7 @@ function Settings() {
               type="button"
               onClick={handleGeneralSave}
               disabled={generalSaving}
-              className="rounded-lg bg-brand-primary px-4 py-2 text-white hover:bg-brand-primary/90 disabled:opacity-50"
+              className="rounded-lg px-4 py-2 text-brand-primary hover:text-brand-primary/90 disabled:opacity-50 bg-transparent border-0 underline"
             >
               {generalSaving
                 ? t('common.saving', 'Salvando...')
@@ -4091,6 +4122,15 @@ function Settings() {
       <CreditPurchaseModal
         open={creditsModalOpen}
         onClose={() => setCreditsModalOpen(false)}
+      />
+      <CreditBlockModal
+        open={blockModalOpen}
+        onClose={() => setBlockModalOpen(false)}
+        onBuy={() => {
+          setBlockModalOpen(false);
+          setCreditsModalOpen(true);
+        }}
+        action={blockAction}
       />
     </FullPageLayout>
   );

@@ -356,7 +356,14 @@
     "new_balance": "New balance",
     "purchase_amount": "+ {{amount}}",
     "buy": "Buy",
-    "history_title": "Transaction History",
+      "block": {
+        "title": "Insufficient balance",
+        "message": "You need credits to perform this action ({{action}})."
+      },
+      "gate": {
+        "insufficient": "Insufficient balance"
+      },
+      "history_title": "Transaction History",
     "history_empty": "No transactions found.",
     "history_error": "Error loading transaction history.",
     "transaction_no_desc": "No description",

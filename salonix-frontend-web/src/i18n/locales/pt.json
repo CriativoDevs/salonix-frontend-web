@@ -343,6 +343,13 @@
     "new_balance": "Novo saldo",
     "purchase_amount": "+ {{amount}}",
     "buy": "Comprar",
+    "block": {
+      "title": "Saldo insuficiente",
+      "message": "Você precisa de créditos para realizar esta ação ({{action}})."
+    },
+    "gate": {
+      "insufficient": "Saldo insuficiente"
+    },
     "history_title": "Histórico de Transações",
     "history_empty": "Nenhuma transação encontrada.",
     "history_error": "Erro ao carregar histórico.",
