@@ -1,4 +1,8 @@
 {
+  "date": {
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
   "hello": "Hello, world!",
   "login": {
     "title": "Sign in",
@@ -154,6 +158,18 @@
     "create_slot": "Create slot"
   },
   "bookings": {
+    "actions": {
+      "cancel": "Cancel",
+      "reschedule": "Reschedule",
+      "details": "Details",
+      "cancel_confirm": "Are you sure you want to cancel this appointment?",
+      "copy_contact": "Copy Contact",
+      "contact_copied": "Contact copied!",
+      "no_contact": "No contact info",
+      "title": "Actions",
+      "manage": "Manage",
+      "save": "Save changes"
+    },
     "title": "Bookings",
     "client": "Client",
     "service": "Service",
@@ -190,12 +206,6 @@
       "customer_all": "All",
       "date_from": "From",
       "date_to": "To"
-    },
-    "actions": {
-      "title": "Actions",
-      "manage": "Manage",
-      "cancel": "Cancel",
-      "save": "Save changes"
     },
     "edit": {
       "keep_slot": "Keep current slot"
