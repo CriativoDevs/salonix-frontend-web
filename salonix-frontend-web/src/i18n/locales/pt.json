@@ -279,6 +279,7 @@
     "processing": "Processando...",
     "credits": "créditos",
     "error": "Ocorreu um erro",
+    "filter": "Filtrar",
     "save": "Salvar",
     "cancel": "Cancelar",
     "delete": "Excluir",
@@ -354,6 +355,13 @@
     "history_empty": "Nenhuma transação encontrada.",
     "history_error": "Erro ao carregar histórico.",
     "transaction_no_desc": "Sem descrição",
+    "transaction": {
+      "id": "ID da Transação:",
+      "reference": "Referência Externa:",
+      "type": "Tipo Técnico:",
+      "status": "Status:",
+      "created_by": "Criado por:"
+    },
     "export_csv": "Exportar CSV",
     "filters": {
       "from_date": "De",
@@ -373,7 +381,15 @@
       "bonus": "Créditos bônus",
       "bonus_initial": "Créditos iniciais do plano"
     },
+    "consumption_month": "Consumo (Mês)",
+    "avg_consumption": "Média Mensal",
+    "forecast": "Previsão",
+    "days_remaining": "aprox. {{days}} dias",
+    "alert_threshold": "Alerta: < {{val}}",
+    "support_link": "Dúvidas sobre seus créditos? Fale conosco.",
     "alert": {
+      "description": "Receba um aviso quando seus créditos estiverem acabando.",
+      "threshold_prefix": "Avisar com menos de:",
       "critical_title": "Seu saldo de créditos esgotou!",
       "low_title": "Seu saldo de créditos está baixo.",
       "message": "Saldo atual: {{balance}} créditos.",
@@ -390,6 +406,7 @@
       "branding": "Marca e Morada",
       "notifications": "Notificações",
       "billing": "Histórico de Créditos",
+      "credits": "Créditos",
       "business": "Negócio",
       "data": "Dados"
     },

@@ -276,6 +276,7 @@
   "common": {
     "back": "Back",
     "finish": "Finish",
+    "filter": "Filter",
     "next": "Next",
     "skip": "Skip",
     "loading": "Loading...",
@@ -356,17 +357,29 @@
     "new_balance": "New balance",
     "purchase_amount": "+ {{amount}}",
     "buy": "Buy",
-      "block": {
-        "title": "Insufficient balance",
-        "message": "You need credits to perform this action ({{action}})."
-      },
-      "gate": {
-        "insufficient": "Insufficient balance"
-      },
-      "history_title": "Transaction History",
+    "consumption_month": "Consumption (Month)",
+    "avg_consumption": "Monthly Average",
+    "forecast": "Forecast",
+    "days_remaining": "approx. {{days}} days",
+    "alert_threshold": "Alert: < {{val}}",
+    "block": {
+      "title": "Insufficient balance",
+      "message": "You need credits to perform this action ({{action}})."
+    },
+    "gate": {
+      "insufficient": "Insufficient balance"
+    },
+    "history_title": "Transaction History",
     "history_empty": "No transactions found.",
     "history_error": "Error loading transaction history.",
     "transaction_no_desc": "No description",
+    "transaction": {
+      "id": "Transaction ID:",
+      "reference": "External Reference:",
+      "type": "Technical Type:",
+      "status": "Status:",
+      "created_by": "Created by:"
+    },
     "export_csv": "Export CSV",
     "filters": {
       "from_date": "From",
@@ -387,10 +400,12 @@
       "bonus_initial": "Initial plan credits"
     },
     "alert": {
+      "description": "Receive a warning when your credits are running low.",
       "critical_title": "Your credit balance is exhausted!",
       "low_title": "Your credit balance is low.",
       "message": "Current balance: {{balance}} credits.",
       "settings_title": "Alert Configuration",
+      "threshold_prefix": "Alert when below:",
       "enable_label": "Enable low balance alerts",
       "threshold_label": "Alert when balance is below:"
     }
@@ -403,8 +418,12 @@
       "branding": "Logo",
       "notifications": "Notifications",
       "billing": "Billing",
+      "credits": "Credits",
       "business": "Business",
       "data": "Data"
+    },
+    "credits": {
+      "title": "Credit Management"
     },
     "billing": {
       "title": "Credit History",
