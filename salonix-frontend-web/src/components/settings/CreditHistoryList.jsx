@@ -276,14 +276,14 @@ export default function CreditHistoryList() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
                               <div>
                                 <span className="font-semibold block mb-1">
-                                  ID da Transação:
+                                  {t('credits.transaction.id', 'ID da Transação:')}
                                 </span>
                                 {item.id}
                               </div>
                               {item.reference_id && (
                                 <div>
                                   <span className="font-semibold block mb-1">
-                                    Referência Externa:
+                                    {t('credits.transaction.reference', 'Referência Externa:')}
                                   </span>
                                   {item.reference_id}
                                 </div>
@@ -291,7 +291,7 @@ export default function CreditHistoryList() {
                               {item.transaction_type && (
                                 <div>
                                   <span className="font-semibold block mb-1">
-                                    Tipo Técnico:
+                                    {t('credits.transaction.type', 'Tipo Técnico:')}
                                   </span>
                                   {item.transaction_type}
                                 </div>
@@ -299,7 +299,7 @@ export default function CreditHistoryList() {
                               {item.status && (
                                 <div>
                                   <span className="font-semibold block mb-1">
-                                    Status:
+                                    {t('credits.transaction.status', 'Status:')}
                                   </span>
                                   <span
                                     className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
