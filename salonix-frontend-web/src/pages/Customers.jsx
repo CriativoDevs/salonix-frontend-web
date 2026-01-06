@@ -10,6 +10,7 @@ import {
   resendCustomerInvite,
 } from '../api/customers';
 import { useTenant } from '../hooks/useTenant';
+import useCreditGate from '../hooks/useCreditGate';
 import { parseApiError } from '../utils/apiError';
 import {
   buildInviteTooltipLines,
@@ -19,6 +20,8 @@ import {
   resolveInviteVariant,
 } from '../utils/inviteStatus';
 import PaginationControls from '../components/ui/PaginationControls';
+import CreditBlockModal from '../components/credits/CreditBlockModal';
+import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
 
 const SORT_RECENT = 'recent';
 const SORT_NAME = 'name';
@@ -54,6 +57,11 @@ function sortCustomers(list = [], option = SORT_RECENT) {
 function Customers() {
   const { t } = useTranslation();
   const { slug, flags, featureFlagsRaw } = useTenant();
+  const { checkCredits, getCost } = useCreditGate();
+  const [blockModalOpen, setBlockModalOpen] = useState(false);
+  const [blockAction, setBlockAction] = useState(null);
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -142,9 +150,11 @@ function Customers() {
   const clearInviteStatus = useCallback(
     (customerId) => {
       updateInviteStatus(customerId, null);
-      setActiveInviteTooltip((current) => (current === customerId ? null : current));
+      setActiveInviteTooltip((current) =>
+        current === customerId ? null : current
+      );
     },
-    [updateInviteStatus],
+    [updateInviteStatus]
   );
 
   const closeInviteTooltip = useCallback(() => {
@@ -155,17 +165,24 @@ function Customers() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchCustomers({ slug, params: { limit, offset, ordering: orderingFromSort } })
+    fetchCustomers({
+      slug,
+      params: { limit, offset, ordering: orderingFromSort },
+    })
       .then((payload) => {
         if (cancelled) return;
-        const list = Array.isArray(payload?.results) ? payload.results : payload;
+        const list = Array.isArray(payload?.results)
+          ? payload.results
+          : payload;
         setCustomers(list || []);
         setInviteStatuses({});
         closeInviteTooltip();
       })
       .catch((err) => {
         if (cancelled) return;
-        setError(parseApiError(err, t('common.load_error', 'Falha ao carregar.')));
+        setError(
+          parseApiError(err, t('common.load_error', 'Falha ao carregar.'))
+        );
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -177,7 +194,7 @@ function Customers() {
 
   const sortedCustomers = useMemo(
     () => sortCustomers(customers, sortOption),
-    [customers, sortOption],
+    [customers, sortOption]
   );
 
   const filtered = useMemo(() => {
@@ -213,7 +230,10 @@ function Customers() {
       setCustomers((prev) => [created, ...prev]);
       setError(null);
     } catch (err) {
-      const parsed = parseApiError(err, t('common.save_error', 'Falha ao salvar.'));
+      const parsed = parseApiError(
+        err,
+        t('common.save_error', 'Falha ao salvar.')
+      );
       setError(parsed);
       throw parsed;
     } finally {
@@ -253,19 +273,29 @@ function Customers() {
       marketing_opt_in: Boolean(editingForm.marketing_opt_in),
     };
     if (!payload.name) {
-      setError({ message: t('customers.errors.name_required', 'Informe o nome do cliente.') });
+      setError({
+        message: t(
+          'customers.errors.name_required',
+          'Informe o nome do cliente.'
+        ),
+      });
       return;
     }
     if (!payload.email && !payload.phone_number) {
       setError({
-        message: t('customers.errors.contact_required', 'Informe e-mail ou telefone para contato.'),
+        message: t(
+          'customers.errors.contact_required',
+          'Informe e-mail ou telefone para contato.'
+        ),
       });
       return;
     }
     try {
       setBusyId(editingId);
       const updated = await updateCustomer(editingId, payload, { slug });
-      setCustomers((prev) => prev.map((item) => (item.id === editingId ? updated : item)));
+      setCustomers((prev) =>
+        prev.map((item) => (item.id === editingId ? updated : item))
+      );
       setError(null);
       clearInviteStatus(editingId);
       cancelEdit();
@@ -282,9 +312,11 @@ function Customers() {
       const updated = await updateCustomer(
         customer.id,
         { is_active: !customer.is_active },
-        { slug },
+        { slug }
       );
-      setCustomers((prev) => prev.map((item) => (item.id === customer.id ? updated : item)));
+      setCustomers((prev) =>
+        prev.map((item) => (item.id === customer.id ? updated : item))
+      );
       clearInviteStatus(customer.id);
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
@@ -294,7 +326,9 @@ function Customers() {
   };
 
   const removeCustomer = async (customer) => {
-    if (!window.confirm(t('customers.confirm_delete', 'Remover este cliente?'))) {
+    if (
+      !window.confirm(t('customers.confirm_delete', 'Remover este cliente?'))
+    ) {
       return;
     }
     if (!customer?.id) return;
@@ -304,16 +338,23 @@ function Customers() {
       setCustomers((prev) => prev.filter((item) => item.id !== customer.id));
       clearInviteStatus(customer.id);
     } catch (err) {
-      const parsed = parseApiError(err, t('customers.errors.delete_failed', 'Não foi possível remover o cliente.'));
+      const parsed = parseApiError(
+        err,
+        t(
+          'customers.errors.delete_failed',
+          'Não foi possível remover o cliente.'
+        )
+      );
       const status = err?.response?.status;
       const message =
         status === 409 ||
         status === 423 ||
         status === 500 ||
-        (typeof parsed.message === 'string' && parsed.message.toLowerCase().includes('cannot delete'))
+        (typeof parsed.message === 'string' &&
+          parsed.message.toLowerCase().includes('cannot delete'))
           ? t(
               'customers.errors.delete_protected',
-              'Clientes com histórico de agendamentos não podem ser excluídos. Utilize a ação "Desativar".',
+              'Clientes com histórico de agendamentos não podem ser excluídos. Utilize a ação "Desativar".'
             )
           : parsed.message;
       setError({ ...parsed, message });
@@ -323,10 +364,22 @@ function Customers() {
   };
 
   const pwaClientEnabled = useMemo(() => {
-    if (featureFlagsRaw?.modules && Object.prototype.hasOwnProperty.call(featureFlagsRaw.modules, 'pwa_client_enabled')) {
+    if (
+      featureFlagsRaw?.modules &&
+      Object.prototype.hasOwnProperty.call(
+        featureFlagsRaw.modules,
+        'pwa_client_enabled'
+      )
+    ) {
       return Boolean(featureFlagsRaw.modules.pwa_client_enabled);
     }
-    if (featureFlagsRaw?.modules && Object.prototype.hasOwnProperty.call(featureFlagsRaw.modules, 'pwa_client')) {
+    if (
+      featureFlagsRaw?.modules &&
+      Object.prototype.hasOwnProperty.call(
+        featureFlagsRaw.modules,
+        'pwa_client'
+      )
+    ) {
       return Boolean(featureFlagsRaw.modules.pwa_client);
     }
     return Boolean(flags?.enableCustomerPwa);
@@ -336,19 +389,21 @@ function Customers() {
     if (!customer?.id) return;
     const customerId = customer.id;
     updateInviteStatus(customerId, null);
-    setActiveInviteTooltip((current) => (current === customerId ? null : current));
+    setActiveInviteTooltip((current) =>
+      current === customerId ? null : current
+    );
 
     if (!customer.email) {
       updateInviteStatus(customerId, {
         type: 'error',
         text: t(
           'customers.errors.invite_missing_email',
-          'Cadastre um e-mail antes de reenviar o convite.',
+          'Cadastre um e-mail antes de reenviar o convite.'
         ),
         statusOverride: 'failed',
         messageOverride: t(
           'customers.errors.invite_missing_email',
-          'Cadastre um e-mail antes de reenviar o convite.',
+          'Cadastre um e-mail antes de reenviar o convite.'
         ),
       });
       return;
@@ -359,14 +414,30 @@ function Customers() {
         type: 'error',
         text: t(
           'customers.errors.invite_inactive',
-          'Ative o cliente para reenviar convites.',
+          'Ative o cliente para reenviar convites.'
         ),
         statusOverride: 'failed',
         messageOverride: t(
           'customers.errors.invite_inactive',
-          'Ative o cliente para reenviar convites.',
+          'Ative o cliente para reenviar convites.'
         ),
       });
+      return;
+    }
+
+    // FEW-314: Block if credits are insufficient for enabled channels
+    const smsEnabled = Boolean(flags?.enableSms);
+    const whatsappEnabled = Boolean(flags?.enableWhatsapp);
+
+    if (smsEnabled && !checkCredits('sms')) {
+      setBlockAction(t('settings.channels.sms', 'SMS'));
+      setBlockModalOpen(true);
+      return;
+    }
+
+    if (whatsappEnabled && !checkCredits('whatsapp')) {
+      setBlockAction(t('settings.channels.whatsapp', 'WhatsApp'));
+      setBlockModalOpen(true);
       return;
     }
 
@@ -375,30 +446,36 @@ function Customers() {
       await resendCustomerInvite(customerId, { slug });
       updateInviteStatus(customerId, {
         type: 'success',
-        text: t('customers.success.invite_sent', 'Convite reenviado com sucesso.'),
+        text: t(
+          'customers.success.invite_sent',
+          'Convite reenviado com sucesso.'
+        ),
         statusOverride: 'queued',
         timestampOverride: new Date().toISOString(),
         messageOverride: t(
           'customers.invite.tooltip.refresh_hint',
-          'O status será atualizado assim que o backend confirmar o envio.',
+          'O status será atualizado assim que o backend confirmar o envio.'
         ),
       });
     } catch (err) {
       const parsed = parseApiError(
         err,
-        t('customers.errors.invite_failed', 'Não foi possível reenviar o convite.'),
+        t(
+          'customers.errors.invite_failed',
+          'Não foi possível reenviar o convite.'
+        )
       );
       const status = err?.response?.status;
       let message = parsed.message;
       if (status === 404 || status === 501) {
         message = t(
           'customers.errors.invite_unavailable',
-          'Reenvio ainda não disponível. Aguarde a atualização do backend.',
+          'Reenvio ainda não disponível. Aguarde a atualização do backend.'
         );
       } else if (status === 429) {
         message = t(
           'customers.errors.invite_rate_limit',
-          'Muitos convites em sequência. Tente novamente em instantes.',
+          'Muitos convites em sequência. Tente novamente em instantes.'
         );
       }
       updateInviteStatus(customerId, {
@@ -422,7 +499,7 @@ function Customers() {
           <p className="mt-1 text-sm text-brand-surfaceForeground/70">
             {t(
               'customers.subtitle',
-              'Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.',
+              'Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.'
             )}
           </p>
 
@@ -440,24 +517,27 @@ function Customers() {
               <p className="text-sm text-brand-surfaceForeground/70">
                 {t(
                   'customers.list.subtitle',
-                  'Use a busca para encontrar rapidamente por nome, e-mail ou telefone.',
+                  'Use a busca para encontrar rapidamente por nome, e-mail ou telefone.'
                 )}
               </p>
               <p className="text-xs text-brand-surfaceForeground/60">
                 {t(
                   'customers.list.removal_hint',
-                  'Clientes com histórico não podem ser excluídos; desative para manter o cadastro sem aparecer na agenda.',
+                  'Clientes com histórico não podem ser excluídos; desative para manter o cadastro sem aparecer na agenda.'
                 )}
               </p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <select
                 value={sortOption}
-                onChange={(e) => { setSortOption(e.target.value); setOffset(0); }}
+                onChange={(e) => {
+                  setSortOption(e.target.value);
+                  setOffset(0);
+                }}
                 style={{
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)'
+                  borderColor: 'var(--border-primary)',
                 }}
                 className="rounded border px-3 py-2 text-sm"
               >
@@ -471,12 +551,15 @@ function Customers() {
               <input
                 type="search"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setOffset(0); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setOffset(0);
+                }}
                 placeholder={t('customers.list.search', 'Buscar cliente...')}
                 style={{
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)'
+                  borderColor: 'var(--border-primary)',
                 }}
                 className="w-full rounded border px-3 py-2 text-sm sm:w-64"
               />
@@ -484,7 +567,10 @@ function Customers() {
                 <input
                   type="checkbox"
                   checked={showInactive}
-                  onChange={(e) => { setShowInactive(e.target.checked); setOffset(0); }}
+                  onChange={(e) => {
+                    setShowInactive(e.target.checked);
+                    setOffset(0);
+                  }}
                   className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
                 />
                 {t('customers.list.show_inactive', 'Exibir inativos')}
@@ -503,19 +589,35 @@ function Customers() {
           ) : filtered.length === 0 ? (
             <p className="mt-4 text-sm text-brand-surfaceForeground/70">
               {search
-                ? t('customers.list.no_results', 'Nenhum cliente encontrado para esta busca.')
-                : t('customers.list.empty', 'Nenhum cliente cadastrado até o momento.')}
+                ? t(
+                    'customers.list.no_results',
+                    'Nenhum cliente encontrado para esta busca.'
+                  )
+                : t(
+                    'customers.list.empty',
+                    'Nenhum cliente cadastrado até o momento.'
+                  )}
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto md:overflow-visible">
               <table className="min-w-full divide-y divide-brand-border text-sm text-brand-surfaceForeground">
                 <thead className="bg-brand-light/60 text-xs uppercase tracking-wide text-brand-surfaceForeground/70">
                   <tr>
-                    <th className="px-3 py-2 text-left">{t('customers.table.name', 'Cliente')}</th>
-                    <th className="px-3 py-2 text-left">{t('customers.table.contact', 'Contato')}</th>
-                    <th className="px-3 py-2 text-left">{t('customers.table.notes', 'Notas')}</th>
-                    <th className="px-3 py-2 text-left">{t('customers.table.status', 'Status')}</th>
-                    <th className="px-3 py-2 text-right">{t('customers.table.actions', 'Ações')}</th>
+                    <th className="px-3 py-2 text-left">
+                      {t('customers.table.name', 'Cliente')}
+                    </th>
+                    <th className="px-3 py-2 text-left">
+                      {t('customers.table.contact', 'Contato')}
+                    </th>
+                    <th className="px-3 py-2 text-left">
+                      {t('customers.table.notes', 'Notas')}
+                    </th>
+                    <th className="px-3 py-2 text-left">
+                      {t('customers.table.status', 'Status')}
+                    </th>
+                    <th className="px-3 py-2 text-right">
+                      {t('customers.table.actions', 'Ações')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-brand-border/50">
@@ -524,21 +626,22 @@ function Customers() {
                     const disabled = busyId === customer.id;
                     const inviteStatus = inviteStatuses[customer.id];
                     const inviteInFlight = inviteBusyId === customer.id;
-                    const inviteButtonDisabled = inviteInFlight || customer.is_active === false;
+                    const inviteButtonDisabled =
+                      inviteInFlight || customer.is_active === false;
                     const inviteButtonTitle = inviteButtonDisabled
                       ? customer.is_active === false
                         ? t(
                             'customers.actions.invite.require_active',
-                            'Ative o cliente para reenviar convites.',
+                            'Ative o cliente para reenviar convites.'
                           )
                         : t(
                             'customers.actions.invite.in_progress',
-                            'Reenvio em andamento...',
+                            'Reenvio em andamento...'
                           )
                       : !customer.email
                         ? t(
                             'customers.actions.invite.require_email',
-                            'Cadastre um e-mail para reenviar convites.',
+                            'Cadastre um e-mail para reenviar convites.'
                           )
                         : '';
                     const inviteButtonClasses = [
@@ -552,26 +655,73 @@ function Customers() {
                       .filter(Boolean)
                       .join(' ');
 
-                    const inviteMeta = normalizeInviteMeta(customer, inviteStatus);
+                    const inviteMeta = normalizeInviteMeta(
+                      customer,
+                      inviteStatus
+                    );
                     const mappedStatusKey = inviteMeta.status
                       ? mapInviteStatusToKey(inviteMeta.status)
                       : 'none';
-                    const inviteStatusKey = pwaClientEnabled ? mappedStatusKey : 'disabled';
+                    const inviteStatusKey = pwaClientEnabled
+                      ? mappedStatusKey
+                      : 'disabled';
                     const inviteVariant = resolveInviteVariant(inviteStatusKey);
                     const inviteStatusLabel = resolveInviteStatusLabel(
                       t,
                       inviteStatusKey,
-                      inviteMeta.status,
+                      inviteMeta.status
                     );
-                    const inviteTooltipLines = buildInviteTooltipLines(
+                    const inviteTooltipLinesBase = buildInviteTooltipLines(
                       t,
                       inviteStatusKey,
                       inviteMeta,
-                      inviteStatusLabel,
+                      inviteStatusLabel
                     );
-                    const inviteTooltipOpen = activeInviteTooltip === customer.id;
+                    const smsEnabled = Boolean(flags?.enableSms);
+                    const whatsappEnabled = Boolean(flags?.enableWhatsapp);
+                    const smsAllowed = !smsEnabled || checkCredits('sms');
+                    const whatsappAllowed =
+                      !whatsappEnabled || checkCredits('whatsapp');
+                    const inviteTooltipLines = [
+                      ...inviteTooltipLinesBase,
+                      ...(smsEnabled && !smsAllowed
+                        ? [
+                            {
+                              label: t(
+                                'credits.block.title',
+                                'Limite de créditos'
+                              ),
+                              text: t(
+                                'credits.block.sms_unavailable',
+                                `Envio por SMS indisponível. Necessário pelo menos ${getCost(
+                                  'sms'
+                                )} crédito.`
+                              ),
+                            },
+                          ]
+                        : []),
+                      ...(whatsappEnabled && !whatsappAllowed
+                        ? [
+                            {
+                              label: t(
+                                'credits.block.title',
+                                'Limite de créditos'
+                              ),
+                              text: t(
+                                'credits.block.whatsapp_unavailable',
+                                `Envio por WhatsApp indisponível. Necessário pelo menos ${getCost(
+                                  'whatsapp'
+                                )} crédito.`
+                              ),
+                            },
+                          ]
+                        : []),
+                    ];
+                    const inviteTooltipOpen =
+                      activeInviteTooltip === customer.id;
                     const showInviteDot =
-                      inviteStatusKey !== 'none' && inviteStatusKey !== 'disabled';
+                      inviteStatusKey !== 'none' &&
+                      inviteStatusKey !== 'disabled';
                     const inviteBadgeClass = [
                       'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 transition',
                       showInviteDot ? 'gap-1' : '',
@@ -579,12 +729,15 @@ function Customers() {
                     ]
                       .filter(Boolean)
                       .join(' ');
-                    const inviteDotClass = ['h-1 w-1 rounded-full', inviteVariant.dotClass]
+                    const inviteDotClass = [
+                      'h-1 w-1 rounded-full',
+                      inviteVariant.dotClass,
+                    ]
                       .filter(Boolean)
                       .join(' ');
                     const handleInviteTooltipToggle = () => {
                       setActiveInviteTooltip((current) =>
-                        current === customer.id ? null : customer.id,
+                        current === customer.id ? null : customer.id
                       );
                     };
                     const handleInviteTooltipOpen = () => {
@@ -592,7 +745,7 @@ function Customers() {
                     };
                     const handleInviteTooltipClose = () => {
                       setActiveInviteTooltip((current) =>
-                        current === customer.id ? null : current,
+                        current === customer.id ? null : current
                       );
                     };
                     return (
@@ -605,11 +758,14 @@ function Customers() {
                                 backgroundColor: 'var(--bg-primary)',
                                 color: 'var(--text-primary)',
                                 borderColor: 'var(--border-primary)',
-                                border: '1px solid'
+                                border: '1px solid',
                               }}
                               value={editingForm.name}
                               onChange={(e) =>
-                                setEditingForm((prev) => ({ ...prev, name: e.target.value }))
+                                setEditingForm((prev) => ({
+                                  ...prev,
+                                  name: e.target.value,
+                                }))
                               }
                             />
                           ) : (
@@ -618,10 +774,15 @@ function Customers() {
                           <div className="text-xs text-brand-surfaceForeground/60">
                             {t('customers.table.created', 'Criado em:')}{' '}
                             {(() => {
-                              const date = customer.created_at ? new Date(customer.created_at) : null;
+                              const date = customer.created_at
+                                ? new Date(customer.created_at)
+                                : null;
                               return date && !Number.isNaN(date.getTime())
                                 ? date.toLocaleDateString()
-                                : t('customers.table.created_unknown', 'Data indisponível');
+                                : t(
+                                    'customers.table.created_unknown',
+                                    'Data indisponível'
+                                  );
                             })()}
                           </div>
                         </td>
@@ -634,13 +795,19 @@ function Customers() {
                                   backgroundColor: 'var(--bg-primary)',
                                   color: 'var(--text-primary)',
                                   borderColor: 'var(--border-primary)',
-                                  border: '1px solid'
+                                  border: '1px solid',
                                 }}
                                 value={editingForm.email}
                                 onChange={(e) =>
-                                  setEditingForm((prev) => ({ ...prev, email: e.target.value }))
+                                  setEditingForm((prev) => ({
+                                    ...prev,
+                                    email: e.target.value,
+                                  }))
                                 }
-                                placeholder={t('customers.form.email_placeholder', 'cliente@email.com')}
+                                placeholder={t(
+                                  'customers.form.email_placeholder',
+                                  'cliente@email.com'
+                                )}
                               />
                               <input
                                 className="w-full rounded px-2 py-1 text-sm"
@@ -648,7 +815,7 @@ function Customers() {
                                   backgroundColor: 'var(--bg-primary)',
                                   color: 'var(--text-primary)',
                                   borderColor: 'var(--border-primary)',
-                                  border: '1px solid'
+                                  border: '1px solid',
                                 }}
                                 value={editingForm.phone_number}
                                 onChange={(e) =>
@@ -657,14 +824,15 @@ function Customers() {
                                     phone_number: e.target.value,
                                   }))
                                 }
-                                placeholder={t('customers.form.phone_placeholder', '+351912345678')}
+                                placeholder={t(
+                                  'customers.form.phone_placeholder',
+                                  '+351912345678'
+                                )}
                               />
                             </div>
                           ) : (
                             <div className="space-y-1">
-                              {customer.email && (
-                                <div>{customer.email}</div>
-                              )}
+                              {customer.email && <div>{customer.email}</div>}
                               {customer.phone_number && (
                                 <div className="text-sm text-brand-surfaceForeground/80">
                                   {customer.phone_number}
@@ -681,20 +849,24 @@ function Customers() {
                                 backgroundColor: 'var(--bg-primary)',
                                 color: 'var(--text-primary)',
                                 borderColor: 'var(--border-primary)',
-                                border: '1px solid'
+                                border: '1px solid',
                               }}
                               rows={2}
                               value={editingForm.notes}
                               onChange={(e) =>
-                                setEditingForm((prev) => ({ ...prev, notes: e.target.value }))
+                                setEditingForm((prev) => ({
+                                  ...prev,
+                                  notes: e.target.value,
+                                }))
                               }
                             />
                           ) : (
                             <div className="text-sm text-brand-surfaceForeground/80">
-                              {customer.notes || t('customers.table.no_notes', 'Sem notas.')}
+                              {customer.notes ||
+                                t('customers.table.no_notes', 'Sem notas.')}
                             </div>
                           )}
-                          {isEditing && (
+                          {/* {isEditing && (
                             <label className="mt-2 flex items-center gap-2 text-xs text-brand-surfaceForeground/70">
                               <input
                                 type="checkbox"
@@ -707,9 +879,12 @@ function Customers() {
                                 }
                                 className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
                               />
-                              {t('customers.form.marketing_opt_in', 'Aceita receber comunicações de marketing')}
+                              {t(
+                                'customers.form.marketing_opt_in',
+                                'Aceita receber comunicações de marketing'
+                              )}
                             </label>
-                          )}
+                          )} */}
                         </td>
                         <td className="px-3 py-3 align-top">
                           <div className="flex flex-col items-start gap-2">
@@ -739,33 +914,42 @@ function Customers() {
                                 className={`${inviteBadgeClass} focus:outline-none focus:ring-2 focus:ring-brand-primary/60`}
                               >
                                 {showInviteDot ? (
-                                  <span className={inviteDotClass} aria-hidden="true" />
+                                  <span
+                                    className={inviteDotClass}
+                                    aria-hidden="true"
+                                  />
                                 ) : null}
                                 <span>{inviteStatusLabel}</span>
                               </button>
 
                               {inviteTooltipOpen ? (
-                                <div 
+                                <div
                                   className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-xs shadow-lg"
                                   style={{
                                     backgroundColor: 'var(--bg-primary)',
                                     color: 'var(--text-primary)',
                                     borderColor: 'var(--border-primary)',
-                                    border: '1px solid'
+                                    border: '1px solid',
                                   }}
                                 >
                                   <div className="flex flex-col gap-2">
                                     {inviteTooltipLines.map((line, index) => (
                                       <div key={index}>
                                         {line.label ? (
-                                          <p 
+                                          <p
                                             className="font-semibold"
-                                            style={{ color: 'var(--text-secondary)' }}
+                                            style={{
+                                              color: 'var(--text-secondary)',
+                                            }}
                                           >
                                             {line.label}
                                           </p>
                                         ) : null}
-                                        <p style={{ color: 'var(--text-primary)' }}>
+                                        <p
+                                          style={{
+                                            color: 'var(--text-primary)',
+                                          }}
+                                        >
                                           {line.value}
                                         </p>
                                       </div>
@@ -820,8 +1004,14 @@ function Customers() {
                                     aria-busy={inviteInFlight}
                                   >
                                     {inviteInFlight
-                                      ? t('customers.actions.resending', 'Reenviando...')
-                                      : t('customers.actions.resend_invite', 'Reenviar convite')}
+                                      ? t(
+                                          'customers.actions.resending',
+                                          'Reenviando...'
+                                        )
+                                      : t(
+                                          'customers.actions.resend_invite',
+                                          'Reenviar convite'
+                                        )}
                                   </button>
                                 ) : null}
                                 <button
@@ -831,8 +1021,14 @@ function Customers() {
                                   className="block text-xs font-semibold text-[#AD2409] hover:underline disabled:opacity-50"
                                 >
                                   {customer.is_active !== false
-                                    ? t('customers.actions.deactivate', 'Desativar')
-                                    : t('customers.actions.activate', 'Reativar')}
+                                    ? t(
+                                        'customers.actions.deactivate',
+                                        'Desativar'
+                                      )
+                                    : t(
+                                        'customers.actions.activate',
+                                        'Reativar'
+                                      )}
                                 </button>
                                 {customer.is_active === false && (
                                   <button
@@ -848,7 +1044,9 @@ function Customers() {
                               {pwaClientEnabled && inviteStatus ? (
                                 <div
                                   className={`mt-2 text-xs ${
-                                    inviteStatus.type === 'success' ? 'text-emerald-600' : 'text-rose-600'
+                                    inviteStatus.type === 'success'
+                                      ? 'text-emerald-600'
+                                      : 'text-rose-600'
                                   }`}
                                 >
                                   {inviteStatus.text}
@@ -871,14 +1069,34 @@ function Customers() {
               totalCount={filtered.length}
               limit={limit}
               offset={offset}
-              onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+              onChangeLimit={(n) => {
+                setLimit(n);
+                setOffset(0);
+              }}
               onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-              onNext={() => setOffset((prev) => (prev + limit < filtered.length ? prev + limit : prev))}
+              onNext={() =>
+                setOffset((prev) =>
+                  prev + limit < filtered.length ? prev + limit : prev
+                )
+              }
               className="mt-6"
             />
           )}
         </div>
       </div>
+      <CreditPurchaseModal
+        open={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+      />
+      <CreditBlockModal
+        open={blockModalOpen}
+        onClose={() => setBlockModalOpen(false)}
+        onBuy={() => {
+          setBlockModalOpen(false);
+          setCreditsModalOpen(true);
+        }}
+        action={blockAction}
+      />
     </FullPageLayout>
   );
 }

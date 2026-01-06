@@ -131,7 +131,7 @@ function CustomerForm({ onAdd, busy = false }) {
         </label>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-brand-surfaceForeground/80">
+      {/* <label className="flex items-center gap-2 text-sm text-brand-surfaceForeground/80">
         <input
           type="checkbox"
           checked={form.marketing_opt_in}
@@ -142,7 +142,7 @@ function CustomerForm({ onAdd, busy = false }) {
           'customers.form.marketing_opt_in',
           'Aceita receber comunicações de marketing'
         )}
-      </label>
+      </label> */}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
