@@ -11,8 +11,16 @@ import { getEnvVar } from '../utils/env';
 import { RATE_LIMIT_EVENT } from '../constants/events';
 
 const defaultBase = 'http://localhost:8000/api';
-// Use getEnvVar to avoid SyntaxError in Jest (import.meta usage)
-const envBase = getEnvVar('VITE_API_BASE_URL');
+// Get env from import.meta (Vercel - ES modules) or fallback to getEnvVar (Jest - CommonJS)
+// Using computed access to avoid parse errors in Jest
+const getViteEnv = () => {
+  try {
+    return (1, eval)('import.meta')?.env?.VITE_API_BASE_URL;
+  } catch {
+    return undefined;
+  }
+};
+const envBase = getViteEnv() || getEnvVar('VITE_API_BASE_URL');
 const configuredBase = envBase || defaultBase;
 
 console.log('API Base URL:', configuredBase);

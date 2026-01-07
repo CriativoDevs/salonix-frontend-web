@@ -26,7 +26,14 @@ export const PLAN_NAME_BY_TIER = {
 };
 
 const API_BASE_URL = (() => {
-  const configured = getEnvVar('VITE_API_BASE_URL');
+  const getViteEnv = () => {
+    try {
+      return (1, eval)('import.meta')?.env?.VITE_API_BASE_URL;
+    } catch {
+      return undefined;
+    }
+  };
+  const configured = getViteEnv() || getEnvVar('VITE_API_BASE_URL');
   try {
     return new URL(configured || 'http://localhost:8000/api/');
   } catch {
