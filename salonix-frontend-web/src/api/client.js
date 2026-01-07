@@ -10,12 +10,19 @@ import {
 import { getEnvVar } from '../utils/env';
 import { RATE_LIMIT_EVENT } from '../constants/events';
 
-const defaultBase = 'http://localhost:8000/api/';
-const configuredBase = import.meta.env.VITE_API_URL || getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
+const defaultBase = 'http://localhost:8000/api';
+// Use import.meta.env directly for Vite replacement
+const envBase = import.meta.env.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+const configuredBase = envBase || defaultBase;
+
+console.log('API Base URL:', configuredBase);
+
 const mode = String(getEnvVar('MODE', '')).toLowerCase();
-const isDev =
-  Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
+const isDev = Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
+
+// Only use proxy in dev if we are actually targeting localhost
 const useProxyBase = isDev && /localhost(:\d+)?/i.test(configuredBase);
+
 export const API_BASE_URL = useProxyBase
   ? '/api/'
   : configuredBase.endsWith('/')
