@@ -1,12 +1,14 @@
 import client from './client';
+import { getEnvVar } from '../utils/env';
 
 export async function submitFeedback(
-  { category, rating, message, anonymous = false, customerId },
+  { category, custom_category, rating, message, anonymous = false, customerId },
   { slug, captchaToken } = {}
 ) {
   const headers = {};
   const payload = {
     category,
+    ...(custom_category ? { custom_category } : {}),
     rating,
     message,
     is_anonymous: Boolean(anonymous),
@@ -20,7 +22,7 @@ export async function submitFeedback(
     headers['X-Tenant-Slug'] = slug;
   }
 
-  const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || '';
+  const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || '';
   if (captchaToken) {
     headers['X-Captcha-Token'] = captchaToken;
   } else if (bypass) {
@@ -32,4 +34,3 @@ export async function submitFeedback(
 }
 
 export default { submitFeedback };
-

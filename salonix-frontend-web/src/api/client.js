@@ -11,14 +11,15 @@ import { getEnvVar } from '../utils/env';
 import { RATE_LIMIT_EVENT } from '../constants/events';
 
 const defaultBase = 'http://localhost:8000/api';
-// Use import.meta.env directly for Vite replacement
-const envBase = import.meta.env.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+// Use getEnvVar to avoid SyntaxError in Jest (import.meta usage)
+const envBase = getEnvVar('VITE_API_BASE_URL');
 const configuredBase = envBase || defaultBase;
 
 console.log('API Base URL:', configuredBase);
 
 const mode = String(getEnvVar('MODE', '')).toLowerCase();
-const isDev = Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
+const isDev =
+  Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
 
 // Only use proxy in dev if we are actually targeting localhost
 const useProxyBase = isDev && /localhost(:\d+)?/i.test(configuredBase);
@@ -93,14 +94,14 @@ client.interceptors.response.use(
           seconds = parseInt(match[1], 10);
         }
       }
-      
+
       // Dispatch event for UI
       window.dispatchEvent(
-        new CustomEvent('api-rate-limit', { 
-          detail: { retryAfter: seconds || 60 } 
+        new CustomEvent('api-rate-limit', {
+          detail: { retryAfter: seconds || 60 },
         })
       );
-      
+
       return Promise.reject(error);
     }
 

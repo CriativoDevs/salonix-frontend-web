@@ -325,13 +325,14 @@
     "category": "Categoria",
     "select_category": "Selecione uma categoria",
     "categories": {
-      "service_quality": "Qualidade do serviço",
-      "professional_behavior": "Comportamento profissional",
-      "facility_cleanliness": "Limpeza do estabelecimento",
-      "appointment_scheduling": "Agendamento de horários",
-      "pricing": "Preços",
-      "other": "Outro"
+      "app": "App",
+      "support": "Suporte",
+      "pwa": "PWA",
+      "praise": "Elogios",
+      "other": "Outros"
     },
+    "custom_category": "Especifique o tipo de feedback",
+    "custom_category_placeholder": "Ex: Sugestão de funcionalidade",
     "message": "Mensagem",
     "message_placeholder": "Conte-nos sobre sua experiência...",
     "anonymous": "Enviar anonimamente",
@@ -343,6 +344,7 @@
     "errors": {
       "rating_required": "Selecione uma avaliação de 1 a 5.",
       "category_required": "Selecione uma categoria válida.",
+      "custom_category_required": "Especifique a categoria.",
       "message_required": "Escreva uma mensagem.",
       "message_too_long": "Mensagem muito longa. Máximo de 2000 caracteres."
     }

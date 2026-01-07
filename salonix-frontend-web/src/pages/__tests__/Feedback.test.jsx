@@ -15,7 +15,7 @@ jest.mock('react-i18next', () => ({
         'feedback.rating_5': 'Excelente',
         'feedback.category': 'Categoria',
         'feedback.select_category': 'Selecione uma categoria',
-        'feedback.categories.pricing': 'Preços',
+        'feedback.categories.app': 'App',
         'feedback.message': 'Mensagem',
         'feedback.message_placeholder': 'Conte-nos sobre sua experiência...',
         'feedback.submit': 'Enviar feedback',
@@ -96,7 +96,7 @@ describe('Feedback page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Excelente' }));
 
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'pricing' } });
+    fireEvent.change(select, { target: { value: 'app' } });
 
     const textarea = screen.getByRole('textbox');
     fireEvent.change(textarea, { target: { value: 'Teste' } });
@@ -121,7 +121,7 @@ describe('Feedback page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Bom' }));
 
     const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: 'pricing' } });
+    fireEvent.change(select, { target: { value: 'app' } });
 
     const textarea = screen.getByRole('textbox');
     fireEvent.change(textarea, { target: { value: 'Falhou' } });
