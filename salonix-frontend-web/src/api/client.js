@@ -11,7 +11,7 @@ import { getEnvVar } from '../utils/env';
 import { RATE_LIMIT_EVENT } from '../constants/events';
 
 const defaultBase = 'http://localhost:8000/api/';
-const configuredBase = getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
+const configuredBase = import.meta.env.VITE_API_URL || getEnvVar('VITE_API_URL', defaultBase) || defaultBase;
 const mode = String(getEnvVar('MODE', '')).toLowerCase();
 const isDev =
   Boolean(getEnvVar('DEV', false)) || mode === 'development' || mode === 'dev';
