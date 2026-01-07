@@ -18,6 +18,7 @@ import { parseApiError, hasActionableError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
 import { clearStoredTenantSlug, storeTenantSlug } from '../utils/tenantStorage';
+import { getEnvVar } from '../utils/env';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -153,7 +154,7 @@ export const AuthProvider = ({ children }) => {
     async ({ email, password }) => {
       setAuthError(null);
       try {
-        const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
+        const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || undefined;
         const { access, refresh, tenant, user } = await loginRequest(
           email,
           password,

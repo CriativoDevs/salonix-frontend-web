@@ -16,6 +16,7 @@ function Feedback() {
   const [form, setForm] = useState({
     rating: 0,
     category: '',
+    custom_category: '',
     message: '',
     anonymous: false,
   });
@@ -28,16 +29,10 @@ function Feedback() {
   const [errors, setErrors] = useState({});
   const ratingRef = useRef(null);
   const categoryRef = useRef(null);
+  const customCategoryRef = useRef(null);
   const messageRef = useRef(null);
 
-  const categories = [
-    'service_quality',
-    'professional_behavior',
-    'facility_cleanliness',
-    'appointment_scheduling',
-    'pricing',
-    'other',
-  ];
+  const categories = ['app', 'support', 'pwa', 'praise', 'other'];
 
   const messageLength = useMemo(
     () => String(form.message || '').length,
@@ -47,11 +42,10 @@ function Feedback() {
   const validateForm = () => {
     const nextErrors = {};
     const validCategories = new Set([
-      'service_quality',
-      'professional_behavior',
-      'facility_cleanliness',
-      'appointment_scheduling',
-      'pricing',
+      'app',
+      'support',
+      'pwa',
+      'praise',
       'other',
     ]);
     const ratingNum = Number(form.rating);
@@ -68,6 +62,13 @@ function Feedback() {
       nextErrors.category = t(
         'feedback.errors.category_required',
         'Selecione uma categoria válida.'
+      );
+    }
+
+    if (form.category === 'other' && !form.custom_category?.trim()) {
+      nextErrors.custom_category = t(
+        'feedback.errors.custom_category_required',
+        'Especifique a categoria.'
       );
     }
 
@@ -92,13 +93,15 @@ function Feedback() {
     const nextErrors = validateForm();
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
-      const order = ['rating', 'category', 'message'];
+      const order = ['rating', 'category', 'custom_category', 'message'];
       const firstKey = order.find((k) => nextErrors[k]);
       if (firstKey === 'rating') {
         const btn = ratingRef.current?.querySelector('button');
         if (btn && typeof btn.focus === 'function') btn.focus();
       } else if (firstKey === 'category') {
         categoryRef.current?.focus?.();
+      } else if (firstKey === 'custom_category') {
+        customCategoryRef.current?.focus?.();
       } else if (firstKey === 'message') {
         messageRef.current?.focus?.();
       }
@@ -110,6 +113,8 @@ function Feedback() {
       await submitFeedback(
         {
           category: form.category,
+          custom_category:
+            form.category === 'other' ? form.custom_category : undefined,
           rating: form.rating,
           message: trimmed,
           anonymous: form.anonymous,
@@ -123,7 +128,13 @@ function Feedback() {
         messageLength: trimmed.length,
       });
       setIsSubmitted(true);
-      setForm({ rating: 0, category: '', message: '', anonymous: false });
+      setForm({
+        rating: 0,
+        category: '',
+        custom_category: '',
+        message: '',
+        anonymous: false,
+      });
       setCaptchaToken(null);
       setResetKey((k) => k + 1);
       setErrors({});
@@ -187,11 +198,12 @@ function Feedback() {
               setForm({
                 rating: 0,
                 category: '',
+                custom_category: '',
                 message: '',
                 anonymous: false,
               });
             }}
-            variant="primary"
+            variant="link"
           >
             {t('feedback.submit_another')}
           </FormButton>
@@ -300,6 +312,42 @@ function Feedback() {
                 >
                   {errors.category}
                 </p>
+              )}
+
+              {/* Custom Category Input */}
+              {form.category === 'other' && (
+                <div className="mt-3">
+                  <label className="block text-sm font-medium text-brand-surfaceForeground mb-2">
+                    {t(
+                      'feedback.custom_category',
+                      'Especifique o tipo de feedback'
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.custom_category}
+                    onChange={(e) =>
+                      setForm({ ...form, custom_category: e.target.value })
+                    }
+                    className="w-full rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                    placeholder={t(
+                      'feedback.custom_category_placeholder',
+                      'Ex: Sugestão de funcionalidade'
+                    )}
+                    aria-invalid={Boolean(errors.custom_category)}
+                    disabled={loading}
+                    ref={customCategoryRef}
+                    maxLength={100}
+                  />
+                  {errors.custom_category && (
+                    <p
+                      className="mt-1 text-xs text-rose-600"
+                      aria-live="polite"
+                    >
+                      {errors.custom_category}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 

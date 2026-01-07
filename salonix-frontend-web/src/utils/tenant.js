@@ -26,7 +26,7 @@ export const PLAN_NAME_BY_TIER = {
 };
 
 const API_BASE_URL = (() => {
-  const configured = import.meta.env.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+  const configured = getEnvVar('VITE_API_BASE_URL');
   try {
     return new URL(configured || 'http://localhost:8000/api/');
   } catch {
