@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { OpsAuthContext } from './OpsAuthContextInstance';
+import { API_BASE_URL } from '../api/client';
 
 export const OpsAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -39,7 +40,7 @@ export const OpsAuthProvider = ({ children }) => {
   // Create api instance once with request interceptor
   const api = useMemo(() => {
     const instance = axios.create({
-      baseURL: '/api/ops',
+      baseURL: `${API_BASE_URL}ops/`,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -118,9 +119,12 @@ export const OpsAuthProvider = ({ children }) => {
 
             // We need to use a separate instance or plain axios to avoid interceptor loop
             // But we can just use axios directly
-            const response = await axios.post('/api/ops/auth/refresh/', {
-              refresh,
-            });
+            const response = await axios.post(
+              `${API_BASE_URL}ops/auth/refresh/`,
+              {
+                refresh,
+              }
+            );
 
             const { access } = response.data;
             setTokens(access);
