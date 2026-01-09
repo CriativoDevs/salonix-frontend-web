@@ -1,20 +1,20 @@
 {
-  "name": "Salonix",
-  "short_name": "Salonix",
+  "name": "TimelyOne",
+  "short_name": "TimelyOne",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#111827",
   "icons": [
     {
-      "src": "/vite.svg",
+      "src": "/pwa-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     },
     {
-      "src": "/vite.svg",
+      "src": "/pwa-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }

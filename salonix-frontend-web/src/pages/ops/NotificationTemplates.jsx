@@ -305,7 +305,7 @@ const NotificationTemplates = () => {
             onChange={(e) =>
               setFormData({ ...formData, subject: e.target.value })
             }
-            placeholder="Ex: Bem-vindo ao Salonix, {{ tenant_name }}!"
+            placeholder="Ex: Bem-vindo ao TimelyOne, {{ tenant_name }}!"
             required={
               formData.channel === 'email' || formData.channel === 'push'
             }
