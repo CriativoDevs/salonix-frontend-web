@@ -8,6 +8,7 @@ import {
   triggerLogout,
 } from '../utils/authStorage';
 import { getEnvVar } from '../utils/env';
+import { viteEnv } from '../utils/viteEnv';
 import { RATE_LIMIT_EVENT } from '../constants/events';
 
 const defaultBase = 'http://localhost:8000/api';
@@ -15,7 +16,7 @@ const defaultBase = 'http://localhost:8000/api';
 // In Vite, import.meta.env is replaced at build time
 // This will be inlined during build, replacing the undefined check
 const envBase =
-  import.meta.env?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+  viteEnv?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
 const configuredBase = envBase || defaultBase;
 
 console.log('API Base URL:', configuredBase);

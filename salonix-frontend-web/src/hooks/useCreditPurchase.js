@@ -38,8 +38,10 @@ export default function useCreditPurchase() {
     try {
       const { checkout_url } = await createCreditCheckoutSession(amountEur, { slug });
       if (checkout_url) {
+        console.log('[CreditPurchase] Redirecting to:', checkout_url);
         window.location.href = checkout_url;
       } else {
+        console.error('[CreditPurchase] No checkout URL returned');
         throw new Error('No checkout URL returned');
       }
     } catch (err) {

@@ -143,6 +143,7 @@ function Feedback() {
         err,
         t('feedback.submit_error', 'Não foi possível enviar o feedback.')
       );
+      console.error('[Feedback] Submit error:', parsed);
       trace('feedback.submit.error', {
         category: form.category,
         rating: form.rating,

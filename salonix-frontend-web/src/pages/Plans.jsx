@@ -31,6 +31,19 @@ function Plans() {
   const plans = useMemo(() => PLAN_OPTIONS, []);
 
   useEffect(() => {
+    if (
+      overview &&
+      (overview.trial_exhausted || overview.trial_eligible === false)
+    ) {
+      console.warn('[Plans] Trial warning shown:', {
+        trial_exhausted: overview.trial_exhausted,
+        trial_eligible: overview.trial_eligible,
+        trial_days: overview.trial_days,
+      });
+    }
+  }, [overview]);
+
+  useEffect(() => {
     const fromOverview = (
       overview?.current_subscription?.plan_code || ''
     ).toLowerCase();
@@ -142,7 +155,7 @@ function Plans() {
       >
         {overview?.current_subscription?.plan_name || plan?.name ? (
           <span className="rounded-full border border-brand-border bg-brand-light px-3 py-1 text-xs font-medium text-brand-surfaceForeground">
-            {t('plans.current_badge', 'Plano atual')}:{" "}
+            {t('plans.current_badge', 'Plano atual')}:{' '}
             {overview?.current_subscription?.plan_name || plan?.name}
           </span>
         ) : null}
