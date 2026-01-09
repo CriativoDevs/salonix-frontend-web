@@ -138,10 +138,18 @@ export const AuthProvider = ({ children }) => {
             await loadFeatureFlags();
           }
         }
-      } catch {
-        console.warn('[Auth] refresh token flow failed, clearing tokens');
-        clearTokens();
-        resetState();
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          console.warn('[Auth] refresh token invalid/expired, clearing tokens');
+          clearTokens();
+          resetState();
+        } else {
+          console.warn(
+            '[Auth] refresh token failed with non-auth error (network?), keeping tokens:',
+            error
+          );
+        }
       } finally {
         setIsLoading(false);
       }

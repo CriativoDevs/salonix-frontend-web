@@ -1,4 +1,4 @@
-# Padrões UI/UX - Salonix Frontend
+# Padrões UI/UX - TimelyOne Frontend
 
 ## 🚨 REGRA FUNDAMENTAL - BOTÕES
 
