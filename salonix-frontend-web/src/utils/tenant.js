@@ -1,4 +1,5 @@
 import { getEnvVar } from './env';
+import { viteEnv } from './viteEnv';
 
 const runtimeDefaultSlug = (() => {
   if (typeof globalThis !== 'undefined') {
@@ -28,7 +29,7 @@ export const PLAN_NAME_BY_TIER = {
 const API_BASE_URL = (() => {
   // Vite inlines import.meta.env at build time
   const configured =
-    import.meta.env?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+    viteEnv?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
   try {
     return new URL(configured || 'http://localhost:8000/api/');
   } catch {

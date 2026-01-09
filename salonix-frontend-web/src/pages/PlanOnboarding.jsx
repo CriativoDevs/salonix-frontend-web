@@ -25,6 +25,17 @@ export default function PlanOnboarding() {
   const plans = useMemo(() => PLAN_OPTIONS, []);
 
   useEffect(() => {
+    if (overview) {
+      console.log('[PlanOnboarding] Debug Overview:', {
+        trial_exhausted: overview.trial_exhausted,
+        trial_eligible: overview.trial_eligible,
+        trial_days: overview.trial_days,
+        current_subscription: overview.current_subscription,
+      });
+    }
+  }, [overview]);
+
+  useEffect(() => {
     const fromOverview = (
       overview?.current_subscription?.plan_code || ''
     ).toLowerCase();

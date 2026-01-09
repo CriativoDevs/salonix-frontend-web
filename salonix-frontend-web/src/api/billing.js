@@ -55,6 +55,7 @@ export async function createCheckoutSession(planCode, options = {}) {
 
   const checkoutUrl = response?.data?.checkout_url || response?.data?.url;
   if (!checkoutUrl) {
+    console.error('[BillingAPI] Checkout URL missing in response:', response?.data);
     throw new Error('Checkout URL not found in response');
   }
   return { url: checkoutUrl };
