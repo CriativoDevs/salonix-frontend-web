@@ -456,10 +456,10 @@ function Bookings() {
     setError(null);
 
     const params = {
-      limit,
-      offset,
-      ordering: '-start_time',
-    };
+            limit,
+            offset,
+            ordering: '-created_at',
+          };
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
     if (filters.dateTo) params.date_to = filters.dateTo;
