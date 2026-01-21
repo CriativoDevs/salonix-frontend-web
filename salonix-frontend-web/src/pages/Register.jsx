@@ -208,6 +208,15 @@ function Register() {
             {t('auth.login')}
           </Link>
         </div>
+
+        <div className="mt-2 text-center border-t border-gray-100 pt-3">
+          <Link
+            to="/client/enter"
+            className="text-gray-500 hover:text-brand-primary transition-colors text-xs"
+          >
+            {t('auth.are_you_a_client', 'É cliente? Aceda à sua área')}
+          </Link>
+        </div>
       </form>
     </AuthLayout>
   );

@@ -21,7 +21,9 @@
       "email_invalid": "E-mail inválido",
       "password_required": "Senha é obrigatória",
       "invalid_credentials": "E-mail ou senha incorretos"
-    }
+    },
+    "are_you_a_client": "É cliente? Aceda à sua área",
+    "are_you_a_professional": "É um profissional? Aceda à gestão"
   },
   "auth": {
     "captcha": {

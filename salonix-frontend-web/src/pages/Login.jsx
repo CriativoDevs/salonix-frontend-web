@@ -1,20 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
-import FormButton from '../components/ui/FormButton';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
-import { consumePostAuthRedirect } from '../utils/navigation';
 import { getEnvVar } from '../utils/env';
 import CaptchaGate from '../components/security/CaptchaGate';
 
 function Login() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { login, authError, isLoading, isAuthenticated, clearAuthError } =
-    useAuth();
+  const { login, authError, clearAuthError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,16 +18,6 @@ function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [popupError, setPopupError] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      const scheduled = consumePostAuthRedirect();
-      // Se houver redirect agendado, respeitamos.
-      // Caso contrário, mandamos para dashboard e o OnboardingGuard decide o resto.
-      const target = scheduled || '/dashboard';
-      navigate(target, { replace: true });
-    }
-  }, [isLoading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -128,6 +114,15 @@ function Login() {
             className="text-brand-primary hover:text-brand-primary/80 underline"
           >
             {t('login.register')}
+          </Link>
+        </div>
+
+        <div className="mt-2 text-sm text-center border-t border-gray-100 pt-3">
+          <Link
+            to="/client/enter"
+            className="text-gray-500 hover:text-brand-primary transition-colors text-xs"
+          >
+            {t('login.are_you_a_client', 'É cliente? Aceda à sua área')}
           </Link>
         </div>
       </form>

@@ -19,7 +19,6 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
 import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 import LanguageToggle from '../components/ui/LanguageToggle';
 import { PLAN_OPTIONS } from '../api/billing';
@@ -140,7 +139,6 @@ const screenshots = [
 
 function Landing() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const screenshotsRef = useRef(null);
   const [screenshotsProgress, setScreenshotsProgress] = useState(0);
@@ -277,10 +275,6 @@ function Landing() {
     const step = Math.max(Math.floor(el.clientWidth * 0.8), 240);
     el.scrollBy({ left: dir === 'next' ? step : -step, behavior: 'smooth' });
   };
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
     <div
