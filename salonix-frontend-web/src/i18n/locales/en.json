@@ -21,7 +21,9 @@
       "email_invalid": "Email is invalid",
       "password_required": "Password is required",
       "invalid_credentials": "Invalid email or password"
-    }
+    },
+    "are_you_a_client": "Are you a client? Access your area",
+    "are_you_a_professional": "Are you a professional? Access management"
   },
   "auth": {
     "register_title": "Create your account",

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
@@ -72,6 +73,15 @@ export default function ClientEnter() {
             </p>
           </div>
         )}
+
+        <div className="mt-6 text-center border-t border-gray-100 pt-3">
+          <Link
+            to="/login"
+            className="text-gray-500 hover:text-brand-primary transition-colors text-xs"
+          >
+            {t('login.are_you_a_professional')}
+          </Link>
+        </div>
       </form>
     </AuthLayout>
   );
