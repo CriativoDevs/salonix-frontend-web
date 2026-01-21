@@ -1064,7 +1064,8 @@
       "login": "Sign in",
       "register": "Sign up",
       "open_menu": "Open menu",
-      "menu": "Menu"
+      "menu": "Menu",
+      "install_pwa": "Install App"
     },
     "hero": {
       "tag": "Smart Management & Scheduling",
@@ -1249,6 +1250,7 @@
       "client_area": "Client Area",
       "login": "Sign in",
       "register": "Sign up",
+      "ops_login": "OPS Login",
       "copyright": "© {{year}} Criativo Devs. All rights reserved."
     }
   },

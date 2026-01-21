@@ -321,7 +321,7 @@ function Landing() {
                 isDarkTheme ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              {t('landing.install_pwa', 'Instalar')}
+              {t('landing.nav.install_pwa', 'Instalar App')}
             </button>
             <Link
               to="/client/enter"
@@ -356,14 +356,6 @@ function Landing() {
               className="mr-1"
             />
             <LanguageToggle />
-            <button
-              onClick={handleInstallClick}
-              className={`font-medium underline transition hover:opacity-80 ${
-                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
-              }`}
-            >
-              {t('landing.install_pwa', 'Instalar')}
-            </button>
             <button
               type="button"
               aria-label={t('landing.nav.open_menu', 'Abrir menu')}
@@ -415,6 +407,16 @@ function Landing() {
                 >
                   {t('landing.nav.register', 'Registar')}
                 </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleInstallClick();
+                  }}
+                  className="block w-full text-left px-4 py-3 font-medium hover:opacity-80"
+                  role="menuitem"
+                >
+                  {t('landing.nav.install_pwa', 'Instalar App')}
+                </button>
               </div>
             )}
           </div>
@@ -1208,6 +1210,9 @@ function Landing() {
             </Link>
             <Link to="/register" className="transition hover:text-slate-800">
               {t('landing.footer.register', 'Registar')}
+            </Link>
+            <Link to="/ops/login" className="transition hover:text-slate-800">
+              {t('landing.footer.ops_login', 'Login OPS')}
             </Link>
           </div>
         </div>
