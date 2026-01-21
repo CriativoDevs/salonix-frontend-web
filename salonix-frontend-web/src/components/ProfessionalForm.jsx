@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTenant } from '../hooks/useTenant';
+import { fetchServices } from '../api/services';
 import FormButton from './ui/FormButton';
 
 const formatStaffName = (member) => {
   if (!member) return '';
   const parts = [member.first_name, member.last_name].filter(Boolean);
-  const display = parts.length ? parts.join(' ') : member.email || member.username;
+  const display = parts.length
+    ? parts.join(' ')
+    : member.email || member.username;
   return display || `#${member.id}`;
 };
 
@@ -18,9 +22,34 @@ function ProfessionalForm({
   currentStaffId = null,
 }) {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ name: '', specialty: '', phone: '' });
+  const { slug } = useTenant();
+  const [form, setForm] = useState({
+    name: '',
+    specialty: '',
+    phone: '',
+    serviceIds: [],
+  });
   const [staffMemberId, setStaffMemberId] = useState('');
   const [errors, setErrors] = useState({});
+  const [services, setServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
+
+  useEffect(() => {
+    if (slug) {
+      setServicesLoading(true);
+      fetchServices(slug)
+        .then((data) => {
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.results)
+              ? data.results
+              : [];
+          setServices(list);
+        })
+        .catch(() => setServices([]))
+        .finally(() => setServicesLoading(false));
+    }
+  }, [slug]);
 
   const activeStaff = useMemo(
     () =>
@@ -41,7 +70,9 @@ function ProfessionalForm({
       return;
     }
 
-    const exists = activeStaff.some((member) => String(member.id) === String(staffMemberId));
+    const exists = activeStaff.some(
+      (member) => String(member.id) === String(staffMemberId)
+    );
     if (!exists) {
       setStaffMemberId(String(activeStaff[0].id));
     }
@@ -50,10 +81,25 @@ function ProfessionalForm({
   const validate = () => {
     const newErrors = {};
     if (!form.name) newErrors.name = t('professionals.errors.name_required');
-    if (!form.specialty) newErrors.specialty = t('professionals.errors.specialty_required');
-    if (!staffMemberId) newErrors.staff_member = t('professionals.errors.staff_required');
+    if (!form.specialty)
+      newErrors.specialty = t('professionals.errors.specialty_required');
+    if (!staffMemberId)
+      newErrors.staff_member = t('professionals.errors.staff_required');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleServiceToggle = (serviceId) => {
+    setForm((prev) => {
+      const current = prev.serviceIds || [];
+      if (current.includes(serviceId)) {
+        return {
+          ...prev,
+          serviceIds: current.filter((id) => id !== serviceId),
+        };
+      }
+      return { ...prev, serviceIds: [...current, serviceId] };
+    });
   };
 
   const handleSubmit = (event) => {
@@ -62,12 +108,14 @@ function ProfessionalForm({
     onAdd({
       ...form,
       staffMemberId: Number(staffMemberId),
+      serviceIds: form.serviceIds,
     });
-    setForm({ name: '', specialty: '', phone: '' });
+    setForm({ name: '', specialty: '', phone: '', serviceIds: [] });
     setErrors({});
   };
 
-  const isDisabled = staffLoading || activeStaff.length === 0 || Boolean(staffError);
+  const isDisabled =
+    staffLoading || activeStaff.length === 0 || Boolean(staffError);
   const selectionDisabled = isDisabled || !canManageAll;
 
   return (
@@ -84,14 +132,18 @@ function ProfessionalForm({
       </div>
 
       <div>
-        <label className="block text-sm mb-1">{t('professionals.specialty')}</label>
+        <label className="block text-sm mb-1">
+          {t('professionals.specialty')}
+        </label>
         <input
           type="text"
           value={form.specialty}
           onChange={(e) => setForm({ ...form, specialty: e.target.value })}
           className="w-full border px-3 py-2 rounded"
         />
-        {errors.specialty && <p className="text-sm text-red-500">{errors.specialty}</p>}
+        {errors.specialty && (
+          <p className="text-sm text-red-500">{errors.specialty}</p>
+        )}
       </div>
 
       <div>
@@ -105,7 +157,50 @@ function ProfessionalForm({
       </div>
 
       <div>
-        <label className="block text-sm mb-1">{t('professionals.staff_member')}</label>
+        <label className="block text-sm mb-1">
+          {t('professionals.services', 'Serviços')}
+        </label>
+        <div className="max-h-48 overflow-y-auto rounded border px-3 py-2 bg-white">
+          {servicesLoading ? (
+            <p className="text-xs text-gray-500">
+              {t('common.loading', 'Carregando...')}
+            </p>
+          ) : services.length === 0 ? (
+            <p className="text-xs text-gray-500">
+              {t('professionals.services_empty', 'Nenhum serviço disponível.')}
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {services.map((service) => (
+                <label
+                  key={service.id}
+                  className="flex items-center space-x-2 cursor-pointer p-1 hover:bg-gray-50 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.serviceIds?.includes(service.id)}
+                    onChange={() => handleServiceToggle(service.id)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {service.name}
+                    {service.price_eur && (
+                      <span className="ml-1 text-xs text-gray-500">
+                        (€{service.price_eur})
+                      </span>
+                    )}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm mb-1">
+          {t('professionals.staff_member')}
+        </label>
         {staffError ? (
           <p className="text-sm text-red-500">
             {staffError.message || t('professionals.staff_error')}
@@ -124,7 +219,8 @@ function ProfessionalForm({
             </option>
             {activeStaff.map((member) => (
               <option key={member.id} value={member.id}>
-                {formatStaffName(member)} • {t(`team.manage.roles.${member.role}`, member.role)}
+                {formatStaffName(member)} •{' '}
+                {t(`team.manage.roles.${member.role}`, member.role)}
               </option>
             ))}
           </select>
@@ -134,10 +230,17 @@ function ProfessionalForm({
             {t('professionals.staff_required_hint')}
           </p>
         )}
-        {errors.staff_member && <p className="text-sm text-red-500">{errors.staff_member}</p>}
+        {errors.staff_member && (
+          <p className="text-sm text-red-500">{errors.staff_member}</p>
+        )}
       </div>
 
-      <FormButton type="submit" variant="success" className="w-full" disabled={isDisabled}>
+      <FormButton
+        type="submit"
+        variant="success"
+        className="w-full"
+        disabled={isDisabled}
+      >
         {t('professionals.submit')}
       </FormButton>
     </form>

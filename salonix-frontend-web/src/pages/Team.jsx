@@ -757,7 +757,7 @@ function Team() {
   }, [refetchProfessionals]);
 
   const createProfessionalEntry = useCallback(
-    async ({ name, specialty, phone, staffMemberId }) => {
+    async ({ name, specialty, phone, staffMemberId, serviceIds }) => {
       try {
         const created = await createProfessional({
           name,
@@ -765,6 +765,7 @@ function Team() {
           phone,
           staffMemberId,
           slug,
+          serviceIds,
         });
         await refetchProfessionals();
         refetchStaff();

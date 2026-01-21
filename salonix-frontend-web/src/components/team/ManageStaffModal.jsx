@@ -4,6 +4,8 @@ import Modal from '../ui/Modal';
 import FormButton from '../ui/FormButton';
 import FormInput from '../ui/FormInput';
 import { parseApiError } from '../../utils/apiError';
+import { useTenant } from '../../hooks/useTenant';
+import { fetchServices } from '../../api/services';
 
 function resolveDisplayName(member) {
   if (!member) return '';
@@ -27,6 +29,7 @@ function ManageStaffModal({
   currentUserRole, // Add currentUserRole prop
 }) {
   const { t } = useTranslation();
+  const { slug } = useTenant();
   const [activeTab, setActiveTab] = useState('professional'); // 'professional' or 'permissions'
   const [role, setRole] = useState(member?.role || 'collaborator');
   const [statusBusy, setStatusBusy] = useState(false);
@@ -40,7 +43,10 @@ function ManageStaffModal({
     bio: '',
     staffMemberId: '',
     role: member?.role || 'collaborator',
+    serviceIds: [],
   });
+  const [services, setServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
   const [professionalModalSubmitting, setProfessionalModalSubmitting] =
     useState(false);
   const [professionalModalError, setProfessionalModalError] = useState(null);
@@ -52,6 +58,23 @@ function ManageStaffModal({
   const [savingRole, setSavingRole] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
   const [inviteFeedback, setInviteFeedback] = useState(null);
+
+  useEffect(() => {
+    if (open && slug) {
+      setServicesLoading(true);
+      fetchServices(slug)
+        .then((data) => {
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.results)
+              ? data.results
+              : [];
+          setServices(list);
+        })
+        .catch(() => setServices([]))
+        .finally(() => setServicesLoading(false));
+    }
+  }, [open, slug]);
 
   useEffect(() => {
     if (!open) {
@@ -69,6 +92,7 @@ function ManageStaffModal({
         bio: '',
         staffMemberId: '',
         role: member?.role || 'collaborator',
+        serviceIds: [],
       });
       setCurrentProfessional(null);
       setProfessionalEditing(false);
@@ -87,7 +111,7 @@ function ManageStaffModal({
         ? professionals[0]
         : null
     );
-  }, [open, member, professionals]);
+  }, [open, member, professionals, slug]);
 
   const memberName = useMemo(() => resolveDisplayName(member), [member]);
 
@@ -105,6 +129,7 @@ function ManageStaffModal({
         bio: '',
         staffMemberId: '',
         role: member?.role || 'collaborator',
+        serviceIds: [],
       });
       return;
     }
@@ -115,6 +140,7 @@ function ManageStaffModal({
       bio: currentProfessional.bio || '',
       staffMemberId: currentProfessional.staff_member || member.id || '',
       role: member.role || 'collaborator',
+      serviceIds: (currentProfessional.service_ids || []).map(Number),
     });
     setContactEmail(member?.email || '');
   }, [open, currentProfessional, member, memberName]);
@@ -289,20 +315,38 @@ function ManageStaffModal({
       bio: '',
       staffMemberId: '',
       role: member?.role || 'collaborator',
+      serviceIds: [],
     });
   };
 
   const handleProfessionalEdit = () => {
     setProfessionalEditing(true);
     setProfessionalForm({
-      ...currentProfessional,
+      id: currentProfessional?.id || null,
+      name: currentProfessional?.name || '',
+      bio: currentProfessional?.bio || '',
       staffMemberId: currentProfessional?.staff_member || member?.id || '',
+      role: member?.role || 'collaborator',
+      serviceIds: (currentProfessional?.service_ids || []).map(Number),
     });
   };
 
   const handleProfessionalCancel = () => {
     setProfessionalEditing(false);
     resetProfessionalForm();
+  };
+
+  const handleServiceToggle = (serviceId) => {
+    setProfessionalForm((prev) => {
+      const current = prev.serviceIds || [];
+      if (current.includes(serviceId)) {
+        return {
+          ...prev,
+          serviceIds: current.filter((id) => id !== serviceId),
+        };
+      }
+      return { ...prev, serviceIds: [...current, serviceId] };
+    });
   };
 
   const handleProfessionalSave = async (event) => {
@@ -328,6 +372,7 @@ function ManageStaffModal({
         name: professionalForm.name.trim(),
         bio: (professionalForm.bio || '').trim(),
         staffMemberId: professionalForm.staffMemberId || member?.id,
+        serviceIds: professionalForm.serviceIds,
       };
 
       // Atualizar e-mail de acesso antes de salvar dados do profissional
@@ -501,6 +546,26 @@ function ManageStaffModal({
                     </strong>{' '}
                     {member?.email || '—'}
                   </li>
+                  <li>
+                    <strong>
+                      {t('team.manage.summary.services', 'Serviços')}:
+                    </strong>{' '}
+                    {servicesLoading ? (
+                      <span className="text-brand-surfaceForeground/60">
+                        {t('common.loading', 'Carregando...')}
+                      </span>
+                    ) : currentProfessional?.service_ids &&
+                      currentProfessional.service_ids.length > 0 ? (
+                      services
+                        .filter((s) =>
+                          currentProfessional.service_ids.includes(s.id)
+                        )
+                        .map((s) => s.name)
+                        .join(', ') || '—'
+                    ) : (
+                      '—'
+                    )}
+                  </li>
                 </ul>
               </div>
 
@@ -545,6 +610,55 @@ function ManageStaffModal({
                         borderColor: 'var(--border-primary)',
                       }}
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-brand-surfaceForeground">
+                      {t(
+                        'team.manage.professional.form.services',
+                        'Serviços Realizados'
+                      )}
+                    </label>
+                    <div className="max-h-48 overflow-y-auto rounded-lg border border-brand-border bg-brand-surface p-2">
+                      {servicesLoading ? (
+                        <p className="text-xs text-brand-surfaceForeground/60 p-2">
+                          {t('common.loading', 'Carregando...')}
+                        </p>
+                      ) : services.length === 0 ? (
+                        <p className="text-xs text-brand-surfaceForeground/60 p-2">
+                          {t(
+                            'team.manage.services.empty',
+                            'Nenhum serviço disponível.'
+                          )}
+                        </p>
+                      ) : (
+                        <div className="space-y-1">
+                          {services.map((service) => (
+                            <label
+                              key={service.id}
+                              className="flex items-center space-x-2 cursor-pointer p-1 hover:bg-brand-light rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={professionalForm.serviceIds?.includes(
+                                  service.id
+                                )}
+                                onChange={() => handleServiceToggle(service.id)}
+                                className="rounded border-brand-border text-brand-primary focus:ring-brand-primary"
+                              />
+                              <span className="text-sm text-brand-surfaceForeground">
+                                {service.name}
+                                {service.price_eur && (
+                                  <span className="ml-1 text-xs text-brand-surfaceForeground/60">
+                                    (€{service.price_eur})
+                                  </span>
+                                )}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {professionalModalError ? (
                     <div className="my-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
