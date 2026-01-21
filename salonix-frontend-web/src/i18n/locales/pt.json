@@ -1060,7 +1060,8 @@
       "login": "Entrar",
       "register": "Registar",
       "open_menu": "Abrir menu",
-      "menu": "Menu"
+      "menu": "Menu",
+      "install_pwa": "Instalar App"
     },
     "hero": {
       "tag": "Gestão e Agendamento Inteligente",
@@ -1245,6 +1246,7 @@
       "client_area": "Área do Cliente",
       "login": "Entrar",
       "register": "Registar",
+      "ops_login": "Login OPS",
       "copyright": "© {{year}} Criativo Devs. Todos os direitos reservados."
     }
   },
