@@ -11,6 +11,7 @@ import {
   SettingsIcon,
   UsersIcon,
   BarChartIcon,
+  ClockIcon,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
@@ -57,28 +58,24 @@ function MobileNav() {
   }, [staff, user]);
 
   const mainLinks = useMemo(() => {
-    const base = [
+    return [
       { to: '/dashboard', icon: HomeIcon, label: t('nav.home') },
       {
         to: '/bookings',
         icon: CalendarIcon,
         label: t('nav.bookings', 'Agendamentos'),
       },
+      {
+        to: '/slots',
+        icon: ClockIcon,
+        label: t('nav.slots', 'Horários'),
+      },
     ];
-    if (currentUserRole === 'owner') {
-      base.push({
-        to: '/settings',
-        icon: SettingsIcon,
-        label: t('nav.settings'),
-      });
-    }
-    return base;
-  }, [t, currentUserRole]);
+  }, [t]);
 
   // Links do menu expandido (filtrados por permissão)
   const expandedLinks = useMemo(() => {
     const allLinks = [
-      { to: '/slots', icon: CalendarIcon, label: t('nav.slots') },
       {
         to: '/customers',
         icon: UsersIcon,
