@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Card from '../components/ui/Card';
 import Label from '../components/ui/Label';
+import Dropdown from '../components/ui/Dropdown';
 import { fetchProfessionals } from '../api/professionals';
 import { fetchSlotsWithMeta, createSlot, deleteSlot } from '../api/slots';
 import { useTenant } from '../hooks/useTenant';
@@ -15,11 +17,25 @@ function AvailableSlots() {
   const [professionals, setProfessionals] = useState([]);
   const [selectedProfessional, setSelectedProfessional] = useState('');
   const [slotItems, setSlotItems] = useState([]);
+
+  // Memoize professional items for Dropdown
+  const professionalItems = useMemo(() => {
+    return professionals.map((p) => ({
+      label: p.name,
+      onClick: () => setSelectedProfessional(String(p.id)),
+    }));
+  }, [professionals]);
   const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ date: '', sh: '09', sm: '00', eh: '10', em: '00' });
+  const [form, setForm] = useState({
+    date: '',
+    sh: '09',
+    sm: '00',
+    eh: '10',
+    em: '00',
+  });
   const [busyId, setBusyId] = useState(null);
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
@@ -65,7 +81,9 @@ function AvailableSlots() {
           setSelectedProfessional((prev) => prev || String(data[0].id));
         }
       })
-      .catch((e) => !cancelled && setError(parseApiError(e, t('common.load_error'))));
+      .catch(
+        (e) => !cancelled && setError(parseApiError(e, t('common.load_error')))
+      );
     return () => {
       cancelled = true;
     };
@@ -79,8 +97,16 @@ function AvailableSlots() {
     setLoading(true);
     setError(null);
     try {
-      const payload = await fetchSlotsWithMeta({ professionalId: selectedProfessional, slug, params: { limit, offset, ordering: sortOption } });
-      const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+      const payload = await fetchSlotsWithMeta({
+        professionalId: selectedProfessional,
+        slug,
+        params: { limit, offset, ordering: sortOption },
+      });
+      const list = Array.isArray(payload?.results)
+        ? payload.results
+        : Array.isArray(payload)
+          ? payload
+          : [];
       setSlotItems(list);
       const tc = payload?.meta?.totalCount ?? payload?.count ?? list.length;
       setTotalCount(tc || 0);
@@ -126,7 +152,8 @@ function AvailableSlots() {
     );
   };
 
-  const fmtDate = (d) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+  const fmtDate = (d) =>
+    `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
   const fmtTime = (d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
   const formatDateOnly = (startStr) => {
     const sd = parseBackendDate(startStr);
@@ -153,20 +180,27 @@ function AvailableSlots() {
     const h = parseInt(hourStr || '0', 10);
     const mi = parseInt(minuteStr || '0', 10);
     if (!y || !mo || !d) return '';
-    const dt = new Date(y, (mo - 1), d, h, mi, 0, 0);
+    const dt = new Date(y, mo - 1, d, h, mi, 0, 0);
     return dt.toISOString();
   };
 
   const handleCreate = async (e) => {
     e?.preventDefault?.();
     if (!selectedProfessional || !form.date) {
-      setError({ message: t('common.validation_error', 'Preencha profissional e horários.') });
+      setError({
+        message: t(
+          'common.validation_error',
+          'Preencha profissional e horários.'
+        ),
+      });
       return;
     }
     const startISO = composeISO(form.date, form.sh, form.sm);
     const endISO = composeISO(form.date, form.eh, form.em);
     if (!startISO || !endISO || new Date(endISO) <= new Date(startISO)) {
-      setError({ message: t('common.validation_error', 'Horários inválidos.') });
+      setError({
+        message: t('common.validation_error', 'Horários inválidos.'),
+      });
       return;
     }
     try {
@@ -178,11 +212,19 @@ function AvailableSlots() {
         slug,
       });
       await loadSlots();
-      setForm({ date: created.start_time.slice(0,10), sh: '09', sm: '00', eh: '10', em: '00' });
+      setForm({
+        date: created.start_time.slice(0, 10),
+        sh: '09',
+        sm: '00',
+        eh: '10',
+        em: '00',
+      });
       // Atualiza lista por profissional/data
       setSelectedDate(created.start_time.slice(0, 10));
     } catch (e2) {
-      setError(parseApiError(e2, t('common.save_error', 'Falha ao criar slot.')));
+      setError(
+        parseApiError(e2, t('common.save_error', 'Falha ao criar slot.'))
+      );
     } finally {
       setCreating(false);
     }
@@ -190,13 +232,20 @@ function AvailableSlots() {
 
   const handleDelete = async (slot) => {
     const msg = `${formatDateOnly(slot.start_time)} — ${formatTimeRangeOnly(slot.start_time, slot.end_time)}`;
-    if (!window.confirm(t('common.confirm_delete', 'Confirmar exclusão?') + `\n${msg}`)) return;
+    if (
+      !window.confirm(
+        t('common.confirm_delete', 'Confirmar exclusão?') + `\n${msg}`
+      )
+    )
+      return;
     try {
       setBusyId(slot.id);
       const ok = await deleteSlot(slot.id, { slug });
       if (ok) await loadSlots();
     } catch (e2) {
-      setError(parseApiError(e2, t('common.delete_error', 'Falha ao excluir slot.')));
+      setError(
+        parseApiError(e2, t('common.delete_error', 'Falha ao excluir slot.'))
+      );
       await loadSlots();
     } finally {
       setBusyId(null);
@@ -211,33 +260,46 @@ function AvailableSlots() {
         </h1>
 
         <div className="mb-4 form-light">
-          <Label className="mb-1 block">{t('slots.professional', 'Profissional')}</Label>
-          <select
-            value={selectedProfessional}
-            onChange={(e) => setSelectedProfessional(e.target.value)}
+          <Label className="mb-1 block">
+            {t('slots.professional', 'Profissional')}
+          </Label>
+          <Dropdown
+            trigger={
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-md border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              >
+                <span className="truncate">
+                  {selectedProfessional
+                    ? professionals.find(
+                        (p) => String(p.id) === selectedProfessional
+                      )?.name || t('common.select', 'Selecione...')
+                    : t('common.select', 'Selecione...')}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className="text-brand-surfaceForeground/70"
+                />
+              </button>
+            }
+            items={professionalItems}
+            searchable={true}
+            searchPlaceholder={t('common.search', 'Pesquisar...')}
             className="w-full"
-            style={{
-              backgroundColor: 'var(--bg-primary)',
-              color: 'var(--text-primary)',
-              border: '1px solid var(--border-primary)',
-              borderRadius: '0.375rem',
-              padding: '0.5rem 0.75rem',
-              colorScheme: 'light dark'
-            }}
-          >
-            {professionals.map((p) => (
-              <option key={p.id} value={p.id} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            align="left"
+          />
         </div>
 
         <div className="mb-4 form-light">
-          <Label className="mb-1 block">{t('slots.ordering', 'Ordenação')}</Label>
+          <Label className="mb-1 block">
+            {t('slots.ordering', 'Ordenação')}
+          </Label>
           <select
             value={sortOption}
-            onChange={(e) => { setSortOption(e.target.value); setOffset(0); }}
+            onChange={(e) => {
+              setSortOption(e.target.value);
+              setOffset(0);
+            }}
             className="w-full"
             style={{
               backgroundColor: 'var(--bg-primary)',
@@ -245,11 +307,27 @@ function AvailableSlots() {
               border: '1px solid var(--border-primary)',
               borderRadius: '0.375rem',
               padding: '0.5rem 0.75rem',
-              colorScheme: 'light dark'
+              colorScheme: 'light dark',
             }}
           >
-            <option value="-start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('slots.order_newest', 'Mais recentes primeiro')}</option>
-            <option value="start_time" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('slots.order_oldest', 'Data mais antiga primeiro')}</option>
+            <option
+              value="-start_time"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {t('slots.order_newest', 'Mais recentes primeiro')}
+            </option>
+            <option
+              value="start_time"
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {t('slots.order_oldest', 'Data mais antiga primeiro')}
+            </option>
           </select>
         </div>
 
@@ -267,12 +345,27 @@ function AvailableSlots() {
               border: '1px solid var(--border-primary)',
               borderRadius: '0.375rem',
               padding: '0.5rem 0.75rem',
-              colorScheme: 'light dark'
+              colorScheme: 'light dark',
             }}
           >
-            <option value="" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>{t('common.all', 'Todas')}</option>
+            <option
+              value=""
+              style={{
+                backgroundColor: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {t('common.all', 'Todas')}
+            </option>
             {dates.map((date) => (
-              <option key={date} value={date} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+              <option
+                key={date}
+                value={date}
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                }}
+              >
                 {date}
               </option>
             ))}
@@ -281,7 +374,9 @@ function AvailableSlots() {
 
         {/* Formulário de criação */}
         <form onSubmit={handleCreate} className="mb-4">
-          <Label className="mb-1 block">{t('slots.slot_date', 'Data do slot')}</Label>
+          <Label className="mb-1 block">
+            {t('slots.slot_date', 'Data do slot')}
+          </Label>
           {/* Linha única: Data + Início + Término + Botão no fim */}
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
             <div className="flex items-center gap-2">
@@ -296,95 +391,127 @@ function AvailableSlots() {
                   border: '1px solid var(--border-primary)',
                   borderRadius: '0.375rem',
                   padding: '0.5rem 0.75rem',
-                  colorScheme: 'light dark'
+                  colorScheme: 'light dark',
                 }}
               />
             </div>
             <div>
-              <Label className="mb-1 block md:mb-0">{t('slots.start_time', 'Início')}</Label>
+              <Label className="mb-1 block md:mb-0">
+                {t('slots.start_time', 'Início')}
+              </Label>
               <div className="flex gap-2">
-                <select 
-                  value={form.sh} 
-                  onChange={(e) => setForm({ ...form, sh: e.target.value })} 
-                  className="w-20 font-mono" 
-                  style={{ 
+                <select
+                  value={form.sh}
+                  onChange={(e) => setForm({ ...form, sh: e.target.value })}
+                  className="w-20 font-mono"
+                  style={{
                     fontVariantNumeric: 'tabular-nums',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-primary)',
                     borderRadius: '0.375rem',
                     padding: '0.5rem 0.75rem',
-                    colorScheme: 'light dark'
+                    colorScheme: 'light dark',
                   }}
                 >
                   {Array.from({ length: 24 }).map((_, h) => (
-                    <option key={h} value={String(h).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                      {String(h).padStart(2,'0')}
+                    <option
+                      key={h}
+                      value={String(h).padStart(2, '0')}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {String(h).padStart(2, '0')}
                     </option>
                   ))}
                 </select>
-                <select 
-                  value={form.sm} 
-                  onChange={(e) => setForm({ ...form, sm: e.target.value })} 
-                  className="w-20 font-mono" 
-                  style={{ 
+                <select
+                  value={form.sm}
+                  onChange={(e) => setForm({ ...form, sm: e.target.value })}
+                  className="w-20 font-mono"
+                  style={{
                     fontVariantNumeric: 'tabular-nums',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-primary)',
                     borderRadius: '0.375rem',
                     padding: '0.5rem 0.75rem',
-                    colorScheme: 'light dark'
+                    colorScheme: 'light dark',
                   }}
                 >
                   {minuteOptions.map((m) => (
-                    <option key={m} value={String(m).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                      {String(m).padStart(2,'0')}
+                    <option
+                      key={m}
+                      value={String(m).padStart(2, '0')}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {String(m).padStart(2, '0')}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
             <div>
-              <Label className="mb-1 block md:mb-0">{t('slots.end_time', 'Término')}</Label>
+              <Label className="mb-1 block md:mb-0">
+                {t('slots.end_time', 'Término')}
+              </Label>
               <div className="flex gap-2">
-                <select 
-                  value={form.eh} 
-                  onChange={(e) => setForm({ ...form, eh: e.target.value })} 
-                  className="w-20 font-mono" 
-                  style={{ 
+                <select
+                  value={form.eh}
+                  onChange={(e) => setForm({ ...form, eh: e.target.value })}
+                  className="w-20 font-mono"
+                  style={{
                     fontVariantNumeric: 'tabular-nums',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-primary)',
                     borderRadius: '0.375rem',
                     padding: '0.5rem 0.75rem',
-                    colorScheme: 'light dark'
+                    colorScheme: 'light dark',
                   }}
                 >
                   {Array.from({ length: 24 }).map((_, h) => (
-                    <option key={h} value={String(h).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                      {String(h).padStart(2,'0')}
+                    <option
+                      key={h}
+                      value={String(h).padStart(2, '0')}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {String(h).padStart(2, '0')}
                     </option>
                   ))}
                 </select>
-                <select 
-                  value={form.em} 
-                  onChange={(e) => setForm({ ...form, em: e.target.value })} 
-                  className="w-20 font-mono" 
-                  style={{ 
+                <select
+                  value={form.em}
+                  onChange={(e) => setForm({ ...form, em: e.target.value })}
+                  className="w-20 font-mono"
+                  style={{
                     fontVariantNumeric: 'tabular-nums',
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
                     border: '1px solid var(--border-primary)',
                     borderRadius: '0.375rem',
                     padding: '0.5rem 0.75rem',
-                    colorScheme: 'light dark'
+                    colorScheme: 'light dark',
                   }}
                 >
                   {minuteOptions.map((m) => (
-                    <option key={m} value={String(m).padStart(2,'0')} style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-                      {String(m).padStart(2,'0')}
+                    <option
+                      key={m}
+                      value={String(m).padStart(2, '0')}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {String(m).padStart(2, '0')}
                     </option>
                   ))}
                 </select>
@@ -405,9 +532,7 @@ function AvailableSlots() {
         {loading && (
           <p className="text-sm text-gray-600">{t('common.loading')}</p>
         )}
-        {error && (
-          <p className="text-sm text-red-600">{error.message}</p>
-        )}
+        {error && <p className="text-sm text-red-600">{error.message}</p>}
         {!loading && !error && filteredSlots.length > 0 ? (
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {filteredSlots.map((slot) => (
@@ -417,8 +542,15 @@ function AvailableSlots() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-left">
-                    <div className="text-brand-surfaceForeground">{formatDateOnly(slot.start_time)}</div>
-                    <div style={{ fontVariantNumeric: 'tabular-nums' }} className="font-mono text-brand-surfaceForeground/80">{formatTimeRangeOnly(slot.start_time, slot.end_time)}</div>
+                    <div className="text-brand-surfaceForeground">
+                      {formatDateOnly(slot.start_time)}
+                    </div>
+                    <div
+                      style={{ fontVariantNumeric: 'tabular-nums' }}
+                      className="font-mono text-brand-surfaceForeground/80"
+                    >
+                      {formatTimeRangeOnly(slot.start_time, slot.end_time)}
+                    </div>
                   </div>
                   <button
                     disabled={busyId === slot.id}
@@ -439,9 +571,16 @@ function AvailableSlots() {
             totalCount={totalCount}
             limit={limit}
             offset={offset}
-            onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+            onChangeLimit={(n) => {
+              setLimit(n);
+              setOffset(0);
+            }}
             onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-            onNext={() => setOffset((prev) => (prev + limit < totalCount ? prev + limit : prev))}
+            onNext={() =>
+              setOffset((prev) =>
+                prev + limit < totalCount ? prev + limit : prev
+              )
+            }
             className="mt-6"
           />
         )}

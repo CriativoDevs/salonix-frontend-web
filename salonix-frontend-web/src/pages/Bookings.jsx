@@ -7,6 +7,7 @@ import {
   XCircle,
   Copy,
   List,
+  ChevronDown,
 } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Dropdown, { DropdownItem } from '../components/ui/Dropdown';
@@ -115,13 +116,9 @@ function formatServiceOption(service) {
 }
 
 function formatProfessionalOption(professional) {
-  if (!professional) return '';
-  const description =
-    typeof professional.bio === 'string' ? professional.bio.trim() : '';
-  return description
-    ? `${professional.name} • ${description}`
-    : professional.name;
-}
+    if (!professional) return '';
+    return professional.name;
+  }
 
 function combineAppointment(
   base,
@@ -456,10 +453,10 @@ function Bookings() {
     setError(null);
 
     const params = {
-            limit,
-            offset,
-            ordering: '-created_at',
-          };
+      limit,
+      offset,
+      ordering: '-created_at',
+    };
     if (filters.status) params.status = filters.status;
     if (filters.dateFrom) params.date_from = filters.dateFrom;
     if (filters.dateTo) params.date_to = filters.dateTo;
@@ -586,18 +583,21 @@ function Bookings() {
     setMultiDefaultNotes('');
   };
 
-  const handleFormChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (field === 'professionalId') {
-      setFormSlots([]);
-      setFormData((prev) => ({ ...prev, slotId: '' }));
-      if (!value) return;
-      refreshSlotsForProfessional(value);
-    }
-    if (field !== 'professionalId' && field !== 'slotId') {
-      setFormError(null);
-    }
-  };
+  const handleFormChange = useCallback(
+    (field, value) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+      if (field === 'professionalId') {
+        setFormSlots([]);
+        setFormData((prev) => ({ ...prev, slotId: '' }));
+        if (!value) return;
+        refreshSlotsForProfessional(value);
+      }
+      if (field !== 'professionalId' && field !== 'slotId') {
+        setFormError(null);
+      }
+    },
+    [refreshSlotsForProfessional]
+  );
 
   const handleCreateAppointment = async (event) => {
     event.preventDefault();
@@ -820,10 +820,10 @@ function Bookings() {
     }
   };
 
-  const handleFilterChange = (field, value) => {
+  const handleFilterChange = useCallback((field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
     setOffset(0);
-  };
+  }, []);
 
   const loading = lookupLoading || loadingList;
   const closeDetails = () => {
@@ -1364,6 +1364,68 @@ function Bookings() {
     }
   };
 
+  const customerFilterItems = useMemo(() => {
+    const allOption = {
+      label: t('bookings.filters.customer_all', 'Todos'),
+      onClick: () => handleFilterChange('customerId', ''),
+    };
+    const customerOptions = customers.map((c) => ({
+      label: c.name,
+      onClick: () => handleFilterChange('customerId', String(c.id)),
+    }));
+    return [allOption, ...customerOptions];
+  }, [customers, t, handleFilterChange]);
+
+  const customerFormItems = useMemo(() => {
+    const defaultOption = {
+      label: t('bookings.form.select_customer', 'Selecione um cliente'),
+      onClick: () => handleFormChange('customerId', ''),
+    };
+    const options = customers.map((c) => ({
+      label: c.name,
+      onClick: () => handleFormChange('customerId', String(c.id)),
+    }));
+    return [defaultOption, ...options];
+  }, [customers, t, handleFormChange]);
+
+  const serviceFormItems = useMemo(() => {
+    const defaultOption = {
+      label: t('bookings.form.select_service', 'Selecione um serviço'),
+      onClick: () => handleFormChange('serviceId', ''),
+    };
+    const options = services.map((s) => ({
+      label: formatServiceOption(s),
+      onClick: () => handleFormChange('serviceId', String(s.id)),
+    }));
+    return [defaultOption, ...options];
+  }, [services, t, handleFormChange]);
+
+  const professionalFormItems = useMemo(() => {
+    const svcId = formData.serviceId
+      ? Number.parseInt(formData.serviceId, 10)
+      : null;
+    const profOptions = svcId
+      ? professionalsWithServices.filter(
+          (p) =>
+            Array.isArray(p.service_ids) &&
+            p.service_ids.map((id) => Number.parseInt(id, 10)).includes(svcId)
+        )
+      : professionalsWithServices;
+
+    const defaultOption = {
+      label: t(
+        'bookings.form.select_professional',
+        'Selecione um profissional'
+      ),
+      onClick: () => handleFormChange('professionalId', ''),
+    };
+    const options = profOptions.map((p) => ({
+      label: formatProfessionalOption(p),
+      onClick: () => handleFormChange('professionalId', String(p.id)),
+    }));
+    return [defaultOption, ...options];
+  }, [professionalsWithServices, formData.serviceId, t, handleFormChange]);
+
   return (
     <FullPageLayout>
       <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
@@ -1376,38 +1438,30 @@ function Bookings() {
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('bookings.filters.customer', 'Cliente')}
             </label>
-            <select
-              value={filters.customerId}
-              onChange={(e) => handleFilterChange('customerId', e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-              }}
-            >
-              <option
-                value=""
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {t('bookings.filters.customer_all', 'Todos')}
-              </option>
-              {customers.map((customer) => (
-                <option
-                  key={customer.id}
-                  value={customer.id}
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                  }}
+            <Dropdown
+              trigger={
+                <button
+                  type="button"
+                  className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 >
-                  {customer.name}
-                </option>
-              ))}
-            </select>
+                  <span className="truncate">
+                    {filters.customerId
+                      ? customers.find(
+                          (c) => String(c.id) === filters.customerId
+                        )?.name || t('bookings.filters.customer_all', 'Todos')
+                      : t('bookings.filters.customer_all', 'Todos')}
+                  </span>
+                  <ChevronDown
+                    size={16}
+                    className="text-brand-surfaceForeground/70"
+                  />
+                </button>
+              }
+              items={customerFilterItems}
+              searchable={true}
+              searchPlaceholder={t('common.search', 'Pesquisar...')}
+              className="w-full"
+            />
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
@@ -1494,39 +1548,38 @@ function Bookings() {
               <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
                 {t('bookings.form.customer', 'Cliente')}
               </label>
-              <select
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                value={formData.customerId}
-                onChange={(e) => handleFormChange('customerId', e.target.value)}
-                disabled={lookupLoading || customers.length === 0}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-              >
-                <option
-                  value=""
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {t('bookings.form.select_customer', 'Selecione um cliente')}
-                </option>
-                {customers.map((customer) => (
-                  <option
-                    key={customer.id}
-                    value={customer.id}
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                    }}
+              <Dropdown
+                trigger={
+                  <button
+                    type="button"
+                    disabled={lookupLoading || customers.length === 0}
+                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:opacity-50"
                   >
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+                    <span className="truncate">
+                      {formData.customerId
+                        ? customers.find(
+                            (c) => String(c.id) === formData.customerId
+                          )?.name ||
+                          t(
+                            'bookings.form.select_customer',
+                            'Selecione um cliente'
+                          )
+                        : t(
+                            'bookings.form.select_customer',
+                            'Selecione um cliente'
+                          )}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className="text-brand-surfaceForeground/70"
+                    />
+                  </button>
+                }
+                items={customerFormItems}
+                searchable={true}
+                searchPlaceholder={t('common.search', 'Pesquisar...')}
+                className="w-full"
+              />
               {customers.length === 0 && !lookupLoading && (
                 <p className="mt-1 text-xs text-brand-surfaceForeground/60">
                   {t(
@@ -1540,97 +1593,83 @@ function Bookings() {
               <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
                 {t('bookings.service', 'Serviço')}
               </label>
-              <select
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                value={formData.serviceId}
-                onChange={(e) => handleFormChange('serviceId', e.target.value)}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-              >
-                <option
-                  value=""
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {t('bookings.form.select_service', 'Selecione um serviço')}
-                </option>
-                {services.map((service) => (
-                  <option
-                    key={service.id}
-                    value={service.id}
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                    }}
+              <Dropdown
+                trigger={
+                  <button
+                    type="button"
+                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   >
-                    {formatServiceOption(service)}
-                  </option>
-                ))}
-              </select>
+                    <span className="truncate">
+                      {formData.serviceId
+                        ? (() => {
+                            const svc = services.find(
+                              (s) => String(s.id) === formData.serviceId
+                            );
+                            return svc
+                              ? formatServiceOption(svc)
+                              : t(
+                                  'bookings.form.select_service',
+                                  'Selecione um serviço'
+                                );
+                          })()
+                        : t(
+                            'bookings.form.select_service',
+                            'Selecione um serviço'
+                          )}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className="text-brand-surfaceForeground/70"
+                    />
+                  </button>
+                }
+                items={serviceFormItems}
+                searchable={true}
+                searchPlaceholder={t('common.search', 'Pesquisar...')}
+                className="w-full"
+              />
             </div>
 
             <div className="col-span-1">
               <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
                 {t('bookings.professional', 'Profissional')}
               </label>
-              {(() => {
-                const svcId = formData.serviceId
-                  ? Number.parseInt(formData.serviceId, 10)
-                  : null;
-                const profOptions = svcId
-                  ? professionalsWithServices.filter(
-                      (p) =>
-                        Array.isArray(p.service_ids) &&
-                        p.service_ids
-                          .map((id) => Number.parseInt(id, 10))
-                          .includes(svcId)
-                    )
-                  : professionalsWithServices;
-                return (
-                  <select
-                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                    value={formData.professionalId}
-                    onChange={(e) =>
-                      handleFormChange('professionalId', e.target.value)
-                    }
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                      borderColor: 'var(--border-primary)',
-                    }}
+              <Dropdown
+                trigger={
+                  <button
+                    type="button"
+                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   >
-                    <option
-                      value=""
-                      style={{
-                        backgroundColor: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      {t(
-                        'bookings.form.select_professional',
-                        'Selecione um profissional'
-                      )}
-                    </option>
-                    {profOptions.map((professional) => (
-                      <option
-                        key={professional.id}
-                        value={professional.id}
-                        style={{
-                          backgroundColor: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                        }}
-                      >
-                        {formatProfessionalOption(professional)}
-                      </option>
-                    ))}
-                  </select>
-                );
-              })()}
+                    <span className="truncate">
+                      {formData.professionalId
+                        ? (() => {
+                            const p = professionals.find(
+                              (prof) =>
+                                String(prof.id) === formData.professionalId
+                            );
+                            return p
+                              ? formatProfessionalOption(p)
+                              : t(
+                                  'bookings.form.select_professional',
+                                  'Selecione um profissional'
+                                );
+                          })()
+                        : t(
+                            'bookings.form.select_professional',
+                            'Selecione um profissional'
+                          )}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className="text-brand-surfaceForeground/70"
+                    />
+                  </button>
+                }
+                items={professionalFormItems}
+                searchable={true}
+                searchPlaceholder={t('common.search', 'Pesquisar...')}
+                className="w-full"
+              />
             </div>
 
             <div className="col-span-1">
