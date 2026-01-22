@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
@@ -10,6 +10,7 @@ import {
   StarIcon,
   SettingsIcon,
   UsersIcon,
+  BarChartIcon,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
@@ -20,8 +21,7 @@ import LanguageToggle from './LanguageToggle';
 
 function MobileNav() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { tenant, branding, slug } = useTenant();
   const { staff } = useStaff({ slug });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -90,7 +90,12 @@ function MobileNav() {
         label: t('nav.team', 'Equipe'),
         roles: ['owner', 'manager'],
       },
-      { to: '/chat', icon: MessageCircleIcon, label: t('nav.chat') },
+      {
+        to: '/reports',
+        icon: BarChartIcon,
+        label: t('nav.reports', 'Relatórios'),
+        roles: ['owner', 'manager'],
+      },
       {
         to: '/feedback',
         icon: StarIcon,
@@ -118,16 +123,10 @@ function MobileNav() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const handleLogout = () => {
-    logout();
-    setIsMenuOpen(false);
-    navigate('/login', { replace: true });
-  };
-
   return (
     <>
       {/* Navegação principal fixa */}
-      <nav className="fixed bottom-0 left-0 w-full bg-brand-surface border-t border-brand-border shadow-md flex justify-around items-center py-2 md:hidden z-50">
+      <nav className="fixed bottom-0 left-0 w-full bg-brand-surface border-t border-brand-border shadow-md flex justify-around items-center py-2 pb-[env(safe-area-inset-bottom)] md:hidden z-50">
         {mainLinks.map(({ to, icon: IconComponent, label }) => {
           const Icon = IconComponent;
           return (
@@ -176,35 +175,37 @@ function MobileNav() {
         onClick={toggleMenu}
       >
         <div
-          className={`absolute bottom-20 left-4 right-4 bg-brand-surface border border-brand-border rounded-xl shadow-2xl p-6 transition-all duration-300 transform ${
+          className={`absolute bottom-[calc(4rem+env(safe-area-inset-bottom))] left-4 right-4 max-h-[75vh] flex flex-col bg-brand-surface border border-brand-border rounded-xl shadow-2xl transition-all duration-300 transform origin-bottom ${
             isMenuOpen
               ? 'translate-y-0 opacity-100 scale-100'
               : 'translate-y-4 opacity-0 scale-95'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <Link
-                to="/dashboard"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 rounded-md px-2 py-1 transition hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-border"
-                aria-label={t('nav.go_to_dashboard', 'Ir para o dashboard')}
-              >
-                <BrandLogo
-                  variant="inline"
-                  size={28}
-                  textClassName="text-base font-semibold text-brand-surfaceForeground"
-                  name={displayName}
-                  logoUrl={branding?.logoUrl}
-                />
-              </Link>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <LanguageToggle />
-              </div>
+          {/* Cabeçalho do menu fixo */}
+          <div className="flex-none flex items-center justify-between p-4 pb-2 border-b border-brand-border/50 bg-brand-surface rounded-t-xl">
+            <Link
+              to="/dashboard"
+              onClick={() => setIsMenuOpen(false)}
+              className="flex items-center gap-3 rounded-md px-2 py-1 transition hover:bg-brand-light focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-border"
+              aria-label={t('nav.go_to_dashboard', 'Ir para o dashboard')}
+            >
+              <BrandLogo
+                variant="inline"
+                size={28}
+                textClassName="text-base font-semibold text-brand-surfaceForeground"
+                name={displayName}
+                logoUrl={branding?.logoUrl}
+              />
+            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
             </div>
+          </div>
 
+          {/* Área de conteúdo rolável */}
+          <div className="flex-1 overflow-y-auto p-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
               {expandedLinks.map(({ to, icon: IconComponent, label }) => {
                 const Icon = IconComponent;
@@ -225,21 +226,6 @@ function MobileNav() {
                 );
               })}
             </div>
-          </div>
-
-          <div className="mt-4 border-t border-brand-border pt-4 space-y-2">
-            <button
-              onClick={toggleMenu}
-              className="w-full py-3 text-sm text-brand-surfaceForeground underline underline-offset-4 hover:text-brand-primary transition-colors"
-            >
-              {t('nav.close')}
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full py-3 text-sm font-medium text-rose-600 underline underline-offset-4 transition-colors hover:text-rose-700"
-            >
-              {t('nav.logout', 'Sair')}
-            </button>
           </div>
         </div>
       </div>

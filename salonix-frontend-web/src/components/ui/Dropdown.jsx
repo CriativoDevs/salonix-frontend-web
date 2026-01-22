@@ -12,6 +12,7 @@ export default function Dropdown({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [position, setPosition] = useState('bottom');
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
@@ -23,6 +24,20 @@ export default function Dropdown({
     }
 
     if (isOpen) {
+      // Calculate position
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const minHeight = 200; // Aproximadamente a altura máxima do dropdown
+
+        if (spaceBelow < minHeight && spaceAbove > spaceBelow) {
+          setPosition('top');
+        } else {
+          setPosition('bottom');
+        }
+      }
+
       document.addEventListener('mousedown', handleClickOutside);
       // Focus search input when opened
       if (searchable && searchInputRef.current) {
@@ -60,9 +75,11 @@ export default function Dropdown({
 
       {isOpen && (
         <div
-          className={`absolute ${
-            align === 'right' ? 'right-0' : 'left-0'
-          } z-50 mt-2 w-56 origin-top-right rounded-md border border-brand-border bg-brand-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
+          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} ${
+            position === 'top'
+              ? 'bottom-full mb-2 origin-bottom-right'
+              : 'mt-2 origin-top-right'
+          } z-50 w-56 rounded-md border border-brand-border bg-brand-surface shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none`}
         >
           {searchable && (
             <div className="border-b border-brand-border p-2">
@@ -80,7 +97,10 @@ export default function Dropdown({
               </div>
             </div>
           )}
-          <div className="max-h-60 overflow-y-auto py-1" onClick={handleItemClick}>
+          <div
+            className="max-h-60 overflow-y-auto py-1"
+            onClick={handleItemClick}
+          >
             {items.length > 0 ? (
               filteredItems.length > 0 ? (
                 filteredItems.map((item, index) => (

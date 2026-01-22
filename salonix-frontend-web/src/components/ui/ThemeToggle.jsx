@@ -8,7 +8,7 @@ const ThemeToggle = ({ className = '' }) => {
   const { theme, changeTheme, isLoading } = useTheme();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [position, setPosition] = useState('bottom');
   const dropdownRef = useRef(null);
 
   // Fecha dropdown ao clicar fora
@@ -19,12 +19,29 @@ const ThemeToggle = ({ className = '' }) => {
       }
     };
 
+    if (isOpen) {
+      if (dropdownRef.current) {
+        const rect = dropdownRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // Se tiver pouco espaço abaixo (<250px), força abertura para cima
+        // Mas se estiver no mobile menu (que tem um container overflow), a lógica pode ser diferente
+        // Aqui assumimos que se estiver muito embaixo da tela, abre pra cima
+        if (spaceBelow < 250) {
+          setPosition('top');
+        } else {
+          setPosition('bottom');
+        }
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [isOpen]);
 
+  // Removida detecção manual de mobile pois agora usamos posição dinâmica baseada em viewport
+  /*
   useEffect(() => {
     const check = () => {
       try {
@@ -37,6 +54,7 @@ const ThemeToggle = ({ className = '' }) => {
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
   }, []);
+  */
 
   // Configuração dos temas
   const themeOptions = [
@@ -92,7 +110,10 @@ const ThemeToggle = ({ className = '' }) => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-center p-0 bg-transparent border-0 text-brand-primary underline underline-offset-4 hover:text-brand-accent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
-        title={t('nav.theme.current_title', { defaultValue: 'Tema atual: {{label}}', label: currentTheme?.label || t('nav.theme.system', 'Sistema') })}
+        title={t('nav.theme.current_title', {
+          defaultValue: 'Tema atual: {{label}}',
+          label: currentTheme?.label || t('nav.theme.system', 'Sistema'),
+        })}
         aria-label={t('nav.change_theme', 'Alterar tema')}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -103,7 +124,7 @@ const ThemeToggle = ({ className = '' }) => {
       {/* Dropdown */}
       {isOpen && (
         <div
-          className={`absolute right-0 ${isMobile ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-brand-surface border border-brand-border rounded-lg shadow-lg z-50 max-h-64 overflow-auto`}
+          className={`absolute right-0 ${position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-brand-surface border border-brand-border rounded-lg shadow-lg z-50 max-h-64 overflow-auto`}
         >
           <div className="py-1">
             {themeOptions.map((option) => {

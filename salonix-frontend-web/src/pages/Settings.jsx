@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
+import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 import RoleProtectedRoute from '../routes/RoleProtectedRoute';
 import useCreditBalance from '../hooks/useCreditBalance';
@@ -1938,6 +1939,14 @@ function DataSettingsStandalone() {
 
 function Settings() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   const {
     tenant,
     tenantSlug,
@@ -3111,6 +3120,15 @@ function Settings() {
             </button>
           </div>
         </Card>
+
+        <div className="pt-6 border-t border-brand-border">
+          <button
+            onClick={handleLogout}
+            className="w-full text-center text-rose-600 hover:text-rose-700 underline text-sm py-2"
+          >
+            {t('nav.logout', 'Sair')}
+          </button>
+        </div>
       </div>
     );
   };
