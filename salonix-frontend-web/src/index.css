@@ -8,6 +8,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html, body {
+  overscroll-behavior-y: none;
+  height: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;

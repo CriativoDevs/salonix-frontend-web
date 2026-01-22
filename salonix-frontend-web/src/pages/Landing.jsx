@@ -278,7 +278,7 @@ function Landing() {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`min-h-screen min-h-[100dvh] transition-colors duration-300 ${
         isDarkTheme ? 'bg-[#0f0f0f] text-[#f5f5f5]' : 'bg-white text-[#111827]'
       }`}
     >

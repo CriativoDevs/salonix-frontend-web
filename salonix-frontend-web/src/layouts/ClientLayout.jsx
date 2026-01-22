@@ -4,7 +4,7 @@ import Container from '../components/ui/Container';
 
 export default function ClientLayout({ children }) {
   return (
-    <div className="min-h-screen theme-bg-primary theme-text-primary">
+    <div className="min-h-screen min-h-[100dvh] theme-bg-primary theme-text-primary">
       <ClientHeaderNav />
       <main className="py-6 pb-24 overflow-y-auto no-scrollbar">
         <Container>{children}</Container>

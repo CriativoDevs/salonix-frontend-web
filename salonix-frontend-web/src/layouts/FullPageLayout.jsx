@@ -7,7 +7,7 @@ import CreditAlerts from '../components/credits/CreditAlerts';
 
 export default function FullPageLayout({ children }) {
   return (
-    <div className="min-h-screen theme-bg-primary theme-text-primary">
+    <div className="min-h-screen min-h-[100dvh] theme-bg-primary theme-text-primary flex flex-col pt-[env(safe-area-inset-top)]">
       <OnboardingTour />
       <HeaderNav />
       <CreditAlerts />

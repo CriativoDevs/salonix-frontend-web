@@ -6,6 +6,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { RateLimitProvider } from './contexts/RateLimitContext';
 import { useAuth } from './hooks/useAuth';
 import { useTenant } from './hooks/useTenant';
+import { usePwaManifest } from './hooks/usePwaManifest';
 import useBillingOverview from './hooks/useBillingOverview';
 import Router from './routes/Router';
 import RateLimitWarning from './components/ui/RateLimitWarning';
@@ -45,6 +46,10 @@ function ensureMetaTag(name) {
 function TenantThemeManager() {
   const { isAuthenticated } = useAuth();
   const { slug, theme, branding, tenant } = useTenant();
+
+  // Dynamic PWA Manifest Management
+  usePwaManifest(tenant);
+
   const originalAssetsRef = useRef(null);
   const manifestObjectUrlRef = useRef(null);
 

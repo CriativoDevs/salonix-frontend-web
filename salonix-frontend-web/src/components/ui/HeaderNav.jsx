@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   MessageCircleIcon,
@@ -19,8 +19,7 @@ import i18n from '../../i18n';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { tenant, branding, slug } = useTenant();
   const { staff } = useStaff({ slug });
 
@@ -138,7 +137,7 @@ export default function HeaderNav() {
   }, [tenant]);
 
   return (
-    <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible">
+    <header className="hidden md:block bg-brand-surface shadow-sm ring-1 ring-brand-border relative z-20 overflow-visible sticky top-0">
       <Container className="overflow-visible">
         <div className="flex h-14 items-center justify-between">
           <Link
@@ -189,16 +188,6 @@ export default function HeaderNav() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageToggle />
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                navigate('/login', { replace: true });
-              }}
-              className="rounded-lg border border-brand-border px-3 py-1.5 text-sm font-medium text-brand-surfaceForeground transition hover:bg-brand-light"
-            >
-              {t('nav.logout', 'Sair')}
-            </button>
           </div>
         </div>
       </Container>
