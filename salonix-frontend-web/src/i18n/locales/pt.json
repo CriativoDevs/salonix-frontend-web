@@ -996,14 +996,6 @@
           "1": "White-label + domínio personalizado",
           "2": "€25 de crédito incluído"
         }
-      },
-      "enterprise": {
-        "name": "Enterprise – 199€ / mês",
-        "price": "€199/mês",
-        "highlights": {
-          "0": "Apps nativas iOS/Android",
-          "1": "Integrações sob demanda"
-        }
       }
     }
   },

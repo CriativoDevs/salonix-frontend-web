@@ -997,16 +997,8 @@
         "price": "€95/month",
         "highlights": {
           "0": "Everything in Standard",
-          "1": "White‑label + custom domain",
+          "1": "White-label + custom domain",
           "2": "€25 credit included"
-        }
-      },
-      "enterprise": {
-        "name": "Enterprise – €199 / month",
-        "price": "€199/month",
-        "highlights": {
-          "0": "Native iOS/Android apps",
-          "1": "On‑demand integrations"
         }
       }
     }
