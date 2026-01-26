@@ -151,10 +151,10 @@ export default function Reports() {
     t,
   ]);
 
-  // Verificar se tem acesso a relatórios avançados (Pro/Enterprise)
+  // Verificar se tem acesso a relatórios avançados (apenas Pro)
   const hasAdvancedReports = useMemo(() => {
     const planTier = plan?.tier?.toLowerCase();
-    return planTier === 'pro' || planTier === 'enterprise';
+    return planTier === 'pro';
   }, [plan?.tier]);
 
   // Funções para lidar com filtros de data

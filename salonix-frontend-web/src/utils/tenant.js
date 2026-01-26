@@ -23,7 +23,6 @@ export const PLAN_NAME_BY_TIER = {
   basic: 'Basic',
   standard: 'Standard',
   pro: 'Pro',
-  enterprise: 'Enterprise',
 };
 
 const API_BASE_URL = (() => {

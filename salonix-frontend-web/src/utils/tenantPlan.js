@@ -5,7 +5,6 @@ export const PLAN_TIER_PRIORITY = {
   basic: 1,
   standard: 2,
   pro: 3,
-  enterprise: 4,
 };
 
 export function resolvePlanTier(plan, fallbackTier = DEFAULT_TENANT_META.plan.tier) {

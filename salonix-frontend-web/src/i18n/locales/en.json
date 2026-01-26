@@ -495,7 +495,7 @@
       "appointmentReminders_description": "Automatic appointment reminders",
       "marketingEmails": "Marketing emails",
       "marketingEmails_description": "Receive promotional emails",
-      "enterprise_only": "Available only on the Enterprise plan"
+      "pro_only": "Available only on the Pro plan"
     },
     "save": "Save",
     "branding": {

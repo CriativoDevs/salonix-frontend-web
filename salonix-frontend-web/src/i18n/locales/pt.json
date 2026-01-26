@@ -550,7 +550,7 @@
       "appointmentReminders_description": "Lembretes automáticos de agendamentos",
       "marketingEmails": "E-mails de marketing",
       "marketingEmails_description": "Receber e-mails promocionais",
-      "enterprise_only": "Disponível somente no plano Enterprise"
+      "pro_only": "Disponível somente no plano Pro"
     },
     "business": {
       "placeholder": "Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.",

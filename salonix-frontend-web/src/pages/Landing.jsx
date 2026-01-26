@@ -65,7 +65,7 @@ const faqs = [
   },
   {
     q: 'Posso usar o meu próprio domínio?',
-    a: 'Sim, disponível nos planos Pro e Enterprise. Permite personalização completa da identidade visual.',
+    a: 'Sim, disponível no plano Pro. Permite personalização completa da identidade visual.',
   },
   {
     q: 'Como funcionam os créditos de SMS/WhatsApp?',
@@ -909,11 +909,6 @@ function Landing() {
                         {t('landing.pricing.most_chosen', 'Mais escolhido')}
                       </span>
                     )}
-                    {plan.code === 'enterprise' && (
-                      <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
-                        {t('common.coming_soon', 'Em breve')}
-                      </span>
-                    )}
                     <h3 className="text-2xl font-semibold">
                       {t(`plans.options.${plan.code}.name`, plan.name)}
                     </h3>
@@ -934,21 +929,12 @@ function Landing() {
                       ))}
                     </ul>
                   </div>
-                  {plan.code === 'enterprise' ? (
-                    <span className="mt-6 inline-block font-medium text-slate-300">
-                      {t('common.coming_soon', 'Em breve')}
-                    </span>
-                  ) : (
-                    <Link
-                      to="/register"
-                      className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
-                    >
-                      {t(
-                        'landing.pricing.start_trial',
-                        'Iniciar 14 dias grátis'
-                      )}
-                    </Link>
-                  )}
+                  <Link
+                    to="/register"
+                    className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
+                  >
+                    {t('landing.pricing.start_trial', 'Iniciar 14 dias grátis')}
+                  </Link>
                 </div>
               ))}
             </div>
