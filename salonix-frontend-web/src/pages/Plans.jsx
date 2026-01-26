@@ -51,7 +51,7 @@ function Plans() {
     const candidate = fromOverview || tier;
     if (
       candidate &&
-      ['basic', 'standard', 'pro', 'enterprise'].includes(candidate)
+      ['basic', 'standard', 'pro'].includes(candidate)
     ) {
       setSelected(candidate);
     }

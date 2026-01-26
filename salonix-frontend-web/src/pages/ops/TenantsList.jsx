@@ -102,7 +102,6 @@ const TenantsList = () => {
             <option value="basic">Basic</option>
             <option value="standard">Standard</option>
             <option value="pro">Pro</option>
-            <option value="enterprise">Enterprise</option>
           </select>
         </form>
       </div>
@@ -140,11 +139,9 @@ const TenantsList = () => {
                 <span
                   className={`px-2 py-0.5 text-xs font-semibold rounded-full 
                   ${
-                    tenant.plan_tier === 'enterprise'
-                      ? 'bg-purple-900 text-purple-200'
-                      : tenant.plan_tier === 'pro'
-                        ? 'bg-blue-900 text-blue-200'
-                        : 'bg-gray-700 text-gray-300'
+                    tenant.plan_tier === 'pro'
+                      ? 'bg-blue-900 text-blue-200'
+                      : 'bg-gray-700 text-gray-300'
                   }`}
                 >
                   {tenant.plan_tier.toUpperCase()}
@@ -216,11 +213,9 @@ const TenantsList = () => {
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${
-                          tenant.plan_tier === 'enterprise'
-                            ? 'bg-purple-900 text-purple-200'
-                            : tenant.plan_tier === 'pro'
-                              ? 'bg-blue-900 text-blue-200'
-                              : 'bg-gray-700 text-gray-300'
+                          tenant.plan_tier === 'pro'
+                            ? 'bg-blue-900 text-blue-200'
+                            : 'bg-gray-700 text-gray-300'
                         }`}
                       >
                         {tenant.plan_tier.toUpperCase()}

@@ -192,6 +192,7 @@ export default function Dashboard() {
   const [upcomingError, setUpcomingError] = useState(null);
 
   const reportsEnabled = flags?.enableReports !== false;
+  const planTier = tenant?.plan?.tier || flags?.planTier || 'basic';
 
   // Verificar se o usuário tem acesso aos relatórios (apenas owner e manager)
   const hasReportsAccess = useMemo(() => {
@@ -244,7 +245,7 @@ export default function Dashboard() {
     error,
     reportsForbidden,
     refetch,
-  } = useDashboardData({ slug, reportsEnabled });
+  } = useDashboardData({ slug, reportsEnabled, planTier });
 
   const bookingsList = useMemo(
     () => extractBookingsList(dashboardData.bookings),

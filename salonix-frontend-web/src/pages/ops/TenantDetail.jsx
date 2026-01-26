@@ -332,7 +332,6 @@ const TenantDetail = () => {
                 <option value="basic">Basic</option>
                 <option value="standard">Standard</option>
                 <option value="pro">Pro</option>
-                <option value="enterprise">Enterprise</option>
               </select>
             </div>
             <div className="flex justify-end space-x-3">

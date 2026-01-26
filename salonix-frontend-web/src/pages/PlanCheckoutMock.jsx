@@ -19,10 +19,6 @@ function usePlanDetails() {
     pro: {
       title: 'Pro – 99€ / mês',
       description: 'Tudo do Standard + branding próprio e 500 SMS/mês com WhatsApp ilimitado.'
-    },
-    enterprise: {
-      title: 'Enterprise – 199€ / mês',
-      description: 'Tudo do Pro + apps nativas, SMS ilimitado, suporte prioritário e API personalizada.'
     }
   };
 

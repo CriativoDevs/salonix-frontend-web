@@ -15,7 +15,11 @@ const INITIAL_DATA = {
   customers: null,
 };
 
-export function useDashboardData({ slug, reportsEnabled = true } = {}) {
+export function useDashboardData({
+  slug,
+  reportsEnabled = true,
+  planTier = 'basic',
+} = {}) {
   const [data, setData] = useState(INITIAL_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -47,7 +51,15 @@ export function useDashboardData({ slug, reportsEnabled = true } = {}) {
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0
+    );
 
     const periodParams = {
       from: toApiDate(startOfDay),
@@ -93,19 +105,25 @@ export function useDashboardData({ slug, reportsEnabled = true } = {}) {
             slug,
             params: monthlyParams,
           }),
-        },
-        {
+        }
+      );
+
+      // Apenas planos Standard ou superior têm acesso ao revenue series
+      if (['standard', 'pro'].includes(planTier)) {
+        requests.push({
           key: 'revenueSeries',
           promise: fetchDashboardRevenueSeries({
             slug,
             interval: 'month',
             params: monthlyParams,
           }),
-        }
-      );
+        });
+      }
     }
 
-    const results = await Promise.allSettled(requests.map((entry) => entry.promise));
+    const results = await Promise.allSettled(
+      requests.map((entry) => entry.promise)
+    );
 
     if (!mountedRef.current) {
       return;
@@ -122,7 +140,10 @@ export function useDashboardData({ slug, reportsEnabled = true } = {}) {
       } else {
         const err = result.reason;
         const status = err?.response?.status;
-        if (status === 403 && (key === 'overviewDaily' || key === 'overviewMonthly')) {
+        if (
+          status === 403 &&
+          (key === 'overviewDaily' || key === 'overviewMonthly')
+        ) {
           forbidden = true;
         } else if (!firstError) {
           firstError = err;
@@ -132,9 +153,13 @@ export function useDashboardData({ slug, reportsEnabled = true } = {}) {
 
     setData(nextData);
     setReportsForbidden(forbidden);
-    setError(firstError ? parseApiError(firstError, 'Falha ao carregar o dashboard.') : null);
+    setError(
+      firstError
+        ? parseApiError(firstError, 'Falha ao carregar o dashboard.')
+        : null
+    );
     setLoading(false);
-  }, [slug, reportsEnabled]);
+  }, [slug, reportsEnabled, planTier]);
 
   useEffect(() => {
     mountedRef.current = true;

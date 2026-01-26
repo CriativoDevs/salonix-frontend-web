@@ -3169,13 +3169,13 @@ function Settings() {
                     onClick={() => handleToggleChannel(key, !rawEnabled)}
                     disabled={
                       notifSaving ||
-                      (key === 'push_mobile' && planTier !== 'enterprise')
+                      (key === 'push_mobile' && planTier !== 'pro')
                     }
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       rawEnabled ? 'bg-brand-primary' : 'bg-gray-300'
                     } ${
                       notifSaving ||
-                      (key === 'push_mobile' && planTier !== 'enterprise')
+                      (key === 'push_mobile' && planTier !== 'pro')
                         ? 'cursor-not-allowed opacity-60'
                         : 'cursor-pointer'
                     }`}
@@ -3186,11 +3186,11 @@ function Settings() {
                       }`}
                     />
                   </button>
-                  {key === 'push_mobile' && planTier !== 'enterprise' ? (
+                  {key === 'push_mobile' && planTier !== 'pro' ? (
                     <span className="text-xs text-brand-surfaceForeground/60">
                       {t(
-                        'settings.notifications.enterprise_only',
-                        'Disponível somente no plano Enterprise'
+                        'settings.notifications.pro_only',
+                        'Disponível somente no plano Pro'
                       )}
                     </span>
                   ) : null}
