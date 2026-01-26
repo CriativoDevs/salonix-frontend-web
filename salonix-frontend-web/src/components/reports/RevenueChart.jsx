@@ -68,13 +68,6 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
-          {t('reports.revenue_chart', 'Gráfico de Receita')}
-        </h3>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-brand-light/30 rounded-lg p-4">

@@ -1036,6 +1036,17 @@
       "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
       "data_loaded": "Advanced data loaded successfully"
     },
+    "insights": {
+      "title": "Advanced Insights",
+      "description": "Retention analysis and customer behavior",
+      "upgrade_required": "Available from Pro plan onwards. Unlock retention analysis and deep insights.",
+      "coming_soon": "Coming soon: Retention Reports and Cohort Analysis",
+      "new_clients": "New Clients",
+      "returning_clients": "Returning Clients",
+      "clients_count": "Count",
+      "revenue_generated": "Revenue generated",
+      "period_label": "Data from {{start}} to {{end}}"
+    },
     "access_denied": {
       "title": "Restricted access",
       "description": "Only owners have access to business reports."
@@ -1287,5 +1298,90 @@
   },
   "toast": {
     "close": "Close notification"
+  },
+  "reports": {
+    "title": "Reports",
+    "loading": "Loading reports...",
+    "error": "Error loading reports",
+    "retry": "Retry",
+    "upgrade_button": "Upgrade plan",
+    "export_csv": "Export CSV",
+    "exporting": "Exporting...",
+    "export": {
+      "csv": "Export CSV",
+      "exporting": "Exporting..."
+    },
+    "tabs": {
+      "basic": "Basic",
+      "business": "Business Analysis",
+      "insights": "Advanced Insights"
+    },
+    "filters": {
+      "from_date": "From date",
+      "to_date": "To date",
+      "apply": "Apply filters",
+      "applying": "Applying...",
+      "help": "Select the period to filter report data"
+    },
+    "metrics": {
+      "total_appointments": "Total Appointments",
+      "completed_appointments": "Completed Appointments",
+      "total_revenue": "Total Revenue",
+      "average_ticket": "Average Ticket"
+    },
+    "basic": {
+      "title": "Basic Reports",
+      "description": "Essential reports to track your salon performance",
+      "coming_soon": "Coming soon: Basic reports for bookings, revenue, and clients"
+    },
+    "business": {
+      "title": "Business Analysis",
+      "description": "Track top-selling services and revenue evolution",
+      "upgrade_required": "Available from Standard plan. Unlock performance and revenue metrics.",
+      "no_data": "No data available for the selected period."
+    },
+    "advanced": {
+      "intervals": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      },
+      "filters": {
+        "title": "Advanced Filters",
+        "interval": "Time Interval",
+        "limit": "Items per Page",
+        "help": "Adjust filters to customize data visualization"
+      },
+      "no_services": "No services found for the selected period",
+      "no_revenue": "No revenue data found for the selected period",
+      "top_services": {
+        "title": "Top Services",
+        "description": "Service ranking by number of bookings",
+        "service": "Service",
+        "appointments": "Bookings",
+        "revenue": "Revenue",
+        "avg_price": "Average Price"
+      },
+      "revenue": {
+        "title": "Revenue Evolution",
+        "total": "Total Revenue",
+        "average": "Average per Period",
+        "peak": "Peak Revenue"
+      }
+    },
+    "revenue": {
+      "title": "Revenue Evolution"
+    },
+    "insights": {
+      "title": "Advanced Insights",
+      "description": "Retention analysis and customer behavior",
+      "upgrade_required": "Available from Pro plan. Unlock retention analysis and deep insights.",
+      "new_clients": "New Clients",
+      "returning_clients": "Returning Clients",
+      "clients_count": "Count",
+      "revenue_generated": "Revenue generated",
+      "period_label": "Data from {{start}} to {{end}}",
+      "coming_soon": "Coming soon: Retention Reports and Cohort Analysis"
+    }
   }
 }
