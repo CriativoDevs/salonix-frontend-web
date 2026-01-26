@@ -211,12 +211,12 @@ function Plans() {
               <div className="text-lg font-semibold">
                 {t(`plans.options.${p.code}.name`, p.name)}
               </div>
-              <div className="mt-1 text-sm text-gray-600">
+              <div className="text-sm text-gray-500">
                 {t(`plans.options.${p.code}.price`, p.price)}
               </div>
               {Array.isArray(p.highlights) && p.highlights.length ? (
                 <ul className="mt-2 list-disc pl-4 text-xs text-gray-500">
-                  {p.highlights.slice(0, 3).map((h, idx) => (
+                  {p.highlights.slice(0, 4).map((h, idx) => (
                     <li key={idx}>
                       {t(`plans.options.${p.code}.highlights.${idx}`, h)}
                     </li>

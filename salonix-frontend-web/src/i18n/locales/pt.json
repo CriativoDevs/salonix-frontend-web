@@ -971,30 +971,32 @@
     "portal_error": "Falha ao abrir o portal de faturação.",
     "options": {
       "basic": {
-        "name": "Basic – 29€ / mês",
+        "name": "Basic",
         "price": "€29/mês",
         "highlights": {
-          "0": "PWA Admin/Manager/Staff",
-          "1": "Relatórios básicos",
-          "2": "Email e web push"
+          "0": "PWA Admin, Staff e Client",
+          "1": "Relatórios: Visão Geral",
+          "2": "€5 de crédito para comunicações"
         }
       },
       "standard": {
-        "name": "Standard – 55€ / mês",
+        "name": "Standard",
         "price": "€55/mês",
         "highlights": {
           "0": "Tudo do Basic",
-          "1": "PWA Cliente",
-          "2": "€5 de crédito incluído"
+          "1": "Apps Nativos (Admin / Staff)",
+          "2": "Relatórios: Análise do Negócio",
+          "3": "€10 de crédito para comunicações"
         }
       },
       "pro": {
-        "name": "Pro – 95€ / mês",
+        "name": "Pro",
         "price": "€95/mês",
         "highlights": {
           "0": "Tudo do Standard",
-          "1": "White-label + domínio personalizado",
-          "2": "€25 de crédito incluído"
+          "1": "Apps Nativos (Client)",
+          "2": "Relatórios: Insights Avançados",
+          "3": "€15 de crédito para comunicações"
         }
       }
     }
