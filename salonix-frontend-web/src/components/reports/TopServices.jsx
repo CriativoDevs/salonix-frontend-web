@@ -63,18 +63,6 @@ export default function TopServices({ data, loading, limit = 25 }) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('reports.advanced.top_services.title', 'Serviços Mais Populares')}
-          </h4>
-          <p className="text-sm text-brand-surfaceForeground/60">
-            {t('reports.advanced.top_services.description', 'Ranking dos serviços por número de agendamentos')}
-          </p>
-        </div>
-      </div>
-
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-brand-border">
         <table className="min-w-full divide-y divide-brand-border">

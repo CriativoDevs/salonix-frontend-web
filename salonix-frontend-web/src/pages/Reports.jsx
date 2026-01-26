@@ -18,9 +18,14 @@ import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
 import useToast from '../hooks/useToast';
 import { useDebounce } from '../hooks/useDebounce';
+import {
+  exportTopServicesReport,
+  exportRevenueReport,
+  downloadCSV,
+} from '../api/reports';
 
 export default function Reports() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { slug, profile, plan } = useTenant();
   const { user } = useAuth();
@@ -117,7 +122,25 @@ export default function Reports() {
   // Verificar se é owner
   const isOwner = currentUserRole === 'owner';
 
+  // Verificar permissões baseadas no plano
+  const planTier = plan?.tier?.toLowerCase();
+
+  const canViewBusinessAnalysis = useMemo(() => {
+    return ['standard', 'pro'].includes(planTier);
+  }, [planTier]);
+
+  const canViewAdvancedInsights = useMemo(() => {
+    return planTier === 'pro';
+  }, [planTier]);
+
   // Hook para dados de relatórios
+  const reportType = useMemo(() => {
+    if (activeTab === 'basic') return 'basic';
+    if (activeTab === 'business') return 'business';
+    if (activeTab === 'insights') return 'insights';
+    return 'basic';
+  }, [activeTab]);
+
   const {
     data: reportsData,
     loading: reportsLoading,
@@ -126,7 +149,7 @@ export default function Reports() {
     refetch: refetchReports,
   } = useReportsData({
     slug,
-    type: activeTab === 'basic' ? 'basic' : 'advanced',
+    type: reportType,
     filters: appliedFilters,
   });
 
@@ -134,28 +157,8 @@ export default function Reports() {
   useEffect(() => {
     if (reportsError) {
       showError(t('reports.error', 'Erro ao carregar relatórios'));
-    } else if (reportsData && !reportsLoading) {
-      const key =
-        activeTab === 'basic'
-          ? 'reports.basic.data_loaded'
-          : 'reports.advanced.data_loaded';
-      showSuccess(t(key, 'Relatórios carregados com sucesso!'));
     }
-  }, [
-    reportsData,
-    reportsError,
-    reportsLoading,
-    showSuccess,
-    showError,
-    activeTab,
-    t,
-  ]);
-
-  // Verificar se tem acesso a relatórios avançados (apenas Pro)
-  const hasAdvancedReports = useMemo(() => {
-    const planTier = plan?.tier?.toLowerCase();
-    return planTier === 'pro';
-  }, [plan?.tier]);
+  }, [reportsError, showError, t]);
 
   // Funções para lidar com filtros de data
   const handleApplyFilters = () => {
@@ -164,6 +167,46 @@ export default function Reports() {
     if (toDate) filters.to = toDate;
     setAppliedFilters(filters);
   };
+
+  // Funções de exportação para Business Analysis
+  const handleExportTopServices = async () => {
+    try {
+      const blob = await exportTopServicesReport({
+        slug,
+        ...appliedFilters,
+        limit: advancedLimit,
+      });
+      const filename = `top_services_${slug}_${appliedFilters.from}_${appliedFilters.to}.csv`;
+      downloadCSV(blob, filename);
+      showSuccess(
+        t('reports.export_success', 'Relatório exportado com sucesso!')
+      );
+    } catch (error) {
+      console.error('Export error:', error);
+      showError(t('reports.export_error', 'Erro ao exportar relatório.'));
+    }
+  };
+
+  const handleExportRevenue = async () => {
+    try {
+      const blob = await exportRevenueReport({
+        slug,
+        ...appliedFilters,
+        interval: advancedInterval,
+      });
+      const filename = `revenue_${slug}_${appliedFilters.from}_${appliedFilters.to}.csv`;
+      downloadCSV(blob, filename);
+      showSuccess(
+        t('reports.export_success', 'Relatório exportado com sucesso!')
+      );
+    } catch (error) {
+      console.error('Export error:', error);
+      showError(t('reports.export_error', 'Erro ao exportar relatório.'));
+    }
+  };
+
+  const retention = reportsData?.insightsReports?.retention;
+  const insightsPeriod = reportsData?.insightsReports?.period;
 
   // Se não for owner, não tem acesso
   if (!isOwner) {
@@ -247,14 +290,24 @@ export default function Reports() {
                 {t('reports.tabs.basic', 'Básicos')}
               </button>
               <button
-                onClick={() => setActiveTab('advanced')}
+                onClick={() => setActiveTab('business')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'advanced'
+                  activeTab === 'business'
                     ? 'border-brand-primary text-brand-primary'
                     : 'border-transparent text-brand-surfaceForeground/70 hover:text-brand-surfaceForeground hover:border-brand-surfaceForeground/30'
                 }`}
               >
-                {t('reports.tabs.advanced', 'Avançados')}
+                {t('reports.tabs.business', 'Análise de Negócio')}
+              </button>
+              <button
+                onClick={() => setActiveTab('insights')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'insights'
+                    ? 'border-brand-primary text-brand-primary'
+                    : 'border-transparent text-brand-surfaceForeground/70 hover:text-brand-surfaceForeground hover:border-brand-surfaceForeground/30'
+                }`}
+              >
+                {t('reports.tabs.insights', 'Insights Avançados')}
               </button>
             </nav>
           </div>
@@ -272,9 +325,27 @@ export default function Reports() {
           {/* Conteúdo das tabs */}
           {activeTab === 'basic' && (
             <Card className="p-6">
-              <h3 className="text-lg font-medium text-brand-surfaceForeground mb-2">
-                {t('reports.basic.title', 'Relatórios Básicos')}
-              </h3>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-medium text-brand-surfaceForeground">
+                  {t('reports.basic.title', 'Relatórios Básicos')}
+                </h3>
+                {reportsData?.basicReports?.period && (
+                  <span className="text-xs font-medium text-brand-surfaceForeground/50 bg-brand-light/50 px-2 py-1 rounded">
+                    {t(
+                      'reports.insights.period_label',
+                      'Dados de {{start}} até {{end}}',
+                      {
+                        start: new Date(
+                          reportsData.basicReports.period.start
+                        ).toLocaleDateString(i18n.language),
+                        end: new Date(
+                          reportsData.basicReports.period.end
+                        ).toLocaleDateString(i18n.language),
+                      }
+                    )}
+                  </span>
+                )}
+              </div>
               <p className="text-brand-surfaceForeground/70 mb-4">
                 {t(
                   'reports.basic.description',
@@ -365,25 +436,24 @@ export default function Reports() {
             </Card>
           )}
 
-          {activeTab === 'advanced' && (
+          {activeTab === 'business' && (
             <Card className="p-6">
               <h3 className="text-lg font-medium text-brand-surfaceForeground mb-2">
-                {t('reports.advanced.title', 'Relatórios Avançados')}
+                {t('reports.business.title', 'Análise de Negócio')}
               </h3>
               <p className="text-brand-surfaceForeground/70 mb-4">
                 {t(
-                  'reports.advanced.description',
-                  'Análises detalhadas e métricas avançadas'
+                  'reports.business.description',
+                  'Acompanhe os serviços mais vendidos e a evolução da receita'
                 )}
               </p>
 
-              {/* Verificar se tem acesso aos relatórios avançados (Pro/Enterprise) */}
-              {!hasAdvancedReports ? (
+              {!canViewBusinessAnalysis ? (
                 <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
                   <p className="text-sm text-brand-surfaceForeground mb-3">
                     {t(
-                      'reports.advanced.upgrade_required',
-                      'Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.'
+                      'reports.business.upgrade_required',
+                      'Disponível a partir do plano Standard. Desbloqueie métricas de performance e receita.'
                     )}
                   </p>
                   <button
@@ -391,7 +461,7 @@ export default function Reports() {
                     onClick={() => navigate('/plans')}
                     className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
                   >
-                    {t('reports.advanced.upgrade_button', 'Atualizar plano')}
+                    {t('reports.upgrade_button', 'Atualizar plano')}
                   </button>
                 </div>
               ) : (
@@ -437,24 +507,12 @@ export default function Reports() {
                     </div>
                   )}
 
-                  {/* Forbidden state */}
-                  {reportsForbidden && !reportsLoading && (
-                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                      <p className="text-sm text-brand-surfaceForeground">
-                        {t(
-                          'reports.forbidden',
-                          'Seu plano atual não inclui acesso aos relatórios.'
-                        )}
-                      </p>
-                    </div>
-                  )}
-
                   {/* Content */}
-                  {!reportsLoading && !reportsError && !reportsForbidden && (
+                  {!reportsLoading && !reportsError && (
                     <div className="space-y-8">
-                      {reportsData?.advancedReports ? (
+                      {reportsData?.businessReports ? (
                         <>
-                          {/* Advanced Filters */}
+                          {/* Advanced Filters for Revenue */}
                           <AdvancedFilters
                             interval={advancedInterval}
                             onIntervalChange={setAdvancedInterval}
@@ -463,22 +521,49 @@ export default function Reports() {
                             loading={reportsLoading}
                           />
 
-                          {/* Export Button */}
-                          <div className="flex justify-end">
-                            <AdvancedExportButton
-                              filters={{
-                                from: appliedFilters.from,
-                                to: appliedFilters.to,
-                                interval: advancedInterval,
-                              }}
-                              disabled={reportsLoading}
-                            />
-                          </div>
-
                           {/* Top Services */}
                           <Card className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                              <div>
+                                <h4 className="text-lg font-medium text-brand-surfaceForeground">
+                                  {t(
+                                    'reports.advanced.top_services.title',
+                                    'Serviços Mais Populares'
+                                  )}
+                                </h4>
+                                <p className="text-sm text-brand-surfaceForeground/60">
+                                  {t(
+                                    'reports.advanced.top_services.description',
+                                    'Ranking dos serviços por número de agendamentos'
+                                  )}
+                                </p>
+                              </div>
+                              <button
+                                onClick={handleExportTopServices}
+                                disabled={reportsLoading}
+                                className="inline-flex items-center text-xs font-medium text-brand-primary hover:text-brand-primary/80 hover:underline focus:outline-none disabled:opacity-50"
+                              >
+                                <svg
+                                  className="mr-1.5 h-4 w-4 text-brand-surfaceForeground/50"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                                {t('reports.export_csv', 'Exportar CSV')}
+                              </button>
+                            </div>
                             <TopServices
-                              data={reportsData.advancedReports}
+                              data={{
+                                top_services:
+                                  reportsData.businessReports.top_services,
+                              }}
                               loading={reportsLoading}
                               limit={advancedLimit}
                             />
@@ -486,8 +571,38 @@ export default function Reports() {
 
                           {/* Revenue Chart */}
                           <Card className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                              <h4 className="text-base font-medium text-brand-surfaceForeground">
+                                {t(
+                                  'reports.revenue.title',
+                                  'Evolução da Receita'
+                                )}
+                              </h4>
+                              <button
+                                onClick={handleExportRevenue}
+                                disabled={reportsLoading}
+                                className="inline-flex items-center text-xs font-medium text-brand-primary hover:text-brand-primary/80 hover:underline focus:outline-none disabled:opacity-50"
+                              >
+                                <svg
+                                  className="mr-1.5 h-4 w-4 text-brand-surfaceForeground/50"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                  />
+                                </svg>
+                                {t('reports.export_csv', 'Exportar CSV')}
+                              </button>
+                            </div>
                             <RevenueChart
-                              data={reportsData.advancedReports}
+                              data={{
+                                revenue: reportsData.businessReports.revenue,
+                              }}
                               loading={reportsLoading}
                               interval={advancedInterval}
                             />
@@ -497,8 +612,8 @@ export default function Reports() {
                         <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
                           <p className="text-sm text-brand-surfaceForeground/60">
                             {t(
-                              'reports.advanced.coming_soon',
-                              'Em breve: Análises avançadas, comparativos e insights detalhados'
+                              'reports.business.no_data',
+                              'Nenhum dado disponível para o período selecionado.'
                             )}
                           </p>
                         </div>
@@ -506,6 +621,181 @@ export default function Reports() {
                     </div>
                   )}
                 </>
+              )}
+            </Card>
+          )}
+
+          {activeTab === 'insights' && (
+            <Card className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-medium text-brand-surfaceForeground">
+                  {t('reports.insights.title', 'Insights Avançados')}
+                </h3>
+                {insightsPeriod && (
+                  <span className="text-xs font-medium text-brand-surfaceForeground/50 bg-brand-light/50 px-2 py-1 rounded">
+                    {t(
+                      'reports.insights.period_label',
+                      'Dados de {{start}} até {{end}}',
+                      {
+                        start: new Date(
+                          insightsPeriod.start
+                        ).toLocaleDateString(i18n.language),
+                        end: new Date(insightsPeriod.end).toLocaleDateString(
+                          i18n.language
+                        ),
+                      }
+                    )}
+                  </span>
+                )}
+              </div>
+              <p className="text-brand-surfaceForeground/70 mb-4">
+                {t(
+                  'reports.insights.description',
+                  'Análise de retenção e comportamento de clientes'
+                )}
+              </p>
+
+              {!canViewAdvancedInsights ? (
+                <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                  <p className="text-sm text-brand-surfaceForeground mb-3">
+                    {t(
+                      'reports.insights.upgrade_required',
+                      'Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.'
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/plans')}
+                    className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
+                  >
+                    {t('reports.upgrade_button', 'Atualizar plano')}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {retention ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* New Clients */}
+                      <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-medium text-brand-surfaceForeground/70">
+                            {t(
+                              'reports.insights.new_clients',
+                              'Novos Clientes'
+                            )}
+                          </h4>
+                          <div className="h-8 w-8 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                            <svg
+                              className="h-4 w-4 text-brand-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <div className="text-3xl font-bold text-brand-surfaceForeground">
+                              {retention.new_clients?.qty || 0}
+                            </div>
+                            <div className="text-xs text-brand-surfaceForeground/60 mt-1">
+                              {t(
+                                'reports.insights.clients_count',
+                                'Clientes cadastrados'
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-semibold text-brand-primary">
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'EUR',
+                              }).format(retention.new_clients?.revenue || 0)}
+                            </div>
+                            <div className="text-xs text-brand-surfaceForeground/60 mt-1">
+                              {t(
+                                'reports.insights.revenue_generated',
+                                'Receita gerada'
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Returning Clients */}
+                      <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-sm font-medium text-brand-surfaceForeground/70">
+                            {t(
+                              'reports.insights.returning_clients',
+                              'Clientes Recorrentes'
+                            )}
+                          </h4>
+                          <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
+                            <svg
+                              className="h-4 w-4 text-success"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <div className="text-3xl font-bold text-brand-surfaceForeground">
+                              {retention.returning_clients?.qty || 0}
+                            </div>
+                            <div className="text-xs text-brand-surfaceForeground/60 mt-1">
+                              {t(
+                                'reports.insights.clients_count',
+                                'Clientes que retornaram'
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-lg font-semibold text-brand-primary">
+                              {new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'EUR',
+                              }).format(
+                                retention.returning_clients?.revenue || 0
+                              )}
+                            </div>
+                            <div className="text-xs text-brand-surfaceForeground/60 mt-1">
+                              {t(
+                                'reports.insights.revenue_generated',
+                                'Receita gerada'
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
+                      <p className="text-sm text-brand-surfaceForeground/60">
+                        {t(
+                          'reports.insights.no_data',
+                          'Nenhum dado disponível para o período selecionado.'
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
               )}
             </Card>
           )}

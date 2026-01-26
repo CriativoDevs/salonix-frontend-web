@@ -1032,6 +1032,17 @@
       "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
       "upgrade_button": "Atualizar plano"
     },
+    "insights": {
+      "title": "Insights Avançados",
+      "description": "Análise de retenção e comportamento de clientes",
+      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.",
+      "coming_soon": "Em breve: Relatórios de Retenção e Cohort Analysis",
+      "new_clients": "Novos Clientes",
+      "returning_clients": "Clientes Recorrentes",
+      "clients_count": "Contagem",
+      "revenue_generated": "Receita gerada",
+      "period_label": "Dados de {{start}} até {{end}}"
+    },
     "filters": {
       "from_date": "Data inicial",
       "to_date": "Data final",
@@ -1284,5 +1295,90 @@
   },
   "toast": {
     "close": "Fechar notificação"
+  },
+  "reports": {
+    "title": "Relatórios",
+    "loading": "Carregando relatórios...",
+    "error": "Erro ao carregar relatórios",
+    "retry": "Tentar novamente",
+    "upgrade_button": "Atualizar plano",
+    "export_csv": "Exportar CSV",
+    "exporting": "Exportando...",
+    "export": {
+      "csv": "Exportar CSV",
+      "exporting": "Exportando..."
+    },
+    "tabs": {
+      "basic": "Básicos",
+      "business": "Análise de Negócio",
+      "insights": "Insights Avançados"
+    },
+    "filters": {
+      "from_date": "Data inicial",
+      "to_date": "Data final",
+      "apply": "Aplicar filtros",
+      "applying": "Aplicando...",
+      "help": "Selecione o período para filtrar os dados dos relatórios"
+    },
+    "metrics": {
+      "total_appointments": "Total de Agendamentos",
+      "completed_appointments": "Agendamentos Concluídos",
+      "total_revenue": "Receita Total",
+      "average_ticket": "Ticket Médio"
+    },
+    "basic": {
+      "title": "Relatórios Básicos",
+      "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
+      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes"
+    },
+    "business": {
+      "title": "Análise de Negócio",
+      "description": "Acompanhe os serviços mais vendidos e a evolução da receita",
+      "upgrade_required": "Disponível a partir do plano Standard. Desbloqueie métricas de performance e receita.",
+      "no_data": "Nenhum dado disponível para o período selecionado."
+    },
+    "advanced": {
+      "intervals": {
+        "day": "Diário",
+        "week": "Semanal",
+        "month": "Mensal"
+      },
+      "filters": {
+        "title": "Filtros Avançados",
+        "interval": "Intervalo de Tempo",
+        "limit": "Itens por Página",
+        "help": "Ajuste os filtros para personalizar a visualização dos dados"
+      },
+      "no_services": "Nenhum serviço encontrado no período selecionado",
+      "no_revenue": "Nenhum dado de receita encontrado no período selecionado",
+      "top_services": {
+        "title": "Serviços Mais Populares",
+        "description": "Ranking dos serviços por número de agendamentos",
+        "service": "Serviço",
+        "appointments": "Agendamentos",
+        "revenue": "Receita",
+        "avg_price": "Preço Médio"
+      },
+      "revenue": {
+        "title": "Evolução da Receita",
+        "total": "Receita Total",
+        "average": "Média por Período",
+        "peak": "Pico de Receita"
+      }
+    },
+    "revenue": {
+      "title": "Evolução da Receita"
+    },
+    "insights": {
+      "title": "Insights Avançados",
+      "description": "Análise de retenção e comportamento de clientes",
+      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.",
+      "new_clients": "Novos Clientes",
+      "returning_clients": "Clientes Recorrentes",
+      "clients_count": "Contagem",
+      "revenue_generated": "Receita gerada",
+      "period_label": "Dados de {{start}} até {{end}}",
+      "coming_soon": "Em breve: Relatórios de Retenção e Cohort Analysis"
+    }
   }
 }

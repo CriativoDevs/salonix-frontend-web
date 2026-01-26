@@ -27,7 +27,7 @@ export async function fetchBasicReports(params = {}) {
 
 /**
  * Busca relatórios avançados (top services + revenue)
- * Disponível apenas para planos Pro e Enterprise
+ * Disponível apenas para planos Pro
  */
 export async function fetchAdvancedReports(params = {}) {
   const { from, to, limit, offset, interval, slug } = params;
@@ -46,6 +46,83 @@ export async function fetchAdvancedReports(params = {}) {
   if (interval) queryParams.interval = interval; // day/week/month
 
   const { data } = await client.get('reports/advanced/', {
+    headers,
+    params: queryParams,
+  });
+  return data;
+}
+
+/**
+ * Busca Top Services (Business Analysis)
+ * Disponível para planos Standard e superiores
+ */
+export async function fetchTopServices(params = {}) {
+  const { from, to, limit, offset, slug } = params;
+  const headers = {};
+  const queryParams = {};
+
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+  if (limit) queryParams.limit = limit;
+  if (offset) queryParams.offset = offset;
+
+  const { data } = await client.get('reports/top-services/', {
+    headers,
+    params: queryParams,
+  });
+  return data;
+}
+
+/**
+ * Busca Revenue Series (Business Analysis)
+ * Disponível para planos Standard e superiores
+ */
+export async function fetchRevenue(params = {}) {
+  const { from, to, interval, limit, offset, slug } = params;
+  const headers = {};
+  const queryParams = {};
+
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+  if (interval) queryParams.interval = interval;
+  if (limit) queryParams.limit = limit;
+  if (offset) queryParams.offset = offset;
+
+  const { data } = await client.get('reports/revenue/', {
+    headers,
+    params: queryParams,
+  });
+  return data;
+}
+
+/**
+ * Busca Retention Report (Advanced Insights)
+ * Disponível apenas para planos Pro
+ */
+export async function fetchRetention(params = {}) {
+  const { from, to, slug } = params;
+  const headers = {};
+  const queryParams = {};
+
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+
+  const { data } = await client.get('reports/retention/', {
     headers,
     params: queryParams,
   });
@@ -156,7 +233,7 @@ export async function exportRevenueReport(params = {}) {
 
 /**
  * Exporta relatórios avançados em CSV (top services + revenue)
- * Disponível apenas para planos Pro e Enterprise
+ * Disponível apenas para planos Pro
  */
 export async function exportAdvancedReportsCSV(params = {}) {
   const { from, to, interval, slug } = params;

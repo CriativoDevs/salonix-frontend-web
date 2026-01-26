@@ -37,7 +37,9 @@ describe('useDashboardData', () => {
       });
     fetchDashboardRevenueSeries.mockResolvedValueOnce({ interval: 'month', series: [] });
 
-    const { result } = renderHook(() => useDashboardData({ slug: 'aurora', reportsEnabled: true }));
+    const { result } = renderHook(() =>
+      useDashboardData({ slug: 'aurora', reportsEnabled: true, planTier: 'standard' })
+    );
 
     expect(result.current.loading).toBe(true);
 
