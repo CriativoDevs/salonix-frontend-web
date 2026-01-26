@@ -1,12 +1,12 @@
 export const TENANT_FEATURE_REQUIREMENTS = {
   enableCustomerPwa: {
     labelKey: 'settings.features.pwa.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Basic',
     descriptionKey: 'settings.features.pwa.description',
   },
   enableWebPush: {
     labelKey: 'settings.features.webpush.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Basic',
     descriptionKey: 'settings.features.webpush.description',
   },
   enableReports: {

@@ -152,19 +152,31 @@ function Landing() {
     setOpenFaqIndex((prev) => (prev === i ? null : i));
   };
 
-  // Detecta preferência do sistema ao carregar
+  // Detecta preferência do sistema ao carregar ou localStorage
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDarkTheme(mediaQuery.matches);
+    const savedTheme = localStorage.getItem('landing-theme');
+    if (savedTheme) {
+      setIsDarkTheme(savedTheme === 'dark');
+    } else {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      setIsDarkTheme(mediaQuery.matches);
+    }
 
-    const handleChange = (e) => setIsDarkTheme(e.matches);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      if (!localStorage.getItem('landing-theme')) {
+        setIsDarkTheme(e.matches);
+      }
+    };
     mediaQuery.addEventListener('change', handleChange);
 
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
+    const newTheme = !isDarkTheme;
+    setIsDarkTheme(newTheme);
+    localStorage.setItem('landing-theme', newTheme ? 'dark' : 'light');
   };
 
   useEffect(() => {
@@ -881,7 +893,7 @@ function Landing() {
               </p>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
               {plans.map((plan) => (
                 <div
                   key={plan.code}

@@ -24,10 +24,7 @@ import {
   updateTenantContact,
 } from '../api/tenant';
 import FormInput from '../components/ui/FormInput';
-import {
-  TENANT_FEATURE_REQUIREMENTS,
-  describeFeatureRequirement,
-} from '../constants/tenantFeatures';
+import { TENANT_FEATURE_REQUIREMENTS } from '../constants/tenantFeatures';
 import {
   resolvePlanModules,
   resolvePlanName,
@@ -50,13 +47,6 @@ const TAB_ITEMS = [
   // { id: 'business', label: 'settings.tabs.business', icon: '🏢' }, // Ocultado conforme solicitação
   { id: 'data', label: 'settings.tabs.data', icon: '📊' },
 ];
-
-const FEATURE_LIST = Object.entries(TENANT_FEATURE_REQUIREMENTS).map(
-  ([key, value]) => ({
-    key,
-    ...value,
-  })
-);
 
 const MODULE_CONFIG = {
   reports: {
@@ -2288,6 +2278,8 @@ function Settings() {
         if (channelKey === 'whatsapp') payload.whatsapp_enabled = nextValue;
         if (channelKey === 'push_mobile')
           payload.push_mobile_enabled = nextValue;
+        if (channelKey === 'push_web') payload.push_web_enabled = nextValue;
+
         const resp = await updateTenantNotifications(payload, {
           slug: tenant?.slug,
         });
@@ -2298,7 +2290,9 @@ function Settings() {
               ? Boolean(resp?.whatsapp_enabled ?? nextValue)
               : channelKey === 'push_mobile'
                 ? Boolean(resp?.push_mobile_enabled ?? nextValue)
-                : Boolean(nextValue);
+                : channelKey === 'push_web'
+                  ? Boolean(resp?.push_web_enabled ?? nextValue)
+                  : Boolean(nextValue);
         setNotifRawOverrides((prev) => ({ ...prev, [channelKey]: nextRaw }));
         await refetch({ silent: true });
       } catch {
@@ -2309,21 +2303,6 @@ function Settings() {
     },
     [tenant, refetch, checkCredits, t]
   );
-
-  const hasFlagData = useMemo(
-    () => flags && typeof flags === 'object' && Object.keys(flags).length > 0,
-    [flags]
-  );
-
-  const lockedFeatures = useMemo(() => {
-    return FEATURE_LIST.filter(({ requiredPlan }) => {
-      if (!requiredPlan) {
-        return false;
-      }
-
-      return comparePlanTiers(requiredPlan, planTier) === -1;
-    });
-  }, [planTier]);
 
   const sanitizedProfile = useMemo(() => {
     const defaults = DEFAULT_TENANT_META.profile || {};
@@ -2596,62 +2575,6 @@ function Settings() {
               {t(
                 'settings.plan_modules_empty',
                 'Nenhum módulo adicional definido para este plano.'
-              )}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <h4 className="text-sm font-semibold text-brand-surfaceForeground">
-            {t('settings.locked_features', 'Recursos bloqueados')}
-          </h4>
-          {hasFlagData ? (
-            lockedFeatures.length ? (
-              <ul className="mt-2 space-y-2 text-sm text-amber-700">
-                {lockedFeatures.map(({ key }) => {
-                  const requirement = describeFeatureRequirement(key, planName);
-                  const label = requirement.labelKey
-                    ? t(requirement.labelKey, key)
-                    : key;
-                  const description = t(
-                    requirement.descriptionKey,
-                    requirement.isUnknown
-                      ? 'Funcionalidade disponível em planos superiores.'
-                      : ''
-                  );
-                  const planCurrent = t(
-                    'settings.features.plan_current_suffix',
-                    'Plano atual: {{plan}}.',
-                    { plan: requirement.currentPlanName || 'desconhecido' }
-                  );
-
-                  return (
-                    <li
-                      key={key}
-                      className="rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2"
-                    >
-                      <strong>{label}</strong>
-                      {requirement.requiredPlan
-                        ? ` — ${t('settings.requires_plan', 'Requer plano')} ${requirement.requiredPlan}.`
-                        : ''}{' '}
-                      {description} {planCurrent}
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <p className="mt-2 text-sm text-brand-surfaceForeground/60">
-                {t(
-                  'settings.locked_features_empty',
-                  'Nenhum recurso bloqueado para este plano.'
-                )}
-              </p>
-            )
-          ) : (
-            <p className="mt-2 text-sm text-brand-surfaceForeground/60">
-              {t(
-                'settings.locked_features_unavailable',
-                'Sem dados de recursos do plano no momento. Tente atualizar a página.'
               )}
             </p>
           )}
@@ -3236,7 +3159,7 @@ function Settings() {
                   ? t('settings.channel_enabled', 'Ativo')
                   : t('settings.channel_disabled', 'Inativo')}
               </p>
-              {['sms', 'whatsapp', 'push_mobile'].includes(key) ? (
+              {['sms', 'whatsapp', 'push_mobile', 'push_web'].includes(key) ? (
                 <div className="mt-3 flex items-center justify-end gap-3">
                   <button
                     type="button"

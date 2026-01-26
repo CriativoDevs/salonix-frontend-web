@@ -975,30 +975,32 @@
     "portal_error": "Failed to open billing portal.",
     "options": {
       "basic": {
-        "name": "Basic – €29 / month",
+        "name": "Basic",
         "price": "€29/month",
         "highlights": {
-          "0": "PWA Admin/Manager/Staff",
-          "1": "Basic reports",
-          "2": "Email and web push"
+          "0": "PWA Admin, Staff and Client",
+          "1": "Reports: Overview",
+          "2": "€5 communication credit"
         }
       },
       "standard": {
-        "name": "Standard – €55 / month",
+        "name": "Standard",
         "price": "€55/month",
         "highlights": {
           "0": "Everything in Basic",
-          "1": "Client PWA",
-          "2": "€5 credit included"
+          "1": "Native Apps (Admin / Staff)",
+          "2": "Reports: Business Analysis",
+          "3": "€10 communication credit"
         }
       },
       "pro": {
-        "name": "Pro – €95 / month",
+        "name": "Pro",
         "price": "€95/month",
         "highlights": {
           "0": "Everything in Standard",
-          "1": "White-label + custom domain",
-          "2": "€25 credit included"
+          "1": "Native Apps (Client)",
+          "2": "Reports: Advanced Insights",
+          "3": "€15 communication credit"
         }
       }
     }

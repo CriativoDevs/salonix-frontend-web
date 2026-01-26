@@ -10,11 +10,7 @@ import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { trace } from '../utils/debug';
-import {
-  schedulePostAuthRedirect,
-  consumePostAuthRedirect,
-  clearPostAuthRedirect,
-} from '../utils/navigation';
+import { clearPostAuthRedirect } from '../utils/navigation';
 import { getEnvFlag, getEnvVar } from '../utils/env';
 import CaptchaGate from '../components/security/CaptchaGate';
 
@@ -91,12 +87,11 @@ function Register() {
       const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
       try {
         trace('register:auto-login:start');
-        schedulePostAuthRedirect('/register/checkout');
-        await login({ email: form.email, password: form.password });
-        const scheduledTarget = consumePostAuthRedirect();
-        const target =
-          scheduledTarget ||
-          (enablePlans ? '/register/checkout' : '/dashboard');
+        await login({ email: cleanForm.email, password: cleanForm.password });
+
+        // Redirecionamento explícito, sem depender do PublicRoute consumir o agendamento.
+        // Isso evita race conditions e falhas de sessionStorage.
+        const target = enablePlans ? '/register/checkout' : '/dashboard';
         trace('register:auto-login:success', target);
         navigate(target, { replace: true });
       } catch {

@@ -3,35 +3,35 @@ import client from './client';
 export const PLAN_OPTIONS = [
   {
     code: 'basic',
-    name: 'Basic – 29€ / mês',
+    name: 'Basic',
     price: '€29/mês',
     highlights: [
-      'PWA Admin/Manager/Staff',
-      'Relatórios básicos',
-      'Email e web push',
+      'PWA Admin, Staff e Client',
+      'Relatórios: Visão Geral',
+      '€5 de crédito para comunicações',
     ],
   },
   {
     code: 'standard',
-    name: 'Standard – 55€ / mês',
+    name: 'Standard',
     price: '€55/mês',
-    highlights: ['Tudo do Basic', 'PWA Cliente', '€5 de crédito incluído'],
-  },
-  {
-    code: 'pro',
-    name: 'Pro – 95€ / mês',
-    price: '€95/mês',
     highlights: [
-      'Tudo do Standard',
-      'White-label + domínio personalizado',
-      '€25 de crédito incluído',
+      'Tudo do Basic',
+      'Apps Nativos (Admin / Staff)',
+      'Relatórios: Análise do Negócio',
+      '€10 de crédito para comunicações',
     ],
   },
   {
-    code: 'enterprise',
-    name: 'Enterprise – 199€ / mês',
-    price: '€199/mês',
-    highlights: ['Apps nativas iOS/Android', 'Integrações sob demanda'],
+    code: 'pro',
+    name: 'Pro',
+    price: '€95/mês',
+    highlights: [
+      'Tudo do Standard',
+      'Apps Nativos (Client)',
+      'Relatórios: Insights Avançados',
+      '€15 de crédito para comunicações',
+    ],
   },
 ];
 
@@ -55,7 +55,10 @@ export async function createCheckoutSession(planCode, options = {}) {
 
   const checkoutUrl = response?.data?.checkout_url || response?.data?.url;
   if (!checkoutUrl) {
-    console.error('[BillingAPI] Checkout URL missing in response:', response?.data);
+    console.error(
+      '[BillingAPI] Checkout URL missing in response:',
+      response?.data
+    );
     throw new Error('Checkout URL not found in response');
   }
   return { url: checkoutUrl };
