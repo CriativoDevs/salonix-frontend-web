@@ -5,6 +5,7 @@ export const PLAN_OPTIONS = [
     code: 'founder',
     name: 'Founder',
     price: '€15/mês',
+    price_annual: '€150/ano',
     highlights: [
       'Preço Vitalício',
       'PWA Admin, Staff e Client',
@@ -16,6 +17,7 @@ export const PLAN_OPTIONS = [
     code: 'basic',
     name: 'Basic',
     price: '€29/mês',
+    price_annual: '€290/ano',
     highlights: [
       'PWA Admin, Staff e Client',
       'Relatórios: Visão Geral',
@@ -26,6 +28,7 @@ export const PLAN_OPTIONS = [
     code: 'standard',
     name: 'Standard',
     price: '€55/mês',
+    price_annual: '€550/ano',
     highlights: [
       'Tudo do Basic',
       'Apps Nativos (Admin / Staff)',
@@ -37,6 +40,7 @@ export const PLAN_OPTIONS = [
     code: 'pro',
     name: 'Pro',
     price: '€95/mês',
+    price_annual: '€950/ano',
     highlights: [
       'Tudo do Standard',
       'Apps Nativos (Client)',
@@ -47,7 +51,7 @@ export const PLAN_OPTIONS = [
 ];
 
 export async function createCheckoutSession(planCode, options = {}) {
-  const { slug } = options || {};
+  const { slug, interval = 'monthly' } = options || {};
 
   const headers = {};
   const params = {};
@@ -60,7 +64,7 @@ export async function createCheckoutSession(planCode, options = {}) {
   // e usem o endpoint correto: payments/stripe/create-checkout-session/
   const response = await client.post(
     'payments/stripe/create-checkout-session/',
-    { plan: planCode },
+    { plan: planCode, interval },
     { headers, params }
   );
 

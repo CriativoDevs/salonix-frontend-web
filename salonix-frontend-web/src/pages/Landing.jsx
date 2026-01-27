@@ -134,12 +134,7 @@ function Landing() {
   const { t } = useTranslation();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [plans, setPlans] = useState(() =>
-    PLAN_OPTIONS.filter((p) => p.code !== 'founder').map((p) => ({
-      name: p.name,
-      price: p.price,
-      highlights: p.highlights,
-      code: p.code,
-    }))
+    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
   );
 
   useEffect(() => {
@@ -149,24 +144,10 @@ function Landing() {
         const { available } = await checkFounderAvailability();
         if (available) {
           // Se Founder disponível: Mostra Founder, Esconde Basic
-          setPlans(
-            PLAN_OPTIONS.filter((p) => p.code !== 'basic').map((p) => ({
-              name: p.name,
-              price: p.price,
-              highlights: p.highlights,
-              code: p.code,
-            }))
-          );
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
         } else {
           // Se Founder não disponível: Esconde Founder (Basic aparece por padrão no filtro inicial)
-          setPlans(
-            PLAN_OPTIONS.filter((p) => p.code !== 'founder').map((p) => ({
-              name: p.name,
-              price: p.price,
-              highlights: p.highlights,
-              code: p.code,
-            }))
-          );
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
         }
       } catch (error) {
         console.error('Failed to check founder availability', error);
@@ -181,6 +162,9 @@ function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [installHelpOpen, setInstallHelpOpen] = useState(false);
+  const [billingCycle, setBillingCycle] = useState('monthly');
+  const [showFounderWarning, setShowFounderWarning] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   const toggleFaq = (i) => {
     setOpenFaqIndex((prev) => (prev === i ? null : i));
@@ -925,52 +909,146 @@ function Landing() {
                   'Escolha o plano que acompanha o crescimento do seu negócio.'
                 )}
               </p>
+
+              {/* Toggle Mensal/Anual */}
+              <div className="mt-8 flex justify-center">
+                <div className="relative flex rounded-full bg-slate-800 p-1">
+                  <button
+                    onClick={() => setBillingCycle('monthly')}
+                    className={`relative z-10 rounded-full px-6 py-2 text-sm font-medium transition-colors ${
+                      billingCycle === 'monthly'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Mensal
+                  </button>
+                  <button
+                    onClick={() => setBillingCycle('annual')}
+                    className={`relative z-10 flex items-center gap-2 rounded-full px-6 py-2 text-sm font-medium transition-colors ${
+                      billingCycle === 'annual'
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Anual
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                      -17%
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
-              {plans.map((plan) => (
-                <div
-                  key={plan.code}
-                  className={`flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
-                    plan.code === 'standard'
-                      ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
-                      : 'border border-white/10 hover:border-white/40'
-                  }`}
-                >
-                  <div className="flex-1 space-y-3">
-                    {plan.code === 'standard' && (
-                      <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
-                        {t('landing.pricing.most_chosen', 'Mais escolhido')}
-                      </span>
-                    )}
-                    <h3 className="text-2xl font-semibold">
-                      {t(`plans.options.${plan.code}.name`, plan.name)}
-                    </h3>
-                    <p className="text-3xl font-bold">
-                      {t(`plans.options.${plan.code}.price`, plan.price)}
-                    </p>
-                    <ul className="mt-4 space-y-2 text-sm text-slate-300">
-                      {plan.highlights.map((highlight, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <CheckCircle className="mt-0.5 h-4 w-4 text-emerald-400" />
-                          <span>
-                            {t(
-                              `plans.options.${plan.code}.highlights.${idx}`,
-                              highlight
-                            )}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <Link
-                    to="/register"
-                    className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
+              {plans.map((plan) => {
+                const isAnnual = billingCycle === 'annual';
+                const showPrice =
+                  isAnnual && plan.price_annual
+                    ? plan.price_annual
+                    : plan.price;
+
+                // Limpar o sufixo hardcoded se existir na string (apenas para exibição limpa se necessário)
+                // Mas como vem do objeto, vamos usar direto por enquanto.
+
+                return (
+                  <div
+                    key={plan.code}
+                    className={`flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
+                      plan.code === 'standard'
+                        ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
+                        : plan.code === 'founder'
+                          ? 'border border-yellow-500/50 bg-yellow-50/5'
+                          : 'border border-white/10 hover:border-white/40'
+                    }`}
                   >
-                    {t('landing.pricing.start_trial', 'Iniciar 14 dias grátis')}
-                  </Link>
-                </div>
-              ))}
+                    <div className="flex-1 space-y-3">
+                      {plan.code === 'founder' && (
+                        <div className="mb-2 inline-block rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">
+                          {t(
+                            'plans.founder.limited_badge',
+                            '⚠️ Limitado a 500 usuários'
+                          )}
+                        </div>
+                      )}
+                      {plan.code === 'standard' && (
+                        <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
+                          {t('landing.pricing.most_chosen', 'Mais escolhido')}
+                        </span>
+                      )}
+                      <h3 className="text-2xl font-semibold flex items-center gap-2">
+                        {t(`plans.options.${plan.code}.name`, plan.name)}
+                        {plan.code === 'founder' && (
+                          <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800">
+                            {t('plans.founder.offer_badge', 'Oferta Limitada')}
+                          </span>
+                        )}
+                      </h3>
+                      <div className="flex items-baseline gap-1">
+                        <p className="text-3xl font-bold">
+                          {t(
+                            `plans.options.${plan.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
+                            showPrice.replace('/mês', '').replace('/ano', '')
+                          )}
+                        </p>
+                        <span className="text-sm text-slate-400">
+                          {isAnnual ? '/ano' : '/mês'}
+                        </span>
+                      </div>
+
+                      {isAnnual && plan.price_annual && (
+                        <p className="text-xs text-emerald-400 font-medium">
+                          {plan.code === 'founder'
+                            ? t(
+                                'plans.founder.annual_savings',
+                                '(10 meses pagos, 2 grátis) - Vitalício'
+                              )
+                            : t('plans.savings', 'Poupe 2 meses')}
+                        </p>
+                      )}
+
+                      <ul className="mt-4 space-y-2 text-sm text-slate-300">
+                        {plan.highlights.map((highlight, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <CheckCircle className="mt-0.5 h-4 w-4 text-emerald-400" />
+                            <span>
+                              {t(
+                                `plans.options.${plan.code}.highlights.${idx}`,
+                                highlight
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    {plan.code === 'founder' ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPlan(plan);
+                          setShowFounderWarning(true);
+                        }}
+                        className="mt-6 font-medium text-indigo-300 hover:text-indigo-200 text-left"
+                      >
+                        {t(
+                          'landing.pricing.start_trial',
+                          'Iniciar 14 dias grátis'
+                        )}
+                      </button>
+                    ) : (
+                      <Link
+                        to={`/register${isAnnual && plan.price_annual ? '?interval=annual' : ''}`}
+                        className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
+                      >
+                        {t(
+                          'landing.pricing.start_trial',
+                          'Iniciar 14 dias grátis'
+                        )}
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1249,6 +1327,75 @@ function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Modal de Warning do Plano Founder */}
+      {showFounderWarning && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex-shrink-0 rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
+                <svg
+                  className="h-6 w-6 text-amber-600 dark:text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
+                  {t(
+                    'plans.founder.warning_title',
+                    'Plano Founder: Limitações Importantes'
+                  )}
+                </h3>
+                <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
+                  {t(
+                    'plans.founder.warning_message',
+                    'O Plano Founder é limitado a 500 usuários ativos por salão. Após esse limite, será necessário fazer upgrade para outro plano.'
+                  )}
+                </p>
+                <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+                  <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                    {t(
+                      'plans.founder.warning_note',
+                      '💡 Este plano foi criado para apoiar os primeiros 500 clientes da TimelyOne.'
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="flex-1 text-center text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
+                onClick={() => {
+                  setShowFounderWarning(false);
+                  setSelectedPlan(null);
+                }}
+              >
+                {t('plans.founder.warning_cancel', 'Cancelar')}
+              </button>
+              <Link
+                to={`/register${billingCycle === 'annual' && selectedPlan.price_annual ? '?interval=annual' : ''}`}
+                className="flex-1 text-center text-sm font-medium text-brand-primary hover:text-brand-primary/80 hover:underline dark:text-brand-primary-light"
+                onClick={() => {
+                  setShowFounderWarning(false);
+                  setSelectedPlan(null);
+                }}
+              >
+                {t('plans.founder.warning_confirm', 'Entendi, Continuar')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

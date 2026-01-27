@@ -21,7 +21,7 @@ describe('billing api', () => {
 
     expect(client.post).toHaveBeenCalledWith(
       'payments/stripe/create-checkout-session/',
-      { plan: 'standard' },
+      { plan: 'standard', interval: 'monthly' },
       { headers: { 'X-Tenant-Slug': 'aurora' }, params: { tenant: 'aurora' } }
     );
     expect(payload.url).toBe('https://stripe.example/checkout');

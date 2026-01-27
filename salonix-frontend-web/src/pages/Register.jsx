@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
@@ -17,6 +17,7 @@ import CaptchaGate from '../components/security/CaptchaGate';
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { applyTenantBootstrap } = useTenant();
   const { login } = useAuth();
   const [form, setForm] = useState({
@@ -92,8 +93,13 @@ function Register() {
         // Redirecionamento explícito, sem depender do PublicRoute consumir o agendamento.
         // Isso evita race conditions e falhas de sessionStorage.
         const target = enablePlans ? '/register/checkout' : '/dashboard';
-        trace('register:auto-login:success', target);
-        navigate(target, { replace: true });
+        const interval = searchParams.get('interval');
+        const targetWithParams = interval
+          ? `${target}?interval=${interval}`
+          : target;
+
+        trace('register:auto-login:success', targetWithParams);
+        navigate(targetWithParams, { replace: true });
       } catch {
         // Se auto-login falhar por qualquer motivo, segue fluxo antigo
         trace('register:auto-login:fail');
