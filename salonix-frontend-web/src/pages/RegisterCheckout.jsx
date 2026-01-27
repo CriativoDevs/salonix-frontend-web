@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
+import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
@@ -9,7 +10,24 @@ function RegisterCheckout() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { slug } = useTenant();
-  const plans = useMemo(() => PLAN_OPTIONS, []);
+  const [plans, setPlans] = useState(() =>
+    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  );
+
+  useEffect(() => {
+    checkFounderAvailability()
+      .then(({ available }) => {
+        if (available) {
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
+        } else {
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
+        }
+      })
+      .catch(() => {
+        setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
+      });
+  }, []);
+
   const [selected, setSelected] = useState('standard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,7 +48,12 @@ function RegisterCheckout() {
         });
       }
     } catch (e) {
-      setError(parseApiError(e, t('plans.checkout_error', 'Falha ao iniciar checkout.')));
+      setError(
+        parseApiError(
+          e,
+          t('plans.checkout_error', 'Falha ao iniciar checkout.')
+        )
+      );
     } finally {
       setLoading(false);
     }
@@ -43,7 +66,10 @@ function RegisterCheckout() {
           {t('register.checkout.title', 'Escolha seu plano')}
         </h1>
         <p className="mt-2 text-center text-sm text-brand-surfaceForeground/70">
-          {t('register.checkout.subtitle', 'Conclua o registro selecionando um plano')}
+          {t(
+            'register.checkout.subtitle',
+            'Conclua o registro selecionando um plano'
+          )}
         </p>
 
         {error && (
@@ -58,7 +84,9 @@ function RegisterCheckout() {
               key={p.code}
               type="button"
               className={`rounded border p-4 text-left transition hover:shadow ${
-                selected === p.code ? 'border-brand-primary ring-2 ring-brand-primary/40' : 'border-brand-border'
+                selected === p.code
+                  ? 'border-brand-primary ring-2 ring-brand-primary/40'
+                  : 'border-brand-border'
               }`}
               onClick={() => setSelected(p.code)}
             >
@@ -68,7 +96,9 @@ function RegisterCheckout() {
               {Array.isArray(p.highlights) && p.highlights.length ? (
                 <ul className="mt-2 list-disc pl-4 text-xs text-brand-surfaceForeground/60">
                   {p.highlights.slice(0, 4).map((h, idx) => (
-                    <li key={idx}>{t(`plans.options.${p.code}.highlights.${idx}`, h)}</li>
+                    <li key={idx}>
+                      {t(`plans.options.${p.code}.highlights.${idx}`, h)}
+                    </li>
                   ))}
                 </ul>
               ) : null}
@@ -83,11 +113,16 @@ function RegisterCheckout() {
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? t('common.processing', 'Aguarde…') : t('plans.continue_checkout', 'Continuar para checkout')}
+            {loading
+              ? t('common.processing', 'Aguarde…')
+              : t('plans.continue_checkout', 'Continuar para checkout')}
           </button>
         </div>
         <p className="mt-3 text-center text-xs text-brand-surfaceForeground/60">
-          {t('plans.dev_hint', 'Dica: defina VITE_BILLING_MOCK=true para simular checkout em desenvolvimento.')}
+          {t(
+            'plans.dev_hint',
+            'Dica: defina VITE_BILLING_MOCK=true para simular checkout em desenvolvimento.'
+          )}
         </p>
       </div>
     </div>

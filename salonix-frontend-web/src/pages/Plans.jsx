@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -7,6 +7,7 @@ import {
   createCheckoutSession,
   createBillingPortalSession,
 } from '../api/billing';
+import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
@@ -27,8 +28,39 @@ function Plans() {
   const [managing, setManaging] = useState(false);
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [founderAvailable, setFounderAvailable] = useState(false);
 
-  const plans = useMemo(() => PLAN_OPTIONS, []);
+  const [plans, setPlans] = useState(() =>
+    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  );
+
+  useEffect(() => {
+    checkFounderAvailability()
+      .then(({ available }) => setFounderAvailable(available))
+      .catch(() => setFounderAvailable(false));
+  }, []);
+
+  useEffect(() => {
+    const subscriptionCode = (
+      overview?.current_subscription?.plan_code || ''
+    ).toLowerCase();
+    const tenantTier = (plan?.tier || plan?.code || '').toLowerCase();
+    const isFounder =
+      subscriptionCode === 'founder' || tenantTier === 'founder';
+
+    if (isFounder || founderAvailable) {
+      // Se já é Founder OU Founder está disponível: Mostra Founder, Esconde Basic
+      setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
+    } else {
+      // Se não é Founder E não está disponível: Esconde Founder (Basic aparece)
+      setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
+    }
+  }, [
+    overview?.current_subscription?.plan_code,
+    plan?.tier,
+    plan?.code,
+    founderAvailable,
+  ]);
 
   useEffect(() => {
     if (
@@ -51,7 +83,7 @@ function Plans() {
     const candidate = fromOverview || tier;
     if (
       candidate &&
-      ['basic', 'standard', 'pro'].includes(candidate)
+      ['basic', 'standard', 'pro', 'founder'].includes(candidate)
     ) {
       setSelected(candidate);
     }
@@ -201,15 +233,22 @@ function Plans() {
             <button
               key={p.code}
               type="button"
-              className={`rounded border p-4 text-left transition hover:shadow ${
+              className={`rounded border p-4 text-left transition hover:shadow relative ${
                 selected === p.code
                   ? 'border-brand-primary ring-2 ring-brand-primary/40'
-                  : 'border-gray-200'
+                  : p.code === 'founder'
+                    ? 'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-900/10'
+                    : 'border-gray-200'
               }`}
               onClick={() => setSelected(p.code)}
             >
-              <div className="text-lg font-semibold">
+              <div className="text-lg font-semibold flex items-center gap-2">
                 {t(`plans.options.${p.code}.name`, p.name)}
+                {p.code === 'founder' && (
+                  <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                    {t(`plans.options.${p.code}.badge`, 'Oferta Limitada')}
+                  </span>
+                )}
               </div>
               <div className="text-sm text-gray-500">
                 {t(`plans.options.${p.code}.price`, p.price)}

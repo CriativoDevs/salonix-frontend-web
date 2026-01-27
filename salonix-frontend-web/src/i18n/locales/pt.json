@@ -970,6 +970,17 @@
     "portal_link_error": "Não foi possível obter o link do portal.",
     "portal_error": "Falha ao abrir o portal de faturação.",
     "options": {
+      "founder": {
+        "name": "Founder",
+        "price": "€15/mês",
+        "badge": "Oferta Limitada",
+        "highlights": {
+          "0": "Preço Vitalício",
+          "1": "PWA Admin, Staff e Client",
+          "2": "Relatórios: Visão Geral",
+          "3": "€5 de crédito para comunicações"
+        }
+      },
       "basic": {
         "name": "Basic",
         "price": "€29/mês",

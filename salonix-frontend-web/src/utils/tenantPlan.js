@@ -1,20 +1,26 @@
 import { DEFAULT_TENANT_META, PLAN_NAME_BY_TIER } from './tenant';
 
 export const PLAN_TIER_PRIORITY = {
-  starter: 0,
+  founder: 1,
   basic: 1,
   standard: 2,
   pro: 3,
 };
 
-export function resolvePlanTier(plan, fallbackTier = DEFAULT_TENANT_META.plan.tier) {
+export function resolvePlanTier(
+  plan,
+  fallbackTier = DEFAULT_TENANT_META.plan.tier
+) {
   if (plan && typeof plan === 'object') {
     return plan.tier || plan.code || fallbackTier;
   }
   return fallbackTier;
 }
 
-export function resolvePlanName(plan, fallbackName = DEFAULT_TENANT_META.plan.name) {
+export function resolvePlanName(
+  plan,
+  fallbackName = DEFAULT_TENANT_META.plan.name
+) {
   const tier = resolvePlanTier(plan);
   if (plan && typeof plan === 'object') {
     if (plan.name && typeof plan.name === 'string') {
@@ -34,19 +40,19 @@ export function resolvePlanName(plan, fallbackName = DEFAULT_TENANT_META.plan.na
 }
 
 const MODULE_KEY_ALIASES = {
-  'reports': 'reports',
+  reports: 'reports',
   'relatórios avançados': 'reports',
   'advanced reports': 'reports',
-  'pwa_admin': 'pwa_admin',
+  pwa_admin: 'pwa_admin',
   'painel administrativo (pwa)': 'pwa_admin',
   'admin pwa': 'pwa_admin',
-  'pwa_client': 'pwa_client',
+  pwa_client: 'pwa_client',
   'pwa cliente': 'pwa_client',
   'pwa client': 'pwa_client',
-  'rn_admin': 'rn_admin',
+  rn_admin: 'rn_admin',
   'app admin (react native)': 'rn_admin',
   'rn admin': 'rn_admin',
-  'rn_client': 'rn_client',
+  rn_client: 'rn_client',
   'app cliente (react native)': 'rn_client',
   'rn client': 'rn_client',
 };
@@ -77,7 +83,8 @@ export function resolvePlanModules(
     if (normalized.length > 0) return [...new Set(normalized)];
   }
 
-  const planFeatures = plan && Array.isArray(plan.features) ? plan.features : [];
+  const planFeatures =
+    plan && Array.isArray(plan.features) ? plan.features : [];
   const planAddons = plan && Array.isArray(plan.addons) ? plan.addons : [];
   const combined = [...planFeatures, ...planAddons]
     .map(normalizeModuleKey)
@@ -94,7 +101,7 @@ export function resolvePlanModules(
     if (normalizedFallback.length > 0) return [...new Set(normalizedFallback)];
   }
 
-  return []; 
+  return [];
 }
 
 export function comparePlanTiers(requiredTier, currentTier) {

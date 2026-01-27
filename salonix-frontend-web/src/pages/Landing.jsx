@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   CheckCircle,
   ArrowRight,
@@ -23,13 +23,6 @@ import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 import LanguageToggle from '../components/ui/LanguageToggle';
 import { PLAN_OPTIONS } from '../api/billing';
 import Modal from '../components/ui/Modal';
-
-const plans = PLAN_OPTIONS.map((p) => ({
-  name: p.name,
-  price: p.price,
-  highlights: p.highlights,
-  code: p.code,
-}));
 
 const metrics = [
   { value: '+52%', label: 'Clientes a reservar online' },
@@ -140,6 +133,47 @@ const screenshots = [
 function Landing() {
   const { t } = useTranslation();
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [plans, setPlans] = useState(() =>
+    PLAN_OPTIONS.filter((p) => p.code !== 'founder').map((p) => ({
+      name: p.name,
+      price: p.price,
+      highlights: p.highlights,
+      code: p.code,
+    }))
+  );
+
+  useEffect(() => {
+    async function fetchAvailability() {
+      try {
+        const { checkFounderAvailability } = await import('../api/users');
+        const { available } = await checkFounderAvailability();
+        if (available) {
+          // Se Founder disponível: Mostra Founder, Esconde Basic
+          setPlans(
+            PLAN_OPTIONS.filter((p) => p.code !== 'basic').map((p) => ({
+              name: p.name,
+              price: p.price,
+              highlights: p.highlights,
+              code: p.code,
+            }))
+          );
+        } else {
+          // Se Founder não disponível: Esconde Founder (Basic aparece por padrão no filtro inicial)
+          setPlans(
+            PLAN_OPTIONS.filter((p) => p.code !== 'founder').map((p) => ({
+              name: p.name,
+              price: p.price,
+              highlights: p.highlights,
+              code: p.code,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error('Failed to check founder availability', error);
+      }
+    }
+    fetchAvailability();
+  }, []);
   const screenshotsRef = useRef(null);
   const [screenshotsProgress, setScreenshotsProgress] = useState(0);
   const [activeShot, setActiveShot] = useState(null);
