@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
+import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
@@ -22,7 +23,23 @@ export default function PlanOnboarding() {
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const plans = useMemo(() => PLAN_OPTIONS, []);
+  const [plans, setPlans] = useState(() =>
+    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  );
+
+  useEffect(() => {
+    checkFounderAvailability()
+      .then(({ available }) => {
+        if (available) {
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
+        } else {
+          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
+        }
+      })
+      .catch(() => {
+        setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
+      });
+  }, []);
 
   useEffect(() => {
     if (overview) {
@@ -41,10 +58,7 @@ export default function PlanOnboarding() {
     ).toLowerCase();
     const tier = (plan?.tier || plan?.code || '').toLowerCase();
     const candidate = fromOverview || tier;
-    if (
-      candidate &&
-      ['basic', 'standard', 'pro'].includes(candidate)
-    ) {
+    if (candidate && ['basic', 'standard', 'pro'].includes(candidate)) {
       setSelected(candidate);
     }
   }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code]);

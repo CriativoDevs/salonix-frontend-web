@@ -2,6 +2,17 @@ import client from './client';
 
 export const PLAN_OPTIONS = [
   {
+    code: 'founder',
+    name: 'Founder',
+    price: '€15/mês',
+    highlights: [
+      'Preço Vitalício',
+      'PWA Admin, Staff e Client',
+      'Relatórios: Visão Geral',
+      '€5 de crédito para comunicações',
+    ],
+  },
+  {
     code: 'basic',
     name: 'Basic',
     price: '€29/mês',

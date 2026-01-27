@@ -20,6 +20,7 @@ const runtimeDefaultSlug = (() => {
 const envDefaultSlug = String(runtimeDefaultSlug).toLowerCase();
 
 export const PLAN_NAME_BY_TIER = {
+  founder: 'Founder',
   basic: 'Basic',
   standard: 'Standard',
   pro: 'Pro',
