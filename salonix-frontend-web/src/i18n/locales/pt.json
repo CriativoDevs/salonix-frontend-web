@@ -1402,5 +1402,67 @@
       "period_label": "Dados de {{start}} até {{end}}",
       "coming_soon": "Em breve: Relatórios de Retenção e Cohort Analysis"
     }
+  },
+  "client_login": {
+    "title": "Área do Cliente",
+    "subtitle": "Acesse seus agendamentos",
+    "email": "E-mail",
+    "email_placeholder": "seu@email.com",
+    "password": "Senha",
+    "password_placeholder": "Sua senha",
+    "tenant_slug": "Identificação do Estabelecimento",
+    "tenant_slug_placeholder": "nome-do-estabelecimento",
+    "tenant_slug_help": "É o identificador único que aparece no topo da área de cliente. Se não souber, entre em contato com o estabelecimento.",
+    "submit": "Entrar",
+    "forgot_password": "Esqueceu a senha?",
+    "no_password": "Ainda não tem senha? Solicite um link de acesso",
+    "are_you_professional": "É profissional? Aceda ao painel",
+    "errors": {
+      "email_required": "E-mail é obrigatório",
+      "email_invalid": "E-mail inválido",
+      "password_required": "Senha é obrigatória",
+      "password_too_short": "Senha deve ter no mínimo 6 caracteres",
+      "tenant_required": "Identificação do estabelecimento é obrigatória",
+      "invalid_credentials": "Email ou senha incorretos",
+      "no_password_set": "Você ainda não tem senha. Solicite um link de acesso.",
+      "tenant_invalid": "Estabelecimento não encontrado. Verifique o identificador digitado.",
+      "feature_disabled": "Este estabelecimento não possui área de clientes habilitada.",
+      "too_many_attempts": "Muitas tentativas. Aguarde alguns minutos."
+    }
+  },
+  "client_enter": {
+    "already_have_password": "Já tem senha? Faça login",
+    "submit": "Enviar link de acesso",
+    "sending": "Enviando…",
+    "success_title": "Email enviado!",
+    "success_message": "Verifique sua caixa de entrada e clique no link de acesso.",
+    "how_to_access": "Como acessar o link?",
+    "instructions_modal": {
+      "title": "Verifique seu email",
+      "step1": "1. Abra seu email",
+      "step2": "2. Procure por mensagem de 'TimelyOne'",
+      "step3": "3. Clique no link de acesso",
+      "step4": "4. Se não encontrar, verifique a pasta de spam",
+      "validity": "O link expira em 15 minutos",
+      "close": "Entendi"
+    }
+  },
+  "client_set_password": {
+    "title": "Defina sua Senha",
+    "subtitle": "Crie uma senha para acessar sua área",
+    "password": "Nova Senha",
+    "password_placeholder": "Mínimo 6 caracteres",
+    "confirm_password": "Confirme a Senha",
+    "confirm_password_placeholder": "Digite a senha novamente",
+    "submit": "Definir Senha",
+    "errors": {
+      "password_required": "Senha é obrigatória",
+      "password_too_short": "Senha deve ter no mínimo 6 caracteres",
+      "confirm_password_required": "Confirmação de senha é obrigatória",
+      "passwords_mismatch": "As senhas não coincidem",
+      "session_expired": "Sua sessão expirou. Solicite um novo link de acesso.",
+      "session_required": "Sessão não encontrada. Acesse via link de email."
+    },
+    "success": "Senha definida com sucesso! Redirecionando..."
   }
 }

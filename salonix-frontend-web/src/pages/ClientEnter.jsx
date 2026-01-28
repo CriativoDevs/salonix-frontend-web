@@ -54,7 +54,7 @@ export default function ClientEnter() {
               variant="link"
               disabled={loading || !email}
             >
-              {loading ? t('Enviando…') : t('Enviar link de acesso')}
+              {loading ? t('client_enter.sending') : t('client_enter.submit')}
             </FormButton>
             {error && (
               <p className="text-sm text-red-600 text-center">
@@ -64,15 +64,29 @@ export default function ClientEnter() {
           </>
         )}
         {success && (
-          <div className="text-center space-y-2">
-            <p className="text-green-700">
-              {t('Se existir cadastro, enviaremos o link.')}
-            </p>
-            <p className="text-sm text-gray-600">
-              {t('Verifique seu e-mail e siga as instruções.')}
-            </p>
+          <div className="text-center space-y-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 className="text-green-800 font-medium mb-2">
+                {t('client_enter.success_title')}
+              </h3>
+              <p className="text-green-700 text-sm">
+                {t('client_enter.success_message')}
+              </p>
+            </div>
           </div>
         )}
+
+        <div className="mt-4 text-sm text-center">
+          <Link
+            to="/client/login"
+            className="text-brand-primary hover:text-brand-primary/80 underline"
+          >
+            {t(
+              'client_enter.already_have_password',
+              'Já tem senha? Faça login'
+            )}
+          </Link>
+        </div>
 
         <div className="mt-6 text-center border-t border-gray-100 pt-3">
           <Link
