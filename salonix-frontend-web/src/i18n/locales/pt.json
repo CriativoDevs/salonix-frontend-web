@@ -973,12 +973,13 @@
       "founder": {
         "name": "Founder",
         "price": "€15/mês",
+        "price_annual": "€150/ano",
         "badge": "Oferta Limitada",
         "highlights": {
-          "0": "Preço Vitalício",
-          "1": "PWA Admin, Staff e Client",
-          "2": "Relatórios: Visão Geral",
-          "3": "€5 de crédito para comunicações"
+          "0": "Tudo do Pro",
+          "1": "Preço Vitalício Garantido",
+          "2": "Limitado a 500 salões",
+          "3": "€20 de crédito para comunicações"
         }
       },
       "basic": {
@@ -1010,6 +1011,16 @@
           "3": "€15 de crédito para comunicações"
         }
       }
+    },
+    "founder": {
+      "limited_badge": "⚠️ Limitado a 500 usuários",
+      "offer_badge": "Oferta Limitada",
+      "annual_savings": "(10 meses pagos, 2 grátis) - Vitalício",
+      "warning_title": "Plano Founder: Limitações Importantes",
+      "warning_message": "O Plano Founder é limitado a 500 usuários ativos por salão. Após esse limite, será necessário fazer upgrade para outro plano.",
+      "warning_note": "💡 Este plano foi criado para apoiar os primeiros 500 clientes da TimelyOne.",
+      "warning_cancel": "Cancelar",
+      "warning_confirm": "Entendi, Continuar"
     }
   },
   "reports": {

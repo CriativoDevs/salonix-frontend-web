@@ -1002,7 +1002,29 @@
           "2": "Reports: Advanced Insights",
           "3": "€15 communication credit"
         }
+      },
+      "founder": {
+        "name": "Founder",
+        "price": "€15/month",
+        "price_annual": "€150/year",
+        "badge": "Limited Offer",
+        "highlights": {
+          "0": "Everything in Pro",
+          "1": "Lifetime price guarantee",
+          "2": "Limited to 500 businesses",
+          "3": "€20 communication credit"
+        }
       }
+    },
+    "founder": {
+      "limited_badge": "⚠️ Limited to 500 users",
+      "offer_badge": "Limited Offer",
+      "annual_savings": "(10 months paid, 2 free) - Lifetime",
+      "warning_title": "Founder Plan: Important Limitations",
+      "warning_message": "The Founder Plan is limited to 500 active users per business. After this limit, you'll need to upgrade to another plan.",
+      "warning_note": "💡 This plan was created to support TimelyOne's first 500 customers.",
+      "warning_cancel": "Cancel",
+      "warning_confirm": "I Understand, Continue"
     }
   },
   "reports": {

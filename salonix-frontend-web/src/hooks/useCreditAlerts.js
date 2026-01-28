@@ -3,7 +3,7 @@ import useCreditBalance from './useCreditBalance';
 
 const STORAGE_KEY = 'salonix_credit_alerts';
 const DEFAULT_SETTINGS = {
-  threshold: 50,
+  threshold: 1,
   enabled: true,
 };
 
@@ -16,7 +16,9 @@ export default function useCreditAlerts() {
   const [settings, setSettings] = useState(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SETTINGS;
+      return stored
+        ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) }
+        : DEFAULT_SETTINGS;
     } catch {
       return DEFAULT_SETTINGS;
     }

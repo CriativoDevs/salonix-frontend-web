@@ -14,6 +14,7 @@ jest.mock('../../api/auth');
 jest.mock('../../hooks/useTenant');
 jest.mock('react-router-dom', () => ({
   useNavigate: () => jest.fn(),
+  useSearchParams: () => [new URLSearchParams(), jest.fn()],
   Link: ({ children }) => <div>{children}</div>,
 }));
 jest.mock('react-i18next', () => ({
