@@ -1,11 +1,10 @@
 import BrandLogo from '../components/ui/BrandLogo';
-import { useTenant } from '../hooks/useTenant';
-import { resolveTenantAssetUrl } from '../utils/tenant';
 
 export default function AuthLayout({ children }) {
-  const { tenant, branding } = useTenant();
-  const displayName = tenant?.name || branding?.appName || 'TimelyOne';
-  const logoUrl = resolveTenantAssetUrl(branding?.logoUrl);
+  // AuthLayout is for public pages (login, register, etc.)
+  // Always show "TimelyOne" branding, not tenant-specific branding
+  const displayName = 'TimelyOne';
+  const logoUrl = null; // Use default TimelyOne logo
 
   return (
     <div className="min-h-screen min-h-[100dvh] flex items-center justify-center theme-bg-primary px-4 md:bg-gradient-to-br md:from-brand-100 md:via-brand-50 md:to-white">

@@ -1405,5 +1405,67 @@
       "period_label": "Data from {{start}} to {{end}}",
       "coming_soon": "Coming soon: Retention Reports and Cohort Analysis"
     }
+  },
+  "client_login": {
+    "title": "Client Area",
+    "subtitle": "Access your appointments",
+    "email": "Email",
+    "email_placeholder": "your@email.com",
+    "password": "Password",
+    "password_placeholder": "Your password",
+    "tenant_slug": "Business Identifier",
+    "tenant_slug_placeholder": "business-name",
+    "tenant_slug_help": "It's the unique identifier shown at the top of the client area. If unsure, contact the business.",
+    "submit": "Sign In",
+    "forgot_password": "Forgot your password?",
+    "no_password": "Don't have a password? Request an access link",
+    "are_you_professional": "Are you a professional? Access the panel",
+    "errors": {
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email",
+      "password_required": "Password is required",
+      "password_too_short": "Password must be at least 6 characters",
+      "tenant_required": "Business identifier is required",
+      "invalid_credentials": "Invalid email or password",
+      "no_password_set": "You don't have a password yet. Request an access link.",
+      "tenant_invalid": "Business not found. Check the identifier you entered.",
+      "feature_disabled": "This business does not have client area enabled.",
+      "too_many_attempts": "Too many attempts. Please wait a few minutes."
+    }
+  },
+  "client_enter": {
+    "already_have_password": "Already have a password? Sign in",
+    "submit": "Send access link",
+    "sending": "Sending…",
+    "success_title": "Email sent!",
+    "success_message": "Check your inbox and click the access link.",
+    "how_to_access": "How to access the link?",
+    "instructions_modal": {
+      "title": "Check your email",
+      "step1": "1. Open your email",
+      "step2": "2. Look for a message from 'TimelyOne'",
+      "step3": "3. Click on the access link",
+      "step4": "4. If you can't find it, check your spam folder",
+      "validity": "The link expires in 15 minutes",
+      "close": "Got it"
+    }
+  },
+  "client_set_password": {
+    "title": "Set Your Password",
+    "subtitle": "Create a password to access your area",
+    "password": "New Password",
+    "password_placeholder": "Minimum 6 characters",
+    "confirm_password": "Confirm Password",
+    "confirm_password_placeholder": "Type password again",
+    "submit": "Set Password",
+    "errors": {
+      "password_required": "Password is required",
+      "password_too_short": "Password must be at least 6 characters",
+      "confirm_password_required": "Password confirmation is required",
+      "passwords_mismatch": "Passwords do not match",
+      "session_expired": "Your session has expired. Request a new access link.",
+      "session_required": "Session not found. Access via email link."
+    },
+    "success": "Password set successfully! Redirecting..."
   }
 }

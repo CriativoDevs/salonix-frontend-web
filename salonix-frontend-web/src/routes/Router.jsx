@@ -25,6 +25,8 @@ import Plans from '../pages/Plans';
 import PlanCheckoutMock from '../pages/PlanCheckoutMock';
 import BillingSuccess from '../pages/BillingSuccess';
 import ClientEnter from '../pages/ClientEnter';
+import ClientLogin from '../pages/ClientLogin';
+import ClientSetPassword from '../pages/ClientSetPassword';
 import ClientAccess from '../pages/ClientAccess';
 import ClientPrivateRoute from './ClientPrivateRoute';
 import ClientDashboard from '../pages/ClientDashboard';
@@ -125,6 +127,8 @@ function Router() {
       />
       <Route path="/staff/accept" element={<StaffInviteAccept />} />
       <Route path="/client/enter" element={<ClientEnter />} />
+      <Route path="/client/login" element={<ClientLogin />} />
+      <Route path="/client/set-password" element={<ClientSetPassword />} />
       <Route path="/client/access" element={<ClientAccess />} />
       <Route
         path="/client/dashboard"

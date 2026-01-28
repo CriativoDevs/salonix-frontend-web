@@ -42,7 +42,13 @@ export default function ClientAccess() {
         } catch {
           /* ignore */
         }
-        navigate('/client/dashboard', { replace: true });
+
+        // Redirecionar baseado em has_password
+        if (data.has_password === false) {
+          navigate('/client/set-password', { replace: true });
+        } else {
+          navigate('/client/appointments', { replace: true });
+        }
       } catch (err) {
         const detail =
           err?.response?.data?.detail ||
