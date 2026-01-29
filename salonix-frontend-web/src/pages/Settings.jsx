@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { LockIcon } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
@@ -15,6 +16,8 @@ import billingOverviewApi from '../api/billingOverview';
 import useBillingOverview from '../hooks/useBillingOverview';
 import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
+import UpgradePrompt from '../components/security/UpgradePrompt';
+import useFeatureLock from '../hooks/useFeatureLock';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from '../utils/tenant';
 import { parseApiError } from '../utils/apiError';
 import {
@@ -1962,6 +1965,10 @@ function Settings() {
     useBillingOverview();
   // SSE desativado: atualização manual via badge (CreditBadge)
 
+  // Verificações de permissões por feature
+  const { isLocked: pwaClientLocked, requiredTier: pwaClientTier } =
+    useFeatureLock('enableCustomerPwa');
+
   const initialSettings = useMemo(
     () => buildInitialSettings(profile, channels, branding, tenant),
     [profile, channels, branding, tenant]
@@ -2880,13 +2887,31 @@ function Settings() {
           </div>
         </Card>
 
-        <PlanGate featureKey="enableCustomerPwa">
+        <PlanGate
+          featureKey="enableCustomerPwa"
+          fallback={
+            <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
+              <UpgradePrompt featureKey="enableCustomerPwa" variant="inline" />
+            </Card>
+          }
+        >
           <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-brand-surfaceForeground">
-                  {t('settings.pwa_client.title', 'PWA Cliente')}
-                </h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-brand-surfaceForeground">
+                    {t('settings.pwa_client.title', 'PWA Cliente')}
+                  </h3>
+                  {pwaClientLocked && (
+                    <LockIcon
+                      className="h-4 w-4 text-brand-surfaceForeground/40"
+                      title={t('upgrade.available_in_plan', {
+                        plan: pwaClientTier,
+                        defaultValue: `Disponível no plano ${pwaClientTier}`,
+                      })}
+                    />
+                  )}
+                </div>
                 <p className="text-sm text-brand-surfaceForeground/80">
                   {t(
                     'settings.pwa_client.description',
@@ -2918,10 +2943,18 @@ function Settings() {
                       'Alternar convites automáticos'
                     )}
                     onClick={handleAutoInviteToggle}
-                    disabled={autoInviteSaving}
+                    disabled={autoInviteSaving || pwaClientLocked}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
                       autoInviteEnabled ? 'bg-brand-primary' : 'bg-gray-300'
-                    } ${autoInviteSaving ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    } ${autoInviteSaving || pwaClientLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                    title={
+                      pwaClientLocked
+                        ? t('upgrade.available_in_plan', {
+                            plan: pwaClientTier,
+                            defaultValue: `Disponível no plano ${pwaClientTier}`,
+                          })
+                        : ''
+                    }
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -2957,10 +2990,18 @@ function Settings() {
                     'Alternar PWA Cliente'
                   )}
                   onClick={handlePwaClientToggle}
-                  disabled={pwaClientSaving || tenantLoading}
+                  disabled={pwaClientSaving || tenantLoading || pwaClientLocked}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     pwaClientEnabled ? 'bg-brand-primary' : 'bg-gray-300'
-                  } ${pwaClientSaving || tenantLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  } ${pwaClientSaving || tenantLoading || pwaClientLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  title={
+                    pwaClientLocked
+                      ? t('upgrade.available_in_plan', {
+                          plan: pwaClientTier,
+                          defaultValue: `Disponível no plano ${pwaClientTier}`,
+                        })
+                      : ''
+                  }
                 >
                   <span
                     className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${

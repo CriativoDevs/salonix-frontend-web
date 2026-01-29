@@ -13,53 +13,70 @@ import {
   BarChartIcon,
   ClockIcon,
   LogOutIcon,
+  LockIcon,
 } from 'lucide-react';
+import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
-import { useStaff } from '../../hooks/useStaff';
 import BrandLogo from './BrandLogo';
 import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 
+// Componente auxiliar para links móveis com verificação de bloqueio
+function MobileNavLinkWithLock({
+  to,
+  icon: IconComponent,
+  label,
+  featureKey,
+  onClick,
+}) {
+  const { t } = useTranslation();
+  const { isLocked, requiredTier } = useFeatureLock(featureKey);
+  const Icon = IconComponent;
+
+  return (
+    <NavLink
+      to={to}
+      onClick={onClick}
+      className="flex flex-col items-center justify-center p-4 rounded-xl border border-brand-border hover:bg-brand-light hover:border-brand-border hover:shadow-md transition-all duration-200 group relative"
+      title={
+        isLocked
+          ? t('upgrade.available_in_plan', {
+              plan: requiredTier,
+              defaultValue: `Disponível no plano ${requiredTier}`,
+            })
+          : ''
+      }
+    >
+      <div className="w-12 h-12 bg-brand-light rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-light/80 transition-colors relative">
+        <Icon className="h-6 w-6 text-brand-surfaceForeground group-hover:text-brand-primary" />
+        {isLocked && (
+          <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand-surface rounded-full flex items-center justify-center border border-brand-border">
+            <LockIcon className="h-2.5 w-2.5 text-brand-surfaceForeground/60" />
+          </div>
+        )}
+      </div>
+      <span className="text-sm font-medium text-brand-surfaceForeground group-hover:text-brand-surfaceForeground underline underline-offset-4 text-center">
+        {label}
+      </span>
+    </NavLink>
+  );
+}
+
 function MobileNav() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const { tenant, branding, slug } = useTenant();
-  // Don't fetch staff list in navigation - only pages that need it should fetch
-  // This prevents 403 errors for staff users who can't access the staff list endpoint
-  const { staff } = useStaff({ slug, skipFetch: true });
+  const { tenant, branding } = useTenant();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const displayName = tenant?.name || 'TimelyOne';
 
-  // Determinar papel do usuário atual
+  // Determinar papel do usuário atual - usar staff_role do backend
   const currentUserRole = useMemo(() => {
-    if (!Array.isArray(staff) || !user) {
-      return null;
-    }
-
-    const email =
-      typeof user.email === 'string' ? user.email.toLowerCase() : null;
-    const username =
-      typeof user.username === 'string' ? user.username.toLowerCase() : null;
-
-    const match = staff.find((member) => {
-      const memberEmail =
-        typeof member.email === 'string' ? member.email.toLowerCase() : null;
-      const memberUsername =
-        typeof member.username === 'string'
-          ? member.username.toLowerCase()
-          : null;
-
-      return (
-        (email && memberEmail === email) ||
-        (username && memberUsername === username)
-      );
-    });
-
-    return match?.role || null;
-  }, [staff, user]);
+    // O backend retorna staff_role diretamente no user
+    return user?.staff_role || null;
+  }, [user]);
 
   const mainLinks = useMemo(() => {
     return [
@@ -84,36 +101,42 @@ function MobileNav() {
         to: '/customers',
         icon: UsersIcon,
         label: t('nav.customers', 'Clientes'),
+        featureKey: null, // Clientes disponível para todos
       },
       {
         to: '/team',
         icon: UsersIcon,
         label: t('nav.team', 'Equipe'),
         roles: ['owner', 'manager'],
+        featureKey: null, // Team sem restrição de plano
       },
       {
         to: '/reports',
         icon: BarChartIcon,
         label: t('nav.reports', 'Relatórios'),
-        roles: ['owner', 'manager'],
+        roles: ['owner'], // Relatórios apenas para owner
+        featureKey: 'enableBasicReports', // Verifica acesso a relatórios
       },
       {
         to: '/feedback',
         icon: StarIcon,
         label: t('nav.feedback', 'Feedback'),
         roles: ['owner'],
+        featureKey: null,
       },
       {
         to: '/plans',
         icon: StarIcon,
         label: t('nav.plans', 'Planos'),
         roles: ['owner'],
+        featureKey: null,
       },
       {
         to: '/settings',
         icon: SettingsIcon,
         label: t('nav.settings'),
         roles: ['owner'],
+        featureKey: null,
       },
     ];
 
@@ -203,43 +226,37 @@ function MobileNav() {
               <ThemeToggle />
               <LanguageToggle />
 
-              {/* Logout button for mobile */}
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  logout();
-                  navigate('/login');
-                }}
-                className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
-                title={t('nav.logout', 'Sair')}
-                aria-label={t('nav.logout', 'Sair')}
-              >
-                <LogOutIcon size={18} />
-              </button>
+              {/* Logout button for mobile - apenas para manager e collaborator */}
+              {currentUserRole && currentUserRole !== 'owner' && (
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    logout();
+                    navigate('/login');
+                  }}
+                  className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
+                  title={t('nav.logout', 'Sair')}
+                  aria-label={t('nav.logout', 'Sair')}
+                >
+                  <LogOutIcon size={18} />
+                </button>
+              )}
             </div>
           </div>
 
           {/* Área de conteúdo rolável */}
           <div className="flex-1 overflow-y-auto p-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
-              {expandedLinks.map(({ to, icon: IconComponent, label }) => {
-                const Icon = IconComponent;
-                return (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex flex-col items-center justify-center p-4 rounded-xl border border-brand-border hover:bg-brand-light hover:border-brand-border hover:shadow-md transition-all duration-200 group"
-                  >
-                    <div className="w-12 h-12 bg-brand-light rounded-full flex items-center justify-center mb-3 group-hover:bg-brand-light/80 transition-colors">
-                      <Icon className="h-6 w-6 text-brand-surfaceForeground group-hover:text-brand-primary" />
-                    </div>
-                    <span className="text-sm font-medium text-brand-surfaceForeground group-hover:text-brand-surfaceForeground underline underline-offset-4 text-center">
-                      {label}
-                    </span>
-                  </NavLink>
-                );
-              })}
+              {expandedLinks.map(({ to, icon, label, featureKey }) => (
+                <MobileNavLinkWithLock
+                  key={to}
+                  to={to}
+                  icon={icon}
+                  label={label}
+                  featureKey={featureKey}
+                  onClick={() => setIsMenuOpen(false)}
+                />
+              ))}
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ describe('PlanProtectedRoute', () => {
             path="/reports"
             element={
               <PrivateRoute>
-                <PlanProtectedRoute featureKey="enableReports">
+                <PlanProtectedRoute featureKey="enableAdvancedReports">
                   <div>Reports</div>
                 </PlanProtectedRoute>
               </PrivateRoute>

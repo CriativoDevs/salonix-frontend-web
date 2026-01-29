@@ -1,8 +1,9 @@
 import client from './client';
+import { getClientAccessToken } from '../utils/clientAuthStorage';
 
 // Helper para criar header Authorization com token de cliente
 function getClientAuthHeaders() {
-  const token = localStorage.getItem('client_access_token');
+  const token = getClientAccessToken();
   if (!token) return {};
   return { Authorization: `Bearer ${token}` };
 }

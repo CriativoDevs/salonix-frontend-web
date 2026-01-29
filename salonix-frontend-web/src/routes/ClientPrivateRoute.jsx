@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { getClientAccessToken } from '../utils/clientAuthStorage';
 
 function ClientPrivateRoute({ children }) {
   const location = useLocation();
@@ -10,7 +11,7 @@ function ClientPrivateRoute({ children }) {
     let cancelled = false;
     const run = async () => {
       try {
-        const token = localStorage.getItem('client_access_token');
+        const token = getClientAccessToken();
         if (!token) {
           if (!cancelled) {
             setIsAuthenticated(false);

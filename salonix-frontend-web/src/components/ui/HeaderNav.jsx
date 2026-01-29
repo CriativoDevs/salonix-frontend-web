@@ -7,7 +7,9 @@ import {
   SettingsIcon,
   BarChart3Icon,
   LogOutIcon,
+  LockIcon,
 } from 'lucide-react';
+import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
@@ -15,47 +17,55 @@ import ThemeToggle from './ThemeToggle';
 import LanguageToggle from './LanguageToggle';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
-import { useStaff } from '../../hooks/useStaff';
 import i18n from '../../i18n';
+
+// Componente auxiliar para links com verificação de bloqueio
+function NavLinkWithLock({ to, label, featureKey, className, dataTour }) {
+  const { t } = useTranslation();
+  const { isLocked, requiredTier } = useFeatureLock(featureKey);
+
+  const tooltipText = isLocked
+    ? t('upgrade.available_in_plan', {
+        plan: requiredTier,
+        defaultValue: `Disponível no plano ${requiredTier}`,
+      })
+    : '';
+
+  return (
+    <div className="relative group">
+      <NavLink
+        to={to}
+        className={className}
+        data-tour={dataTour}
+        title={tooltipText}
+      >
+        {label}
+        {isLocked && (
+          <LockIcon className="ml-1.5 h-3.5 w-3.5 inline-block text-brand-surfaceForeground/50" />
+        )}
+      </NavLink>
+      {isLocked && tooltipText && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+          {tooltipText}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HeaderNav() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const { tenant, branding, slug } = useTenant();
-  // Don't fetch staff list in navigation - only pages that need it should fetch
-  // This prevents 403 errors for staff users who can't access the staff list endpoint
-  const { staff } = useStaff({ slug, skipFetch: true });
+  const { tenant, branding } = useTenant();
   const navigate = useNavigate();
 
   const displayName = tenant?.name || 'TimelyOne';
 
-  // Determinar papel do usuário atual
+  // Determinar papel do usuário atual - usar staff_role do backend
   const currentUserRole = useMemo(() => {
-    if (!Array.isArray(staff) || !user) {
-      return null;
-    }
-
-    const email =
-      typeof user.email === 'string' ? user.email.toLowerCase() : null;
-    const username =
-      typeof user.username === 'string' ? user.username.toLowerCase() : null;
-
-    const match = staff.find((member) => {
-      const memberEmail =
-        typeof member.email === 'string' ? member.email.toLowerCase() : null;
-      const memberUsername =
-        typeof member.username === 'string'
-          ? member.username.toLowerCase()
-          : null;
-
-      return (
-        (email && memberEmail === email) ||
-        (username && memberUsername === username)
-      );
-    });
-
-    return match?.role || null;
-  }, [staff, user]);
+    // O backend retorna staff_role diretamente no user
+    return user?.staff_role || null;
+  }, [user]);
 
   // Links principais (filtrados por permissão)
   const mainLinks = useMemo(() => {
@@ -88,24 +98,28 @@ export default function HeaderNav() {
         label: t('nav.feedback', 'Feedback'),
         icon: StarIcon,
         roles: ['owner'],
+        featureKey: null, // Feedback disponível para todos os planos
       },
       {
         to: '/reports',
         label: t('nav.reports', 'Relatórios'),
         icon: BarChart3Icon,
         roles: ['owner'],
+        featureKey: 'enableBasicReports', // Verifica acesso a relatórios
       },
       {
         to: '/plans',
         label: t('nav.plans', 'Planos'),
         icon: StarIcon,
         roles: ['owner'],
+        featureKey: null, // Página de planos sempre acessível
       },
       {
         to: '/settings',
         label: t('nav.settings'),
         icon: SettingsIcon,
         roles: ['owner'],
+        featureKey: null, // Settings sempre acessível
       },
     ];
 
@@ -162,16 +176,16 @@ export default function HeaderNav() {
           <nav className="relative flex items-center gap-1 overflow-visible">
             {/* Links principais */}
             {mainLinks.map((l) => (
-              <NavLink
+              <NavLinkWithLock
                 key={l.to}
                 to={l.to}
+                label={l.label}
+                featureKey={l.featureKey}
                 className={({ isActive }) =>
                   [base, isActive ? active : inactive].join(' ')
                 }
-                data-tour={`nav-${l.to.replace('/', '')}`}
-              >
-                {l.label}
-              </NavLink>
+                dataTour={`nav-${l.to.replace('/', '')}`}
+              />
             ))}
 
             {/* Menu hamburger com novas funcionalidades - só aparece se houver itens */}
@@ -193,18 +207,20 @@ export default function HeaderNav() {
             <ThemeToggle />
             <LanguageToggle />
 
-            {/* Logout button - visible for all users, especially manager/staff without settings access */}
-            <button
-              onClick={() => {
-                logout();
-                navigate('/login');
-              }}
-              className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
-              title={t('nav.logout', 'Sair')}
-              aria-label={t('nav.logout', 'Sair')}
-            >
-              <LogOutIcon size={18} />
-            </button>
+            {/* Logout button - visible apenas para manager e collaborator (owner usa Settings) */}
+            {currentUserRole && currentUserRole !== 'owner' && (
+              <button
+                onClick={() => {
+                  logout();
+                  navigate('/login');
+                }}
+                className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
+                title={t('nav.logout', 'Sair')}
+                aria-label={t('nav.logout', 'Sair')}
+              >
+                <LogOutIcon size={18} />
+              </button>
+            )}
           </div>
         </div>
       </Container>
