@@ -50,3 +50,10 @@ export async function setClientPassword({ password }) {
   );
   return response.data;
 }
+
+export async function refreshClientToken(refreshToken) {
+  const response = await client.post('token/refresh/', {
+    refresh: refreshToken,
+  });
+  return response.data;
+}

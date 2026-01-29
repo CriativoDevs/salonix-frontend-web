@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ClientAuthProvider } from './contexts/ClientAuthContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { RateLimitProvider } from './contexts/RateLimitContext';
@@ -365,14 +366,16 @@ function App() {
     <RateLimitProvider>
       <TenantProvider>
         <AuthProvider>
-          <ThemeProvider>
-            <TenantThemeManager />
-            <BillingSyncManager />
-            <BrowserRouter>
-              <Router />
-              <RateLimitWarning />
-            </BrowserRouter>
-          </ThemeProvider>
+          <ClientAuthProvider>
+            <ThemeProvider>
+              <TenantThemeManager />
+              <BillingSyncManager />
+              <BrowserRouter>
+                <Router />
+                <RateLimitWarning />
+              </BrowserRouter>
+            </ThemeProvider>
+          </ClientAuthProvider>
         </AuthProvider>
       </TenantProvider>
     </RateLimitProvider>
