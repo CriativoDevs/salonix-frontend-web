@@ -37,7 +37,7 @@ jest.mock('react-i18next', () => ({
 
 test('exibe botão Sair e aciona limpeza de sessão ao clicar', async () => {
   try {
-    localStorage.setItem('client_session_present', '1');
+    localStorage.setItem('client_access_token', 'mock_token');
   } catch {
     /* noop */
   }

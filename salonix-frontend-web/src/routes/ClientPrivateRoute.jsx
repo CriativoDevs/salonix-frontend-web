@@ -1,6 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { refreshClientSession } from '../api/clientAccess';
 
 function ClientPrivateRoute({ children }) {
   const location = useLocation();
@@ -11,17 +10,25 @@ function ClientPrivateRoute({ children }) {
     let cancelled = false;
     const run = async () => {
       try {
-        const present = localStorage.getItem('client_session_present') === '1';
-        if (!present) {
-          setIsAuthenticated(false);
+        const token = localStorage.getItem('client_access_token');
+        if (!token) {
+          if (!cancelled) {
+            setIsAuthenticated(false);
+            setIsLoading(false);
+          }
           return;
         }
-        await refreshClientSession();
-        if (!cancelled) setIsAuthenticated(true);
+        // Token exists - consider authenticated
+        // Note: Token validation happens on API calls
+        if (!cancelled) {
+          setIsAuthenticated(true);
+          setIsLoading(false);
+        }
       } catch {
-        if (!cancelled) setIsAuthenticated(false);
-      } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+        }
       }
     };
     run();
@@ -46,4 +53,3 @@ function ClientPrivateRoute({ children }) {
 }
 
 export default ClientPrivateRoute;
-

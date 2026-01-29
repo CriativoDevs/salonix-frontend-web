@@ -1,5 +1,12 @@
 import client from './client';
 
+// Helper para criar header Authorization com token de cliente
+function getClientAuthHeaders() {
+  const token = localStorage.getItem('client_access_token');
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+
 export async function requestClientAccessLinkPublic({
   tenantSlug,
   email,
@@ -24,11 +31,6 @@ export async function acceptClientAccessToken({ token }) {
   return response.data;
 }
 
-export async function refreshClientSession() {
-  const response = await client.post('clients/session/refresh/', {});
-  return response.data;
-}
-
 export async function loginClient({ email, password, tenantSlug }) {
   const response = await client.post('clients/login/', {
     email,
@@ -39,6 +41,12 @@ export async function loginClient({ email, password, tenantSlug }) {
 }
 
 export async function setClientPassword({ password }) {
-  const response = await client.post('clients/set-password/', { password });
+  const response = await client.post(
+    'clients/set-password/',
+    { password },
+    {
+      headers: getClientAuthHeaders(),
+    }
+  );
   return response.data;
 }

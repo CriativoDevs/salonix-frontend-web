@@ -152,7 +152,6 @@ export default function ClientProfile() {
               </div>
             )}
           </div>
-
         </form>
       )}
 
@@ -161,7 +160,8 @@ export default function ClientProfile() {
           type="button"
           onClick={() => {
             try {
-              localStorage.removeItem('client_session_present');
+              localStorage.removeItem('client_access_token');
+              localStorage.removeItem('client_refresh_token');
             } catch {
               void 0;
             }

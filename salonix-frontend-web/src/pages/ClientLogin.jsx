@@ -76,17 +76,22 @@ function ClientLogin() {
     // Submit to API
     setSubmitting(true);
     try {
-      await loginClient({
+      const data = await loginClient({
         email: cleanEmail,
         password,
         tenantSlug: cleanTenantSlug,
       });
 
+      // Store JWT tokens in localStorage
+      if (data.access) {
+        localStorage.setItem('client_access_token', data.access);
+      }
+      if (data.refresh) {
+        localStorage.setItem('client_refresh_token', data.refresh);
+      }
+
       // Update tenant slug in context (triggers data fetch)
       setContextTenantSlug(cleanTenantSlug);
-
-      // Mark client session as present in localStorage
-      localStorage.setItem('client_session_present', '1');
 
       // Redirect to client area
       navigate('/client/dashboard');
