@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   MessageCircleIcon,
   StarIcon,
   SettingsIcon,
   BarChart3Icon,
+  LogOutIcon,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
@@ -19,9 +20,12 @@ import i18n from '../../i18n';
 
 export default function HeaderNav() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { tenant, branding, slug } = useTenant();
-  const { staff } = useStaff({ slug });
+  // Don't fetch staff list in navigation - only pages that need it should fetch
+  // This prevents 403 errors for staff users who can't access the staff list endpoint
+  const { staff } = useStaff({ slug, skipFetch: true });
+  const navigate = useNavigate();
 
   const displayName = tenant?.name || 'TimelyOne';
 
@@ -188,6 +192,19 @@ export default function HeaderNav() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <LanguageToggle />
+
+            {/* Logout button - visible for all users, especially manager/staff without settings access */}
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
+              title={t('nav.logout', 'Sair')}
+              aria-label={t('nav.logout', 'Sair')}
+            >
+              <LogOutIcon size={18} />
+            </button>
           </div>
         </div>
       </Container>

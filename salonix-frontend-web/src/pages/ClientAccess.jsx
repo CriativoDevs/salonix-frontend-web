@@ -3,10 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import FormButton from '../components/ui/FormButton';
-import {
-  acceptClientAccessToken,
-  refreshClientSession,
-} from '../api/clientAccess';
+import { acceptClientAccessToken } from '../api/clientAccess';
 import { storeTenantSlug } from '../utils/tenantStorage';
 
 export default function ClientAccess() {
@@ -36,11 +33,13 @@ export default function ClientAccess() {
         }
         const data = await acceptClientAccessToken({ token });
         setResult(data);
-        await refreshClientSession().catch(() => {});
-        try {
-          localStorage.setItem('client_session_present', '1');
-        } catch {
-          /* ignore */
+
+        // Store JWT tokens in localStorage
+        if (data.access) {
+          localStorage.setItem('client_access_token', data.access);
+        }
+        if (data.refresh) {
+          localStorage.setItem('client_refresh_token', data.refresh);
         }
 
         // Redirecionar baseado em has_password

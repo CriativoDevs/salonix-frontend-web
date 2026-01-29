@@ -22,9 +22,9 @@ const mergeStaffMember = (list, member) => {
   return next;
 };
 
-export function useStaff({ slug } = {}) {
+export function useStaff({ slug, skipFetch = false } = {}) {
   const [staff, setStaff] = useState([]);
-  const [loading, setLoading] = useState(!!slug);
+  const [loading, setLoading] = useState(!!slug && !skipFetch);
   const [error, setError] = useState(null);
   const [requestId, setRequestId] = useState(null);
   const [forbidden, setForbidden] = useState(false);
@@ -32,7 +32,7 @@ export function useStaff({ slug } = {}) {
 
   if (slug !== prevSlug) {
     setPrevSlug(slug);
-    setLoading(!!slug);
+    setLoading(!!slug && !skipFetch);
     setStaff([]);
     setError(null);
     setForbidden(false);
@@ -41,7 +41,7 @@ export function useStaff({ slug } = {}) {
   const mountedRef = useRef(true);
 
   const load = useCallback(async () => {
-    if (!slug) {
+    if (!slug || skipFetch) {
       setStaff([]);
       setLoading(false);
       setError(null);
@@ -80,7 +80,7 @@ export function useStaff({ slug } = {}) {
     return () => {
       mountedRef.current = false;
     };
-  }, [load]);
+  }, [load, skipFetch]);
 
   const refetch = useCallback(() => {
     if (!mountedRef.current) return;

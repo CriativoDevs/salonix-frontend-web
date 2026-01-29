@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
@@ -12,6 +12,7 @@ import {
   UsersIcon,
   BarChartIcon,
   ClockIcon,
+  LogOutIcon,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
@@ -22,10 +23,13 @@ import LanguageToggle from './LanguageToggle';
 
 function MobileNav() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { tenant, branding, slug } = useTenant();
-  const { staff } = useStaff({ slug });
+  // Don't fetch staff list in navigation - only pages that need it should fetch
+  // This prevents 403 errors for staff users who can't access the staff list endpoint
+  const { staff } = useStaff({ slug, skipFetch: true });
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const displayName = tenant?.name || 'TimelyOne';
 
@@ -198,6 +202,20 @@ function MobileNav() {
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <LanguageToggle />
+
+              {/* Logout button for mobile */}
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  logout();
+                  navigate('/login');
+                }}
+                className="rounded-md p-2 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground transition"
+                title={t('nav.logout', 'Sair')}
+                aria-label={t('nav.logout', 'Sair')}
+              >
+                <LogOutIcon size={18} />
+              </button>
             </div>
           </div>
 
