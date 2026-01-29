@@ -1,13 +1,11 @@
 /**
  * Gerenciamento de tokens JWT para autenticação de clientes.
  *
- * Segue o mesmo padrão de authStorage.js (admin/staff):
- * - Access token em sessionStorage (sobrevive a reloads, não sobrevive a fechar o browser)
- * - Refresh token em localStorage (persiste entre sessões)
+ * MUDANÇA: Ambos tokens agora em localStorage para persistir sessão ao fechar app.
+ * Isso garante que clientes tenham a mesma experiência de owner/manager/staff.
  *
- * IMPORTANTE: iOS em modo standalone (PWA) tem comportamento diferente:
- * - localStorage pode ser limpo ao fechar o app
- * - sessionStorage funciona melhor para access tokens
+ * - Access token em localStorage (persiste entre sessões)
+ * - Refresh token em localStorage (persiste entre sessões)
  */
 
 const CLIENT_ACCESS_KEY = 'client_access_token';
@@ -22,7 +20,7 @@ let refreshToken = null;
  */
 function initializeTokens() {
   try {
-    accessToken = sessionStorage.getItem(CLIENT_ACCESS_KEY) || null;
+    accessToken = localStorage.getItem(CLIENT_ACCESS_KEY) || null;
     refreshToken = localStorage.getItem(CLIENT_REFRESH_KEY) || null;
   } catch (error) {
     console.error('Error initializing client tokens:', error);
@@ -36,15 +34,15 @@ initializeTokens();
 
 /**
  * Define o access token (JWT de curta duração)
- * Armazenado em sessionStorage para sobreviver a reloads mas não ao fechar o browser
+ * Armazenado em localStorage para persistir entre sessões
  */
 export const setClientAccessToken = (token) => {
   accessToken = token || null;
   try {
     if (token) {
-      sessionStorage.setItem(CLIENT_ACCESS_KEY, token);
+      localStorage.setItem(CLIENT_ACCESS_KEY, token);
     } else {
-      sessionStorage.removeItem(CLIENT_ACCESS_KEY);
+      localStorage.removeItem(CLIENT_ACCESS_KEY);
     }
   } catch (error) {
     console.error('Error setting client access token:', error);
@@ -72,10 +70,10 @@ export const setClientRefreshToken = (token) => {
  * Retorna o access token atual
  */
 export const getClientAccessToken = () => {
-  // Se não temos em memória, tentar ler do sessionStorage
+  // Se não temos em memória, tentar ler do localStorage
   if (!accessToken) {
     try {
-      accessToken = sessionStorage.getItem(CLIENT_ACCESS_KEY) || null;
+      accessToken = localStorage.getItem(CLIENT_ACCESS_KEY) || null;
     } catch (error) {
       console.error('Error getting client access token:', error);
     }
