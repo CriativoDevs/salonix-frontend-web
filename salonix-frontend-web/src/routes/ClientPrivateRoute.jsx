@@ -1,42 +1,8 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { getClientAccessToken } from '../utils/clientAuthStorage';
+import { Navigate } from 'react-router-dom';
+import { useClientAuth } from '../hooks/useClientAuth';
 
 function ClientPrivateRoute({ children }) {
-  const location = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      try {
-        const token = getClientAccessToken();
-        if (!token) {
-          if (!cancelled) {
-            setIsAuthenticated(false);
-            setIsLoading(false);
-          }
-          return;
-        }
-        // Token exists - consider authenticated
-        // Note: Token validation happens on API calls
-        if (!cancelled) {
-          setIsAuthenticated(true);
-          setIsLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-        }
-      }
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [location.pathname]);
+  const { isAuthenticated, isLoading } = useClientAuth();
 
   if (isLoading) {
     return (
