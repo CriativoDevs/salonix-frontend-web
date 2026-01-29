@@ -14,6 +14,18 @@ export function fetchTenantMeta(slug, config = {}) {
   });
 }
 
+/**
+ * Busca dados públicos do tenant (sem necessidade de autenticação).
+ * Usado por clientes PWA para carregar informações do salão.
+ *
+ * @param {string} slug - Slug do tenant
+ * @returns {Promise<Object>} Dados públicos do tenant
+ */
+export async function fetchPublicTenant(slug) {
+  const { data } = await client.get(`public/tenants/${slug}/`);
+  return data;
+}
+
 export async function updateTenantBranding({
   logoFile,
   logoUrl,

@@ -16,9 +16,11 @@ jest.mock('../../api/clientMe', () => ({
   cancelClientAppointment: jest.fn(),
 }));
 
-jest.mock('../../hooks/useTenant', () => ({
-  useTenant: () => ({
+jest.mock('../../hooks/useClientTenant', () => ({
+  useClientTenant: () => ({
     tenant: { profile: { email: 'salon@example.com', phone: '+351911509258' } },
+    loading: false,
+    error: null,
   }),
 }));
 
