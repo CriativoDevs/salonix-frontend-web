@@ -5,6 +5,10 @@ import AuthLayout from '../layouts/AuthLayout';
 import FormButton from '../components/ui/FormButton';
 import { acceptClientAccessToken } from '../api/clientAccess';
 import { storeTenantSlug } from '../utils/tenantStorage';
+import {
+  setClientAccessToken,
+  setClientRefreshToken,
+} from '../utils/clientAuthStorage';
 
 export default function ClientAccess() {
   const { t } = useTranslation();
@@ -34,12 +38,12 @@ export default function ClientAccess() {
         const data = await acceptClientAccessToken({ token });
         setResult(data);
 
-        // Store JWT tokens in localStorage
+        // Store tokens using clientAuthStorage (sessionStorage + localStorage)
         if (data.access) {
-          localStorage.setItem('client_access_token', data.access);
+          setClientAccessToken(data.access);
         }
         if (data.refresh) {
-          localStorage.setItem('client_refresh_token', data.refresh);
+          setClientRefreshToken(data.refresh);
         }
 
         // Redirecionar baseado em has_password

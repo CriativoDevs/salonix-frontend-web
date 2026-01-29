@@ -6,6 +6,7 @@ import PageHeader from '../components/ui/PageHeader';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import { fetchClientProfile, updateClientProfile } from '../api/clientMe';
+import { clearClientTokens } from '../utils/clientAuthStorage';
 
 export default function ClientProfile() {
   const { t } = useTranslation();
@@ -160,8 +161,7 @@ export default function ClientProfile() {
           type="button"
           onClick={() => {
             try {
-              localStorage.removeItem('client_access_token');
-              localStorage.removeItem('client_refresh_token');
+              clearClientTokens();
             } catch {
               void 0;
             }

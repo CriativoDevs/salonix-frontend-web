@@ -441,15 +441,79 @@
     "features": {
       "pwa": {
         "label": "PWA Cliente",
-        "description": "Disponível a partir do plano Standard. Permite que clientes reservem diretamente pelo PWA personalizado."
+        "description": "Disponível a partir do plano Basic. Permite que clientes reservem diretamente pelo PWA personalizado."
       },
       "webpush": {
         "label": "Notificações Web Push",
-        "description": "Disponível a partir do plano Standard. Ative alertas de lembrete e marketing via navegador."
+        "description": "Disponível a partir do plano Basic. Ative alertas de lembrete e marketing via navegador."
+      },
+      "reports_basic": {
+        "label": "Relatórios Básicos",
+        "description": "Visão geral de agendamentos, receita e clientes. Disponível em todos os planos."
+      },
+      "reports_business": {
+        "label": "Análise de Negócio",
+        "description": "Top services, evolução de receita e métricas de performance. Requer plano Standard ou superior."
+      },
+      "reports_advanced": {
+        "label": "Insights Avançados",
+        "description": "Análise de retenção, comportamento de clientes e relatórios preditivos. Requer plano Pro."
       },
       "reports": {
         "label": "Relatórios avançados",
         "description": "Disponível a partir do plano Pro. Desbloqueia métricas detalhadas e exportação avançada."
+      },
+      "native_client": {
+        "label": "App Nativo Cliente",
+        "description": "Aplicativo iOS e Android para seus clientes. Disponível no plano Pro."
+      },
+      "sms_notifications": {
+        "label": "Notificações SMS",
+        "description": "Envie lembretes via SMS. Requer plano Standard ou superior."
+      },
+      "whatsapp_integration": {
+        "label": "Integração WhatsApp",
+        "description": "Mensagens automáticas via WhatsApp Business API. Requer plano Pro."
+      },
+      "white_label": {
+        "label": "White Label",
+        "description": "Personalize com sua marca. Disponível no plano Pro."
+      },
+      "advanced_scheduling": {
+        "label": "Agendamento Avançado",
+        "description": "Recorrências e listas de espera. Requer plano Standard."
+      },
+      "team_management": {
+        "label": "Gestão de Equipe",
+        "description": "Controle avançado de permissões e relatórios por staff. Requer plano Standard."
+      },
+      "custom_fields": {
+        "label": "Campos Personalizados",
+        "description": "Campos customizados em fichas. Requer plano Standard."
+      },
+      "multi_location": {
+        "label": "Múltiplas Unidades",
+        "description": "Gerencie várias localizações. Disponível no plano Pro."
+      },
+      "api_access": {
+        "label": "Acesso à API",
+        "description": "API REST completa. Disponível no plano Pro."
+      },
+      "automations": {
+        "label": "Automações",
+        "description": "Automatize lembretes e campanhas. Requer plano Standard."
+      },
+      "online_payments": {
+        "label": "Pagamentos Online",
+        "description": "Pagamentos integrados Stripe/PIX. Requer plano Standard."
+      },
+      "data_export": {
+        "label": "Exportação de Dados",
+        "description": "Exporte em CSV, Excel ou JSON. Requer plano Standard."
+      },
+      "priority_support": {
+        "label": "Suporte Prioritário",
+        "description": "Atendimento prioritário com SLA. Disponível no plano Pro."
       },
       "generic": {
         "description": "Funcionalidade disponível em planos superiores."
@@ -1464,5 +1528,99 @@
       "session_required": "Sessão não encontrada. Acesse via link de email."
     },
     "success": "Senha definida com sucesso! Redirecionando..."
+  },
+  "upgrade": {
+    "locked_feature": "Feature bloqueada",
+    "available_in_plan": "Disponível no plano {{plan}}",
+    "upgrade_now": "Fazer upgrade",
+    "view_plans": "Ver planos",
+    "learn_more": "Saiba mais",
+    "features": {
+      "reports": {
+        "title": "Relatórios Avançados",
+        "description": "Analise seu negócio com insights detalhados, dados históricos e métricas de crescimento.",
+        "cta": "Ver planos Pro"
+      },
+      "customer_pwa": {
+        "title": "App para Clientes",
+        "description": "Ofereça aos seus clientes um aplicativo próprio para agendamentos e notificações.",
+        "cta": "Ver planos Basic"
+      },
+      "white_label": {
+        "title": "White Label",
+        "description": "Personalize completamente a marca do sistema com seu logo, cores e domínio próprio.",
+        "cta": "Upgrade para Pro"
+      },
+      "native_client": {
+        "title": "App Nativo para Clientes",
+        "description": "Aplicativo nativo iOS e Android para seus clientes com experiência premium.",
+        "cta": "Upgrade para Pro"
+      },
+      "advanced_scheduling": {
+        "title": "Agendamento Avançado",
+        "description": "Agendamentos recorrentes, listas de espera e regras personalizadas de disponibilidade.",
+        "cta": "Ver planos Standard"
+      },
+      "multi_location": {
+        "title": "Múltiplas Unidades",
+        "description": "Gerencie múltiplas localizações do seu negócio em uma única conta.",
+        "cta": "Upgrade para Pro"
+      },
+      "api_access": {
+        "title": "Acesso à API",
+        "description": "Integre com seus sistemas via API REST completa com documentação.",
+        "cta": "Upgrade para Pro"
+      },
+      "custom_fields": {
+        "title": "Campos Personalizados",
+        "description": "Adicione campos customizados em fichas de clientes e serviços.",
+        "cta": "Ver planos Standard"
+      },
+      "priority_support": {
+        "title": "Suporte Prioritário",
+        "description": "Atendimento prioritário via chat, email e telefone com SLA garantido.",
+        "cta": "Upgrade para Pro"
+      },
+      "advanced_reports": {
+        "title": "Relatórios Avançados",
+        "description": "Análise preditiva, retenção de clientes, comparação de períodos e exportação personalizada.",
+        "cta": "Upgrade para Pro"
+      },
+      "web_push": {
+        "title": "Notificações Push Web",
+        "description": "Envie notificações push diretamente no navegador dos seus clientes.",
+        "cta": "Ver planos Basic"
+      },
+      "automations": {
+        "title": "Automações",
+        "description": "Automatize lembretes, follow-ups e campanhas de marketing com regras personalizadas.",
+        "cta": "Ver planos Standard"
+      },
+      "team_management": {
+        "title": "Gestão de Equipe Avançada",
+        "description": "Controle de permissões granulares, relatórios por colaborador e metas de desempenho.",
+        "cta": "Ver planos Standard"
+      },
+      "online_payments": {
+        "title": "Pagamentos Online",
+        "description": "Receba pagamentos online integrados com Stripe, cartão de crédito e PIX.",
+        "cta": "Ver planos Standard"
+      },
+      "sms_notifications": {
+        "title": "Notificações SMS",
+        "description": "Envie lembretes e confirmações de agendamento via SMS para seus clientes.",
+        "cta": "Ver planos Standard"
+      },
+      "whatsapp_integration": {
+        "title": "Integração WhatsApp",
+        "description": "Envie mensagens automáticas via WhatsApp Business API com templates personalizados.",
+        "cta": "Upgrade para Pro"
+      },
+      "data_export": {
+        "title": "Exportação de Dados",
+        "description": "Exporte dados de clientes, agendamentos e relatórios em CSV, Excel ou JSON.",
+        "cta": "Ver planos Standard"
+      }
+    }
   }
 }

@@ -42,7 +42,12 @@ function AppointmentCard({ item, onCancel }) {
   const serviceName = item?.service?.name || 'Serviço';
   const professionalName = item?.professional?.name || 'Profissional';
   const canCancel = item?.status === 'scheduled';
-  const icsHref = `${API_BASE_URL}public/appointments/${item?.id}/ics/`;
+
+  // Usar token fornecido pela API para gerar URL do ICS público
+  const icsToken = item?.ics_token || '';
+  const icsHref = icsToken
+    ? `${API_BASE_URL}public/appointments/${item?.id}/ics/?token=${icsToken}`
+    : '#';
 
   const dtStart = parseSlotDate(start);
   const dtEnd = parseSlotDate(end);
@@ -159,7 +164,12 @@ function HistoryCard({ item }) {
   const end = item?.slot?.end_time;
   const serviceName = item?.service?.name || 'Serviço';
   const professionalName = item?.professional?.name || 'Profissional';
-  const icsHref = `${API_BASE_URL}public/appointments/${item?.id}/ics/`;
+
+  // Usar token fornecido pela API para gerar URL do ICS público
+  const icsToken = item?.ics_token || '';
+  const icsHref = icsToken
+    ? `${API_BASE_URL}public/appointments/${item?.id}/ics/?token=${icsToken}`
+    : '#';
 
   const dtStart = parseSlotDate(start);
   const dtEnd = parseSlotDate(end);

@@ -459,9 +459,73 @@
         "label": "Web Push Notifications",
         "description": "Available from the Standard plan. Enable reminder and marketing alerts via browser."
       },
+      "reports_basic": {
+        "label": "Basic Overview",
+        "description": "Overview of bookings, revenue and customers. Available on all plans."
+      },
+      "reports_business": {
+        "label": "Business Analysis",
+        "description": "Top services, revenue evolution and performance metrics. Requires Standard plan or higher."
+      },
+      "reports_advanced": {
+        "label": "Advanced Insights",
+        "description": "Retention analysis, customer behavior and predictive reports. Requires Pro plan."
+      },
       "reports": {
         "label": "Advanced Reports",
         "description": "Available from the Pro plan. Unlocks detailed metrics and advanced export."
+      },
+      "native_client": {
+        "label": "Native Customer App",
+        "description": "iOS and Android app for your customers. Available on Pro plan."
+      },
+      "sms_notifications": {
+        "label": "SMS Notifications",
+        "description": "Send reminders via SMS. Requires Standard plan or higher."
+      },
+      "whatsapp_integration": {
+        "label": "WhatsApp Integration",
+        "description": "Automate messages via WhatsApp. Available on Pro plan."
+      },
+      "white_label": {
+        "label": "White Label",
+        "description": "Remove TimelyOne branding from customer interfaces. Requires Pro plan."
+      },
+      "advanced_scheduling": {
+        "label": "Advanced Scheduling",
+        "description": "Recurring bookings and batch operations. Requires Standard plan or higher."
+      },
+      "team_management": {
+        "label": "Team Management",
+        "description": "Invite and manage staff with custom permissions. Requires Standard plan or higher."
+      },
+      "custom_fields": {
+        "label": "Custom Fields",
+        "description": "Create custom fields for customers and bookings. Requires Standard plan or higher."
+      },
+      "multi_location": {
+        "label": "Multi-Location",
+        "description": "Manage multiple business locations from one account. Requires Pro plan."
+      },
+      "api_access": {
+        "label": "API Access",
+        "description": "Full REST API for custom integrations. Requires Pro plan."
+      },
+      "automations": {
+        "label": "Automations",
+        "description": "Automated workflows and conditional triggers. Requires Pro plan."
+      },
+      "online_payments": {
+        "label": "Online Payments",
+        "description": "Accept online payments through Stripe. Requires Standard plan or higher."
+      },
+      "data_export": {
+        "label": "Data Export",
+        "description": "Export all your data in CSV and JSON formats. Requires Standard plan or higher."
+      },
+      "priority_support": {
+        "label": "Priority Support",
+        "description": "24/7 priority support with guaranteed response time. Requires Pro plan."
       },
       "generic": {
         "description": "Feature available on higher plans."
@@ -1467,5 +1531,99 @@
       "session_required": "Session not found. Access via email link."
     },
     "success": "Password set successfully! Redirecting..."
+  },
+  "upgrade": {
+    "locked_feature": "Locked feature",
+    "available_in_plan": "Available in {{plan}} plan",
+    "upgrade_now": "Upgrade now",
+    "view_plans": "View plans",
+    "learn_more": "Learn more",
+    "features": {
+      "reports": {
+        "title": "Advanced Reports",
+        "description": "Analyze your business with detailed insights, historical data and growth metrics.",
+        "cta": "View Pro plans"
+      },
+      "customer_pwa": {
+        "title": "Customer App",
+        "description": "Offer your customers their own app for bookings and notifications.",
+        "cta": "View Basic plans"
+      },
+      "white_label": {
+        "title": "White Label",
+        "description": "Fully customize the system branding with your logo, colors and custom domain.",
+        "cta": "Upgrade to Pro"
+      },
+      "native_client": {
+        "title": "Native Customer App",
+        "description": "Native iOS and Android app for your customers with premium experience.",
+        "cta": "Upgrade to Pro"
+      },
+      "advanced_scheduling": {
+        "title": "Advanced Scheduling",
+        "description": "Recurring appointments, waiting lists and custom availability rules.",
+        "cta": "View Standard plans"
+      },
+      "multi_location": {
+        "title": "Multiple Locations",
+        "description": "Manage multiple business locations in a single account.",
+        "cta": "Upgrade to Pro"
+      },
+      "api_access": {
+        "title": "API Access",
+        "description": "Integrate with your systems via complete REST API with documentation.",
+        "cta": "Upgrade to Pro"
+      },
+      "custom_fields": {
+        "title": "Custom Fields",
+        "description": "Add custom fields to customer and service records.",
+        "cta": "View Standard plans"
+      },
+      "priority_support": {
+        "title": "Priority Support",
+        "description": "Priority support via chat, email and phone with guaranteed SLA.",
+        "cta": "Upgrade to Pro"
+      },
+      "advanced_reports": {
+        "title": "Advanced Reports",
+        "description": "Predictive analysis, customer retention, period comparison and custom export.",
+        "cta": "Upgrade to Pro"
+      },
+      "web_push": {
+        "title": "Web Push Notifications",
+        "description": "Send push notifications directly to your customers' browsers.",
+        "cta": "View Basic plans"
+      },
+      "automations": {
+        "title": "Automations",
+        "description": "Automate reminders, follow-ups and marketing campaigns with custom rules.",
+        "cta": "View Standard plans"
+      },
+      "team_management": {
+        "title": "Advanced Team Management",
+        "description": "Granular permission control, staff reports and performance goals.",
+        "cta": "View Standard plans"
+      },
+      "online_payments": {
+        "title": "Online Payments",
+        "description": "Receive online payments integrated with Stripe, credit card and PIX.",
+        "cta": "View Standard plans"
+      },
+      "sms_notifications": {
+        "title": "SMS Notifications",
+        "description": "Send appointment reminders and confirmations via SMS to your customers.",
+        "cta": "View Standard plans"
+      },
+      "whatsapp_integration": {
+        "title": "WhatsApp Integration",
+        "description": "Send automated messages via WhatsApp Business API with custom templates.",
+        "cta": "Upgrade to Pro"
+      },
+      "data_export": {
+        "title": "Data Export",
+        "description": "Export customer, appointment and report data in CSV, Excel or JSON.",
+        "cta": "View Standard plans"
+      }
+    }
   }
 }

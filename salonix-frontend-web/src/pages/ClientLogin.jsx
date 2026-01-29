@@ -6,6 +6,10 @@ import FormInput from '../components/ui/FormInput';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { loginClient } from '../api/clientAccess';
 import { useTenant } from '../hooks/useTenant';
+import {
+  setClientAccessToken,
+  setClientRefreshToken,
+} from '../utils/clientAuthStorage';
 
 function ClientLogin() {
   const { t } = useTranslation();
@@ -82,12 +86,12 @@ function ClientLogin() {
         tenantSlug: cleanTenantSlug,
       });
 
-      // Store JWT tokens in localStorage
+      // Store JWT tokens using clientAuthStorage (sessionStorage + localStorage)
       if (data.access) {
-        localStorage.setItem('client_access_token', data.access);
+        setClientAccessToken(data.access);
       }
       if (data.refresh) {
-        localStorage.setItem('client_refresh_token', data.refresh);
+        setClientRefreshToken(data.refresh);
       }
 
       // Update tenant slug in context (triggers data fetch)
