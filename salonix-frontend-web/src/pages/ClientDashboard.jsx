@@ -6,11 +6,11 @@ import ClientLayout from '../layouts/ClientLayout';
 import PageHeader from '../components/ui/PageHeader';
 import { fetchClientUpcoming, cancelClientAppointment } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
-import { useTenant } from '../hooks/useTenant';
+import { useClientTenant } from '../hooks/useClientTenant';
 
 export default function ClientDashboard() {
   const { t } = useTranslation();
-  const { tenant, profile } = useTenant();
+  const { tenant } = useClientTenant();
   const [upcoming, setUpcoming] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -99,7 +99,7 @@ export default function ClientDashboard() {
     `https://www.google.com/maps/search/?api=1&query=${buildQuery()}`;
 
   const onRequestAddress = () => {
-    const email = profile?.email || tenant?.profile?.email || '';
+    const email = tenant?.profile?.email || '';
     if (typeof email === 'string' && email.trim()) {
       const subject = encodeURIComponent('Solicitação de morada do salão');
       const body = encodeURIComponent(
@@ -167,7 +167,11 @@ export default function ClientDashboard() {
                 </div>
                 <div className="mt-3 flex items-center justify-end gap-3">
                   <a
-                    href={`${API_BASE_URL}public/appointments/${next?.id}/ics/`}
+                    href={
+                      next?.ics_token
+                        ? `${API_BASE_URL}public/appointments/${next?.id}/ics/?token=${next.ics_token}`
+                        : '#'
+                    }
                     target="_blank"
                     rel="noreferrer"
                     className="text-brand-primary hover:text-brand-accent underline underline-offset-4"

@@ -14,6 +14,91 @@
   }
 }
 
+/* =============================================
+   Mobile PWA: Prevenir Pull-to-Refresh
+   ============================================= */
+
+/**
+ * Desabilita overscroll bounce e pull-to-refresh no iOS Safari e Android Chrome PWA.
+ * 
+ * Compatibilidade:
+ * - iOS Safari 16+ (2022+)
+ * - Android Chrome 63+ (2017+)
+ * - Não afeta Desktop negativamente
+ * 
+ * Referências:
+ * - https://developer.mozilla.org/en-US/docs/Web/CSS/overscroll-behavior
+ * - https://webkit.org/blog/7929/designing-websites-for-iphone-x/
+ * - https://developer.chrome.com/blog/overscroll-behavior
+ */
+
+html {
+  /* Previne bounce/pull-to-refresh no elemento raiz */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  
+  /* Garante altura completa */
+  height: 100%;
+  
+  /* Smooth scrolling (iOS) */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Previne zoom indesejado em Android */
+  touch-action: pan-y;
+}
+
+body {
+  /* Previne bounce/pull-to-refresh no body */
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  
+  /* Permite apenas scroll vertical, bloqueia gestos horizontais e zoom */
+  touch-action: pan-y;
+  
+  /* Garante altura mínima completa */
+  min-height: 100%;
+  height: 100%;
+  
+  /* Smooth scrolling (iOS e Android Chrome) */
+  -webkit-overflow-scrolling: touch;
+  
+  /* Previne seleção de texto durante gestos (Android) */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  
+  /* Previne tap highlight (Android Chrome) */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Safe area support para iOS com notch/dynamic island */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Permite seleção de texto em elementos interativos */
+input, textarea, [contenteditable="true"], button, a {
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+/**
+ * Containers scrolláveis dentro do app também devem
+ * ter overscroll-behavior para prevenir propagação.
+ */
+.scrollable-container,
+[class*="overflow-y"],
+[class*="overflow-auto"] {
+  overscroll-behavior-y: contain; /* Contém bounce dentro do container */
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Utilitário leve p/ formularios claros */
 @layer utilities {
   /* Oculta barras de rolagem sem desabilitar o scroll */
