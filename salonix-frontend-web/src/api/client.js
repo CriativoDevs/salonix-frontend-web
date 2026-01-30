@@ -7,6 +7,13 @@ import {
   setRefreshToken,
   triggerLogout,
 } from '../utils/authStorage';
+import {
+  getClientAccessToken,
+  getClientRefreshToken,
+  setClientAccessToken,
+  setClientRefreshToken,
+  clearClientTokens,
+} from '../utils/clientAuthStorage';
 import { getEnvVar } from '../utils/env';
 import { viteEnv } from '../utils/viteEnv';
 import { RATE_LIMIT_EVENT } from '../constants/events';
@@ -15,8 +22,7 @@ const defaultBase = 'http://localhost:8000/api';
 
 // In Vite, import.meta.env is replaced at build time
 // This will be inlined during build, replacing the undefined check
-const envBase =
-  viteEnv?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
+const envBase = viteEnv?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
 const configuredBase = envBase || defaultBase;
 
 console.log('API Base URL:', configuredBase);
@@ -55,10 +61,17 @@ const refreshClient = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  const token = getAccessToken();
+  // Prioridade: cliente > owner/staff (áreas separadas)
+  const clientToken = getClientAccessToken();
+  const staffToken = getAccessToken();
+
+  const token = clientToken || staffToken;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    // Marcar qual tipo de token estamos usando
+    config._isClientToken = Boolean(clientToken);
   }
+
   const lang = String(i18n?.language || 'pt').toLowerCase();
   config.headers['Accept-Language'] = lang === 'pt' ? 'pt-PT' : 'en';
   return config;
@@ -117,9 +130,16 @@ client.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const refresh = getRefreshToken();
+    // Determinar se é token de cliente ou staff
+    const isClientToken = config._isClientToken;
+    const refresh = isClientToken ? getClientRefreshToken() : getRefreshToken();
+
     if (!refresh) {
-      triggerLogout();
+      if (isClientToken) {
+        clearClientTokens();
+      } else {
+        triggerLogout();
+      }
       return Promise.reject(error);
     }
 
@@ -140,22 +160,39 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await refreshClient.post('users/token/refresh/', {
+      const { data } = await refreshClient.post('token/refresh/', {
         refresh,
       });
       const { access, refresh: newRefresh } = data;
-      if (access) {
-        setAccessToken(access);
+
+      if (isClientToken) {
+        // Renovar tokens de cliente
+        if (access) {
+          setClientAccessToken(access);
+        }
+        if (newRefresh) {
+          setClientRefreshToken(newRefresh);
+        }
+      } else {
+        // Renovar tokens de staff
+        if (access) {
+          setAccessToken(access);
+        }
+        if (newRefresh) {
+          setRefreshToken(newRefresh);
+        }
       }
-      if (newRefresh) {
-        setRefreshToken(newRefresh);
-      }
+
       resolvePendingRequests(access || null);
       config.headers.Authorization = access ? `Bearer ${access}` : undefined;
       return client(config);
     } catch (refreshError) {
       resolvePendingRequests(null);
-      triggerLogout();
+      if (isClientToken) {
+        clearClientTokens();
+      } else {
+        triggerLogout();
+      }
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
