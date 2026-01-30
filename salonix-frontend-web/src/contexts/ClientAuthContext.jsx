@@ -33,6 +33,19 @@ export const ClientAuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Marcar cliente como autenticado após login
+  const handleLogin = useCallback(
+    (accessToken) => {
+      const payload = decodeToken(accessToken);
+      if (payload?.customer_id && payload?.tenant_slug) {
+        setIsAuthenticated(true);
+        setCustomerId(payload.customer_id);
+        setTenantSlug(payload.tenant_slug);
+      }
+    },
+    [decodeToken]
+  );
+
   useEffect(() => {
     const bootstrap = async () => {
       const storedRefresh = getClientRefreshToken();
@@ -93,6 +106,7 @@ export const ClientAuthProvider = ({ children }) => {
     isLoading,
     customerId,
     tenantSlug,
+    login: handleLogin,
     logout: handleLogout,
   };
 

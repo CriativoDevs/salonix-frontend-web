@@ -6,6 +6,7 @@ import FormInput from '../components/ui/FormInput';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { loginClient } from '../api/clientAccess';
 import { useTenant } from '../hooks/useTenant';
+import { useClientAuth } from '../hooks/useClientAuth';
 import {
   setClientAccessToken,
   setClientRefreshToken,
@@ -15,6 +16,7 @@ function ClientLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setTenantSlug: setContextTenantSlug } = useTenant();
+  const { login: clientLogin } = useClientAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,6 +89,7 @@ function ClientLogin() {
       });
 
       // Store JWT tokens using clientAuthStorage (sessionStorage + localStorage)
+      clientLogin(data.access); // Atualizar estado do ClientAuthContext
       if (data.access) {
         setClientAccessToken(data.access);
       }

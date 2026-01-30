@@ -5,5 +5,6 @@ export const ClientAuthContext = createContext({
   isLoading: true,
   customerId: null,
   tenantSlug: null,
+  login: () => {},
   logout: () => {},
 });
