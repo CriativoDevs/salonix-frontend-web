@@ -61,15 +61,22 @@ const refreshClient = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  // Prioridade: cliente > owner/staff (áreas separadas)
-  const clientToken = getClientAccessToken();
-  const staffToken = getAccessToken();
+  // Endpoints públicos não devem ter token
+  const isPublicEndpoint =
+    config.url?.includes('public/') ||
+    config.url?.includes('users/tenant/meta/');
 
-  const token = clientToken || staffToken;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    // Marcar qual tipo de token estamos usando
-    config._isClientToken = Boolean(clientToken);
+  if (!isPublicEndpoint) {
+    // Prioridade: cliente > owner/staff (áreas separadas)
+    const clientToken = getClientAccessToken();
+    const staffToken = getAccessToken();
+
+    const token = clientToken || staffToken;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      // Marcar qual tipo de token estamos usando
+      config._isClientToken = Boolean(clientToken);
+    }
   }
 
   const lang = String(i18n?.language || 'pt').toLowerCase();
@@ -160,7 +167,7 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await refreshClient.post('token/refresh/', {
+      const { data } = await refreshClient.post('users/token/refresh/', {
         refresh,
       });
       const { access, refresh: newRefresh } = data;
