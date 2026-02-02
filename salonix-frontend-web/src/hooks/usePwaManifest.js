@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * Hook to manage PWA manifest and meta tags dynamically based on tenant context.
- * 
+ *
  * Logic:
  * - If tenant is present:
  *   - Updates iOS meta tag (apple-mobile-web-app-title) to tenant name.
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
  * - If no tenant (default):
  *   - Reverts to "TimelyOne".
  *   - Uses default manifest.
- * 
+ *
  * @param {Object} tenant - The current tenant object (can be null).
  */
 export function usePwaManifest(tenant) {
@@ -21,12 +21,14 @@ export function usePwaManifest(tenant) {
     // 1. Identify context
     const appName = tenant?.name || 'TimelyOne';
     const isOps = window.location.pathname.startsWith('/ops');
-    
+
     // Priority: Ops > Tenant > Default
     const finalName = isOps ? 'TimelyOne Ops' : appName;
 
     // 2. Update iOS Meta Tag
-    const metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    const metaTitle = document.querySelector(
+      'meta[name="apple-mobile-web-app-title"]'
+    );
     if (metaTitle) {
       metaTitle.setAttribute('content', finalName);
     } else {
@@ -41,19 +43,31 @@ export function usePwaManifest(tenant) {
     // and we are NOT in Ops (Ops has its own static manifest handled in index.html)
     if (!isOps && tenant?.name) {
       const link = document.querySelector('link[rel="manifest"]');
-      
+
       if (link) {
         // Fetch the base manifest
         fetch('/manifest.webmanifest')
           .then((response) => response.json())
           .then((manifest) => {
-            // Modify manifest
+            // Modify manifest with absolute URLs
+            const origin = window.location.origin;
             manifest.name = finalName;
             manifest.short_name = finalName;
+            manifest.start_url = origin + '/';
 
-            // Create Blob
+            // Update icons with absolute URLs
+            if (manifest.icons && Array.isArray(manifest.icons)) {
+              manifest.icons = manifest.icons.map((icon) => ({
+                ...icon,
+                src: origin + icon.src,
+              }));
+            }
+
+            // Create Blob with absolute URLs
             const stringManifest = JSON.stringify(manifest);
-            const blob = new Blob([stringManifest], { type: 'application/json' });
+            const blob = new Blob([stringManifest], {
+              type: 'application/json',
+            });
             const manifestURL = URL.createObjectURL(blob);
 
             // Update link
@@ -62,12 +76,11 @@ export function usePwaManifest(tenant) {
           .catch((err) => console.error('Error updating PWA manifest:', err));
       }
     } else if (!isOps && !tenant) {
-        // Revert to default manifest if logged out / no tenant
-        const link = document.querySelector('link[rel="manifest"]');
-        if (link && link.href.startsWith('blob:')) {
-            link.setAttribute('href', '/manifest.webmanifest');
-        }
+      // Revert to default manifest if logged out / no tenant
+      const link = document.querySelector('link[rel="manifest"]');
+      if (link && link.href.startsWith('blob:')) {
+        link.setAttribute('href', '/manifest.webmanifest');
+      }
     }
-
   }, [tenant, i18n.language]); // Re-run if tenant changes
 }
