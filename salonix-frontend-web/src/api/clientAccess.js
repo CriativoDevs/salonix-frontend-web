@@ -39,7 +39,7 @@ export async function setClientPassword({ password }) {
 }
 
 export async function refreshClientToken(refreshToken) {
-  const response = await client.post('users/token/refresh/', {
+  const response = await client.post('clients/token/refresh/', {
     refresh: refreshToken,
   });
   return response.data;
