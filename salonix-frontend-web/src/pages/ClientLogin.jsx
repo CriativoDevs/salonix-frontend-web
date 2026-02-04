@@ -5,7 +5,6 @@ import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { loginClient } from '../api/clientAccess';
-import { useTenant } from '../hooks/useTenant';
 import { useClientAuth } from '../hooks/useClientAuth';
 import {
   setClientAccessToken,
@@ -15,7 +14,6 @@ import {
 function ClientLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setTenantSlug: setContextTenantSlug } = useTenant();
   const { login: clientLogin } = useClientAuth();
 
   const [email, setEmail] = useState('');
@@ -96,9 +94,6 @@ function ClientLogin() {
       if (data.refresh) {
         setClientRefreshToken(data.refresh);
       }
-
-      // Update tenant slug in context (triggers data fetch)
-      setContextTenantSlug(cleanTenantSlug);
 
       // Redirect to client area
       navigate('/client/dashboard');

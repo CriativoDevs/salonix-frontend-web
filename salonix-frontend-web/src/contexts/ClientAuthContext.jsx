@@ -7,8 +7,10 @@ import {
   clearClientTokens,
 } from '../utils/clientAuthStorage';
 import { refreshClientToken } from '../api/clientAccess';
+import { useTenant } from '../hooks/useTenant';
 
 export const ClientAuthProvider = ({ children }) => {
+  const { setTenantSlug: updateGlobalTenantSlug } = useTenant();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [customerId, setCustomerId] = useState(null);
@@ -41,9 +43,11 @@ export const ClientAuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         setCustomerId(payload.customer_id);
         setTenantSlug(payload.tenant_slug);
+        // Sincronizar tenant_slug do JWT com TenantContext global
+        updateGlobalTenantSlug(payload.tenant_slug);
       }
     },
-    [decodeToken]
+    [decodeToken, updateGlobalTenantSlug]
   );
 
   useEffect(() => {
@@ -63,6 +67,8 @@ export const ClientAuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           setCustomerId(payload.customer_id);
           setTenantSlug(payload.tenant_slug);
+          // Sincronizar tenant_slug do JWT com TenantContext global
+          updateGlobalTenantSlug(payload.tenant_slug);
           setIsLoading(false);
           return;
         }
@@ -78,6 +84,8 @@ export const ClientAuthProvider = ({ children }) => {
             setIsAuthenticated(true);
             setCustomerId(payload.customer_id);
             setTenantSlug(payload.tenant_slug);
+            // Sincronizar tenant_slug do JWT com TenantContext global
+            updateGlobalTenantSlug(payload.tenant_slug);
           }
         }
       } catch (error) {
@@ -102,7 +110,7 @@ export const ClientAuthProvider = ({ children }) => {
     };
 
     bootstrap();
-  }, [decodeToken]);
+  }, [decodeToken, updateGlobalTenantSlug]);
 
   const value = {
     isAuthenticated,
