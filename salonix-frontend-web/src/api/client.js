@@ -167,7 +167,12 @@ client.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await refreshClient.post('users/token/refresh/', {
+      // Usar endpoint correto baseado no tipo de token
+      const refreshEndpoint = isClientToken
+        ? 'clients/token/refresh/' // Cliente usa endpoint de cliente
+        : 'users/token/refresh/'; // Staff usa endpoint de staff
+
+      const { data } = await refreshClient.post(refreshEndpoint, {
         refresh,
       });
       const { access, refresh: newRefresh } = data;

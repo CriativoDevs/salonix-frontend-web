@@ -11,7 +11,7 @@ describe('Service worker version update behavior', () => {
     globalThis.caches = {
       keys: jest
         .fn()
-        .mockResolvedValue(['old-cache', 'timelyone-app-shell-v2']),
+        .mockResolvedValue(['old-cache', 'timelyone-app-shell-v3']),
       delete: jest.fn().mockResolvedValue(true),
       open: jest.fn(),
       match: jest.fn(),
