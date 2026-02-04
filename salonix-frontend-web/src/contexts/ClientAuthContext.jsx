@@ -82,14 +82,17 @@ export const ClientAuthProvider = ({ children }) => {
         }
       } catch (error) {
         const status = error?.response?.status;
-        if (status === 401 || status === 403) {
+        // 500 = endpoint errado (também indica token inválido para o contexto)
+        if (status === 401 || status === 403 || status === 500) {
           console.warn(
-            '[ClientAuth] refresh token invalid/expired, clearing tokens'
+            '[ClientAuth] refresh failed (status: ' +
+              status +
+              '), clearing tokens'
           );
           clearClientTokens();
         } else {
           console.warn(
-            '[ClientAuth] refresh token failed with non-auth error (network?), keeping tokens:',
+            '[ClientAuth] refresh failed with network error, keeping tokens:',
             error
           );
         }

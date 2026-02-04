@@ -1,4 +1,4 @@
-const CACHE_NAME = 'timelyone-app-shell-v2';
+const CACHE_NAME = 'timelyone-app-shell-v3';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -29,9 +29,13 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // NUNCA cachear APIs - sempre buscar do servidor
+  // NUNCA cachear APIs - forçar bypass de TODOS os caches (Service Worker + HTTP)
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(req));
+    event.respondWith(
+      fetch(req, {
+        cache: 'no-store', // Força bypass do HTTP cache do browser
+      })
+    );
     return;
   }
 
