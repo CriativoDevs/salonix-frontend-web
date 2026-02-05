@@ -3,10 +3,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import PublicRoute from '../PublicRoute';
 import { useAuth } from '../../hooks/useAuth';
+import { useClientAuth } from '../../hooks/useClientAuth';
 
 // Mock useAuth hook
 jest.mock('../../hooks/useAuth', () => ({
   useAuth: jest.fn(),
+}));
+
+// Mock useClientAuth hook
+jest.mock('../../hooks/useClientAuth', () => ({
+  useClientAuth: jest.fn(),
 }));
 
 // Mock navigation utils
@@ -25,6 +31,11 @@ describe('PublicRoute Component', () => {
       isLoading: true,
     });
 
+    useClientAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
+
     render(
       <MemoryRouter>
         <PublicRoute>
@@ -40,6 +51,11 @@ describe('PublicRoute Component', () => {
   it('redirects to dashboard when authenticated', async () => {
     useAuth.mockReturnValue({
       isAuthenticated: true,
+      isLoading: false,
+    });
+
+    useClientAuth.mockReturnValue({
+      isAuthenticated: false,
       isLoading: false,
     });
 
@@ -67,6 +83,11 @@ describe('PublicRoute Component', () => {
 
   it('renders children when not authenticated and not loading', () => {
     useAuth.mockReturnValue({
+      isAuthenticated: false,
+      isLoading: false,
+    });
+
+    useClientAuth.mockReturnValue({
       isAuthenticated: false,
       isLoading: false,
     });

@@ -23,7 +23,11 @@ describe('Service worker offline navigation fallback', () => {
 
     const respondWith = jest.fn((p) => p);
     const event = {
-      request: { mode: 'navigate' },
+      request: {
+        mode: 'navigate',
+        url: 'http://localhost:3000/some-page',
+        headers: new Map(),
+      },
       respondWith,
     };
 
