@@ -7,6 +7,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { fetchClientUpcoming, cancelClientAppointment } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
 import { useClientTenant } from '../hooks/useClientTenant';
+import { downloadFile } from '../utils/downloadFile';
 
 export default function ClientDashboard() {
   const { t } = useTranslation();
@@ -58,6 +59,23 @@ export default function ClientDashboard() {
           'Não foi possível cancelar.'
         ),
       });
+    }
+  };
+
+  const handleDownloadICS = async (e) => {
+    e.preventDefault();
+    if (!next?.ics_token) return;
+
+    const serviceName = next?.service?.name || 'Serviço';
+    const filename = `agendamento_${serviceName.replace(/\s+/g, '_')}_${next?.id}.ics`;
+    const icsUrl = `${API_BASE_URL}public/appointments/${next?.id}/ics/?token=${next.ics_token}`;
+
+    try {
+      await downloadFile(icsUrl, filename);
+    } catch (error) {
+      console.error('Failed to download ICS file:', error);
+      // Fallback: try opening in new window
+      window.open(icsUrl, '_blank');
     }
   };
 
@@ -172,9 +190,8 @@ export default function ClientDashboard() {
                         ? `${API_BASE_URL}public/appointments/${next?.id}/ics/?token=${next.ics_token}`
                         : '#'
                     }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-brand-primary hover:text-brand-accent underline underline-offset-4"
+                    onClick={handleDownloadICS}
+                    className="text-brand-primary hover:text-brand-accent underline underline-offset-4 cursor-pointer"
                   >
                     {t(
                       'client.dashboard.add_to_calendar',
