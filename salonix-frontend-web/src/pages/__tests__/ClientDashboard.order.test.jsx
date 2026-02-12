@@ -4,6 +4,10 @@ import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 import ClientDashboard from '../ClientDashboard';
 
+jest.mock('react-simple-pull-to-refresh', () => ({ children }) => (
+  <>{children}</>
+));
+
 jest.mock('../../api/clientMe', () => ({
   fetchClientUpcoming: jest.fn().mockResolvedValue([
     {

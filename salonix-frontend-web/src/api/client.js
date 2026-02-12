@@ -64,7 +64,9 @@ client.interceptors.request.use((config) => {
   // Endpoints públicos não devem ter token
   const isPublicEndpoint =
     config.url?.includes('public/') ||
-    config.url?.includes('users/tenant/meta/');
+    config.url?.includes('users/tenant/meta/') ||
+    config.url?.includes('users/password/reset/') ||
+    config.url?.includes('users/password/reset/confirm/');
 
   if (!isPublicEndpoint) {
     // Prioridade: cliente > owner/staff (áreas separadas)
