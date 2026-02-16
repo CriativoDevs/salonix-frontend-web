@@ -150,7 +150,7 @@ function MobileNav() {
   return (
     <>
       {/* Navegação principal fixa */}
-      <nav className="fixed bottom-0 left-0 w-full bg-brand-surface border-t border-brand-border shadow-md flex justify-around items-center py-2 pb-[env(safe-area-inset-bottom)] md:hidden z-50">
+      <nav className="fixed bottom-[env(safe-area-inset-bottom)] left-0 w-full bg-brand-surface border-t border-brand-border shadow-md flex justify-around items-center py-2 md:hidden z-50">
         {mainLinks.map(({ to, icon: IconComponent, label }) => {
           const Icon = IconComponent;
           return (
