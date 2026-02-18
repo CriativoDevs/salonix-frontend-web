@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { getEnvVar } from '../../utils/env';
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
@@ -17,8 +19,9 @@ function loadScript(src) {
 
 export default function CaptchaGate({ onToken, className, resetKey }) {
   const containerRef = useRef(null);
-  const provider = import.meta.env.VITE_CAPTCHA_PROVIDER || '';
-  const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || '';
+  const provider = getEnvVar('VITE_CAPTCHA_PROVIDER') || '';
+  const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || '';
+  const { t } = useTranslation();
 
   useEffect(() => {
     let cancelled = false;
@@ -32,9 +35,11 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
       }
 
       if (provider === 'turnstile') {
-        const sitekey = import.meta.env.VITE_TURNSTILE_SITEKEY;
+        const sitekey = getEnvVar('VITE_TURNSTILE_SITEKEY');
         if (!sitekey) return;
-        await loadScript('https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit');
+        await loadScript(
+          'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+        );
         if (cancelled) return;
         window.turnstile.render(containerRef.current, {
           sitekey,
@@ -46,7 +51,7 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
       }
 
       if (provider === 'hcaptcha') {
-        const sitekey = import.meta.env.VITE_HCAPTCHA_SITEKEY;
+        const sitekey = getEnvVar('VITE_HCAPTCHA_SITEKEY');
         if (!sitekey) return;
         await loadScript('https://js.hcaptcha.com/1/api.js?render=explicit');
         if (cancelled) return;
@@ -79,12 +84,17 @@ export default function CaptchaGate({ onToken, className, resetKey }) {
 
   // Fallback builtin: checkbox simples
   return (
-    <label className={className} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+    <label
+      className={className}
+      style={{ display: 'flex', gap: 8, alignItems: 'center' }}
+    >
       <input
         type="checkbox"
         onChange={(e) => onToken?.(e.target.checked ? 'builtin-ok' : null)}
       />
-      <span className="text-brand-surfaceForeground">Eu não sou um robô</span>
+      <span className="text-brand-surfaceForeground">
+        {t('auth.captcha.not_robot', 'Eu não sou um robô')}
+      </span>
     </label>
   );
 }

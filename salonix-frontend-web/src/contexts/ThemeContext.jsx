@@ -18,16 +18,18 @@ export const ThemeProvider = ({ children }) => {
     const root = document.documentElement;
     const body = document.body;
 
-    // Remove classes antigas
     body.removeAttribute('data-theme');
     root.classList.remove('theme-light', 'theme-dark');
 
-    // Aplica novo tema usando data-theme
     body.setAttribute('data-theme', theme);
 
-    // Paleta fixa do tema: sem aplicação de cores de branding (FEW-BRAND-01)
+    // Compatibilidade com lógica existente que verifica classes em :root
+    if (theme === THEMES.DARK) {
+      root.classList.add('theme-dark');
+    } else {
+      root.classList.add('theme-light');
+    }
 
-    // Atualiza meta theme-color para mobile
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     if (metaThemeColor) {
       const themeColor = theme === THEMES.DARK ? '#0f172a' : '#ffffff';

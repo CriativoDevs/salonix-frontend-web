@@ -16,6 +16,15 @@
 
 /* Utilitário leve p/ formularios claros */
 @layer utilities {
+  /* Oculta barras de rolagem sem desabilitar o scroll */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE e Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
   .form-light input[type="text"],
   .form-light input[type="email"],
   .form-light input[type="tel"],

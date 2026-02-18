@@ -17,7 +17,7 @@ jest.mock('../../api/staff', () => ({
 }));
 
 jest.mock('../../hooks/useTenant', () => ({
-  useTenant: jest.fn(() => ({ tenant: { name: 'Salonix' }, branding: {} })),
+  useTenant: jest.fn(() => ({ tenant: { name: 'TimelyOne' }, branding: {} })),
 }));
 
 const mockNavigate = jest.fn();

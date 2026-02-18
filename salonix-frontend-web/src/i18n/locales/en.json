@@ -1,4 +1,8 @@
 {
+  "date": {
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
   "hello": "Hello, world!",
   "login": {
     "title": "Sign in",
@@ -17,9 +21,18 @@
       "email_invalid": "Email is invalid",
       "password_required": "Password is required",
       "invalid_credentials": "Invalid email or password"
-    }
+    },
+    "are_you_a_client": "Are you a client? Access your area",
+    "are_you_a_professional": "Are you a professional? Access management"
   },
   "auth": {
+    "register_title": "Create your account",
+    "username": "Username",
+    "salon_name": "Business name",
+    "phone_number": "Business phone",
+    "captcha": {
+      "not_robot": "I am not a robot"
+    },
     "name": "Full name",
     "email": "Email",
     "password": "Password",
@@ -65,7 +78,8 @@
       "bookings": "Bookings (today)",
       "revenue": "Revenue (month)",
       "clients": "Clients",
-      "util": "Utilization"
+      "util": "Utilization",
+      "credits": "Credits"
     },
     "stats_hint_completed": "{{count}} completed",
     "stats_hint_ticket": "Average ticket {{value}}",
@@ -84,7 +98,20 @@
     "add_professional": "Add professional",
     "add_service": "Register service",
     "more": "More",
-    "reports": "Reports"
+    "reports": "Reports",
+    "credits_critical": "Credits exhausted",
+    "credits_low": "Low balance",
+    "credits_good": "Available balance"
+  },
+  "tour": {
+    "welcome": "Welcome to TimelyOne! Let's take a quick tour of the platform.",
+    "dashboard": "This is your Dashboard. Here you will have an overview of your business.",
+    "slots": "Manage your available slots and blockages here.",
+    "bookings": "Track and manage all bookings.",
+    "customers": "Register and retain your customers here.",
+    "services": "Configure your services and prices here.",
+    "team": "Manage your team and permissions here.",
+    "more": "Access Settings, Reports, and Plans in this menu."
   },
   "services": {
     "title": "Services",
@@ -122,9 +149,29 @@
   "slots": {
     "title": "Available time slots",
     "select_date": "Select date",
-    "no_slots": "No slots available for this date."
+    "no_slots": "No slots available for this date.",
+    "professional": "Professional",
+    "ordering": "Ordering",
+    "order_newest": "Newest first",
+    "order_oldest": "Oldest first",
+    "slot_date": "Slot date",
+    "start_time": "Start",
+    "end_time": "End",
+    "create_slot": "Create slot"
   },
   "bookings": {
+    "actions": {
+      "cancel": "Cancel",
+      "reschedule": "Reschedule",
+      "details": "Details",
+      "cancel_confirm": "Are you sure you want to cancel this appointment?",
+      "copy_contact": "Copy Contact",
+      "contact_copied": "Contact copied!",
+      "no_contact": "No contact info",
+      "title": "Actions",
+      "manage": "Manage",
+      "save": "Save changes"
+    },
     "title": "Bookings",
     "client": "Client",
     "service": "Service",
@@ -147,19 +194,20 @@
       "no_slots": "No available slots for this professional.",
       "submit": "Schedule",
       "reset": "Clear",
-      "required": "Please select service, professional and time slot."
+      "required": "Please select service, professional and time slot.",
+      "customer": "Client",
+      "select_customer": "Select a client",
+      "empty_customer": "Register clients before creating bookings.",
+      "customer_required": "Select a client to continue.",
+      "multi_series_short": "Multi/Series"
     },
     "filters": {
       "status": "Status",
       "status_all": "All statuses",
+      "customer": "Client",
+      "customer_all": "All",
       "date_from": "From",
       "date_to": "To"
-    },
-    "actions": {
-      "title": "Actions",
-      "manage": "Manage",
-      "cancel": "Cancel",
-      "save": "Save changes"
     },
     "edit": {
       "keep_slot": "Keep current slot"
@@ -174,6 +222,54 @@
       "summary": "Total of {{count}} appointments",
       "prev": "Previous",
       "next": "Next"
+    },
+    "series": {
+      "title": "Series booking",
+      "tab_series": "Series",
+      "tab_multi": "Multi",
+      "prev_week": "Previous week",
+      "next_week": "Next week",
+      "no_slots_day": "No slots",
+      "count": "Selected:",
+      "confirm": "Confirm series",
+      "confirm_multi": "Confirm multi",
+      "min_selection": "Select at least 2 time slots.",
+      "max_selection": "Maximum of 20 time slots per series.",
+      "past_not_allowed": "Some time slots are in the past. Select future slots.",
+      "hint": "Select 2 to 20 time slots. Navigate weeks."
+    },
+    "multi": {
+      "title": "Bulk booking",
+      "hint": "Select 2 to 20 time slots. Service and professional can be set per item.",
+      "batch_professional": "Professional to view slots",
+      "batch_professional_default": "Use form professional",
+      "batch_notes": "Default notes (optional)",
+      "batch_notes_placeholder": "Notes applied to items without notes",
+      "pick_professional_hint": "Select a professional to view slots.",
+      "items_title": "Selected items",
+      "feedback_title": "Notes and errors detected for items",
+      "item_error": "Item with error",
+      "item_warning": "Item with warning",
+      "no_suggestion": "No suggestion available",
+      "suggestion": "Suggestion:",
+      "apply_suggestion": "Apply suggestion",
+      "service": "Service",
+      "service_select": "Select a service",
+      "service_not_fit": "Service does not fit the slot.",
+      "professional": "Professional",
+      "professional_select": "Select a professional",
+      "customer": "Client",
+      "customer_default": "Use form client",
+      "notes": "Notes (optional)",
+      "notes_placeholder": "Add notes for this item",
+      "remove_item": "Remove item",
+      "no_items": "No time slots selected yet. Select from the grid above.",
+      "missing_fields_item": "Select service and professional.",
+      "prof_not_offer": "Professional does not offer the service.",
+      "slot_wrong_professional": "Slot belongs to another professional.",
+      "missing_fields": "Provide form client and per-item service/professional.",
+      "precheck_failed": "Some items are invalid. Fix the highlighted errors below.",
+      "partial_failed": "Some items failed. Adjust below and try again."
     }
   },
   "profile": {
@@ -188,6 +284,49 @@
     "type_message": "Type your message...",
     "send": "Send",
     "select_conversation": "Select a conversation to start"
+  },
+  "common": {
+    "back": "Back",
+    "finish": "Finish",
+    "filter": "Filter",
+    "next": "Next",
+    "skip": "Skip",
+    "loading": "Loading...",
+    "balance": "Balance",
+    "saving": "Saving...",
+    "save_error": "Failed to save. Please try again.",
+    "delete": "Delete",
+    "load_error": "Failed to load.",
+    "create": "Create",
+    "all": "All",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "edit": "Edit",
+    "order_by": "Order by",
+    "recent": "Most recent",
+    "name": "Name",
+    "empty_list": "No services registered.",
+    "confirm_delete": "Confirm delete?",
+    "delete_error": "Failed to delete.",
+    "refresh": "Refresh",
+    "try_again": "Try again",
+    "date": "Date",
+    "description": "Description",
+    "value": "Value",
+    "request_id": "Request ID",
+    "coming_soon": "Coming soon",
+    "coming_soon_hint": "Integration available soon.",
+    "code": "Code",
+    "error_generic": "Something went wrong",
+    "saving_done": "Saved successfully.",
+    "save_failed": "Failed to save.",
+    "processing": "Processing...",
+    "credits": "credits",
+    "loading_data": "Loading plan data...",
+    "active": "Active",
+    "inactive": "Inactive",
+    "cancelled": "Cancelled"
   },
   "feedback": {
     "title": "Feedback",
@@ -214,16 +353,184 @@
     "submit": "Submit feedback",
     "thank_you": "Thank you!",
     "submission_success": "Your feedback has been submitted successfully.",
-    "submit_another": "Submit another feedback"
+    "submit_another": "Submit another feedback",
+    "submit_error": "We couldn't submit your feedback.",
+    "errors": {
+      "rating_required": "Select a rating from 1 to 5.",
+      "category_required": "Select a valid category.",
+      "message_required": "Write a message.",
+      "message_too_long": "Message too long. Maximum 2000 characters."
+    }
+  },
+  "credits": {
+    "add_credits": "Add credits",
+    "description": "Select an amount to purchase. Payment via Stripe (checkout).",
+    "current_balance": "Current balance",
+    "new_balance": "New balance",
+    "purchase_amount": "+ {{amount}}",
+    "buy": "Buy",
+    "consumption_month": "Consumption (Month)",
+    "avg_consumption": "Monthly Average",
+    "forecast": "Forecast",
+    "days_remaining": "approx. {{days}} days",
+    "alert_threshold": "Alert: < {{val}}",
+    "block": {
+      "title": "Insufficient balance",
+      "message": "You need credits to perform this action ({{action}})."
+    },
+    "gate": {
+      "insufficient": "Insufficient balance"
+    },
+    "history_title": "Transaction History",
+    "history_empty": "No transactions found.",
+    "history_error": "Error loading transaction history.",
+    "transaction_no_desc": "No description",
+    "transaction": {
+      "id": "Transaction ID:",
+      "reference": "External Reference:",
+      "type": "Technical Type:",
+      "status": "Status:",
+      "created_by": "Created by:"
+    },
+    "export_csv": "Export CSV",
+    "filters": {
+      "from_date": "From",
+      "to_date": "To",
+      "type": "Type"
+    },
+    "types": {
+      "purchase": "Credit purchase",
+      "purchase_stripe": "Credit purchase via Stripe Checkout",
+      "purchase_amount": "Purchase of {{amount}} in credits",
+      "purchase_extras": "Purchase of extra credits",
+      "consumption": "Credit usage",
+      "consumption_whatsapp": "WhatsApp message sent",
+      "consumption_sms": "SMS sent to client",
+      "expiration": "Credit expiration",
+      "refund": "Refund",
+      "bonus": "Bonus credits",
+      "bonus_initial": "Initial plan credits"
+    },
+    "alert": {
+      "description": "Receive a warning when your credits are running low.",
+      "critical_title": "Your credit balance is exhausted!",
+      "low_title": "Your credit balance is low.",
+      "message": "Current balance: {{balance}} credits.",
+      "settings_title": "Alert Configuration",
+      "threshold_prefix": "Alert when below:",
+      "enable_label": "Enable low balance alerts",
+      "threshold_label": "Alert when balance is below:"
+    }
   },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your business settings",
-  "tabs": {
+    "tabs": {
       "general": "General",
       "branding": "Logo",
       "notifications": "Notifications",
-      "business": "Business"
+      "billing": "Billing",
+      "credits": "Credits",
+      "business": "Business",
+      "data": "Data"
+    },
+    "credits": {
+      "title": "Credit Management"
+    },
+    "billing": {
+      "title": "Credit History",
+      "success": {
+        "credits_title": "Credit purchase completed",
+        "subscription_title": "Payment completed",
+        "credits_subtitle": "Your credits have been added to your account.",
+        "subscription_subtitle": "Your subscription has been updated.",
+        "credits_message": "Thank you! Your credit purchase was processed successfully. You can use them now.",
+        "subscription_message": "Thank you! We processed your checkout. If the plan does not appear updated, click back.",
+        "back_settings": "Back to Settings",
+        "go_plans": "Go to Plans"
+      }
+    },
+    "features": {
+      "pwa": {
+        "label": "Client PWA",
+        "description": "Available from the Standard plan. Allows customers to book directly through the personalized PWA."
+      },
+      "webpush": {
+        "label": "Web Push Notifications",
+        "description": "Available from the Standard plan. Enable reminder and marketing alerts via browser."
+      },
+      "reports_basic": {
+        "label": "Basic Overview",
+        "description": "Overview of bookings, revenue and customers. Available on all plans."
+      },
+      "reports_business": {
+        "label": "Business Analysis",
+        "description": "Top services, revenue evolution and performance metrics. Requires Standard plan or higher."
+      },
+      "reports_advanced": {
+        "label": "Advanced Insights",
+        "description": "Retention analysis, customer behavior and predictive reports. Requires Pro plan."
+      },
+      "reports": {
+        "label": "Advanced Reports",
+        "description": "Available from the Pro plan. Unlocks detailed metrics and advanced export."
+      },
+      "native_client": {
+        "label": "Native Customer App",
+        "description": "iOS and Android app for your customers. Available on Pro plan."
+      },
+      "sms_notifications": {
+        "label": "SMS Notifications",
+        "description": "Send reminders via SMS. Requires Standard plan or higher."
+      },
+      "whatsapp_integration": {
+        "label": "WhatsApp Integration",
+        "description": "Automate messages via WhatsApp. Available on Pro plan."
+      },
+      "white_label": {
+        "label": "White Label",
+        "description": "Remove TimelyOne branding from customer interfaces. Requires Pro plan."
+      },
+      "advanced_scheduling": {
+        "label": "Advanced Scheduling",
+        "description": "Recurring bookings and batch operations. Requires Standard plan or higher."
+      },
+      "team_management": {
+        "label": "Team Management",
+        "description": "Invite and manage staff with custom permissions. Requires Standard plan or higher."
+      },
+      "custom_fields": {
+        "label": "Custom Fields",
+        "description": "Create custom fields for customers and bookings. Requires Standard plan or higher."
+      },
+      "multi_location": {
+        "label": "Multi-Location",
+        "description": "Manage multiple business locations from one account. Requires Pro plan."
+      },
+      "api_access": {
+        "label": "API Access",
+        "description": "Full REST API for custom integrations. Requires Pro plan."
+      },
+      "automations": {
+        "label": "Automations",
+        "description": "Automated workflows and conditional triggers. Requires Pro plan."
+      },
+      "online_payments": {
+        "label": "Online Payments",
+        "description": "Accept online payments through Stripe. Requires Standard plan or higher."
+      },
+      "data_export": {
+        "label": "Data Export",
+        "description": "Export all your data in CSV and JSON formats. Requires Standard plan or higher."
+      },
+      "priority_support": {
+        "label": "Priority Support",
+        "description": "24/7 priority support with guaranteed response time. Requires Pro plan."
+      },
+      "generic": {
+        "description": "Feature available on higher plans."
+      },
+      "plan_current_suffix": "Current plan: {{plan}}."
     },
     "coming_soon": "Coming soon",
     "coming_soon_hint": "Integration available soon.",
@@ -251,7 +558,8 @@
       "appointmentReminders": "Appointment reminders",
       "appointmentReminders_description": "Automatic appointment reminders",
       "marketingEmails": "Marketing emails",
-      "marketingEmails_description": "Receive promotional emails"
+      "marketingEmails_description": "Receive promotional emails",
+      "pro_only": "Available only on the Pro plan"
     },
     "save": "Save",
     "branding": {
@@ -264,9 +572,232 @@
       "preview_alt": "Logo preview",
       "logo_file": "Logo file",
       "saved": "Logo updated successfully."
+    },
+    "branding_address": {
+      "title": "Business address",
+      "street": "Street",
+      "number": "Number",
+      "complement": "Complement",
+      "neighborhood": "Neighborhood",
+      "zip": "Postal code",
+      "state": "District/State",
+      "city": "City",
+      "country": "Country"
+    },
+    "general": {
+      "tenant_name": "Salon name",
+      "slug": "Slug",
+      "business_name": "Business name",
+      "email": "Contact email",
+      "phone": "Phone",
+      "timezone": "Timezone",
+      "language": "Language",
+      "currency": "Default currency",
+      "address": "Address",
+      "info_title": "General Information",
+      "edit_title": "Edit Information",
+      "edit_business_name": "Business Name",
+      "edit_email": "Contact Email",
+      "edit_phone": "Phone"
+    },
+    "plan_title": "Current plan",
+    "plan_unknown": "Plan not identified",
+    "plan_modules": "Included modules",
+    "plan_modules_empty": "No additional modules defined for this plan.",
+    "locked_features": "Locked features",
+    "locked_features_empty": "No locked features for this plan.",
+    "locked_features_unavailable": "No plan features data at the moment. Try refreshing the page.",
+    "requires_plan": "Requires plan",
+    "plan_badge": "Plan",
+    "modules": {
+      "reports": "Advanced reports",
+      "pwa_admin": "Admin dashboard (PWA)",
+      "pwa_client": "Client PWA",
+      "rn_admin": "Admin App (React Native)",
+      "rn_client": "Client App (React Native)"
+    },
+    "auto_invite": {
+      "title": "Client PWA auto-invites",
+      "description": "Automatically invite new customers with a valid email when Client PWA is enabled.",
+      "blocked_hint": "Available only when the Client PWA is enabled for the salon.",
+      "status_enabled": "Enabled",
+      "status_disabled": "Disabled",
+      "success_enabled": "Auto-invites enabled.",
+      "success_disabled": "Auto-invites disabled.",
+      "error": "Could not update preference.",
+      "accessible_label": "Toggle Client PWA auto-invites"
+    },
+    "pwa_client": {
+      "title": "Client PWA",
+      "description": "Allows customers to access via a salon-customized PWA.",
+      "status_enabled": "Enabled",
+      "status_disabled": "Disabled",
+      "accessible_label": "Toggle Client PWA",
+      "success_enabled": "Client PWA enabled.",
+      "success_disabled": "Client PWA disabled.",
+      "error": "Could not update Client PWA.",
+      "auto_invite_label": "Auto-invites:",
+      "auto_invite_toggle_label": "Toggle auto-invites"
+    },
+    "auto_renewal": {
+      "title": "Auto Renewal",
+      "description": "Manage the auto-renewal of your subscription plan.",
+      "cancelled": "Auto-renewal cancelled successfully.",
+      "reactivated": "Auto-renewal reactivated successfully."
+    },
+    "auto_renewal_status": "Auto-renewal",
+    "channels": {
+      "email": "Email",
+      "sms": "SMS",
+      "whatsapp": "WhatsApp",
+      "push_web": "Web Push",
+      "push_mobile": "Mobile Push"
+    },
+    "notifications_paywall_hint": "Advanced channels available with credits.",
+    "tooltip": {
+      "add_credits": "Buy credits to unlock advanced channels",
+      "channel_enabled": "Channel active for the salon",
+      "channel_disabled": "Channel unavailable: requires credits or compatible plan"
+    },
+    "channel_enabled": "Active",
+    "channel_disabled": "Inactive",
+    "add_credits": "Add credits",
+    "credits_available": "Credits available",
+
+    "data": {
+      "title": "Import (CSV)",
+      "description": "Import customers, services or team members via CSV file.",
+      "aria_tabs": "Data (CSV)",
+      "tab_import": "Import (CSV)",
+      "tab_export": "Export (CSV)",
+      "entity": "Data type",
+      "entity_customers": "Customers",
+      "entity_services": "Services",
+      "entity_staff": "Team",
+      "file": "CSV file",
+      "actions": {
+        "dry_run": "Validate (dry-run)",
+        "import": "Import",
+        "download_template": "Download template"
+      },
+      "export": {
+        "one": "Export CSV",
+        "loading": "Exporting..."
+      },
+      "filters": {
+        "active": "Active only"
+      },
+      "preview": {
+        "columns": "Columns",
+        "rows": "Rows (preview)",
+        "delimiter": "Delimiter"
+      },
+      "mapping": {
+        "title": "Column mapping",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "role": "Role",
+        "suggested": "Suggestion",
+        "help_name": "Customer name",
+        "help_staff_name": "Full name",
+        "help_email": "Valid email",
+        "help_phone": "International phone (e.g. +351XXXXXXXXX)",
+        "help_service_name": "Service name",
+        "help_duration": "Duration in minutes (integer > 0)",
+        "help_price": "Price in EUR (e.g. 12.50)",
+        "help_role": "Role: owner, manager or collaborator",
+        "help_ignore": "Ignore column"
+      },
+      "import": {
+        "success": "Import completed"
+      },
+      "rate_limited": "Too many attempts. Please wait",
+      "hint": "Available only for owner.",
+      "result": {
+        "title": "Validation/Import result",
+        "created": "Created",
+        "updated": "Updated",
+        "errors_count": "Errors",
+        "errors_title": "Errors found",
+        "no_errors": "No errors found",
+        "errors_by_field": "By field",
+        "line": "Line",
+        "column": "Column",
+        "reason": "Reason",
+        "hint": "Hint",
+        "value": "Value",
+        "request_id": "Request ID"
+      }
     }
   },
   "customers": {
+    "title": "Customers",
+    "subtitle": "Register customers to link them directly in bookings and track contacts.",
+    "confirm_delete": "Remove this customer?",
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "notes": "Notes",
+      "name_placeholder": "Full name",
+      "email_placeholder": "customer@email.com",
+      "phone_placeholder": "+351912345678",
+      "notes_placeholder": "Preferences, notes...",
+      "marketing_opt_in": "Agrees to receive marketing communications",
+      "submit": "Add customer"
+    },
+    "list": {
+      "title": "Customer list",
+      "subtitle": "Use search to quickly find by name, email or phone.",
+      "removal_hint": "Customers with history cannot be deleted; deactivate to keep the registry without appearing in the schedule.",
+      "sort_recent": "Most recent",
+      "sort_name": "Name (A–Z)",
+      "search": "Search customer...",
+      "show_inactive": "Show inactive",
+      "empty": "No customers registered yet.",
+      "no_results": "No customers found for this search."
+    },
+    "table": {
+      "name": "Customer",
+      "contact": "Contact",
+      "notes": "Notes",
+      "status": "Status",
+      "actions": "Actions",
+      "created": "Created at:",
+      "created_unknown": "Date unavailable",
+      "no_notes": "No notes."
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "edit": "Edit",
+      "deactivate": "Deactivate",
+      "activate": "Reactivate",
+      "resend_invite": "Resend invite",
+      "resending": "Resending...",
+      "invite": {
+        "require_active": "Activate the client before resending.",
+        "in_progress": "Invite in progress...",
+        "require_email": "Add an email to resend invites."
+      }
+    },
+    "errors": {
+      "name_required": "Provide the customer's name.",
+      "contact_required": "Provide an email or phone for contact.",
+      "delete_failed": "We couldn't remove the customer.",
+      "delete_protected": "Customers with appointment history cannot be deleted. Use the \"Deactivate\" action.",
+      "invite_missing_email": "Add an email before resending the invite.",
+      "invite_inactive": "Activate the client to resend invites.",
+      "invite_failed": "We couldn't resend the invitation.",
+      "invite_unavailable": "Resending not available yet. Please wait for the backend update.",
+      "invite_rate_limit": "Too many invites in sequence. Try again shortly."
+    },
+    "success": {
+      "invite_sent": "Invitation resent successfully."
+    },
     "invite": {
       "status": {
         "success": "Delivered",
@@ -285,16 +816,11 @@
         "details": "Details",
         "refresh_hint": "Status will refresh as soon as the backend confirms delivery."
       }
-    },
-    "actions": {
-      "invite": {
-        "require_active": "Activate the client before resending.",
-        "in_progress": "Invite in progress...",
-        "require_email": "Add an email to resend invites."
-      }
     }
   },
   "team": {
+    "title": "Team",
+    "subtitle": "Invite collaborators, track pending invites and organize the roles each person plays in your business.",
     "current_team_heading": "team management",
     "current_role": {
       "label": "You are signed in as {{role}}.",
@@ -306,12 +832,53 @@
     "list": {
       "manage": "Manage",
       "professionals_link": "Linked professionals",
-      "no_professional": "No professional linked"
+      "no_professional": "No professional linked",
+      "no_staff_member": "No team member linked"
     },
     "professionals_error": "Failed to load professionals.",
+    "error": {
+      "generic": "Failed to load the team.",
+      "load_staff": "Unable to load the team.",
+      "invite_failed": "Failed to send the invitation.",
+      "update_member": "Unable to update the team member."
+    },
+    "roles": {
+      "owner": "Owner",
+      "manager": "Manager",
+      "collaborator": "Collaborator"
+    },
+    "status": {
+      "invited": "Invite pending",
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "meta": {
+      "created_at": "Created",
+      "updated_at": "Updated"
+    },
+    "filters": {
+      "search": "Search",
+      "search_placeholder": "Search by name or email",
+      "role": "Role",
+      "status": "Status",
+      "ordering": "Ordering",
+      "role_all": "All",
+      "status_all": "All"
+    },
+    "ordering": {
+      "name_asc": "Name (A→Z)",
+      "name_desc": "Name (Z→A)",
+      "created_asc": "Created (oldest→newest)",
+      "created_desc": "Created (newest→oldest)"
+    },
     "invite": {
-      "title": "Invite a team member",
-      "description": "Send an invitation by email. The guest will receive instructions to create a password and access the dashboard.",
+      "title": "Invite team member",
+      "description": "Send an email invitation. The guest will receive instructions to create a password and access the dashboard.",
+      "professional": {
+        "title": "Professional data",
+        "helper": "Define how the professional will appear on the portal.",
+        "name": "Professional name"
+      },
       "roles": {
         "collaborator": "Collaborator",
         "manager": "Manager",
@@ -424,16 +991,105 @@
   "nav": {
     "home": "Home",
     "slots": "Slots",
+    "bookings": "Bookings",
+    "services": "Services",
     "profile": "Profile",
     "chat": "Chat",
     "feedback": "Feedback",
     "settings": "Settings",
     "more": "More",
-    "close": "Close"
+    "open_menu": "Open menu",
+    "change_language": "Change language",
+    "change_theme": "Change theme",
+    "language": {
+      "pt_label": "Português (PT‑PT)",
+      "en_label": "English"
+    },
+    "reports": "Reports",
+    "close": "Close",
+    "logout": "Logout",
+    "plans": "Plans",
+    "customers": "Customers",
+    "team": "Team",
+    "go_to_dashboard": "Go to dashboard",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "light_desc": "Light theme",
+      "dark_desc": "Dark theme",
+      "system_desc": "Follow system preference",
+      "current_title": "Current theme: {{label}}"
+    }
   },
-  "common": {
-    "saving": "Saving...",
-    "save_error": "Failed to save. Please try again."
+  "plans": {
+    "title": "Plans",
+    "subtitle": "Choose or manage your current plan",
+    "current_badge": "Current plan",
+    "login_required": "You must be signed in to complete checkout.",
+    "trial_exhausted": "Notice: your {{days}}‑day trial has already been used. Billing will be immediate upon confirming checkout.",
+    "already_active": "You already have an active subscription. Any \"14 days free\" message shown in Stripe does not apply; billing is immediate.",
+    "continue_checkout": "Continue to checkout",
+    "manage_plan": "Manage plan",
+    "opening": "Opening…",
+    "dev_hint": "Tip: set VITE_BILLING_MOCK=true to simulate checkout in development.",
+    "checkout_link_error": "Could not obtain the checkout link.",
+    "checkout_error": "Failed to start checkout.",
+    "portal_link_error": "Could not obtain the portal link.",
+    "portal_error": "Failed to open billing portal.",
+    "options": {
+      "basic": {
+        "name": "Basic",
+        "price": "€29/month",
+        "highlights": {
+          "0": "PWA Admin, Staff and Client",
+          "1": "Reports: Overview",
+          "2": "€5 communication credit"
+        }
+      },
+      "standard": {
+        "name": "Standard",
+        "price": "€55/month",
+        "highlights": {
+          "0": "Everything in Basic",
+          "1": "Native Apps (Admin / Staff)",
+          "2": "Reports: Business Analysis",
+          "3": "€10 communication credit"
+        }
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "€95/month",
+        "highlights": {
+          "0": "Everything in Standard",
+          "1": "Native Apps (Client)",
+          "2": "Reports: Advanced Insights",
+          "3": "€15 communication credit"
+        }
+      },
+      "founder": {
+        "name": "Founder",
+        "price": "€15/month",
+        "price_annual": "€150/year",
+        "badge": "Limited Offer",
+        "highlights": {
+          "0": "Everything in Pro",
+          "1": "Lifetime price guarantee",
+          "2": "Limited to 500 businesses",
+          "3": "€20 communication credit"
+        }
+      }
+    },
+    "founder": {
+      "limited_badge": "⚠️ Limited to 500 users",
+      "offer_badge": "Limited Offer",
+      "annual_savings": "(10 months paid, 2 free) - Lifetime",
+      "warning_title": "Founder Plan: Important Limitations",
+      "warning_message": "The Founder Plan is limited to 500 active users per business. After this limit, you'll need to upgrade to another plan.",
+      "warning_note": "💡 This plan was created to support TimelyOne's first 500 customers.",
+      "warning_cancel": "Cancel",
+      "warning_confirm": "I Understand, Continue"
+    }
   },
   "reports": {
     "title": "Reports",
@@ -466,6 +1122,17 @@
       "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
       "data_loaded": "Advanced data loaded successfully"
     },
+    "insights": {
+      "title": "Advanced Insights",
+      "description": "Retention analysis and customer behavior",
+      "upgrade_required": "Available from Pro plan onwards. Unlock retention analysis and deep insights.",
+      "coming_soon": "Coming soon: Retention Reports and Cohort Analysis",
+      "new_clients": "New Clients",
+      "returning_clients": "Returning Clients",
+      "clients_count": "Count",
+      "revenue_generated": "Revenue generated",
+      "period_label": "Data from {{start}} to {{end}}"
+    },
     "access_denied": {
       "title": "Restricted access",
       "description": "Only owners have access to business reports."
@@ -480,6 +1147,483 @@
     "export": {
       "csv": "Export CSV",
       "exporting": "Exporting..."
+    }
+  },
+  "landing": {
+    "nav": {
+      "client_area": "Client Area",
+      "login": "Sign in",
+      "register": "Sign up",
+      "open_menu": "Open menu",
+      "menu": "Menu",
+      "install_pwa": "Install App"
+    },
+    "hero": {
+      "tag": "Smart Management & Scheduling",
+      "title": "The premium platform for scheduling and management for modern businesses.",
+      "subtitle": "TimelyOne automates schedules, reduces no-shows, improves client experience and professionalizes your operation — all in a fast, elegant dashboard ready for teams of any size.",
+      "bullets": [
+        "Reduce no-shows up to 35% with automatic reminders.",
+        "24/7 bookings, even outside opening hours.",
+        "Intuitive interface for team and clients.",
+        "Ready to scale: freelancers → franchises."
+      ],
+      "cta_start": "Start trial (14 days)",
+      "cta_pricing": "See plans and pricing"
+    },
+    "results": {
+      "title": "Results that speak for themselves.",
+      "metrics": [
+        "Clients booking online",
+        "Time lost on calls",
+        "Average revenue per client",
+        "Uptime and reliability"
+      ]
+    },
+    "usability": {
+      "title": "See before trying.",
+      "caption": "Usability crafted with care. Fast, intuitive and ready for any team.",
+      "open_new_tab": "Open in new tab"
+    },
+    "screenshots": {
+      "agenda_daily": "Daily schedule",
+      "clients_list": "Client list",
+      "monthly_report": "Monthly report",
+      "professionals_setup": "Professionals setup",
+      "client_pwa": "Client PWA"
+    },
+    "digital": {
+      "title": "Your operation, fully digital."
+    },
+    "problem": {
+      "title": "Your day-to-day doesn't have to be chaotic.",
+      "items": [
+        "Constant calls asking for schedules",
+        "Confusion with different calendars",
+        "Professionals managing bookings on mobile",
+        "Client no-shows without notice",
+        "Clients frustrated when trying to reschedule",
+        "Lack of visibility on performance and revenue"
+      ]
+    },
+    "solution": {
+      "title": "TimelyOne handles everything automatically:",
+      "items": [
+        "Unified schedule for the whole team",
+        "Online bookings for clients",
+        "Automatic sync across branches",
+        "Automatic reminders via email / SMS / WhatsApp",
+        "Dashboard with KPIs, daily flow and history",
+        "Smart reports: revenue, services, schedules, occupancy"
+      ]
+    },
+    "features": {
+      "items": {
+        "0": { "title": "24/7 Bookings", "desc": "Online bookings anytime, with automatic confirmation." },
+        "1": { "title": "Team Management", "desc": "Schedules, time off, rooms, chairs and more." },
+        "2": { "title": "Smart Reminders", "desc": "Email, SMS and WhatsApp to reduce no-shows." },
+        "3": { "title": "PWA for Team and Clients", "desc": "Installable on mobile, no app stores." },
+        "4": { "title": "Real-time Reports", "desc": "Revenue, occupancy and top-selling services." },
+        "5": { "title": "Scalable for Franchises", "desc": "Permissions and consolidated reports." },
+        "6": { "title": "Custom Domain (Pro)", "desc": "Own brand and URL." },
+        "7": { "title": "Integrations (Enterprise)", "desc": "Google Calendar, Stripe and more." }
+      }
+    },
+    "pricing": {
+      "title": "Clear plans. No hidden fees.",
+      "subtitle": "Choose the plan that grows with your business.",
+      "most_chosen": "Most chosen",
+      "start_trial": "Start 14 days free"
+    },
+    "faq": {
+      "title": "FAQ",
+      "items": {
+        "0": {
+          "q": "How does the trial period work?",
+          "a": "For 14 days you get full access to TimelyOne, with no limits on bookings or professionals. No card required. At the end, choose a plan or simply stop."
+        },
+        "1": {
+          "q": "Can I change plans at any time?",
+          "a": "Yes. The change is immediate and you don't lose any data. Upgrades unlock features instantly."
+        },
+        "2": {
+          "q": "Do I need a credit card to start?",
+          "a": "No. Sign up is simple and commitment‑free."
+        },
+        "3": {
+          "q": "Does TimelyOne work on mobile?",
+          "a": "Yes. We provide a PWA for team and clients, installable on iPhone and Android like a normal app, without app stores."
+        },
+        "4": {
+          "q": "Can I use my own domain?",
+          "a": "Yes, available in Pro and Enterprise plans. Allows full brand customization."
+        },
+        "5": {
+          "q": "How do SMS/WhatsApp credits work?",
+          "a": "Each plan includes a monthly credit amount. Automatic reminders debit this balance as messages are sent. When it ends, you can top up in the dashboard."
+        },
+        "6": {
+          "q": "Is TimelyOne GDPR compatible?",
+          "a": "Yes. Encrypted data, servers compliant with European standards, and the ability to export/delete data."
+        },
+        "7": {
+          "q": "Can I migrate data from my current system?",
+          "a": "Yes. We support importing clients, services and schedules via CSV files."
+        },
+        "8": {
+          "q": "How many professionals can I add?",
+          "a": "Unlimited in all plans."
+        },
+        "9": {
+          "q": "Can clients cancel or reschedule on their own?",
+          "a": "Yes. Each booking includes a secure link to reschedule or cancel, reducing calls and wasted time."
+        },
+        "10": {
+          "q": "Does the system support multiple branches?",
+          "a": "Yes, in Pro and Enterprise plans: multi‑branch management, advanced permissions and consolidated reports."
+        },
+        "11": {
+          "q": "Can my team have different access levels?",
+          "a": "Yes. Permission profiles: owner, manager and professional."
+        },
+        "12": {
+          "q": "Can I see revenue and performance reports?",
+          "a": "Yes. The dashboard includes metrics for revenue, occupancy, top‑selling services, performance per professional and more."
+        },
+        "13": {
+          "q": "How long does setup take?",
+          "a": "Between 10 and 20 minutes, depending on the number of services and professionals."
+        }
+      }
+    },
+    "steps": {
+      "title": "Getting started is simple.",
+      "1": { "title": "Create your account.", "desc": "No card, no commitment." },
+      "2": { "title": "Configure team and services.", "desc": "All set in minutes." },
+      "3": { "title": "Enable online bookings.", "desc": "Clients start booking." }
+    },
+    "niches": {
+      "title": "Made for real businesses.",
+      "subtitle": "Fits your flow — whatever the segment.",
+      "items": {
+        "0": { "title": "Beauty Salons", "desc": "Different services and durations" },
+        "1": { "title": "Barbershops", "desc": "Fast chair rotation" },
+        "2": { "title": "Tattoo", "desc": "Long sessions and deposits" },
+        "3": { "title": "Aesthetics", "desc": "Packages and treatment rooms" },
+        "4": { "title": "Freelancers", "desc": "Simple view, everything in one place" }
+      }
+    },
+    "testimonials": {
+      "title": "Real professionals. Real results.",
+      "quotes": [
+        "We reduced no-shows by 40% in the first month.",
+        "My team stopped managing schedules on WhatsApp.",
+        "The dashboard is fast, intuitive and truly professional."
+      ],
+      "rating": "Average rating: ★ 4.9 / 5.0"
+    },
+    "security": {
+      "title": "Professional-grade security and privacy.",
+      "items": [
+        "GDPR compatible",
+        "Encrypted data",
+        "Recurring backups",
+        "Scalable infrastructure",
+        "Optional European hosting"
+      ]
+    },
+    "final_cta": {
+      "title": "Create your free account — take your salon to the next level.",
+      "cta": "Start now (14 days free)"
+    },
+    "footer": {
+      "pricing": "Plans",
+      "client_area": "Client Area",
+      "login": "Sign in",
+      "register": "Sign up",
+      "ops_login": "OPS Login",
+      "copyright": "© {{year}} Criativo Devs. All rights reserved."
+    }
+  },
+  "pagination": {
+    "summary": "Showing",
+    "of": "of",
+    "page_size": "Items per page",
+    "prev": "Previous",
+    "next": "Next"
+  },
+  "client": {
+    "nav": {
+      "appointments": "Appointments",
+      "profile": "Profile",
+      "go_to_dashboard": "Go to client area"
+    },
+    "dashboard": {
+      "title": "Client Area",
+      "new_booking": "New booking",
+      "my_appointments": "My appointments",
+      "update_profile": "Update profile",
+      "loading": "Loading…",
+      "next_appointment": "Next appointment",
+      "add_to_calendar": "Add to calendar",
+      "no_upcoming": "No upcoming appointments.",
+      "create_first": "Create your first appointment.",
+      "contact_title": "Get in touch",
+      "call": "Call",
+      "address_title": "Salon address",
+      "open_maps": "Open in Maps?",
+      "open_in_browser": "Open in browser",
+      "load_error": "Failed to load data.",
+      "cancel_error": "Could not cancel appointment."
+    },
+    "maps": {
+      "apple": "Apple Maps",
+      "google": "Google Maps",
+      "waze": "Waze"
+    }
+  },
+  "toast": {
+    "close": "Close notification"
+  },
+  "reports": {
+    "title": "Reports",
+    "loading": "Loading reports...",
+    "error": "Error loading reports",
+    "retry": "Retry",
+    "upgrade_button": "Upgrade plan",
+    "export_csv": "Export CSV",
+    "exporting": "Exporting...",
+    "export": {
+      "csv": "Export CSV",
+      "exporting": "Exporting..."
+    },
+    "tabs": {
+      "basic": "Basic",
+      "business": "Business Analysis",
+      "insights": "Advanced Insights"
+    },
+    "filters": {
+      "from_date": "From date",
+      "to_date": "To date",
+      "apply": "Apply filters",
+      "applying": "Applying...",
+      "help": "Select the period to filter report data"
+    },
+    "metrics": {
+      "total_appointments": "Total Appointments",
+      "completed_appointments": "Completed Appointments",
+      "total_revenue": "Total Revenue",
+      "average_ticket": "Average Ticket"
+    },
+    "basic": {
+      "title": "Basic Reports",
+      "description": "Essential reports to track your salon performance",
+      "coming_soon": "Coming soon: Basic reports for bookings, revenue, and clients"
+    },
+    "business": {
+      "title": "Business Analysis",
+      "description": "Track top-selling services and revenue evolution",
+      "upgrade_required": "Available from Standard plan. Unlock performance and revenue metrics.",
+      "no_data": "No data available for the selected period."
+    },
+    "advanced": {
+      "intervals": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      },
+      "filters": {
+        "title": "Advanced Filters",
+        "interval": "Time Interval",
+        "limit": "Items per Page",
+        "help": "Adjust filters to customize data visualization"
+      },
+      "no_services": "No services found for the selected period",
+      "no_revenue": "No revenue data found for the selected period",
+      "top_services": {
+        "title": "Top Services",
+        "description": "Service ranking by number of bookings",
+        "service": "Service",
+        "appointments": "Bookings",
+        "revenue": "Revenue",
+        "avg_price": "Average Price"
+      },
+      "revenue": {
+        "title": "Revenue Evolution",
+        "total": "Total Revenue",
+        "average": "Average per Period",
+        "peak": "Peak Revenue"
+      }
+    },
+    "revenue": {
+      "title": "Revenue Evolution"
+    },
+    "insights": {
+      "title": "Advanced Insights",
+      "description": "Retention analysis and customer behavior",
+      "upgrade_required": "Available from Pro plan. Unlock retention analysis and deep insights.",
+      "new_clients": "New Clients",
+      "returning_clients": "Returning Clients",
+      "clients_count": "Count",
+      "revenue_generated": "Revenue generated",
+      "period_label": "Data from {{start}} to {{end}}",
+      "coming_soon": "Coming soon: Retention Reports and Cohort Analysis"
+    }
+  },
+  "client_login": {
+    "title": "Client Area",
+    "subtitle": "Access your appointments",
+    "email": "Email",
+    "email_placeholder": "your@email.com",
+    "password": "Password",
+    "password_placeholder": "Your password",
+    "tenant_slug": "Business Identifier",
+    "tenant_slug_placeholder": "business-name",
+    "tenant_slug_help": "It's the unique identifier shown at the top of the client area. If unsure, contact the business.",
+    "submit": "Sign In",
+    "forgot_password": "Forgot your password?",
+    "no_password": "Don't have a password? Request an access link",
+    "are_you_professional": "Are you a professional? Access the panel",
+    "errors": {
+      "email_required": "Email is required",
+      "email_invalid": "Invalid email",
+      "password_required": "Password is required",
+      "password_too_short": "Password must be at least 6 characters",
+      "tenant_required": "Business identifier is required",
+      "invalid_credentials": "Invalid email or password",
+      "no_password_set": "You don't have a password yet. Request an access link.",
+      "tenant_invalid": "Business not found. Check the identifier you entered.",
+      "feature_disabled": "This business does not have client area enabled.",
+      "too_many_attempts": "Too many attempts. Please wait a few minutes."
+    }
+  },
+  "client_enter": {
+    "already_have_password": "Already have a password? Sign in",
+    "submit": "Send access link",
+    "sending": "Sending…",
+    "success_title": "Email sent!",
+    "success_message": "Check your inbox and click the access link.",
+    "how_to_access": "How to access the link?",
+    "instructions_modal": {
+      "title": "Check your email",
+      "step1": "1. Open your email",
+      "step2": "2. Look for a message from 'TimelyOne'",
+      "step3": "3. Click on the access link",
+      "step4": "4. If you can't find it, check your spam folder",
+      "validity": "The link expires in 15 minutes",
+      "close": "Got it"
+    }
+  },
+  "client_set_password": {
+    "title": "Set Your Password",
+    "subtitle": "Create a password to access your area",
+    "password": "New Password",
+    "password_placeholder": "Minimum 6 characters",
+    "confirm_password": "Confirm Password",
+    "confirm_password_placeholder": "Type password again",
+    "submit": "Set Password",
+    "errors": {
+      "password_required": "Password is required",
+      "password_too_short": "Password must be at least 6 characters",
+      "confirm_password_required": "Password confirmation is required",
+      "passwords_mismatch": "Passwords do not match",
+      "session_expired": "Your session has expired. Request a new access link.",
+      "session_required": "Session not found. Access via email link."
+    },
+    "success": "Password set successfully! Redirecting..."
+  },
+  "upgrade": {
+    "locked_feature": "Locked feature",
+    "available_in_plan": "Available in {{plan}} plan",
+    "upgrade_now": "Upgrade now",
+    "view_plans": "View plans",
+    "learn_more": "Learn more",
+    "features": {
+      "reports": {
+        "title": "Advanced Reports",
+        "description": "Analyze your business with detailed insights, historical data and growth metrics.",
+        "cta": "View Pro plans"
+      },
+      "customer_pwa": {
+        "title": "Customer App",
+        "description": "Offer your customers their own app for bookings and notifications.",
+        "cta": "View Basic plans"
+      },
+      "white_label": {
+        "title": "White Label",
+        "description": "Fully customize the system branding with your logo, colors and custom domain.",
+        "cta": "Upgrade to Pro"
+      },
+      "native_client": {
+        "title": "Native Customer App",
+        "description": "Native iOS and Android app for your customers with premium experience.",
+        "cta": "Upgrade to Pro"
+      },
+      "advanced_scheduling": {
+        "title": "Advanced Scheduling",
+        "description": "Recurring appointments, waiting lists and custom availability rules.",
+        "cta": "View Standard plans"
+      },
+      "multi_location": {
+        "title": "Multiple Locations",
+        "description": "Manage multiple business locations in a single account.",
+        "cta": "Upgrade to Pro"
+      },
+      "api_access": {
+        "title": "API Access",
+        "description": "Integrate with your systems via complete REST API with documentation.",
+        "cta": "Upgrade to Pro"
+      },
+      "custom_fields": {
+        "title": "Custom Fields",
+        "description": "Add custom fields to customer and service records.",
+        "cta": "View Standard plans"
+      },
+      "priority_support": {
+        "title": "Priority Support",
+        "description": "Priority support via chat, email and phone with guaranteed SLA.",
+        "cta": "Upgrade to Pro"
+      },
+      "advanced_reports": {
+        "title": "Advanced Reports",
+        "description": "Predictive analysis, customer retention, period comparison and custom export.",
+        "cta": "Upgrade to Pro"
+      },
+      "web_push": {
+        "title": "Web Push Notifications",
+        "description": "Send push notifications directly to your customers' browsers.",
+        "cta": "View Basic plans"
+      },
+      "automations": {
+        "title": "Automations",
+        "description": "Automate reminders, follow-ups and marketing campaigns with custom rules.",
+        "cta": "View Standard plans"
+      },
+      "team_management": {
+        "title": "Advanced Team Management",
+        "description": "Granular permission control, staff reports and performance goals.",
+        "cta": "View Standard plans"
+      },
+      "online_payments": {
+        "title": "Online Payments",
+        "description": "Receive online payments integrated with Stripe, credit card and PIX.",
+        "cta": "View Standard plans"
+      },
+      "sms_notifications": {
+        "title": "SMS Notifications",
+        "description": "Send appointment reminders and confirmations via SMS to your customers.",
+        "cta": "View Standard plans"
+      },
+      "whatsapp_integration": {
+        "title": "WhatsApp Integration",
+        "description": "Send automated messages via WhatsApp Business API with custom templates.",
+        "cta": "Upgrade to Pro"
+      },
+      "data_export": {
+        "title": "Data Export",
+        "description": "Export customer, appointment and report data in CSV, Excel or JSON.",
+        "cta": "View Standard plans"
+      }
     }
   }
 }

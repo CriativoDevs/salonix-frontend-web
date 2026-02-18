@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 const Toast = ({ 
@@ -9,6 +10,7 @@ const Toast = ({
   duration = 4000,
   position = 'top-right' 
 }) => {
+  const { t } = useTranslation();
   useEffect(() => {
     if (isVisible && duration > 0) {
       const timer = setTimeout(() => {
@@ -100,7 +102,7 @@ const Toast = ({
         <button
           onClick={onClose}
           className="flex-shrink-0 p-1 rounded-md hover:opacity-70 transition-opacity"
-          aria-label="Fechar notificação"
+          aria-label={t('toast.close', 'Fechar notificação')}
         >
           <X className="w-4 h-4" />
         </button>

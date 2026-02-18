@@ -25,7 +25,10 @@ export async function fetchStaffMembers({ slug } = {}) {
 
 export async function inviteStaffMember(payload, { slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
-  const response = await client.post('users/staff/', payload, { headers, params });
+  const response = await client.post('users/staff/', payload, {
+    headers,
+    params,
+  });
   return {
     staffMember: response.data,
     requestId: extractRequestId(response.headers),
@@ -34,7 +37,42 @@ export async function inviteStaffMember(payload, { slug } = {}) {
 
 export async function updateStaffMember(id, payload, { slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
-  const response = await client.patch(`users/staff/`, { id, ...payload }, { headers, params });
+  const response = await client.patch(
+    `users/staff/`,
+    { id, ...payload },
+    { headers, params }
+  );
+  return {
+    staffMember: response.data,
+    requestId: extractRequestId(response.headers),
+  };
+}
+
+export async function resendStaffInvite(id, { slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  const response = await client.post(
+    'users/staff/resend/',
+    { id },
+    { headers, params }
+  );
+  return {
+    staffMember: response.data,
+    requestId: extractRequestId(response.headers),
+  };
+}
+
+export async function sendStaffAccessLink(id, { slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  const response = await client.post('users/staff/access-link/', { id }, { headers, params });
+  return {
+    staffMember: response.data,
+    requestId: extractRequestId(response.headers),
+  };
+}
+
+export async function updateStaffContact(id, payload = {}, { slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  const response = await client.patch('users/staff/contact/', { id, ...payload }, { headers, params });
   return {
     staffMember: response.data,
     requestId: extractRequestId(response.headers),

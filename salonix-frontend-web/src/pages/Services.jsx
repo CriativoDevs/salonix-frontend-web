@@ -2,19 +2,28 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import ServiceForm from '../components/ServiceForm';
-import { fetchServicesWithMeta, createService, updateService, deleteService } from '../api/services';
+import {
+  fetchServicesWithMeta,
+  createService,
+  updateService,
+  deleteService,
+} from '../api/services';
 import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import PaginationControls from '../components/ui/PaginationControls';
 
 function Services() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { slug } = useTenant();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingId, setEditingId] = useState(null);
-  const [editingForm, setEditingForm] = useState({ name: '', price_eur: '', duration_minutes: '' });
+  const [editingForm, setEditingForm] = useState({
+    name: '',
+    price_eur: '',
+    duration_minutes: '',
+  });
   const [busyId, setBusyId] = useState(null);
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
@@ -61,13 +70,22 @@ function Services() {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetchServicesWithMeta({ slug, params: { limit, offset, ordering: orderingFromSort } })
+    fetchServicesWithMeta({
+      slug,
+      params: { limit, offset, ordering: orderingFromSort },
+    })
       .then((payload) => {
         if (cancelled) return;
-        const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
+        const list = Array.isArray(payload?.results)
+          ? payload.results
+          : Array.isArray(payload)
+            ? payload
+            : [];
         setServices(list);
       })
-      .catch((e) => !cancelled && setError(parseApiError(e, t('common.load_error'))))
+      .catch(
+        (e) => !cancelled && setError(parseApiError(e, t('common.load_error')))
+      )
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -102,7 +120,9 @@ function Services() {
     try {
       setBusyId(editingId);
       const updated = await updateService(editingId, editingForm);
-      setServices((prev) => prev.map((s) => (s.id === editingId ? updated : s)));
+      setServices((prev) =>
+        prev.map((s) => (s.id === editingId ? updated : s))
+      );
       cancelEdit();
     } catch (e) {
       setError(parseApiError(e, t('common.save_error', 'Falha ao salvar.')));
@@ -112,7 +132,8 @@ function Services() {
   };
 
   const removeService = async (id) => {
-    if (!window.confirm(t('common.confirm_delete', 'Confirmar exclusão?'))) return;
+    if (!window.confirm(t('common.confirm_delete', 'Confirmar exclusão?')))
+      return;
     try {
       setBusyId(id);
       await deleteService(id);
@@ -132,8 +153,11 @@ function Services() {
         </h1>
 
         {/* Controles de ordenação */}
-        <div className="mt-2 flex items-center gap-3">
-          <label className="text-sm text-brand-surfaceForeground/80" htmlFor="svc-ordering">
+        <div className="mt-2 flex items-center gap-3" key={i18n.language}>
+          <label
+            className="text-sm text-brand-surfaceForeground/80"
+            htmlFor="svc-ordering"
+          >
             {t('common.order_by', 'Ordenar por')}
           </label>
           <select
@@ -142,12 +166,14 @@ function Services() {
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
-              borderColor: 'var(--border-primary)'
+              borderColor: 'var(--border-primary)',
             }}
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
           >
-            <option value={SORT_RECENT}>{t('common.recent', 'Mais recentes')}</option>
+            <option value={SORT_RECENT}>
+              {t('common.recent', 'Mais recentes')}
+            </option>
             <option value={SORT_NAME}>{t('common.name', 'Nome')}</option>
           </select>
         </div>
@@ -159,9 +185,7 @@ function Services() {
         {loading && (
           <p className="mt-4 text-sm text-gray-600">{t('common.loading')}</p>
         )}
-        {error && (
-          <p className="mt-4 text-sm text-red-600">{error.message}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
         {!loading && !error && services.length > 0 && (
           <ul className="mt-6 space-y-2">
             {services.slice(offset, offset + limit).map((service) => (
@@ -176,10 +200,12 @@ function Services() {
                       style={{
                         backgroundColor: 'var(--bg-primary)',
                         color: 'var(--text-primary)',
-                        borderColor: 'var(--border-primary)'
+                        borderColor: 'var(--border-primary)',
                       }}
                       value={editingForm.name}
-                      onChange={(e) => setEditingForm({ ...editingForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setEditingForm({ ...editingForm, name: e.target.value })
+                      }
                     />
                     <input
                       type="number"
@@ -187,10 +213,15 @@ function Services() {
                       style={{
                         backgroundColor: 'var(--bg-primary)',
                         color: 'var(--text-primary)',
-                        borderColor: 'var(--border-primary)'
+                        borderColor: 'var(--border-primary)',
                       }}
                       value={editingForm.price_eur}
-                      onChange={(e) => setEditingForm({ ...editingForm, price_eur: e.target.value })}
+                      onChange={(e) =>
+                        setEditingForm({
+                          ...editingForm,
+                          price_eur: e.target.value,
+                        })
+                      }
                     />
                     <input
                       type="number"
@@ -198,11 +229,14 @@ function Services() {
                       style={{
                         backgroundColor: 'var(--bg-primary)',
                         color: 'var(--text-primary)',
-                        borderColor: 'var(--border-primary)'
+                        borderColor: 'var(--border-primary)',
                       }}
                       value={editingForm.duration_minutes}
                       onChange={(e) =>
-                        setEditingForm({ ...editingForm, duration_minutes: e.target.value })
+                        setEditingForm({
+                          ...editingForm,
+                          duration_minutes: e.target.value,
+                        })
                       }
                     />
                     <div className="sm:col-span-3 flex gap-2 mt-2">
@@ -222,22 +256,32 @@ function Services() {
                     </div>
                   </div>
                 ) : (
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <div className="font-medium text-brand-surfaceForeground">{service.name}</div>
-                        <div className="text-brand-surfaceForeground/80">
-                          €{service.price_eur ?? service.price} · {service.duration_minutes ?? service.duration}min
-                        </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-medium text-brand-surfaceForeground">
+                        {service.name}
                       </div>
-                      <div className="flex gap-2">
-                      <button onClick={() => startEdit(service)} className="text-sm font-medium text-[#1D29CF] hover:underline">
-                        {t('common.edit', 'Editar')}
-                      </button>
-                      <button disabled={busyId === service.id} onClick={() => removeService(service.id)} className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50">
-                        {t('common.delete', 'Excluir')}
-                      </button>
+                      <div className="text-brand-surfaceForeground/80">
+                        €{service.price_eur ?? service.price} ·{' '}
+                        {service.duration_minutes ?? service.duration}min
                       </div>
                     </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEdit(service)}
+                        className="text-sm font-medium text-[#1D29CF] hover:underline"
+                      >
+                        {t('common.edit', 'Editar')}
+                      </button>
+                      <button
+                        disabled={busyId === service.id}
+                        onClick={() => removeService(service.id)}
+                        className="text-sm font-medium text-[#CF3B1D] hover:underline disabled:opacity-50"
+                      >
+                        {t('common.delete', 'Excluir')}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </li>
             ))}
@@ -248,14 +292,23 @@ function Services() {
             totalCount={services.length}
             limit={limit}
             offset={offset}
-            onChangeLimit={(n) => { setLimit(n); setOffset(0); }}
+            onChangeLimit={(n) => {
+              setLimit(n);
+              setOffset(0);
+            }}
             onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-            onNext={() => setOffset((prev) => (prev + limit < services.length ? prev + limit : prev))}
+            onNext={() =>
+              setOffset((prev) =>
+                prev + limit < services.length ? prev + limit : prev
+              )
+            }
             className="mt-6"
           />
         )}
         {!loading && !error && services.length === 0 && (
-          <p className="mt-4 text-sm text-gray-600">{t('common.empty_list', 'Nenhum serviço cadastrado.')}</p>
+          <p className="mt-4 text-sm text-gray-600">
+            {t('common.empty_list', 'Nenhum serviço cadastrado.')}
+          </p>
         )}
       </div>
     </FullPageLayout>

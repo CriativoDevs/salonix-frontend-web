@@ -6,69 +6,91 @@ import { useMemo } from 'react';
 
 function RoleProtectedRoute({ children, allowedRoles = [] }) {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { slug } = useTenant();
+  const { slug, profile, loading: tenantLoading } = useTenant();
   console.log('[RoleProtectedRoute] Tenant slug:', slug);
-  const { staff, loading: staffLoading, error: staffError } = useStaff({ slug });
-  console.log('[RoleProtectedRoute] Staff hook result:', { staff, loading: staffLoading, error: staffError });
+  const {
+    staff,
+    loading: staffLoading,
+    error: staffError,
+    forbidden,
+  } = useStaff({ slug });
+  console.log('[RoleProtectedRoute] Staff hook result:', {
+    staff,
+    loading: staffLoading,
+    error: staffError,
+    forbidden,
+  });
 
   const currentUserRole = useMemo(() => {
     if (!user) {
       console.log('[RoleProtectedRoute] No user data');
       return null;
     }
-    
-    // Se não há dados de staff (tenant 'default' ou erro), usar fallback baseado no usuário
-    if (!Array.isArray(staff) || staff.length === 0) {
-      console.log('[RoleProtectedRoute] No staff data, using user-based fallback');
-      
-      // Fallback: assumir que usuários específicos têm roles específicas
-      const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
-      const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
-      
+
+    // Se não há dados de staff ou houve erro (403/429/etc.), usar fallback estrito
+    if (
+      staffError ||
+      forbidden ||
+      !Array.isArray(staff) ||
+      staff.length === 0
+    ) {
+      console.log('[RoleProtectedRoute] No staff data, using strict fallback');
+
       // Admin users get owner role
+      const email =
+        typeof user.email === 'string' ? user.email.toLowerCase() : null;
+      const username =
+        typeof user.username === 'string' ? user.username.toLowerCase() : null;
+
       if (email === 'admin@demo.local' || username === 'admin') {
-        console.log('[RoleProtectedRoute] Admin user detected, assigning owner role');
+        console.log(
+          '[RoleProtectedRoute] Admin user detected, assigning owner role'
+        );
         return 'owner';
       }
-      
-      // Manager users get manager role
-      if (email?.includes('manager') || username?.includes('manager')) {
-        console.log('[RoleProtectedRoute] Manager user detected, assigning manager role');
-        return 'manager';
+
+      // Fallback: considerar owner quando email do usuário coincide com o email do perfil do tenant
+      const tenantOwnerEmail =
+        typeof profile?.email === 'string' ? profile.email.toLowerCase() : null;
+      if (email && tenantOwnerEmail && email === tenantOwnerEmail) {
+        console.log(
+          '[RoleProtectedRoute] Owner detected via tenant profile email'
+        );
+        return 'owner';
       }
-      
-      // Pro users get manager role (for demo purposes)
-      if (email?.includes('pro_') || username?.includes('pro_')) {
-        console.log('[RoleProtectedRoute] Pro user detected, assigning manager role');
-        return 'manager';
-      }
-      
-      // Default to collaborator for other authenticated users
-      console.log('[RoleProtectedRoute] Default user, assigning collaborator role');
-      return 'collaborator';
+      return null;
     }
-    
-    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
-    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
-    
+
+    const email =
+      typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username =
+      typeof user.username === 'string' ? user.username.toLowerCase() : null;
+
     console.log('[RoleProtectedRoute] User data:', { email, username });
     console.log('[RoleProtectedRoute] Staff array:', staff);
-    
+
     const match = staff.find((member) => {
-      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
-      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
-      
+      const memberEmail =
+        typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername =
+        typeof member.username === 'string'
+          ? member.username.toLowerCase()
+          : null;
+
       return (
         (email && memberEmail === email) ||
         (username && memberUsername === username)
       );
     });
-    
-    console.log('[RoleProtectedRoute] Match found:', match);
-    return match?.role || null;
-  }, [staff, user]);
 
-  if (isLoading || staffLoading) {
+    console.log('[RoleProtectedRoute] Match found:', match);
+    if (match?.role) return match.role;
+
+    // Sem match e sem confirmação pelo perfil do tenant: negar
+    return null;
+  }, [staff, user, forbidden, staffError, profile?.email]);
+
+  if (isLoading || staffLoading || tenantLoading) {
     return (
       <div className="flex h-screen items-center justify-center text-sm text-gray-500">
         Carregando...
@@ -81,11 +103,11 @@ function RoleProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (!currentUserRole || !allowedRoles.includes(currentUserRole)) {
-    console.log('[RoleProtectedRoute] Access denied:', { 
-      currentUserRole, 
-      allowedRoles, 
+    console.log('[RoleProtectedRoute] Access denied:', {
+      currentUserRole,
+      allowedRoles,
       hasRole: !!currentUserRole,
-      isAllowed: currentUserRole && allowedRoles.includes(currentUserRole)
+      isAllowed: currentUserRole && allowedRoles.includes(currentUserRole),
     });
     return <Navigate to="/dashboard" replace />;
   }

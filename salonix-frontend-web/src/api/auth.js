@@ -65,3 +65,8 @@ export async function confirmPasswordReset(uid, token, newPassword) {
   });
   return response.data; // { status: 'password_updated' }
 }
+
+export async function updateCurrentUser(data) {
+  const response = await client.patch('users/me/profile/', data);
+  return response.data;
+}

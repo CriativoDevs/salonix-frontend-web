@@ -18,6 +18,7 @@ import { parseApiError, hasActionableError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
 import { clearStoredTenantSlug, storeTenantSlug } from '../utils/tenantStorage';
+import { getEnvVar } from '../utils/env';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,7 +55,9 @@ export const AuthProvider = ({ children }) => {
       setFeatureFlags(flags);
     } catch (error) {
       if (hasActionableError(error?.response?.data?.error?.code)) {
-        setAuthError(parseApiError(error, 'Não foi possível carregar suas permissões.'));
+        setAuthError(
+          parseApiError(error, 'Não foi possível carregar suas permissões.')
+        );
       }
     }
   }, []);
@@ -67,7 +70,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
-        console.warn('[Auth] loadCurrentUser failed with auth error. Forcing logout.');
+        console.warn(
+          '[Auth] loadCurrentUser failed with auth error. Forcing logout.'
+        );
         handleLogout();
       } else {
         console.warn('[Auth] loadCurrentUser failed:', error);
@@ -89,7 +94,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       const status = error?.response?.status;
       if (status === 404 || status === 403) {
-        console.warn('[Auth] loadTenantBootstrap: user has no tenant or forbidden. status=', status);
+        console.warn(
+          '[Auth] loadTenantBootstrap: user has no tenant or forbidden. status=',
+          status
+        );
         setTenantInfo(null);
         setTenantSlug(DEFAULT_TENANT_META.slug);
         clearStoredTenantSlug();
@@ -130,10 +138,18 @@ export const AuthProvider = ({ children }) => {
             await loadFeatureFlags();
           }
         }
-      } catch {
-        console.warn('[Auth] refresh token flow failed, clearing tokens');
-        clearTokens();
-        resetState();
+      } catch (error) {
+        const status = error?.response?.status;
+        if (status === 401 || status === 403) {
+          console.warn('[Auth] refresh token invalid/expired, clearing tokens');
+          clearTokens();
+          resetState();
+        } else {
+          console.warn(
+            '[Auth] refresh token failed with non-auth error (network?), keeping tokens:',
+            error
+          );
+        }
       } finally {
         setIsLoading(false);
       }
@@ -146,10 +162,14 @@ export const AuthProvider = ({ children }) => {
     async ({ email, password }) => {
       setAuthError(null);
       try {
-        const bypass = import.meta.env.VITE_CAPTCHA_BYPASS_TOKEN || undefined;
-        const { access, refresh, tenant, user } = await loginRequest(email, password, {
-          captchaBypassToken: bypass,
-        });
+        const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || undefined;
+        const { access, refresh, tenant, user } = await loginRequest(
+          email,
+          password,
+          {
+            captchaBypassToken: bypass,
+          }
+        );
         if (access) {
           setAccessToken(access);
         }
@@ -157,7 +177,10 @@ export const AuthProvider = ({ children }) => {
           setRefreshToken(refresh);
         }
         if (tenant?.slug) {
-          console.log('[Auth] login payload included tenant. slug=', tenant.slug);
+          console.log(
+            '[Auth] login payload included tenant. slug=',
+            tenant.slug
+          );
           applyTenantBootstrap(tenant);
           storeTenantSlug(tenant.slug);
           setTenantInfo(tenant);
@@ -190,6 +213,10 @@ export const AuthProvider = ({ children }) => {
     setAuthError(null);
   }, []);
 
+  const onboardingState = useMemo(() => {
+    return tenantInfo?.onboarding_state || 'completed';
+  }, [tenantInfo]);
+
   const value = useMemo(
     () => ({
       isAuthenticated,
@@ -197,8 +224,10 @@ export const AuthProvider = ({ children }) => {
       featureFlags,
       user: userInfo,
       tenant: tenantInfo,
+      onboardingState,
       login,
       logout: handleLogout,
+      refreshUser: loadCurrentUser,
       authError,
       clearAuthError,
     }),
@@ -208,8 +237,10 @@ export const AuthProvider = ({ children }) => {
       featureFlags,
       userInfo,
       tenantInfo,
+      onboardingState,
       login,
       handleLogout,
+      loadCurrentUser,
       authError,
       clearAuthError,
     ]

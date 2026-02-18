@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 open-issues.json
+VERCEL_SETUP.md
+.vercel

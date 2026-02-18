@@ -1,11 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ClientAuthProvider } from './contexts/ClientAuthContext';
 import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { RateLimitProvider } from './contexts/RateLimitContext';
 import { useAuth } from './hooks/useAuth';
 import { useTenant } from './hooks/useTenant';
+import { usePwaManifest } from './hooks/usePwaManifest';
+import useBillingOverview from './hooks/useBillingOverview';
 import Router from './routes/Router';
+import RateLimitWarning from './components/ui/RateLimitWarning';
 import { DEFAULT_TENANT_META, resolveTenantAssetUrl } from './utils/tenant';
 
 const THEME_VARIABLES = {
@@ -42,6 +47,10 @@ function ensureMetaTag(name) {
 function TenantThemeManager() {
   const { isAuthenticated } = useAuth();
   const { slug, theme, branding, tenant } = useTenant();
+
+  // Dynamic PWA Manifest Management
+  usePwaManifest(tenant);
+
   const originalAssetsRef = useRef(null);
   const manifestObjectUrlRef = useRef(null);
 
@@ -59,15 +68,17 @@ function TenantThemeManager() {
     const hasExplicitSlug = !!slug && slug !== DEFAULT_TENANT_META.slug;
 
     const effectiveTheme = { ...targetTheme };
-    
+
     // Garantir que as cores de texto sejam adequadas para o tema atual
     const isDarkTheme = root.classList.contains('theme-dark');
     if (isDarkTheme) {
       // No tema escuro, usar cores claras para texto
-      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#f8fafc';
+      effectiveTheme.surfaceForeground =
+        effectiveTheme.surfaceForeground || '#f8fafc';
     } else {
       // No tema claro, usar cores escuras para texto
-      effectiveTheme.surfaceForeground = effectiveTheme.surfaceForeground || '#0f172a';
+      effectiveTheme.surfaceForeground =
+        effectiveTheme.surfaceForeground || '#0f172a';
     }
 
     if (!originalAssetsRef.current) {
@@ -97,8 +108,11 @@ function TenantThemeManager() {
     }
 
     const updateFavicon = () => {
-      const brandIconSrc = targetBranding.faviconUrl || targetBranding.logoUrl || '';
-      const brandIconHref = brandIconSrc ? resolveTenantAssetUrl(brandIconSrc) : '';
+      const brandIconSrc =
+        targetBranding.faviconUrl || targetBranding.logoUrl || '';
+      const brandIconHref = brandIconSrc
+        ? resolveTenantAssetUrl(brandIconSrc)
+        : '';
 
       let faviconEl = document.querySelector('link[rel="icon"]');
       if (!faviconEl) {
@@ -136,10 +150,13 @@ function TenantThemeManager() {
       }
 
       const appleRawSrc = targetBranding.appleTouchIconUrl || brandIconSrc;
-      const appleIconHref = appleRawSrc ? resolveTenantAssetUrl(appleRawSrc) : FALLBACK_FAVICON_PNG_DATA_URL;
+      const appleIconHref = appleRawSrc
+        ? resolveTenantAssetUrl(appleRawSrc)
+        : FALLBACK_FAVICON_PNG_DATA_URL;
 
       let appleIconLink = document.getElementById(APPLE_TOUCH_ICON_ID);
-      const shouldShowAppleIcon = isAuthenticated || (hasExplicitSlug && !!appleRawSrc);
+      const shouldShowAppleIcon =
+        isAuthenticated || (hasExplicitSlug && !!appleRawSrc);
       if (shouldShowAppleIcon) {
         if (!appleIconLink) {
           appleIconLink = document.createElement('link');
@@ -172,15 +189,25 @@ function TenantThemeManager() {
             manifestLink.setAttribute('rel', 'manifest');
             document.head.appendChild(manifestLink);
           }
-          manifestLink.setAttribute('href', originalAssetsRef.current.manifestHref);
+          manifestLink.setAttribute(
+            'href',
+            originalAssetsRef.current.manifestHref
+          );
         }
         return;
       }
 
-      const name = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      const name =
+        tenant?.name ||
+        targetBranding.appName ||
+        DEFAULT_TENANT_META.branding.appName;
       const shortName = targetBranding.shortName || tenant?.name || name;
-      const themeColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
-      const backgroundColor = root.classList.contains('theme-dark') ? '#0f172a' : '#ffffff';
+      const themeColor = root.classList.contains('theme-dark')
+        ? '#0f172a'
+        : '#ffffff';
+      const backgroundColor = root.classList.contains('theme-dark')
+        ? '#0f172a'
+        : '#ffffff';
 
       const manifestPayload = {
         name,
@@ -191,15 +218,17 @@ function TenantThemeManager() {
         theme_color: themeColor,
         icons:
           targetBranding.icons && targetBranding.icons.length
-            ? targetBranding.icons.map(icon => ({
+            ? targetBranding.icons.map((icon) => ({
                 ...icon,
-                src: icon.src.startsWith('http') ? icon.src : window.location.origin + icon.src
+                src: icon.src.startsWith('http')
+                  ? icon.src
+                  : window.location.origin + icon.src,
               }))
             : [
                 targetBranding.logoUrl
                   ? {
-                      src: targetBranding.logoUrl.startsWith('http') 
-                        ? targetBranding.logoUrl 
+                      src: targetBranding.logoUrl.startsWith('http')
+                        ? targetBranding.logoUrl
                         : window.location.origin + targetBranding.logoUrl,
                       sizes: '512x512',
                       type: 'image/png',
@@ -225,26 +254,41 @@ function TenantThemeManager() {
 
     const appleWebAppTitleMeta = ensureMetaTag('apple-mobile-web-app-title');
     const appleCapableMeta = ensureMetaTag('apple-mobile-web-app-capable');
+    const mobileCapableMeta = ensureMetaTag('mobile-web-app-capable');
 
     if (isAuthenticated) {
-      const tenantTitle = tenant?.name || targetBranding.appName || DEFAULT_TENANT_META.branding.appName;
+      // Se estiver no /ops, manter identidade do Ops
+      if (pathname.startsWith('/ops')) {
+        document.title = 'Ops Console';
+        // Opcional: Resetar favicon/meta para padrão do Ops se tiver assets específicos
+        return;
+      }
+
+      const tenantTitle =
+        tenant?.name ||
+        targetBranding.appName ||
+        DEFAULT_TENANT_META.branding.appName;
       document.title = tenantTitle;
       appleWebAppTitleMeta.setAttribute(
         'content',
         targetBranding.shortName || tenant?.name || tenantTitle
       );
       appleCapableMeta.setAttribute('content', 'yes');
+      mobileCapableMeta.setAttribute('content', 'yes');
     } else {
       // Regra: Landing sempre TimelyOne; Telas públicas com slug mostram nome do tenant; sem slug, TimelyOne
       const isLanding = pathname === '/';
-      if (isLanding) {
-        document.title = DEFAULT_TENANT_META.branding.appName;
+      if (isLanding || pathname.startsWith('/ops')) {
+        // Ops Login também deve ser neutro/Ops
+        document.title = pathname.startsWith('/ops')
+          ? 'Ops Console'
+          : DEFAULT_TENANT_META.branding.appName;
       } else if (hasExplicitSlug && (tenant?.name || '').length > 0) {
         document.title = tenant.name;
       } else {
         document.title = DEFAULT_TENANT_META.branding.appName;
       }
-      
+
       // Metas PWA básicas em público: título segue mesma regra de document.title
       const publicAppTitle = isLanding
         ? DEFAULT_TENANT_META.branding.appName
@@ -255,13 +299,17 @@ function TenantThemeManager() {
       // Só marcamos como "capable" em público quando houver slug explícito
       if (hasExplicitSlug) {
         appleCapableMeta.setAttribute('content', 'yes');
+        mobileCapableMeta.setAttribute('content', 'yes');
       } else {
         appleCapableMeta.removeAttribute('content');
+        mobileCapableMeta.removeAttribute('content');
       }
     }
 
     const updateSplashScreens = () => {
-      const existingSplashes = document.querySelectorAll(`link[${APPLE_SPLASH_ATTR}="true"]`);
+      const existingSplashes = document.querySelectorAll(
+        `link[${APPLE_SPLASH_ATTR}="true"]`
+      );
       existingSplashes.forEach((link) => link.remove());
 
       if (!isAuthenticated) {
@@ -315,17 +363,78 @@ function TenantThemeManager() {
 
 function App() {
   return (
-    <TenantProvider>
-      <AuthProvider>
-        <ThemeProvider>
-          <TenantThemeManager />
-          <BrowserRouter>
-            <Router />
-          </BrowserRouter>
-        </ThemeProvider>
-      </AuthProvider>
-    </TenantProvider>
+    <RateLimitProvider>
+      <TenantProvider>
+        <AuthProvider>
+          <ClientAuthProvider>
+            <ThemeProvider>
+              <TenantThemeManager />
+              <BillingSyncManager />
+              <BrowserRouter>
+                <Router />
+                <RateLimitWarning />
+              </BrowserRouter>
+            </ThemeProvider>
+          </ClientAuthProvider>
+        </AuthProvider>
+      </TenantProvider>
+    </RateLimitProvider>
   );
 }
 
 export default App;
+export { TenantThemeManager };
+
+function BillingSyncManager() {
+  const { isAuthenticated } = useAuth();
+  const { overview, refresh } = useBillingOverview({
+    enabled: isAuthenticated,
+  });
+  const { plan, refetch, loading: tenantLoading } = useTenant();
+  const lastSyncRef = useRef(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleFocus = () => {
+      refresh();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refresh();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [refresh, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || tenantLoading) return;
+
+    const code = String(
+      overview?.current_subscription?.plan_code || ''
+    ).toLowerCase();
+    const tier = String(plan?.tier || plan?.code || '').toLowerCase();
+
+    // Evitar loop infinito se o backend demorar para propagar a alteração
+    // Adiciona um cooldown de 5 segundos entre tentativas de sincronização
+    const now = Date.now();
+    if (code && code !== tier && now - lastSyncRef.current > 5000) {
+      lastSyncRef.current = now;
+      refetch();
+    }
+  }, [
+    overview?.current_subscription?.plan_code,
+    plan?.tier,
+    plan?.code,
+    refetch,
+    isAuthenticated,
+    tenantLoading,
+  ]);
+
+  return null;
+}

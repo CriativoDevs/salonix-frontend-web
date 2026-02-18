@@ -31,7 +31,10 @@ describe('useReportsData', () => {
     });
 
     expect(fetchBasicReports).toHaveBeenCalledWith({ slug: 'test-salon' });
-    expect(result.current.data.basicReports).toEqual(mockData);
+    expect(result.current.data.basicReports).toEqual({
+      ...mockData,
+      period: { start: undefined, end: undefined }
+    });
     expect(result.current.loading).toBe(false);
     expect(result.current.initialLoading).toBe(false);
     expect(result.current.error).toBeNull();

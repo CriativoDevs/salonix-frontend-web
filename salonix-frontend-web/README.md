@@ -9,7 +9,7 @@
 
 ## 🎯 Visão Geral do Produto
 
-**Salonix** é uma plataforma completa de agendamento para salões de beleza e profissionais autônomos, composta por:
+**TimelyOne** é uma plataforma completa de agendamento para salões de beleza e profissionais autônomos, composta por:
 
 - **🏠 Frontend Web (FEW)** - Painel administrativo para profissionais/donos
 - **📱 Mobile App (MOB)** - Aplicativo para clientes finais
@@ -190,6 +190,8 @@ VITE_CAPTCHA_BYPASS_TOKEN=dev-bypass
 # VITE_TURNSTILE_SITEKEY=...  # se usar turnstile
 # VITE_HCAPTCHA_SITEKEY=...   # se usar hcaptcha
 ```
+
+Para detalhes de segurança e configuração de captcha, consulte [docs/SECURITY_NOTES.md](docs/SECURITY_NOTES.md).
 
 ### Staging
 ```env

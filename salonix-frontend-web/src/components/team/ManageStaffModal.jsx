@@ -4,18 +4,8 @@ import Modal from '../ui/Modal';
 import FormButton from '../ui/FormButton';
 import FormInput from '../ui/FormInput';
 import { parseApiError } from '../../utils/apiError';
-
-const ROLE_LABELS = {
-  owner: 'Owner',
-  manager: 'Manager',
-  collaborator: 'Colaborador',
-};
-
-const STATUS_LABELS = {
-  active: 'Ativo',
-  invited: 'Convite pendente',
-  disabled: 'Desativado',
-};
+import { useTenant } from '../../hooks/useTenant';
+import { fetchServices } from '../../api/services';
 
 function resolveDisplayName(member) {
   if (!member) return '';
@@ -39,6 +29,7 @@ function ManageStaffModal({
   currentUserRole, // Add currentUserRole prop
 }) {
   const { t } = useTranslation();
+  const { slug } = useTenant();
   const [activeTab, setActiveTab] = useState('professional'); // 'professional' or 'permissions'
   const [role, setRole] = useState(member?.role || 'collaborator');
   const [statusBusy, setStatusBusy] = useState(false);
@@ -52,15 +43,38 @@ function ManageStaffModal({
     bio: '',
     staffMemberId: '',
     role: member?.role || 'collaborator',
+    serviceIds: [],
   });
+  const [services, setServices] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(false);
   const [professionalModalSubmitting, setProfessionalModalSubmitting] =
     useState(false);
   const [professionalModalError, setProfessionalModalError] = useState(null);
   const [professionalEditing, setProfessionalEditing] = useState(false);
   const [professionalFeedback, setProfessionalFeedback] = useState(null);
+  const [contactEmail, setContactEmail] = useState(member?.email || '');
   const formId = useId();
 
   const [savingRole, setSavingRole] = useState(false);
+  const [inviteBusy, setInviteBusy] = useState(false);
+  const [inviteFeedback, setInviteFeedback] = useState(null);
+
+  useEffect(() => {
+    if (open && slug) {
+      setServicesLoading(true);
+      fetchServices(slug)
+        .then((data) => {
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.results)
+              ? data.results
+              : [];
+          setServices(list);
+        })
+        .catch(() => setServices([]))
+        .finally(() => setServicesLoading(false));
+    }
+  }, [open, slug]);
 
   useEffect(() => {
     if (!open) {
@@ -78,10 +92,12 @@ function ManageStaffModal({
         bio: '',
         staffMemberId: '',
         role: member?.role || 'collaborator',
+        serviceIds: [],
       });
       setCurrentProfessional(null);
       setProfessionalEditing(false);
       setProfessionalFeedback(null);
+      setContactEmail(member?.email || '');
       return;
     }
 
@@ -95,7 +111,7 @@ function ManageStaffModal({
         ? professionals[0]
         : null
     );
-  }, [open, member, professionals]);
+  }, [open, member, professionals, slug]);
 
   const memberName = useMemo(() => resolveDisplayName(member), [member]);
 
@@ -113,6 +129,7 @@ function ManageStaffModal({
         bio: '',
         staffMemberId: '',
         role: member?.role || 'collaborator',
+        serviceIds: [],
       });
       return;
     }
@@ -123,11 +140,29 @@ function ManageStaffModal({
       bio: currentProfessional.bio || '',
       staffMemberId: currentProfessional.staff_member || member.id || '',
       role: member.role || 'collaborator',
+      serviceIds: (currentProfessional.service_ids || []).map(Number),
     });
+    setContactEmail(member?.email || '');
   }, [open, currentProfessional, member, memberName]);
 
   const isOwnerMember = member?.role === 'owner';
   const isCollaboratorUser = currentUserRole === 'collaborator';
+  const canResendInvite =
+    !isOwnerMember &&
+    (currentUserRole === 'owner' || currentUserRole === 'manager') &&
+    member?.status !== 'active';
+
+  const canSendAccessLink =
+    !isOwnerMember &&
+    (currentUserRole === 'owner' || currentUserRole === 'manager') &&
+    member?.status === 'active' &&
+    !!member?.email;
+
+  const missingEmailForAccessLink =
+    !isOwnerMember &&
+    (currentUserRole === 'owner' || currentUserRole === 'manager') &&
+    member?.status === 'active' &&
+    !member?.email;
 
   const handleSaveRole = async (event) => {
     if (event) {
@@ -201,6 +236,74 @@ function ManageStaffModal({
     }
   };
 
+  const handleResendInvite = async () => {
+    if (!member || !canResendInvite || inviteBusy) return;
+    setInviteBusy(true);
+    setInviteFeedback(null);
+    setError(null);
+    setRequestId(null);
+
+    try {
+      const { resendStaffInvite } = await import('../../api/staff');
+      const result = await resendStaffInvite(member.id);
+      if (result?.requestId) setRequestId(result.requestId);
+      const staffMember = result?.staffMember || {};
+      const token = staffMember.invite_token || null;
+      const expiresAt = staffMember.invite_token_expires_at || null;
+      setInviteFeedback({
+        type: 'success',
+        message: t(
+          'team.manage.invite.resend_success',
+          'Convite reenviado com sucesso.'
+        ),
+        token,
+        expiresAt,
+      });
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t('team.manage.invite.resend_error', 'Falha ao reenviar o convite.')
+      );
+      setError(parsed);
+      if (parsed?.requestId) setRequestId(parsed.requestId);
+    } finally {
+      setInviteBusy(false);
+    }
+  };
+
+  const handleSendAccessLink = async () => {
+    if (!member || !canSendAccessLink || inviteBusy) return;
+    setInviteBusy(true);
+    setInviteFeedback(null);
+    setError(null);
+    setRequestId(null);
+
+    try {
+      const { sendStaffAccessLink } = await import('../../api/staff');
+      const result = await sendStaffAccessLink(member.id);
+      if (result?.requestId) setRequestId(result.requestId);
+      setInviteFeedback({
+        type: 'success',
+        message: t(
+          'team.manage.access_link.sent_success',
+          'Link de acesso enviado com sucesso.'
+        ),
+      });
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'team.manage.access_link.sent_error',
+          'Falha ao enviar o link de acesso.'
+        )
+      );
+      setError(parsed);
+      if (parsed?.requestId) setRequestId(parsed.requestId);
+    } finally {
+      setInviteBusy(false);
+    }
+  };
+
   const handleProfessionalChange = (field, value) => {
     setProfessionalForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -212,20 +315,38 @@ function ManageStaffModal({
       bio: '',
       staffMemberId: '',
       role: member?.role || 'collaborator',
+      serviceIds: [],
     });
   };
 
   const handleProfessionalEdit = () => {
     setProfessionalEditing(true);
     setProfessionalForm({
-      ...currentProfessional,
+      id: currentProfessional?.id || null,
+      name: currentProfessional?.name || '',
+      bio: currentProfessional?.bio || '',
       staffMemberId: currentProfessional?.staff_member || member?.id || '',
+      role: member?.role || 'collaborator',
+      serviceIds: (currentProfessional?.service_ids || []).map(Number),
     });
   };
 
   const handleProfessionalCancel = () => {
     setProfessionalEditing(false);
     resetProfessionalForm();
+  };
+
+  const handleServiceToggle = (serviceId) => {
+    setProfessionalForm((prev) => {
+      const current = prev.serviceIds || [];
+      if (current.includes(serviceId)) {
+        return {
+          ...prev,
+          serviceIds: current.filter((id) => id !== serviceId),
+        };
+      }
+      return { ...prev, serviceIds: [...current, serviceId] };
+    });
   };
 
   const handleProfessionalSave = async (event) => {
@@ -249,9 +370,38 @@ function ManageStaffModal({
     try {
       const payload = {
         name: professionalForm.name.trim(),
-        bio: professionalForm.bio.trim(),
+        bio: (professionalForm.bio || '').trim(),
         staffMemberId: professionalForm.staffMemberId || member?.id,
+        serviceIds: professionalForm.serviceIds,
       };
+
+      // Atualizar e-mail de acesso antes de salvar dados do profissional
+      const emailTrimmed = contactEmail.trim();
+      if (member?.email && !emailTrimmed) {
+        setProfessionalModalError({
+          message: t(
+            'team.manage.contact.email_required',
+            'E-mail de acesso não pode ser apagado. Informe um e-mail válido.'
+          ),
+        });
+        setProfessionalModalSubmitting(false);
+        return;
+      }
+      if (emailTrimmed && emailTrimmed !== (member?.email || '')) {
+        try {
+          const { updateStaffContact } = await import('../../api/staff');
+          await updateStaffContact(member.id, { email: emailTrimmed });
+        } catch (e) {
+          const parsed = parseApiError(
+            e,
+            t(
+              'team.manage.contact.updated_error',
+              'Falha ao atualizar e-mail do membro.'
+            )
+          );
+          setProfessionalModalError(parsed);
+        }
+      }
 
       if (currentProfessional) {
         await onProfessionalUpdate(currentProfessional.id, payload);
@@ -299,7 +449,7 @@ function ManageStaffModal({
           type="submit"
           form={formId}
           disabled={savingRole || statusBusy}
-          className="text-sm font-medium text-[#1D29CF] hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-sm font-medium text-brand-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {savingRole
             ? t('team.manage.actions.saving', 'Salvando...')
@@ -396,6 +546,26 @@ function ManageStaffModal({
                     </strong>{' '}
                     {member?.email || '—'}
                   </li>
+                  <li>
+                    <strong>
+                      {t('team.manage.summary.services', 'Serviços')}:
+                    </strong>{' '}
+                    {servicesLoading ? (
+                      <span className="text-brand-surfaceForeground/60">
+                        {t('common.loading', 'Carregando...')}
+                      </span>
+                    ) : currentProfessional?.service_ids &&
+                      currentProfessional.service_ids.length > 0 ? (
+                      services
+                        .filter((s) =>
+                          currentProfessional.service_ids.includes(s.id)
+                        )
+                        .map((s) => s.name)
+                        .join(', ') || '—'
+                    ) : (
+                      '—'
+                    )}
+                  </li>
                 </ul>
               </div>
 
@@ -410,6 +580,15 @@ function ManageStaffModal({
                     onChange={(event) =>
                       handleProfessionalChange('name', event.target.value)
                     }
+                  />
+                  <FormInput
+                    label={t(
+                      'team.manage.professional.form.email',
+                      'E-mail de acesso'
+                    )}
+                    type="email"
+                    value={contactEmail}
+                    onChange={(event) => setContactEmail(event.target.value)}
                   />
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-brand-surfaceForeground">
@@ -428,9 +607,58 @@ function ManageStaffModal({
                       style={{
                         backgroundColor: 'var(--bg-primary)',
                         color: 'var(--text-primary)',
-                        borderColor: 'var(--border-primary)'
+                        borderColor: 'var(--border-primary)',
                       }}
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-brand-surfaceForeground">
+                      {t(
+                        'team.manage.professional.form.services',
+                        'Serviços Realizados'
+                      )}
+                    </label>
+                    <div className="max-h-48 overflow-y-auto rounded-lg border border-brand-border bg-brand-surface p-2">
+                      {servicesLoading ? (
+                        <p className="text-xs text-brand-surfaceForeground/60 p-2">
+                          {t('common.loading', 'Carregando...')}
+                        </p>
+                      ) : services.length === 0 ? (
+                        <p className="text-xs text-brand-surfaceForeground/60 p-2">
+                          {t(
+                            'team.manage.services.empty',
+                            'Nenhum serviço disponível.'
+                          )}
+                        </p>
+                      ) : (
+                        <div className="space-y-1">
+                          {services.map((service) => (
+                            <label
+                              key={service.id}
+                              className="flex items-center space-x-2 cursor-pointer p-1 hover:bg-brand-light rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={professionalForm.serviceIds?.includes(
+                                  service.id
+                                )}
+                                onChange={() => handleServiceToggle(service.id)}
+                                className="rounded border-brand-border text-brand-primary focus:ring-brand-primary"
+                              />
+                              <span className="text-sm text-brand-surfaceForeground">
+                                {service.name}
+                                {service.price_eur && (
+                                  <span className="ml-1 text-xs text-brand-surfaceForeground/60">
+                                    (€{service.price_eur})
+                                  </span>
+                                )}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {professionalModalError ? (
                     <div className="my-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
@@ -467,21 +695,64 @@ function ManageStaffModal({
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {canEditProfessional ? (
-                    <button
-                      type="button"
-                      onClick={handleProfessionalEdit}
-                      className="text-sm font-medium text-[#1D29CF] hover:underline"
-                    >
-                      {currentProfessional
-                        ? t(
-                            'team.manage.professional.edit',
-                            'Editar Profissional'
-                          )
-                        : t(
-                            'team.manage.professional.create',
-                            'Criar Profissional'
+                    <>
+                      <button
+                        type="button"
+                        onClick={handleProfessionalEdit}
+                        className="text-sm font-medium text-brand-primary hover:underline"
+                      >
+                        {currentProfessional
+                          ? t(
+                              'team.manage.professional.edit',
+                              'Editar Profissional'
+                            )
+                          : t(
+                              'team.manage.professional.create',
+                              'Criar Profissional'
+                            )}
+                      </button>
+                      {canResendInvite ? (
+                        <button
+                          type="button"
+                          onClick={handleResendInvite}
+                          disabled={inviteBusy}
+                          className="text-sm font-medium text-brand-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {inviteBusy
+                            ? t('team.manage.invite.resending', 'Reenviando...')
+                            : t(
+                                'team.manage.invite.resend',
+                                'Reenviar convite'
+                              )}
+                        </button>
+                      ) : null}
+                      {canSendAccessLink ? (
+                        <button
+                          type="button"
+                          onClick={handleSendAccessLink}
+                          disabled={inviteBusy}
+                          className="text-sm font-medium text-brand-primary hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {inviteBusy
+                            ? t(
+                                'team.manage.access_link.sending',
+                                'Enviando...'
+                              )
+                            : t(
+                                'team.manage.access_link.send',
+                                'Enviar link de acesso'
+                              )}
+                        </button>
+                      ) : null}
+                      {missingEmailForAccessLink ? (
+                        <p className="ml-3 text-xs text-brand-surfaceForeground/60">
+                          {t(
+                            'team.manage.access_link.email_required',
+                            'Informe o e-mail do membro para enviar link de acesso.'
                           )}
-                    </button>
+                        </p>
+                      ) : null}
+                    </>
                   ) : (
                     <p className="text-xs text-brand-surfaceForeground/60">
                       {t(
@@ -504,6 +775,35 @@ function ManageStaffModal({
                   {professionalFeedback.message}
                 </div>
               ) : null}
+
+              {inviteFeedback ? (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+                  <p>{inviteFeedback.message}</p>
+                  {inviteFeedback.expiresAt ? (
+                    <p className="mt-2 text-xs text-emerald-700">
+                      {t(
+                        'team.invite.token_expires_at',
+                        'Token válido até {{datetime}}.',
+                        {
+                          datetime: new Date(
+                            inviteFeedback.expiresAt
+                          ).toLocaleString(),
+                        }
+                      )}
+                    </p>
+                  ) : null}
+                  {inviteFeedback.token ? (
+                    <div className="mt-2 rounded-lg border border-brand-border bg-brand-light p-3 text-xs font-mono text-brand-surfaceForeground break-all">
+                      {inviteFeedback.token}
+                    </div>
+                  ) : null}
+                  {requestId ? (
+                    <p className="mt-2 text-xs text-gray-400">
+                      {t('common.request_id', 'Request ID')}: {requestId}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           )}
 
@@ -523,13 +823,13 @@ function ManageStaffModal({
                     <strong>
                       {t('team.manage.summary.status', 'Status atual')}:
                     </strong>{' '}
-                    {STATUS_LABELS[member.status] || member.status}
+                    {t(`team.status.${member.status}`, member.status)}
                   </li>
                   <li>
                     <strong>
                       {t('team.manage.summary.role', 'Papel atual')}:
                     </strong>{' '}
-                    {ROLE_LABELS[member.role] || member.role}
+                    {t(`team.roles.${member.role}`, member.role)}
                   </li>
                 </ul>
               </div>
@@ -552,7 +852,10 @@ function ManageStaffModal({
                       <div className="space-y-2">
                         {['collaborator', 'manager'].map((roleOption) => {
                           return (
-                            <label key={roleOption} className="flex items-center">
+                            <label
+                              key={roleOption}
+                              className="flex items-center"
+                            >
                               <input
                                 type="radio"
                                 name="role"
@@ -562,7 +865,7 @@ function ManageStaffModal({
                                 className="mr-2 text-brand-primary focus:ring-brand-primary"
                               />
                               <span className="text-sm text-brand-surfaceForeground">
-                                {ROLE_LABELS[roleOption] || roleOption}
+                                {t(`team.roles.${roleOption}`, roleOption)}
                               </span>
                             </label>
                           );
@@ -595,7 +898,7 @@ function ManageStaffModal({
                               ),
                             })
                           }
-                          className="text-sm font-medium text-emerald-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="text-sm font-medium text-emerald-700 dark:text-emerald-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-300 dark:focus:ring-emerald-500 rounded-sm"
                         >
                           {t('team.manage.status.activate', 'Ativar')}
                         </button>

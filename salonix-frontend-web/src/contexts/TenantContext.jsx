@@ -15,10 +15,7 @@ import {
   resolveTenantSlug,
   sanitizeTenantSlug,
 } from '../utils/tenant';
-import {
-  getStoredTenantSlug,
-  storeTenantSlug,
-} from '../utils/tenantStorage';
+import { getStoredTenantSlug, storeTenantSlug } from '../utils/tenantStorage';
 
 const defaultContextValue = {
   slug: DEFAULT_TENANT_SLUG,
@@ -30,6 +27,7 @@ const defaultContextValue = {
   branding: DEFAULT_TENANT_META.branding,
   channels: DEFAULT_TENANT_META.channels,
   profile: DEFAULT_TENANT_META.profile,
+  onboarding_state: DEFAULT_TENANT_META.onboarding_state,
   featureFlagsRaw: null,
   loading: true,
   error: null,
@@ -51,10 +49,12 @@ export function TenantProvider({ children }) {
   const [error, setError] = useState(null);
   const abortController = useRef(null);
   const skipNextLoadRef = useRef(false);
+  const loadedSlugRef = useRef(null);
 
   const loadTenant = useCallback(
     async (targetSlug, { silent = false } = {}) => {
-      const sanitizedSlug = sanitizeTenantSlug(targetSlug) || DEFAULT_TENANT_SLUG;
+      const sanitizedSlug =
+        sanitizeTenantSlug(targetSlug) || DEFAULT_TENANT_SLUG;
 
       if (abortController.current) {
         abortController.current.abort();
@@ -70,7 +70,10 @@ export function TenantProvider({ children }) {
 
       try {
         if (!sanitizedSlug) {
-          const fallbackMeta = { ...DEFAULT_TENANT_META, slug: DEFAULT_TENANT_SLUG };
+          const fallbackMeta = {
+            ...DEFAULT_TENANT_META,
+            slug: DEFAULT_TENANT_SLUG,
+          };
           if (!controller.signal.aborted) {
             setTenant(fallbackMeta);
             setSlug(fallbackMeta.slug);
@@ -85,6 +88,7 @@ export function TenantProvider({ children }) {
         if (!controller.signal.aborted) {
           setTenant(merged);
           setSlug(merged.slug || sanitizedSlug);
+          loadedSlugRef.current = merged.slug || sanitizedSlug;
         }
         return merged;
       } catch (err) {
@@ -93,14 +97,19 @@ export function TenantProvider({ children }) {
         }
 
         const status = err?.response?.status;
-        const isNetworkError = err?.code === 'ERR_NETWORK' || err?.message?.includes('ERR_ABORTED');
-        
+        const isNetworkError =
+          err?.code === 'ERR_NETWORK' || err?.message?.includes('ERR_ABORTED');
+
         // Para erros de rede (backend não disponível), usar fallback silenciosamente
         if (isNetworkError || status === 400 || status === 404) {
           if (!silent) {
-            const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
+            const fallbackMeta = {
+              ...DEFAULT_TENANT_META,
+              slug: sanitizedSlug,
+            };
             setTenant(fallbackMeta);
             setSlug(sanitizedSlug);
+            loadedSlugRef.current = sanitizedSlug;
             return fallbackMeta;
           }
           return DEFAULT_TENANT_META;
@@ -116,6 +125,7 @@ export function TenantProvider({ children }) {
           const fallbackMeta = { ...DEFAULT_TENANT_META, slug: sanitizedSlug };
           setTenant(fallbackMeta);
           setSlug(sanitizedSlug);
+          loadedSlugRef.current = sanitizedSlug;
           return fallbackMeta;
         }
         return DEFAULT_TENANT_META;
@@ -144,15 +154,16 @@ export function TenantProvider({ children }) {
       skipNextLoadRef.current = slugChanged;
       setTenant(merged);
       setSlug(merged.slug);
+      loadedSlugRef.current = merged.slug;
       setError(null);
       setLoading(false);
       storeTenantSlug(merged.slug);
-      loadTenant(merged.slug, { silent: true });
+
       if (!slugChanged) {
         skipNextLoadRef.current = false;
       }
     },
-    [loadTenant, slug]
+    [slug]
   );
 
   const updateSlug = useCallback(
@@ -176,6 +187,13 @@ export function TenantProvider({ children }) {
   );
 
   useEffect(() => {
+    // Skip tenant loading for Ops routes
+    const pathname = window.location?.pathname || '';
+    if (pathname.startsWith('/ops')) {
+      setLoading(false);
+      return;
+    }
+
     if (skipNextLoadRef.current) {
       skipNextLoadRef.current = false;
       return () => {
@@ -183,6 +201,11 @@ export function TenantProvider({ children }) {
           abortController.current.abort();
         }
       };
+    }
+
+    // Se já carregamos este slug com sucesso, não recarregar
+    if (loadedSlugRef.current === slug) {
+      return;
     }
 
     loadTenant(slug);
@@ -208,14 +231,35 @@ export function TenantProvider({ children }) {
       featureFlagsRaw: tenant.featureFlagsRaw || null,
       loading,
       error,
-      refetch: () => loadTenant(slug),
+      refetch: (options) => loadTenant(slug, options),
       setTenantSlug: updateSlug,
       applyTenantBootstrap,
     };
-  }, [slug, tenant, loading, error, loadTenant, updateSlug, applyTenantBootstrap]);
+  }, [
+    slug,
+    tenant,
+    loading,
+    error,
+    loadTenant,
+    updateSlug,
+    applyTenantBootstrap,
+  ]);
+
+  // Create a stable refetch function to avoid unnecessary re-renders
+  const stableRefetch = useCallback(
+    (options) => loadTenant(slug, options),
+    [loadTenant, slug]
+  );
+
+  const contextValueWithStableRefetch = useMemo(() => {
+    return {
+      ...contextValue,
+      refetch: stableRefetch,
+    };
+  }, [contextValue, stableRefetch]);
 
   return (
-    <TenantContext.Provider value={contextValue}>
+    <TenantContext.Provider value={contextValueWithStableRefetch}>
       {children}
     </TenantContext.Provider>
   );

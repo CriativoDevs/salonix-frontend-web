@@ -71,7 +71,7 @@ export async function fetchProfessionalsWithMeta(options = {}) {
   return { results, count, meta };
 }
 
-export async function createProfessional({ name, specialty, phone, slug, staffMemberId }) {
+export async function createProfessional({ name, specialty, phone, slug, staffMemberId, serviceIds }) {
   if (!staffMemberId) {
     throw new Error('staffMemberId é obrigatório para criar um profissional.');
   }
@@ -82,6 +82,7 @@ export async function createProfessional({ name, specialty, phone, slug, staffMe
     bio: notes || undefined,
     is_active: true,
     staff_member: staffMemberId,
+    service_ids: Array.isArray(serviceIds) ? serviceIds : [],
   };
 
   const headers = {};
@@ -95,7 +96,7 @@ export async function createProfessional({ name, specialty, phone, slug, staffMe
   return data;
 }
 
-export async function updateProfessional(id, { name, bio, is_active, staffMemberId, slug }) {
+export async function updateProfessional(id, { name, bio, is_active, staffMemberId, slug, serviceIds }) {
   const payload = {
     ...(name != null ? { name: String(name).trim() } : {}),
     ...(bio != null ? { bio: String(bio) } : {}),
@@ -104,6 +105,10 @@ export async function updateProfessional(id, { name, bio, is_active, staffMember
 
   if (staffMemberId != null) {
     payload.staff_member = staffMemberId;
+  }
+
+  if (Array.isArray(serviceIds)) {
+    payload.service_ids = serviceIds;
   }
 
   const headers = {};

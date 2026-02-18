@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
-import CreditBadge from '../components/ui/CreditBadge';
 import StatCard from '../components/ui/StatCard';
+import CreditStatusCard from '../components/dashboard/CreditStatusCard';
 import EmptyState from '../components/ui/EmptyState';
 import Card from '../components/ui/Card';
 import { useTenant } from '../hooks/useTenant';
@@ -70,8 +70,7 @@ function normalizeAppointmentPreview(base = {}, detail = {}) {
   const startDate = parseSlotDate(slotStart);
   const endDate = parseSlotDate(slotEnd);
 
-  const customer =
-    detail?.customer || source?.customer || null;
+  const customer = detail?.customer || source?.customer || null;
   const customerName =
     customer?.name ||
     detail?.client_username ||
@@ -79,8 +78,7 @@ function normalizeAppointmentPreview(base = {}, detail = {}) {
     source?.client_name ||
     '';
 
-  const professional =
-    detail?.professional || source?.professional || null;
+  const professional = detail?.professional || source?.professional || null;
   const professionalName =
     professional?.name || source?.professional_name || '';
 
@@ -123,20 +121,26 @@ export default function Dashboard() {
     if (!Array.isArray(staff) || !user) {
       return null;
     }
-    
-    const email = typeof user.email === 'string' ? user.email.toLowerCase() : null;
-    const username = typeof user.username === 'string' ? user.username.toLowerCase() : null;
-    
+
+    const email =
+      typeof user.email === 'string' ? user.email.toLowerCase() : null;
+    const username =
+      typeof user.username === 'string' ? user.username.toLowerCase() : null;
+
     const match = staff.find((member) => {
-      const memberEmail = typeof member.email === 'string' ? member.email.toLowerCase() : null;
-      const memberUsername = typeof member.username === 'string' ? member.username.toLowerCase() : null;
-      
+      const memberEmail =
+        typeof member.email === 'string' ? member.email.toLowerCase() : null;
+      const memberUsername =
+        typeof member.username === 'string'
+          ? member.username.toLowerCase()
+          : null;
+
       return (
         (email && memberEmail === email) ||
         (username && memberUsername === username)
       );
     });
-    
+
     return match?.role || null;
   }, [staff, user]);
 
@@ -165,51 +169,74 @@ export default function Dashboard() {
           return false;
         }
         return true;
-      }) || sanitizedNames[0] || null;
+      }) ||
+      sanitizedNames[0] ||
+      null;
 
     if (!tenantDisplayName) {
       return fallbackTitle;
     }
 
     return `${tenantDisplayName} • ${fallbackTitle}`;
-  }, [profile?.businessName, slug, t, tenant?.branding?.appName, tenant?.name, user?.username]);
+  }, [
+    profile?.businessName,
+    slug,
+    t,
+    tenant?.branding?.appName,
+    tenant?.name,
+    user?.username,
+  ]);
 
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [upcomingLoading, setUpcomingLoading] = useState(false);
   const [upcomingError, setUpcomingError] = useState(null);
 
   const reportsEnabled = flags?.enableReports !== false;
+  const planTier = tenant?.plan?.tier || flags?.planTier || 'basic';
 
   // Verificar se o usuário tem acesso aos relatórios (apenas owner e manager)
   const hasReportsAccess = useMemo(() => {
     if (!currentUserRole) {
       // Fallback para usuários sem staff data (como no tenant 'default')
       if (!user) return false;
-      
-      const email = typeof user.email === 'string' ? user.email.toLowerCase() : '';
-      const username = typeof user.username === 'string' ? user.username.toLowerCase() : '';
-      
+
+      const email =
+        typeof user.email === 'string' ? user.email.toLowerCase() : '';
+      const username =
+        typeof user.username === 'string' ? user.username.toLowerCase() : '';
+
       // Admin sempre tem acesso
       if (email === 'admin@demo.local' || username === 'admin') {
         return true;
       }
-      
+
       // Manager tem acesso
       if (username === 'manager' || email.includes('manager')) {
         return true;
       }
-      
+
       // Pro users (owners) têm acesso
       if (username.startsWith('pro_') || email.startsWith('pro_')) {
         return true;
       }
-      
+
       // Colaboradores não têm acesso
       return false;
     }
-    
+
     // Com staff data, verificar role
     return currentUserRole === 'owner' || currentUserRole === 'manager';
+  }, [currentUserRole, user]);
+
+  const isOwner = useMemo(() => {
+    if (currentUserRole === 'manager') return false;
+    if (currentUserRole === 'owner') return true;
+    // Fallback para admin/pro users que atuam como owner
+    const email = user?.email?.toLowerCase() || '';
+    const username = user?.username?.toLowerCase() || '';
+    if (username === 'admin' || email === 'admin@demo.local') return true;
+    if (username.startsWith('pro_') || email.startsWith('pro_')) return true;
+    return false;
   }, [currentUserRole, user]);
 
   const {
@@ -218,7 +245,7 @@ export default function Dashboard() {
     error,
     reportsForbidden,
     refetch,
-  } = useDashboardData({ slug, reportsEnabled });
+  } = useDashboardData({ slug, reportsEnabled, planTier });
 
   const bookingsList = useMemo(
     () => extractBookingsList(dashboardData.bookings),
@@ -268,13 +295,19 @@ export default function Dashboard() {
           try {
             professionals = await fetchProfessionals(slug);
           } catch (professionalsError) {
-            console.warn('Failed to load professionals for dashboard', professionalsError);
+            console.warn(
+              'Failed to load professionals for dashboard',
+              professionalsError
+            );
           }
 
           try {
             services = await fetchServices(slug);
           } catch (servicesError) {
-            console.warn('Failed to load services for dashboard', servicesError);
+            console.warn(
+              'Failed to load services for dashboard',
+              servicesError
+            );
           }
         }
 
@@ -284,9 +317,7 @@ export default function Dashboard() {
             : []
         );
         const serviceMap = new Map(
-          Array.isArray(services)
-            ? services.map((item) => [item.id, item])
-            : []
+          Array.isArray(services) ? services.map((item) => [item.id, item]) : []
         );
 
         for (const entry of candidates) {
@@ -295,12 +326,16 @@ export default function Dashboard() {
           const hasDetailedSlot =
             entry && typeof entry.slot === 'object' && entry.slot;
 
-          if ((!slotPayload || !slotPayload?.start_time) && !hasDetailedSlot && entry?.slot) {
+          if (
+            (!slotPayload || !slotPayload?.start_time) &&
+            !hasDetailedSlot &&
+            entry?.slot
+          ) {
             try {
               slotPayload = await fetchSlotDetail(entry.slot, { slug });
-              } catch (slotError) {
-                console.warn('Failed to fetch slot detail', slotError);
-              }
+            } catch (slotError) {
+              console.warn('Failed to fetch slot detail', slotError);
+            }
           }
 
           let customerPayload = null;
@@ -309,7 +344,9 @@ export default function Dashboard() {
               customerPayload = customerCache.get(entry.customer);
             } else {
               try {
-                customerPayload = await fetchCustomerDetail(entry.customer, { slug });
+                customerPayload = await fetchCustomerDetail(entry.customer, {
+                  slug,
+                });
                 customerCache.set(entry.customer, customerPayload);
               } catch (customerError) {
                 console.warn('Failed to fetch customer detail', customerError);
@@ -373,7 +410,9 @@ export default function Dashboard() {
           return appointment.start <= windowEnd;
         });
 
-        const fallback = futureAppointments.length ? futureAppointments : previews;
+        const fallback = futureAppointments.length
+          ? futureAppointments
+          : previews;
         const selected = withinWindow.length ? withinWindow : fallback;
 
         setUpcomingAppointments(selected.slice(0, MAX_UPCOMING_APPOINTMENTS));
@@ -424,7 +463,10 @@ export default function Dashboard() {
 
   const locale = profile?.language || undefined;
 
-  const numberFormatter = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const numberFormatter = useMemo(
+    () => new Intl.NumberFormat(locale),
+    [locale]
+  );
 
   const dateFormatter = useMemo(() => {
     try {
@@ -487,13 +529,23 @@ export default function Dashboard() {
       return t('dashboard.stats_hint_completed', { count: completed });
     }
     if (reportsForbidden) {
-      return t('dashboard.reports_blocked_hint', 'Disponível em planos com relatórios.');
+      return t(
+        'dashboard.reports_blocked_hint',
+        'Disponível em planos com relatórios.'
+      );
     }
     if (error) {
       return error.message;
     }
     return t('dashboard.stats_hint_unavailable', 'Dados indisponíveis');
-  }, [completedBookingsCount, error, formatNumber, loading, reportsForbidden, t]);
+  }, [
+    completedBookingsCount,
+    error,
+    formatNumber,
+    loading,
+    reportsForbidden,
+    t,
+  ]);
 
   const customersValue = useMemo(() => {
     if (loading) return '—';
@@ -509,7 +561,10 @@ export default function Dashboard() {
     if (formatted) {
       return t('dashboard.stats_hint_customers', { count: formatted });
     }
-    return t('dashboard.customers_no_data', 'Ainda não há clientes cadastrados.');
+    return t(
+      'dashboard.customers_no_data',
+      'Ainda não há clientes cadastrados.'
+    );
   }, [customersInfo?.count, formatNumber, loading, t]);
 
   const occupancyRate =
@@ -520,7 +575,9 @@ export default function Dashboard() {
         : null;
 
   const showOccupancyCard =
-    !loading && typeof occupancyRate === 'number' && Number.isFinite(occupancyRate);
+    !loading &&
+    typeof occupancyRate === 'number' &&
+    Number.isFinite(occupancyRate);
 
   const occupancyValue = useMemo(() => {
     if (!showOccupancyCard) return null;
@@ -544,7 +601,9 @@ export default function Dashboard() {
         return '—';
       }
       const endValid =
-        endDate instanceof Date && !Number.isNaN(endDate.getTime()) ? endDate : null;
+        endDate instanceof Date && !Number.isNaN(endDate.getTime())
+          ? endDate
+          : null;
       try {
         const datePart = dateFormatter.format(startDate);
         const startPart = timeFormatter.format(startDate);
@@ -573,16 +632,20 @@ export default function Dashboard() {
 
   return (
     <FullPageLayout>
-      <PageHeader title={t('dashboard.title', 'Dashboard')} subtitle={businessSummary}>
-        <CreditBadge />
-      </PageHeader>
+      <PageHeader
+        title={t('dashboard.title', 'Dashboard')}
+        subtitle={businessSummary}
+      ></PageHeader>
 
-      {(error || reportsForbidden) ? (
+      {error || reportsForbidden ? (
         <Card className="mb-4 border border-warning bg-warning/10 p-4 text-warning">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm">
               {reportsForbidden
-                ? t('dashboard.reports_blocked_hint', 'Disponível em planos com relatórios.')
+                ? t(
+                    'dashboard.reports_blocked_hint',
+                    'Disponível em planos com relatórios.'
+                  )
                 : error?.message}
             </p>
             {!reportsForbidden ? (
@@ -598,7 +661,8 @@ export default function Dashboard() {
         </Card>
       ) : null}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isOwner ? <CreditStatusCard /> : null}
         <StatCard
           label={t('dashboard.stats.bookings', 'Agendamentos (hoje)')}
           value={bookingsValue}
@@ -662,7 +726,10 @@ export default function Dashboard() {
               </ul>
             ) : (
               <EmptyState
-                title={t('dashboard.no_upcoming', 'Sem agendamentos nas próximas horas')}
+                title={t(
+                  'dashboard.no_upcoming',
+                  'Sem agendamentos nas próximas horas'
+                )}
                 description={
                   upcomingError?.message ||
                   t(
@@ -713,11 +780,8 @@ export default function Dashboard() {
                 {t('dashboard.add_service', 'Cadastrar serviço')}
               </button>
             )}
-            
-
           </div>
         </Card>
-
       </section>
     </FullPageLayout>
   );

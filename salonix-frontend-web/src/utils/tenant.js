@@ -1,4 +1,5 @@
 import { getEnvVar } from './env';
+import { viteEnv } from './viteEnv';
 
 const runtimeDefaultSlug = (() => {
   if (typeof globalThis !== 'undefined') {
@@ -19,15 +20,16 @@ const runtimeDefaultSlug = (() => {
 const envDefaultSlug = String(runtimeDefaultSlug).toLowerCase();
 
 export const PLAN_NAME_BY_TIER = {
-  starter: 'Starter',
+  founder: 'Founder',
   basic: 'Basic',
   standard: 'Standard',
   pro: 'Pro',
-  enterprise: 'Enterprise',
 };
 
 const API_BASE_URL = (() => {
-  const configured = getEnvVar('VITE_API_URL');
+  // Vite inlines import.meta.env at build time
+  const configured =
+    viteEnv?.VITE_API_BASE_URL || getEnvVar('VITE_API_BASE_URL');
   try {
     return new URL(configured || 'http://localhost:8000/api/');
   } catch {
@@ -35,17 +37,18 @@ const API_BASE_URL = (() => {
   }
 })();
 
-export const DEFAULT_TENANT_SLUG = sanitizeTenantSlug(envDefaultSlug) || 'timelyone';
+export const DEFAULT_TENANT_SLUG =
+  sanitizeTenantSlug(envDefaultSlug) || 'timelyone';
 
 export const DEFAULT_TENANT_META = {
   slug: DEFAULT_TENANT_SLUG,
   name: 'TimelyOne',
   auto_invite_enabled: false,
   plan: {
-    code: 'starter',
-    name: 'Starter',
+    code: 'basic',
+    name: 'Basic',
     features: ['pwa_admin'],
-    tier: 'starter',
+    tier: 'basic',
     addons: [],
   },
   theme: {
@@ -68,14 +71,14 @@ export const DEFAULT_TENANT_META = {
   flags: {
     enableCustomerPwa: false,
     enableWebPush: false,
-    enableReports: true,
+    enableReports: false,
     enableAdminPwa: true,
     enableNativeAdmin: false,
     enableNativeClient: false,
     enableMobilePush: false,
     enableSms: false,
     enableWhatsapp: false,
-    planTier: 'starter',
+    planTier: 'basic',
   },
   modules: [],
   channels: {
@@ -105,6 +108,7 @@ export const DEFAULT_TENANT_META = {
     appointmentDuration: 60,
     bufferTime: 15,
   },
+  onboarding_state: 'completed',
 };
 
 export function sanitizeTenantSlug(value) {
@@ -154,7 +158,9 @@ export function resolveTenantSlug({ search, hostname, defaultSlug } = {}) {
 export function extractSlugFromQuery(search) {
   if (!search) return '';
   try {
-    const params = new URLSearchParams(search.startsWith('?') ? search : `?${search}`);
+    const params = new URLSearchParams(
+      search.startsWith('?') ? search : `?${search}`
+    );
     const slug = params.get('tenant');
     return sanitizeTenantSlug(slug);
   } catch {
@@ -204,10 +210,8 @@ export function resolveTenantAssetUrl(source) {
   }
 
   // Caminhos típicos do backend (Django): /media, /static
-  const isBackendAsset = (
-    trimmed.startsWith('/media/') ||
-    trimmed.startsWith('/static/')
-  );
+  const isBackendAsset =
+    trimmed.startsWith('/media/') || trimmed.startsWith('/static/');
 
   try {
     if (typeof window !== 'undefined') {
@@ -237,7 +241,10 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
   const metaSlug = sanitizeTenantSlug(rawMeta.slug) || slug;
 
   const rawFeatureFlags = rawMeta.feature_flags || rawMeta.flags;
-  const normalizedFlags = normalizeFlags(rawFeatureFlags, DEFAULT_TENANT_META.flags);
+  const normalizedFlags = normalizeFlags(
+    rawFeatureFlags,
+    DEFAULT_TENANT_META.flags
+  );
 
   return {
     ...DEFAULT_TENANT_META,
@@ -249,7 +256,11 @@ export function mergeTenantMeta(rawMeta, slug = DEFAULT_TENANT_SLUG) {
       DEFAULT_TENANT_META.plan
     ),
     theme: normalizeTheme(rawMeta.theme, DEFAULT_TENANT_META.theme),
-    branding: normalizeBranding(rawMeta.branding, rawMeta, DEFAULT_TENANT_META.branding),
+    branding: normalizeBranding(
+      rawMeta.branding,
+      rawMeta,
+      DEFAULT_TENANT_META.branding
+    ),
     flags: normalizedFlags,
     featureFlagsRaw: rawFeatureFlags || null,
     modules: normalizeModules(
@@ -289,7 +300,8 @@ function normalizePlan(plan, fallbackTier, fallbackPlan) {
   } else if (normalizedTier && PLAN_NAME_BY_TIER[normalizedTier]) {
     base.name = PLAN_NAME_BY_TIER[normalizedTier];
   } else if (normalizedTier) {
-    base.name = normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
+    base.name =
+      normalizedTier.charAt(0).toUpperCase() + normalizedTier.slice(1);
   }
   if (Array.isArray(plan?.addons)) {
     base.addons = plan.addons;
@@ -312,15 +324,31 @@ function normalizeTheme(theme, fallback) {
 
 function normalizeBranding(brandingBlock, rawMeta, fallback) {
   const brandingSource = {
-    ...(typeof brandingBlock === 'object' && brandingBlock ? brandingBlock : {}),
-    logo_url: rawMeta?.logo_url ?? brandingBlock?.logo_url ?? brandingBlock?.logoUrl,
-    favicon_url: rawMeta?.favicon_url ?? brandingBlock?.favicon_url ?? brandingBlock?.faviconUrl,
+    ...(typeof brandingBlock === 'object' && brandingBlock
+      ? brandingBlock
+      : {}),
+    logo_url:
+      rawMeta?.logo_url ?? brandingBlock?.logo_url ?? brandingBlock?.logoUrl,
+    favicon_url:
+      rawMeta?.favicon_url ??
+      brandingBlock?.favicon_url ??
+      brandingBlock?.faviconUrl,
     apple_touch_icon_url:
-      rawMeta?.apple_touch_icon_url ?? brandingBlock?.apple_touch_icon_url ?? brandingBlock?.appleTouchIconUrl,
-    app_name: rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
-    short_name: rawMeta?.short_name ?? brandingBlock?.short_name ?? brandingBlock?.shortName,
-    splash_screens: rawMeta?.splash_screens ?? brandingBlock?.splash_screens ?? brandingBlock?.splashScreens,
-    icon_set: rawMeta?.icon_set ?? brandingBlock?.icon_set ?? brandingBlock?.icons,
+      rawMeta?.apple_touch_icon_url ??
+      brandingBlock?.apple_touch_icon_url ??
+      brandingBlock?.appleTouchIconUrl,
+    app_name:
+      rawMeta?.app_name ?? brandingBlock?.app_name ?? brandingBlock?.appName,
+    short_name:
+      rawMeta?.short_name ??
+      brandingBlock?.short_name ??
+      brandingBlock?.shortName,
+    splash_screens:
+      rawMeta?.splash_screens ??
+      brandingBlock?.splash_screens ??
+      brandingBlock?.splashScreens,
+    icon_set:
+      rawMeta?.icon_set ?? brandingBlock?.icon_set ?? brandingBlock?.icons,
   };
 
   const result = {
@@ -386,10 +414,19 @@ function normalizeProfile(profile, fallback) {
     return fallback;
   }
 
-  return {
+  const merged = {
     ...fallback,
     ...profile,
   };
+
+  if (merged.phone == null && typeof profile.phone_number === 'string') {
+    merged.phone = profile.phone_number;
+  }
+  if (merged.email == null && typeof profile.email_address === 'string') {
+    merged.email = profile.email_address;
+  }
+
+  return merged;
 }
 
 function normalizeFlags(featureFlags, fallback) {
@@ -407,20 +444,29 @@ function normalizeFlags(featureFlags, fallback) {
 
   const mergedModules = {
     ...(featureFlags.modules || {}),
-    reports_enabled: featureFlags.reports_enabled,
-    pwa_admin_enabled: featureFlags.pwa_admin_enabled,
-    pwa_client_enabled: featureFlags.pwa_client_enabled,
-    rn_admin_enabled: featureFlags.rn_admin_enabled,
-    rn_client_enabled: featureFlags.rn_client_enabled,
   };
+  if (featureFlags.reports_enabled !== undefined)
+    mergedModules.reports_enabled = featureFlags.reports_enabled;
+  if (featureFlags.pwa_admin_enabled !== undefined)
+    mergedModules.pwa_admin_enabled = featureFlags.pwa_admin_enabled;
+  if (featureFlags.pwa_client_enabled !== undefined)
+    mergedModules.pwa_client_enabled = featureFlags.pwa_client_enabled;
+  if (featureFlags.rn_admin_enabled !== undefined)
+    mergedModules.rn_admin_enabled = featureFlags.rn_admin_enabled;
+  if (featureFlags.rn_client_enabled !== undefined)
+    mergedModules.rn_client_enabled = featureFlags.rn_client_enabled;
 
   const mergedNotifications = {
     ...(featureFlags.notifications || {}),
-    push_web: featureFlags.push_web_enabled,
-    push_mobile: featureFlags.push_mobile_enabled,
-    sms: featureFlags.sms_enabled,
-    whatsapp: featureFlags.whatsapp_enabled,
   };
+  if (featureFlags.push_web_enabled !== undefined)
+    mergedNotifications.push_web = featureFlags.push_web_enabled;
+  if (featureFlags.push_mobile_enabled !== undefined)
+    mergedNotifications.push_mobile = featureFlags.push_mobile_enabled;
+  if (featureFlags.sms_enabled !== undefined)
+    mergedNotifications.sms = featureFlags.sms_enabled;
+  if (featureFlags.whatsapp_enabled !== undefined)
+    mergedNotifications.whatsapp = featureFlags.whatsapp_enabled;
 
   if ('reports_enabled' in mergedModules) {
     base.enableReports = Boolean(mergedModules.reports_enabled);
