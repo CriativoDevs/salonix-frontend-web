@@ -20,27 +20,35 @@ export default function ErrorPopup({ error, onClose, title }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 px-4 backdrop-blur-sm"
       role="alertdialog"
       aria-modal="true"
     >
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-brand-border bg-brand-surface p-6 shadow-2xl">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-primary">{resolvedTitle}</h2>
+          <h2 className="text-lg font-semibold text-brand-surfaceForeground">
+            {resolvedTitle}
+          </h2>
           {code && (
-            <p className="mt-1 text-xs uppercase tracking-wide text-gray-400">
-              {t('common.code', 'Código')}: <span className="font-mono text-gray-500">{code}</span>
+            <p className="mt-1 text-xs uppercase tracking-wide text-brand-surfaceForeground/60">
+              {t('common.code', 'Código')}:{' '}
+              <span className="font-mono text-brand-surfaceForeground/80">
+                {code}
+              </span>
             </p>
           )}
         </div>
 
-        <p className="text-sm text-gray-700">{message}</p>
+        <p className="text-sm text-brand-surfaceForeground">{message}</p>
 
         {formattedDetails?.length ? (
-          <ul className="mt-3 space-y-1 text-sm text-gray-500">
+          <ul className="mt-3 space-y-1 text-sm text-brand-surfaceForeground/80">
             {formattedDetails.map((item) => (
               <li key={item} className="flex items-start gap-2">
-                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-rose-400" aria-hidden />
+                <span
+                  className="mt-1 h-1.5 w-1.5 rounded-full bg-rose-400"
+                  aria-hidden
+                />
                 <span>{item}</span>
               </li>
             ))}
@@ -48,8 +56,9 @@ export default function ErrorPopup({ error, onClose, title }) {
         ) : null}
 
         {requestId ? (
-          <p className="mt-4 text-xs text-gray-400">
-            {t('common.request_id', 'ID da requisição')}: <span className="font-mono">{requestId}</span>
+          <p className="mt-4 text-xs text-brand-surfaceForeground/60">
+            {t('common.request_id', 'ID da requisição')}:{' '}
+            <span className="font-mono">{requestId}</span>
           </p>
         ) : null}
 
@@ -57,7 +66,7 @@ export default function ErrorPopup({ error, onClose, title }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-hover focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-1"
+            className="text-sm font-medium text-brand-primary underline underline-offset-4 hover:text-brand-primary/80 focus:outline-none"
           >
             {t('common.close', 'Fechar')}
           </button>
