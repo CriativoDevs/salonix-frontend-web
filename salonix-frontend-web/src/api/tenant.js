@@ -129,4 +129,22 @@ export async function updateTenantContact({
   return response.data;
 }
 
+export async function cancelTenantAccount({
+  password,
+  confirmationText,
+  cancellationReason,
+}) {
+  const payload = {
+    password,
+    confirmation_text: confirmationText,
+  };
+
+  if (typeof cancellationReason === 'string' && cancellationReason.trim()) {
+    payload.cancellation_reason = cancellationReason.trim();
+  }
+
+  const { data } = await client.post('tenants/cancel-account/', payload);
+  return data;
+}
+
 export { TENANT_ENDPOINT };

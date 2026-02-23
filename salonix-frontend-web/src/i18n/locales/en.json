@@ -286,6 +286,7 @@
     "select_conversation": "Select a conversation to start"
   },
   "common": {
+    "select": "Select",
     "back": "Back",
     "finish": "Finish",
     "filter": "Filter",
@@ -432,7 +433,8 @@
       "billing": "Billing",
       "credits": "Credits",
       "business": "Business",
-      "data": "Data"
+      "data": "Data",
+      "account": "Account"
     },
     "credits": {
       "title": "Credit Management"
@@ -728,6 +730,48 @@
         "hint": "Hint",
         "value": "Value",
         "request_id": "Request ID"
+      }
+    }
+  },
+  "account": {
+    "title": "Account Settings",
+    "subtitle": "Manage account information and critical actions",
+    "back_to_settings": "Back to Settings",
+    "info": {
+      "title": "Account Data",
+      "subtitle": "Current plan, owner and basic information",
+      "plan_label": "Salon current plan",
+      "loading_plan": "Loading plan...",
+      "owner_label": "Owner (account holder)",
+      "owner_unknown": "Name not available",
+      "owner_email_unknown": "Email not available"
+    },
+    "danger": {
+      "title": "Danger Zone",
+      "subtitle": "Irreversible actions related to your account",
+      "hint": "This action will permanently remove access to the account.",
+      "cancel_cta": "Cancel my account",
+      "modal": {
+        "title": "Confirm cancellation",
+        "subtitle": "This action is irreversible. Type the confirmation word and your password.",
+        "confirm_label": "Type {{word}} to confirm",
+        "password_label": "Password",
+        "reason_label": "Reason for leaving",
+        "comment_label": "Comment (optional)",
+        "comment_placeholder": "Tell us briefly why...",
+        "confirm_button": "Confirm",
+        "close_button": "Close",
+        "generic_error": "We couldn't cancel the account. Please try again.",
+        "validation": {
+          "confirm_mismatch": "The typed word does not match.",
+          "password_required": "Enter your password."
+        },
+        "reason": {
+          "cost": "Cost",
+          "features": "Missing features",
+          "complexity": "Complexity",
+          "other": "Other"
+        }
       }
     }
   },
@@ -1384,91 +1428,6 @@
   },
   "toast": {
     "close": "Close notification"
-  },
-  "reports": {
-    "title": "Reports",
-    "loading": "Loading reports...",
-    "error": "Error loading reports",
-    "retry": "Retry",
-    "upgrade_button": "Upgrade plan",
-    "export_csv": "Export CSV",
-    "exporting": "Exporting...",
-    "export": {
-      "csv": "Export CSV",
-      "exporting": "Exporting..."
-    },
-    "tabs": {
-      "basic": "Basic",
-      "business": "Business Analysis",
-      "insights": "Advanced Insights"
-    },
-    "filters": {
-      "from_date": "From date",
-      "to_date": "To date",
-      "apply": "Apply filters",
-      "applying": "Applying...",
-      "help": "Select the period to filter report data"
-    },
-    "metrics": {
-      "total_appointments": "Total Appointments",
-      "completed_appointments": "Completed Appointments",
-      "total_revenue": "Total Revenue",
-      "average_ticket": "Average Ticket"
-    },
-    "basic": {
-      "title": "Basic Reports",
-      "description": "Essential reports to track your salon performance",
-      "coming_soon": "Coming soon: Basic reports for bookings, revenue, and clients"
-    },
-    "business": {
-      "title": "Business Analysis",
-      "description": "Track top-selling services and revenue evolution",
-      "upgrade_required": "Available from Standard plan. Unlock performance and revenue metrics.",
-      "no_data": "No data available for the selected period."
-    },
-    "advanced": {
-      "intervals": {
-        "day": "Daily",
-        "week": "Weekly",
-        "month": "Monthly"
-      },
-      "filters": {
-        "title": "Advanced Filters",
-        "interval": "Time Interval",
-        "limit": "Items per Page",
-        "help": "Adjust filters to customize data visualization"
-      },
-      "no_services": "No services found for the selected period",
-      "no_revenue": "No revenue data found for the selected period",
-      "top_services": {
-        "title": "Top Services",
-        "description": "Service ranking by number of bookings",
-        "service": "Service",
-        "appointments": "Bookings",
-        "revenue": "Revenue",
-        "avg_price": "Average Price"
-      },
-      "revenue": {
-        "title": "Revenue Evolution",
-        "total": "Total Revenue",
-        "average": "Average per Period",
-        "peak": "Peak Revenue"
-      }
-    },
-    "revenue": {
-      "title": "Revenue Evolution"
-    },
-    "insights": {
-      "title": "Advanced Insights",
-      "description": "Retention analysis and customer behavior",
-      "upgrade_required": "Available from Pro plan. Unlock retention analysis and deep insights.",
-      "new_clients": "New Clients",
-      "returning_clients": "Returning Clients",
-      "clients_count": "Count",
-      "revenue_generated": "Revenue generated",
-      "period_label": "Data from {{start}} to {{end}}",
-      "coming_soon": "Coming soon: Retention Reports and Cohort Analysis"
-    }
   },
   "client_login": {
     "title": "Client Area",

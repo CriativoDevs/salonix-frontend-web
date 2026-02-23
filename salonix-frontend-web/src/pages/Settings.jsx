@@ -46,6 +46,7 @@ const TAB_ITEMS = [
   { id: 'general', label: 'settings.tabs.general', icon: '⚙️' },
   { id: 'notifications', label: 'settings.tabs.notifications', icon: '🔔' },
   { id: 'credits', label: 'settings.tabs.credits', icon: '💳' },
+  { id: 'account', label: 'settings.tabs.account', icon: '👤' },
   // { id: 'billing', label: 'settings.tabs.billing', icon: '💳' },
   // { id: 'business', label: 'settings.tabs.business', icon: '🏢' }, // Ocultado conforme solicitação
   { id: 'data', label: 'settings.tabs.data', icon: '📊' },
@@ -2250,6 +2251,17 @@ function Settings() {
     setCreditsModalOpen(true);
   }, []);
 
+  const handleTabClick = useCallback(
+    (tabId) => {
+      if (tabId === 'account') {
+        navigate('/settings/account');
+        return;
+      }
+      setActiveTab(tabId);
+    },
+    [navigate]
+  );
+
   const handleToggleChannel = useCallback(
     async (channelKey, nextValue) => {
       if (!tenant) return;
@@ -3990,7 +4002,7 @@ function Settings() {
                 {TAB_ITEMS.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabClick(tab.id)}
                     className={`w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                       activeTab === tab.id
                         ? 'border border-brand-border bg-brand-light text-brand-surfaceForeground'

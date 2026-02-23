@@ -313,7 +313,8 @@
     "saving": "Salvando...",
     "loading_data": "Carregando dados do plano...",
     "delete_error": "Falha ao excluir.",
-    "refresh": "Atualizar"
+    "refresh": "Atualizar",
+    "select": "Selecione"
   },
   "feedback": {
     "title": "Feedback",
@@ -422,7 +423,8 @@
       "billing": "Histórico de Créditos",
       "credits": "Créditos",
       "business": "Negócio",
-      "data": "Dados"
+      "data": "Dados",
+      "account": "Conta"
     },
     "billing": {
       "title": "Histórico de Créditos",
@@ -729,6 +731,48 @@
       "new_balance": "Novo saldo",
       "purchase_amount": "+ {{amount}}",
       "buy": "Comprar"
+    }
+  },
+  "account": {
+    "title": "Configurações da Conta",
+    "subtitle": "Gerencie informações da conta e ações críticas",
+    "back_to_settings": "Voltar para Configurações",
+    "info": {
+      "title": "Dados da Conta",
+      "subtitle": "Plano atual, proprietário e informações básicas",
+      "plan_label": "Plano atual do salão",
+      "loading_plan": "Carregando plano...",
+      "owner_label": "Owner (proprietário da conta)",
+      "owner_unknown": "Nome não disponível",
+      "owner_email_unknown": "Email não disponível"
+    },
+    "danger": {
+      "title": "Zona de Perigo",
+      "subtitle": "Ações irreversíveis relacionadas à sua conta",
+      "hint": "Esta ação removerá permanentemente o acesso à conta.",
+      "cancel_cta": "Cancelar minha conta",
+      "modal": {
+        "title": "Confirmar cancelamento",
+        "subtitle": "Esta ação é irreversível. Digite a palavra de confirmação e sua senha.",
+        "confirm_label": "Digite {{word}} para confirmar",
+        "password_label": "Senha",
+        "reason_label": "Motivo da saída",
+        "comment_label": "Comentário (opcional)",
+          "comment_placeholder": "Conte-nos rapidamente o motivo...",
+        "confirm_button": "Confirmar",
+        "close_button": "Fechar",
+          "generic_error": "Não foi possível cancelar a conta. Tente novamente.",
+        "validation": {
+          "confirm_mismatch": "A palavra digitada não confere.",
+          "password_required": "Informe sua senha."
+        },
+        "reason": {
+          "cost": "Custo",
+          "features": "Faltam recursos",
+          "complexity": "Complexidade",
+          "other": "Outro"
+        }
+      }
     }
   },
   "customers": {
@@ -1116,7 +1160,43 @@
       "coming_soon": "Em breve: Análises avançadas, comparativos e insights detalhados",
       "data_loaded": "Dados avançados carregados com sucesso",
       "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
-      "upgrade_button": "Atualizar plano"
+      "upgrade_button": "Atualizar plano",
+      "intervals": {
+        "day": "Diário",
+        "week": "Semanal",
+        "month": "Mensal"
+      },
+      "filters": {
+        "title": "Filtros Avançados",
+        "interval": "Intervalo de Tempo",
+        "limit": "Itens por Página",
+        "help": "Ajuste os filtros para personalizar a visualização dos dados"
+      },
+      "no_services": "Nenhum serviço encontrado no período selecionado",
+      "no_revenue": "Nenhum dado de receita encontrado no período selecionado",
+      "top_services": {
+        "title": "Serviços Mais Populares",
+        "description": "Ranking dos serviços por número de agendamentos",
+        "service": "Serviço",
+        "appointments": "Agendamentos",
+        "revenue": "Receita",
+        "avg_price": "Preço Médio"
+      },
+      "revenue": {
+        "title": "Evolução da Receita",
+        "period": "Período",
+        "revenue": "Receita",
+        "appointments": "Agendamentos",
+        "avg_ticket": "Ticket Médio",
+        "total": "Receita Total",
+        "average": "Média por Período",
+        "peak": "Pico de Receita"
+      },
+      "pagination": {
+        "showing": "Mostrando {{start}} a {{end}} de {{total}} serviços",
+        "previous": "Anterior",
+        "next": "Próximo"
+      }
     },
     "insights": {
       "title": "Insights Avançados",
@@ -1382,91 +1462,7 @@
   "toast": {
     "close": "Fechar notificação"
   },
-  "reports": {
-    "title": "Relatórios",
-    "loading": "Carregando relatórios...",
-    "error": "Erro ao carregar relatórios",
-    "retry": "Tentar novamente",
-    "upgrade_button": "Atualizar plano",
-    "export_csv": "Exportar CSV",
-    "exporting": "Exportando...",
-    "export": {
-      "csv": "Exportar CSV",
-      "exporting": "Exportando..."
-    },
-    "tabs": {
-      "basic": "Básicos",
-      "business": "Análise de Negócio",
-      "insights": "Insights Avançados"
-    },
-    "filters": {
-      "from_date": "Data inicial",
-      "to_date": "Data final",
-      "apply": "Aplicar filtros",
-      "applying": "Aplicando...",
-      "help": "Selecione o período para filtrar os dados dos relatórios"
-    },
-    "metrics": {
-      "total_appointments": "Total de Agendamentos",
-      "completed_appointments": "Agendamentos Concluídos",
-      "total_revenue": "Receita Total",
-      "average_ticket": "Ticket Médio"
-    },
-    "basic": {
-      "title": "Relatórios Básicos",
-      "description": "Relatórios essenciais para acompanhar o desempenho do seu salão",
-      "coming_soon": "Em breve: Relatórios básicos de agendamentos, receita e clientes"
-    },
-    "business": {
-      "title": "Análise de Negócio",
-      "description": "Acompanhe os serviços mais vendidos e a evolução da receita",
-      "upgrade_required": "Disponível a partir do plano Standard. Desbloqueie métricas de performance e receita.",
-      "no_data": "Nenhum dado disponível para o período selecionado."
-    },
-    "advanced": {
-      "intervals": {
-        "day": "Diário",
-        "week": "Semanal",
-        "month": "Mensal"
-      },
-      "filters": {
-        "title": "Filtros Avançados",
-        "interval": "Intervalo de Tempo",
-        "limit": "Itens por Página",
-        "help": "Ajuste os filtros para personalizar a visualização dos dados"
-      },
-      "no_services": "Nenhum serviço encontrado no período selecionado",
-      "no_revenue": "Nenhum dado de receita encontrado no período selecionado",
-      "top_services": {
-        "title": "Serviços Mais Populares",
-        "description": "Ranking dos serviços por número de agendamentos",
-        "service": "Serviço",
-        "appointments": "Agendamentos",
-        "revenue": "Receita",
-        "avg_price": "Preço Médio"
-      },
-      "revenue": {
-        "title": "Evolução da Receita",
-        "total": "Receita Total",
-        "average": "Média por Período",
-        "peak": "Pico de Receita"
-      }
-    },
-    "revenue": {
-      "title": "Evolução da Receita"
-    },
-    "insights": {
-      "title": "Insights Avançados",
-      "description": "Análise de retenção e comportamento de clientes",
-      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.",
-      "new_clients": "Novos Clientes",
-      "returning_clients": "Clientes Recorrentes",
-      "clients_count": "Contagem",
-      "revenue_generated": "Receita gerada",
-      "period_label": "Dados de {{start}} até {{end}}",
-      "coming_soon": "Em breve: Relatórios de Retenção e Cohort Analysis"
-    }
-  },
+
   "client_login": {
     "title": "Área do Cliente",
     "subtitle": "Acesse seus agendamentos",

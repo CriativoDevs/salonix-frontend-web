@@ -20,6 +20,7 @@ import Team from '../pages/Team';
 import Reports from '../pages/Reports';
 import Feedback from '../pages/Feedback';
 import Settings from '../pages/Settings';
+import AccountSettings from '../pages/AccountSettings';
 import Setup from '../pages/Setup';
 import Plans from '../pages/Plans';
 import PlanCheckoutMock from '../pages/PlanCheckoutMock';
@@ -267,6 +268,16 @@ function Router() {
           <PrivateRoute>
             <RoleProtectedRoute allowedRoles={['owner']}>
               <Settings />
+            </RoleProtectedRoute>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings/account"
+        element={
+          <PrivateRoute>
+            <RoleProtectedRoute allowedRoles={['owner']}>
+              <AccountSettings />
             </RoleProtectedRoute>
           </PrivateRoute>
         }
