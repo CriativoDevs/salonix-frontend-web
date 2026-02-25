@@ -733,6 +733,38 @@
       "buy": "Comprar"
     }
   },
+  "rgpd": {
+    "title": "Política de Privacidade e RGPD",
+    "last_updated": "Última atualização: {{date}}",
+    "intro": "Na TimelyOne, levamos a sua privacidade a sério. Esta política descreve como recolhemos, usamos e protegemos os seus dados pessoais, em conformidade com o Regulamento Geral de Proteção de Dados (RGPD).",
+    "sections": {
+      "controller": {
+        "title": "1. Responsável pelo Tratamento de Dados",
+        "content": "A TimelyOne é a responsável pelo tratamento dos seus dados pessoais. Estamos comprometidos em garantir que suas informações sejam processadas de forma segura e transparente."
+      },
+      "collection": {
+        "title": "2. Dados que Recolhemos",
+        "content": "Recolhemos informações essenciais para o funcionamento da plataforma, incluindo dados de identificação (nome, email), dados de uso e informações necessárias para o agendamento de serviços."
+      },
+      "purpose": {
+        "title": "3. Finalidade do Tratamento",
+        "content": "Utilizamos seus dados para fornecer nossos serviços, processar pagamentos, enviar notificações importantes e melhorar continuamente a experiência na plataforma."
+      },
+      "rights": {
+        "title": "4. Os Seus Direitos",
+        "content": "Você tem o direito de acessar, retificar, portar e apagar seus dados pessoais a qualquer momento. Também pode limitar ou opor-se ao tratamento de seus dados."
+      },
+      "security": {
+        "title": "5. Segurança",
+        "content": "Implementamos medidas técnicas e organizacionais rigorosas, como encriptação de dados e backups recorrentes, para proteger suas informações contra acesso não autorizado."
+      },
+      "contact": {
+        "title": "6. Contato do DPO",
+        "content": "Para exercer seus direitos ou tirar dúvidas sobre privacidade, entre em contato com nosso Encarregado de Proteção de Dados (DPO) através do email: privacy@timelyone.today"
+      }
+    },
+    "back_home": "Voltar para a Página Inicial"
+  },
   "account": {
     "title": "Configurações da Conta",
     "subtitle": "Gerencie informações da conta e ações críticas",
@@ -1617,6 +1649,34 @@
         "description": "Exporte dados de clientes, agendamentos e relatórios em CSV, Excel ou JSON.",
         "cta": "Ver planos Standard"
       }
+    }
+  },
+  "pwa_info": {
+    "back_home": "Voltar para Início",
+    "tag": "Tecnologia Moderna",
+    "title": "O que é uma PWA?",
+    "subtitle": "Progressive Web Apps são a nova geração de aplicações: sem downloads pesados, sem atualizações manuais e com performance instantânea.",
+    "features": {
+      "no_store": {
+        "title": "Sem App Store",
+        "desc": "Não precisa de ocupar espaço nem de contas na Apple/Google. Instala diretamente do navegador."
+      },
+      "lightweight": {
+        "title": "Leve e Rápido",
+        "desc": "Carrega instantaneamente e consome muito menos dados que uma app tradicional."
+      },
+      "offline": {
+        "title": "Funciona Offline",
+        "desc": "Acesse à sua agenda e dados essenciais mesmo quando a internet falha."
+      },
+      "native_feel": {
+        "title": "Experiência Nativa",
+        "desc": "Parece e comporta-se como uma app normal, com ícone no ecrã e sem barras de navegador."
+      }
+    },
+    "how_to_install": {
+      "title": "Como instalar?",
+      "desc": "Não precisa de procurar na loja de aplicativos. Basta abrir o TimelyOne no seu navegador (Chrome ou Safari) e procurar a opção \"Adicionar ao Ecrã Principal\"."
     }
   }
 }

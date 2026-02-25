@@ -733,6 +733,38 @@
       }
     }
   },
+  "rgpd": {
+    "title": "Privacy Policy and GDPR",
+    "last_updated": "Last updated: {{date}}",
+    "intro": "At TimelyOne, we take your privacy seriously. This policy describes how we collect, use, and protect your personal data, in compliance with the General Data Protection Regulation (GDPR).",
+    "sections": {
+      "controller": {
+        "title": "1. Data Controller",
+        "content": "TimelyOne is the data controller for your personal data. We are committed to ensuring that your information is processed securely and transparently."
+      },
+      "collection": {
+        "title": "2. Data We Collect",
+        "content": "We collect information essential for the platform's operation, including identification data (name, email), usage data, and information necessary for service scheduling."
+      },
+      "purpose": {
+        "title": "3. Purpose of Processing",
+        "content": "We use your data to provide our services, process payments, send important notifications, and continuously improve the platform experience."
+      },
+      "rights": {
+        "title": "4. Your Rights",
+        "content": "You have the right to access, rectify, port, and erase your personal data at any time. You may also limit or object to the processing of your data."
+      },
+      "security": {
+        "title": "5. Security",
+        "content": "We implement rigorous technical and organizational measures, such as data encryption and recurring backups, to protect your information against unauthorized access."
+      },
+      "contact": {
+        "title": "6. DPO Contact",
+        "content": "To exercise your rights or ask questions about privacy, please contact our Data Protection Officer (DPO) via email: privacy@timelyone.today"
+      }
+    },
+    "back_home": "Back to Home"
+  },
   "account": {
     "title": "Account Settings",
     "subtitle": "Manage account information and critical actions",
@@ -1583,6 +1615,34 @@
         "description": "Export customer, appointment and report data in CSV, Excel or JSON.",
         "cta": "View Standard plans"
       }
+    }
+  },
+  "pwa_info": {
+    "back_home": "Back to Home",
+    "tag": "Modern Technology",
+    "title": "What is a PWA?",
+    "subtitle": "Progressive Web Apps are the next generation of applications: no heavy downloads, no manual updates, and instant performance.",
+    "features": {
+      "no_store": {
+        "title": "No App Store",
+        "desc": "No need to take up space or have Apple/Google accounts. Installs directly from the browser."
+      },
+      "lightweight": {
+        "title": "Lightweight & Fast",
+        "desc": "Loads instantly and consumes much less data than a traditional app."
+      },
+      "offline": {
+        "title": "Works Offline",
+        "desc": "Access your schedule and essential data even when the internet fails."
+      },
+      "native_feel": {
+        "title": "Native Experience",
+        "desc": "Looks and behaves like a normal app, with an icon on the screen and no browser bars."
+      }
+    },
+    "how_to_install": {
+      "title": "How to install?",
+      "desc": "No need to search the app store. Just open TimelyOne in your browser (Chrome or Safari) and look for the \"Add to Home Screen\" option."
     }
   }
 }
