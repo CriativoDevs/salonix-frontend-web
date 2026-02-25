@@ -47,7 +47,7 @@ export const DEFAULT_TENANT_META = {
   plan: {
     code: 'basic',
     name: 'Basic',
-    features: ['pwa_admin'],
+    features: ['pwa_admin', 'pwa_client', 'reports'],
     tier: 'basic',
     addons: [],
   },
@@ -69,24 +69,25 @@ export const DEFAULT_TENANT_META = {
     icons: [],
   },
   flags: {
-    enableCustomerPwa: false,
-    enableWebPush: false,
-    enableReports: false,
+    enableCustomerPwa: true,
+    enableWebPush: true,
+    enableReports: true,
     enableAdminPwa: true,
     enableNativeAdmin: false,
     enableNativeClient: false,
     enableMobilePush: false,
-    enableSms: false,
+    enableSms: true,
+    enableSmsNotifications: true,
     enableWhatsapp: false,
     planTier: 'basic',
   },
   modules: [],
   channels: {
     email: true,
-    sms: false,
+    sms: true,
     whatsapp: false,
     push: false,
-    push_web: false,
+    push_web: true,
     push_mobile: false,
   },
   profile: {
@@ -491,6 +492,7 @@ function normalizeFlags(featureFlags, fallback) {
   }
   if ('sms' in mergedNotifications) {
     base.enableSms = Boolean(mergedNotifications.sms);
+    base.enableSmsNotifications = base.enableSms;
   }
   if ('whatsapp' in mergedNotifications) {
     base.enableWhatsapp = Boolean(mergedNotifications.whatsapp);

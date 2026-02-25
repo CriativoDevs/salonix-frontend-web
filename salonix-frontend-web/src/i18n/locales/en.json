@@ -612,7 +612,7 @@
     "requires_plan": "Requires plan",
     "plan_badge": "Plan",
     "modules": {
-      "reports": "Advanced reports",
+      "reports": "Basic Reports",
       "pwa_admin": "Admin dashboard (PWA)",
       "pwa_client": "Client PWA",
       "rn_admin": "Admin App (React Native)",

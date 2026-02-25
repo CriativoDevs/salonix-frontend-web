@@ -671,7 +671,7 @@
     "requires_plan": "Requer plano",
     "plan_badge": "Plano",
     "modules": {
-      "reports": "Relatórios avançados",
+      "reports": "Relatórios Básicos",
       "pwa_admin": "Painel administrativo (PWA)",
       "pwa_client": "PWA Cliente",
       "rn_admin": "App Admin (React Native)",
@@ -758,10 +758,10 @@
         "password_label": "Senha",
         "reason_label": "Motivo da saída",
         "comment_label": "Comentário (opcional)",
-          "comment_placeholder": "Conte-nos rapidamente o motivo...",
+        "comment_placeholder": "Conte-nos rapidamente o motivo...",
         "confirm_button": "Confirmar",
         "close_button": "Fechar",
-          "generic_error": "Não foi possível cancelar a conta. Tente novamente.",
+        "generic_error": "Não foi possível cancelar a conta. Tente novamente.",
         "validation": {
           "confirm_mismatch": "A palavra digitada não confere.",
           "password_required": "Informe sua senha."
