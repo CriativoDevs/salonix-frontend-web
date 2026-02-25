@@ -825,6 +825,7 @@ function Landing() {
                     'landing.features.items.3.desc',
                     'Instalável no telemóvel, sem lojas tradicionais.'
                   ),
+                  link: '/pwa-info',
                 },
                 {
                   icon: BarChart3,
@@ -848,48 +849,48 @@ function Landing() {
                     'Permissões e relatórios consolidados.'
                   ),
                 },
-                {
-                  icon: Globe,
-                  title: t(
-                    'landing.features.items.6.title',
-                    'Domínio Personalizado (Pro)'
-                  ),
-                  desc: t(
-                    'landing.features.items.6.desc',
-                    'Marca e URL próprios.'
-                  ),
-                },
-                {
-                  icon: Plug,
-                  title: t(
-                    'landing.features.items.7.title',
-                    'Integrações (Enterprise)'
-                  ),
-                  desc: t(
-                    'landing.features.items.7.desc',
-                    'Google Calendar, Stripe e mais.'
-                  ),
-                },
-              ].map((f) => (
-                <div
-                  key={f.title}
-                  className={`rounded-lg border p-6 transition hover:-translate-y-0.5 hover:shadow-md ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-slate-200 bg-white'}`}
-                >
-                  <f.icon
-                    className={`h-5 w-5 ${isDarkTheme ? 'text-indigo-300' : 'text-indigo-600'}`}
-                  />
-                  <h4
-                    className={`mt-3 text-sm font-semibold ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
+              ].map((f) =>
+                f.link ? (
+                  <Link
+                    key={f.title}
+                    to={f.link}
+                    className={`block rounded-lg border p-6 transition hover:-translate-y-0.5 hover:shadow-md ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-slate-200 bg-white'}`}
                   >
-                    {f.title}
-                  </h4>
-                  <p
-                    className={`mt-1 text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
+                    <f.icon
+                      className={`h-5 w-5 ${isDarkTheme ? 'text-indigo-300' : 'text-indigo-600'}`}
+                    />
+                    <h4
+                      className={`mt-3 text-sm font-semibold ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
+                    >
+                      {f.title}
+                    </h4>
+                    <p
+                      className={`mt-1 text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
+                    >
+                      {f.desc}
+                    </p>
+                  </Link>
+                ) : (
+                  <div
+                    key={f.title}
+                    className={`rounded-lg border p-6 transition hover:-translate-y-0.5 hover:shadow-md ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-slate-200 bg-white'}`}
                   >
-                    {f.desc}
-                  </p>
-                </div>
-              ))}
+                    <f.icon
+                      className={`h-5 w-5 ${isDarkTheme ? 'text-indigo-300' : 'text-indigo-600'}`}
+                    />
+                    <h4
+                      className={`mt-3 text-sm font-semibold ${isDarkTheme ? 'text-slate-100' : 'text-slate-900'}`}
+                    >
+                      {f.title}
+                    </h4>
+                    <p
+                      className={`mt-1 text-xs ${isDarkTheme ? 'text-slate-300' : 'text-slate-700'}`}
+                    >
+                      {f.desc}
+                    </p>
+                  </div>
+                )
+              )}
             </div>
           </div>
         </section>
@@ -1246,20 +1247,44 @@ function Landing() {
             </h2>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                t('landing.security.items.0', 'Compatível com RGPD'),
-                t('landing.security.items.1', 'Dados encriptados'),
-                t('landing.security.items.2', 'Backups recorrentes'),
-                t('landing.security.items.3', 'Infraestrutura escalável'),
-                t('landing.security.items.4', 'Alojamento europeu opcional'),
-              ].map((s) => (
-                <div
-                  key={s}
-                  className={`rounded-lg border p-6 ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-white/20 bg-white/10'}`}
-                >
-                  <ShieldCheck className="h-5 w-5 text-emerald-500" />
-                  <p className="mt-2 text-sm">{s}</p>
-                </div>
-              ))}
+                {
+                  label: t('landing.security.items.0', 'Compatível com RGPD'),
+                  link: '/rgpd',
+                },
+                { label: t('landing.security.items.1', 'Dados encriptados') },
+                { label: t('landing.security.items.2', 'Backups recorrentes') },
+                {
+                  label: t(
+                    'landing.security.items.3',
+                    'Infraestrutura escalável'
+                  ),
+                },
+                {
+                  label: t(
+                    'landing.security.items.4',
+                    'Alojamento europeu opcional'
+                  ),
+                },
+              ].map((item) =>
+                item.link ? (
+                  <Link
+                    key={item.label}
+                    to={item.link}
+                    className={`block rounded-lg border p-6 transition hover:border-emerald-500/50 ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-white/20 bg-white/10'}`}
+                  >
+                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                    <p className="mt-2 text-sm">{item.label}</p>
+                  </Link>
+                ) : (
+                  <div
+                    key={item.label}
+                    className={`rounded-lg border p-6 ${isDarkTheme ? 'border-[#2d2d2d] bg-[#181818]' : 'border-white/20 bg-white/10'}`}
+                  >
+                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                    <p className="mt-2 text-sm">{item.label}</p>
+                  </div>
+                )
+              )}
             </div>
           </div>
         </section>
@@ -1323,6 +1348,9 @@ function Landing() {
             </Link>
             <Link to="/ops/login" className="transition hover:text-slate-800">
               {t('landing.footer.ops_login', 'Login OPS')}
+            </Link>
+            <Link to="/rgpd" className="transition hover:text-slate-800">
+              {t('rgpd.title', 'Privacidade e RGPD')}
             </Link>
           </div>
         </div>

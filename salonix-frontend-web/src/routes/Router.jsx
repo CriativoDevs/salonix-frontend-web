@@ -5,6 +5,8 @@ import PlanProtectedRoute from './PlanProtectedRoute';
 import RoleProtectedRoute from './RoleProtectedRoute';
 import Dashboard from '../pages/Dashboard';
 import Landing from '../pages/Landing';
+import Rgpd from '../pages/Rgpd';
+import PwaInfo from '../pages/PwaInfo';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
@@ -94,6 +96,8 @@ function Router() {
           </PublicRoute>
         }
       />
+      <Route path="/rgpd" element={<Rgpd />} />
+      <Route path="/pwa-info" element={<PwaInfo />} />
       <Route
         path="/login"
         element={
