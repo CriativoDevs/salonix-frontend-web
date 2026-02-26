@@ -19,9 +19,9 @@ export const PLAN_OPTIONS = [
     price: '€15',
     price_annual: '€150',
     highlights: [
-      'Preço Vitalício',
+      'Funcionalidades do Plano Basic',
+      'Preço Vitalício Garantido',
       'PWA para Admin e Clientes',
-      'Relatórios Básicos e Visão Geral',
       '€5 de crédito para comunicações',
     ],
   },
