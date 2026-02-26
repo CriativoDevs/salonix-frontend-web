@@ -655,6 +655,10 @@
       "push_web": "Web Push",
       "push_mobile": "Mobile Push"
     },
+    "notifications": {
+      "whatsapp_coming_soon_tooltip": "WhatsApp will be activated after Meta Business approval. Stay tuned!",
+      "whatsapp_waiting_meta": "WhatsApp will be available soon. We are waiting for Meta Business approval."
+    },
     "notifications_paywall_hint": "Advanced channels available with credits.",
     "tooltip": {
       "add_credits": "Buy credits to unlock advanced channels",
@@ -1284,7 +1288,7 @@
         "Unified schedule for the whole team",
         "Online bookings for clients",
         "Automatic sync across branches",
-        "Automatic reminders via email / SMS / WhatsApp",
+        "Automatic reminders via email and SMS (WhatsApp soon)",
         "Dashboard with KPIs, daily flow and history",
         "Smart reports: revenue, services, schedules, occupancy"
       ]
@@ -1293,7 +1297,7 @@
       "items": {
         "0": { "title": "24/7 Bookings", "desc": "Online bookings anytime, with automatic confirmation." },
         "1": { "title": "Team Management", "desc": "Schedules, time off, rooms, chairs and more." },
-        "2": { "title": "Smart Reminders", "desc": "Email, SMS and WhatsApp to reduce no-shows." },
+        "2": { "title": "Smart Reminders", "desc": "Email and SMS to reduce no-shows (WhatsApp soon)." },
         "3": { "title": "PWA for Team and Clients", "desc": "Installable on mobile, no app stores." },
         "4": { "title": "Real-time Reports", "desc": "Revenue, occupancy and top-selling services." },
         "5": { "title": "Scalable for Franchises", "desc": "Permissions and consolidated reports." },
@@ -1328,11 +1332,11 @@
         },
         "4": {
           "q": "Can I use my own domain?",
-          "a": "Yes, available in Pro and Enterprise plans. Allows full brand customization."
+          "a": "Yes, available in the Pro plan. Allows full brand customization."
         },
         "5": {
           "q": "How do SMS/WhatsApp credits work?",
-          "a": "Each plan includes a monthly credit amount. Automatic reminders debit this balance as messages are sent. When it ends, you can top up in the dashboard."
+          "a": "Each plan includes a monthly credit amount. Automatic reminders debit this balance as messages are sent. When it ends, you can top up in the dashboard. WhatsApp will be available soon after Meta Business approval."
         },
         "6": {
           "q": "Is TimelyOne GDPR compatible?",
@@ -1351,8 +1355,8 @@
           "a": "Yes. Each booking includes a secure link to reschedule or cancel, reducing calls and wasted time."
         },
         "10": {
-          "q": "Does the system support multiple branches?",
-          "a": "Yes, in Pro and Enterprise plans: multi‑branch management, advanced permissions and consolidated reports."
+          "q": "Does TimelyOne send automatic reminders?",
+          "a": "Yes. Email and SMS — configurable according to the desired lead time. WhatsApp soon."
         },
         "11": {
           "q": "Can my team have different access levels?",

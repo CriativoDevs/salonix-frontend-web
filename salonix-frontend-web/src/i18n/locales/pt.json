@@ -714,6 +714,10 @@
       "push_web": "Web Push",
       "push_mobile": "Mobile Push"
     },
+    "notifications": {
+      "whatsapp_coming_soon_tooltip": "WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!",
+      "whatsapp_waiting_meta": "WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business."
+    },
     "notifications_paywall_hint": "Canais avançados disponíveis com créditos.",
     "tooltip": {
       "add_credits": "Comprar créditos para liberar canais avançados",
@@ -1316,7 +1320,7 @@
         "Agenda unificada para toda a equipa",
         "Agendamentos online para clientes",
         "Sincronização automática entre unidades",
-        "Lembretes automáticos por email / SMS / WhatsApp",
+        "Lembretes automáticos por email e SMS (WhatsApp em breve)",
         "Painel com KPIs, fluxo diário e histórico",
         "Relatórios inteligentes: faturação, serviços, horários, ocupação"
       ]
@@ -1325,7 +1329,7 @@
       "items": {
         "0": { "title": "Agendamentos 24/7", "desc": "Reservas online a qualquer hora, com confirmação automática." },
         "1": { "title": "Gestão de Equipa", "desc": "Horários, folgas, salas, cadeiras e mais." },
-        "2": { "title": "Lembretes Inteligentes", "desc": "Email, SMS e WhatsApp para reduzir faltas." },
+        "2": { "title": "Lembretes Inteligentes", "desc": "Email e SMS para reduzir faltas (WhatsApp em breve)." },
         "3": { "title": "PWA Equipa e Clientes", "desc": "Instalável no telemóvel, sem lojas tradicionais." },
         "4": { "title": "Relatórios em Tempo Real", "desc": "Faturação, ocupação e serviços mais vendidos." },
         "5": { "title": "Escalável para Franquias", "desc": "Permissões e relatórios consolidados." },
@@ -1360,11 +1364,11 @@
         },
         "4": {
           "q": "Posso usar o meu próprio domínio?",
-          "a": "Sim, disponível nos planos Pro e Enterprise. Permite personalização completa da identidade visual."
+          "a": "Sim, disponível no plano Pro. Permite personalização completa da identidade visual."
         },
         "5": {
           "q": "Como funcionam os créditos de SMS/WhatsApp?",
-          "a": "Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel."
+          "a": "Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel. WhatsApp estará disponível em breve após aprovação Meta Business."
         },
         "6": {
           "q": "O TimelyOne é compatível com o RGPD?",
@@ -1383,8 +1387,8 @@
           "a": "Sim. Cada marcação inclui um link seguro para remarcar ou cancelar, reduzindo chamadas e tempo perdido."
         },
         "10": {
-          "q": "O sistema suporta várias unidades/filiais?",
-          "a": "Sim, nos planos Pro e Enterprise: gestão multiunidade, permissões avançadas e relatórios consolidados."
+          "q": "O TimelyOne envia lembretes automáticos?",
+          "a": "Sim. Email e SMS — configuráveis conforme antecedência desejada. WhatsApp em breve."
         },
         "11": {
           "q": "A minha equipa pode ter acessos diferentes?",

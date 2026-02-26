@@ -3214,6 +3214,11 @@ function Settings() {
               </p>
               {['sms', 'whatsapp', 'push_mobile', 'push_web'].includes(key) ? (
                 <div className="mt-3 flex items-center justify-end gap-3">
+                  {key === 'whatsapp' && (
+                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
+                      {t('common.coming_soon', 'Em breve')}
+                    </span>
+                  )}
                   <button
                     type="button"
                     role="switch"
@@ -3222,16 +3227,26 @@ function Settings() {
                     onClick={() => handleToggleChannel(key, !rawEnabled)}
                     disabled={
                       notifSaving ||
+                      key === 'whatsapp' ||
                       (key === 'push_mobile' && planTier !== 'pro')
                     }
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       rawEnabled ? 'bg-brand-primary' : 'bg-gray-300'
                     } ${
                       notifSaving ||
+                      key === 'whatsapp' ||
                       (key === 'push_mobile' && planTier !== 'pro')
                         ? 'cursor-not-allowed opacity-60'
                         : 'cursor-pointer'
                     }`}
+                    title={
+                      key === 'whatsapp'
+                        ? t(
+                            'settings.notifications.whatsapp_coming_soon_tooltip',
+                            'WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!'
+                          )
+                        : ''
+                    }
                   >
                     <span
                       className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
@@ -3254,38 +3269,51 @@ function Settings() {
         </div>
 
         {!smsAvailable || !whatsappAvailable ? (
-          <div className="mt-4 flex items-center justify-between rounded-lg border border-brand-border bg-brand-light px-4 py-3 text-brand-surfaceForeground">
-            <p className="text-sm">
-              {t(
-                'settings.notifications_paywall_hint',
-                'Canais avançados disponíveis com créditos.'
-              )}
-            </p>
-            <FeatureGate
-              featureKey="enableSms"
-              fallback={
-                canPurchaseCredits ? (
-                  <button
-                    type="button"
-                    title={t(
-                      'settings.tooltip.add_credits',
-                      'Comprar créditos para liberar canais avançados'
-                    )}
-                    className="rounded-md border border-brand-border px-3 py-1 text-xs font-medium"
-                    onClick={openCreditsModal}
-                  >
-                    {t('settings.add_credits', 'Adicionar créditos')}
-                  </button>
-                ) : null
-              }
-            >
-              {creditBalanceValue ? (
-                <span className="text-xs">
-                  {t('settings.credits_available', 'Créditos disponíveis')}{' '}
-                  {String(creditBalanceValue)}
-                </span>
-              ) : null}
-            </FeatureGate>
+          <div className="mt-4 flex flex-col gap-3 rounded-lg border border-brand-border bg-brand-light px-4 py-3 text-brand-surfaceForeground">
+            <div className="flex items-center justify-between">
+              <p className="text-sm">
+                {t(
+                  'settings.notifications_paywall_hint',
+                  'Canais avançados disponíveis com créditos.'
+                )}
+              </p>
+              <FeatureGate
+                featureKey="enableSms"
+                fallback={
+                  canPurchaseCredits ? (
+                    <button
+                      type="button"
+                      title={t(
+                        'settings.tooltip.add_credits',
+                        'Comprar créditos para liberar canais avançados'
+                      )}
+                      className="rounded-md border border-brand-border px-3 py-1 text-xs font-medium"
+                      onClick={openCreditsModal}
+                    >
+                      {t('settings.add_credits', 'Adicionar créditos')}
+                    </button>
+                  ) : null
+                }
+              >
+                {creditBalanceValue ? (
+                  <span className="text-xs">
+                    {t('settings.credits_available', 'Créditos disponíveis')}{' '}
+                    {String(creditBalanceValue)}
+                  </span>
+                ) : null}
+              </FeatureGate>
+            </div>
+
+            {!whatsappAvailable && (
+              <div className="rounded border border-amber-500/20 bg-amber-500/5 p-2">
+                <p className="text-xs text-amber-700">
+                  {t(
+                    'settings.notifications.whatsapp_waiting_meta',
+                    'WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business.'
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         ) : null}
 
