@@ -33,7 +33,7 @@ export default function CreditSettings() {
 
   const currentBalance = balance?.current_balance ?? 0;
   const planName =
-    tenant?.plan?.name || t('common.unknown_plan', 'Plano Desconhecido');
+    tenant?.plan?.name || t('common.unknown_plan');
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -96,14 +96,14 @@ export default function CreditSettings() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-brand-surfaceForeground">
-          {t('settings.credits.title', 'Gerenciamento de Créditos')}
+          {t('settings.credits.title')}
         </h3>
         <button
           type="button"
           onClick={() => setPurchaseModalOpen(true)}
           className="text-brand-primary hover:underline text-sm font-medium"
         >
-          {t('credits.buy', 'Comprar Créditos')}
+          {t('credits.buy')}
         </button>
       </div>
 
@@ -117,7 +117,7 @@ export default function CreditSettings() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-brand-surfaceForeground/70 truncate">
-                {t('credits.current_balance', 'Saldo Atual')}
+                {t('credits.current_balance')}
               </p>
               <p className="text-2xl font-bold text-brand-surfaceForeground truncate">
                 {loadingBalance ? '...' : currentBalance}
@@ -140,7 +140,7 @@ export default function CreditSettings() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-brand-surfaceForeground/70 truncate">
-                {t('credits.consumption_month', 'Consumo (Mês)')}
+                {t('credits.consumption_month')}
               </p>
               <p className="text-xl font-bold text-brand-surfaceForeground truncate">
                 {loadingStats ? '...' : stats.monthConsumption.toFixed(2)}
@@ -157,7 +157,7 @@ export default function CreditSettings() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-brand-surfaceForeground/70 truncate">
-                {t('credits.avg_consumption', 'Média Mensal')}
+                {t('credits.avg_consumption')}
               </p>
               <p className="text-xl font-bold text-brand-surfaceForeground truncate">
                 {loadingStats ? '...' : stats.avgMonthlyConsumption.toFixed(2)}
@@ -176,20 +176,20 @@ export default function CreditSettings() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-brand-surfaceForeground/70 truncate">
-                {t('credits.forecast', 'Previsão')}
+                {t('credits.forecast')}
               </p>
               <p className="text-sm font-semibold text-brand-surfaceForeground truncate">
                 {loadingStats
                   ? '...'
                   : stats.forecastDays !== null
-                    ? t('credits.days_remaining', 'approx. {{days}} dias', {
+                    ? t('credits.days_remaining', {
                         days: stats.forecastDays,
                       })
                     : '--'}
               </p>
               {alertSettings.enabled && (
                 <p className="text-xs text-brand-surfaceForeground/60 mt-1 truncate">
-                  {t('credits.alert_threshold', 'Alerta: < {{val}}', {
+                  {t('credits.alert_threshold', {
                     val: alertSettings.threshold,
                   })}
                 </p>

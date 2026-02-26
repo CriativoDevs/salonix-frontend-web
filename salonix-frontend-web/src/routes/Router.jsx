@@ -25,7 +25,6 @@ import Settings from '../pages/Settings';
 import AccountSettings from '../pages/AccountSettings';
 import Setup from '../pages/Setup';
 import Plans from '../pages/Plans';
-import PlanCheckoutMock from '../pages/PlanCheckoutMock';
 import BillingSuccess from '../pages/BillingSuccess';
 import ClientEnter from '../pages/ClientEnter';
 import ClientLogin from '../pages/ClientLogin';
@@ -319,15 +318,6 @@ function Router() {
         element={
           <PrivateRoute>
             <BillingSuccess />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/checkout/mock"
-        element={
-          <PrivateRoute>
-            <PlanCheckoutMock />
           </PrivateRoute>
         }
       />

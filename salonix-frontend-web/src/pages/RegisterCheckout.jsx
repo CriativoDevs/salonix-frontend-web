@@ -30,7 +30,7 @@ function RegisterCheckout() {
       });
   }, []);
 
-  const [selected, setSelected] = useState('standard');
+  const [selected, setSelected] = useState('basic');
   const [billingCycle, setBillingCycle] = useState(
     searchParams.get('interval') === 'annual' ? 'annual' : 'monthly'
   );
@@ -91,7 +91,7 @@ function RegisterCheckout() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Mensal
+              {t('plans.monthly')}
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
@@ -101,7 +101,7 @@ function RegisterCheckout() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Anual
+              {t('plans.annual')}
               <span className="rounded-full bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400">
                 -17%
               </span>
@@ -115,7 +115,7 @@ function RegisterCheckout() {
           </div>
         )}
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {plans.map((p) => {
             const isAnnual = billingCycle === 'annual';
             const showPrice =
@@ -139,11 +139,11 @@ function RegisterCheckout() {
                   <span className="text-xl font-bold text-brand-surfaceForeground">
                     {t(
                       `plans.options.${p.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
-                      showPrice.replace('/mês', '').replace('/ano', '')
+                      showPrice
                     )}
                   </span>
                   <span className="text-xs text-brand-surfaceForeground/60">
-                    {isAnnual ? '/ano' : '/mês'}
+                    {isAnnual ? t('plans.per_year') : t('plans.per_month')}
                   </span>
                 </div>
 
