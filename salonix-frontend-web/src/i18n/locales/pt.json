@@ -1136,16 +1136,6 @@
           "2": "€5 de crédito para comunicações"
         }
       },
-      "standard": {
-        "name": "Standard",
-        "price": "€55",
-        "highlights": {
-          "0": "Tudo do Basic",
-          "1": "Apps Nativos (Admin / Staff)",
-          "2": "Relatórios: Análise do Negócio",
-          "3": "€10 de crédito para comunicações"
-        }
-      },
       "pro": {
         "name": "Pro",
         "price": "€55",

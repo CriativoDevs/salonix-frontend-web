@@ -311,7 +311,7 @@ export default function Reports() {
                 {basicReportsLocked && <LockIcon className="h-3.5 w-3.5" />}
               </button>
 
-              {/* Tab Análise de Negócio - Requer Standard+ */}
+              {/* Tab Análise de Negócio - Requer Pro */}
               <button
                 onClick={() =>
                   !businessReportsLocked && setActiveTab('business')
@@ -327,8 +327,8 @@ export default function Reports() {
                 title={
                   businessReportsLocked
                     ? t('upgrade.available_in_plan', {
-                        plan: 'Standard',
-                        defaultValue: 'Disponível no plano Standard',
+                        plan: 'Pro',
+                        defaultValue: 'Disponível no plano Pro',
                       })
                     : ''
                 }

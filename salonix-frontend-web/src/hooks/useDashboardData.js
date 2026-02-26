@@ -108,8 +108,8 @@ export function useDashboardData({
         }
       );
 
-      // Apenas planos Standard ou superior têm acesso ao revenue series
-      if (['standard', 'pro'].includes(planTier)) {
+      // Apenas plano Pro tem acesso ao revenue series
+      if (planTier === 'pro') {
         requests.push({
           key: 'revenueSeries',
           promise: fetchDashboardRevenueSeries({

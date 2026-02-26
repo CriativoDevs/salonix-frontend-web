@@ -47,7 +47,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
   // RELATÓRIOS (3 níveis conforme Decision Brief)
   // ==========================================
 
-  // Visão Geral - Todos os planos (Founder, Basic, Standard, Pro)
+  // Visão Geral - Todos os planos (Founder, Basic, Pro)
   enableBasicReports: {
     titleKey: 'upgrade.features.reports.title',
     descriptionKey: 'upgrade.features.reports.description',
@@ -56,13 +56,13 @@ export const FEATURE_UPGRADE_MESSAGES = {
     requiredPlan: 'Founder', // Todos têm acesso
   },
 
-  // Análise do Negócio - Standard e Pro
+  // Análise do Negócio - Apenas Pro
   enableBusinessReports: {
     titleKey: 'upgrade.features.reports.title',
     descriptionKey: 'upgrade.features.reports.description',
     ctaKey: 'upgrade.features.reports.cta',
     icon: TrendingUp,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
   },
 
   // Insights Avançados - Apenas Pro
@@ -74,13 +74,13 @@ export const FEATURE_UPGRADE_MESSAGES = {
     requiredPlan: 'Pro',
   },
 
-  // PWA para Clientes
+  // PWA para Clientes - Todos os planos
   enableCustomerPwa: {
     titleKey: 'upgrade.features.customer_pwa.title',
     descriptionKey: 'upgrade.features.customer_pwa.description',
     ctaKey: 'upgrade.features.customer_pwa.cta',
     icon: Smartphone,
-    requiredPlan: 'Basic',
+    requiredPlan: 'Founder',
   },
 
   // ==========================================
@@ -113,7 +113,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.advanced_scheduling.description',
     ctaKey: 'upgrade.features.advanced_scheduling.cta',
     icon: Calendar,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     comingSoon: true, // ⚠️ Não implementado - Refere-se a recorrência e listas de espera
   },
 
@@ -143,7 +143,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.custom_fields.description',
     ctaKey: 'upgrade.features.custom_fields.cta',
     icon: ListCheck,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P2
   },
 
@@ -157,13 +157,13 @@ export const FEATURE_UPGRADE_MESSAGES = {
     comingSoon: true, // ⚠️ Não implementado - Processo, não tech
   },
 
-  // Notificações Push Web
+  // Notificações Push Web - Todos os planos
   enableWebPush: {
     titleKey: 'upgrade.features.web_push.title',
     descriptionKey: 'upgrade.features.web_push.description',
     ctaKey: 'upgrade.features.web_push.cta',
     icon: Bell,
-    requiredPlan: 'Basic',
+    requiredPlan: 'Founder',
   },
 
   // Automações - ROADMAP
@@ -172,17 +172,17 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.automations.description',
     ctaKey: 'upgrade.features.automations.cta',
     icon: Zap,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P2 (Alta complexidade)
   },
 
-  // Gestão de Equipe Avançada - ROADMAP
+  // Gestão de Equipe Avançada - Todos os planos
   enableTeamManagement: {
     titleKey: 'upgrade.features.team_management.title',
     descriptionKey: 'upgrade.features.team_management.description',
     ctaKey: 'upgrade.features.team_management.cta',
     icon: Users,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Parcialmente implementado - Falta relatórios por staff
   },
 
@@ -192,26 +192,26 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.online_payments.description',
     ctaKey: 'upgrade.features.online_payments.cta',
     icon: CreditCard,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     comingSoon: true, // ⚠️ Não implementado - Existe billing, mas não checkout integrado
   },
 
-  // Notificações SMS
+  // Notificações SMS - Todos os planos
   enableSmsNotifications: {
     titleKey: 'upgrade.features.sms_notifications.title',
     descriptionKey: 'upgrade.features.sms_notifications.description',
     ctaKey: 'upgrade.features.sms_notifications.cta',
     icon: Bell,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Founder',
   },
 
-  // Integração WhatsApp
+  // Integração WhatsApp - Todos os planos
   enableWhatsappIntegration: {
     titleKey: 'upgrade.features.whatsapp_integration.title',
     descriptionKey: 'upgrade.features.whatsapp_integration.description',
     ctaKey: 'upgrade.features.whatsapp_integration.cta',
     icon: Bell,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
   },
 
   // Exportação de Dados - ROADMAP (Parcial)
@@ -220,7 +220,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.data_export.description',
     ctaKey: 'upgrade.features.data_export.cta',
     icon: FileText,
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     comingSoon: true, // ⚠️ Parcialmente implementado - Existe CSV, falta Excel/JSON
   },
 };
