@@ -4,13 +4,13 @@
  *
  * Cada feature contém:
  * - labelKey: Chave i18n para o label
- * - requiredPlan: Plano mínimo ('Founder', 'Basic', 'Standard', 'Pro')
+ * - requiredPlan: Plano mínimo ('Founder', 'Basic', 'Pro')
  * - descriptionKey: Chave i18n para a descrição
  * - comingSoon: (opcional) Se true, feature está no roadmap
  */
 export const TENANT_FEATURE_REQUIREMENTS = {
   // ==========================================
-  // RELATÓRIOS (3 níveis)
+  // RELATÓRIOS (2 níveis)
   // ==========================================
 
   // Visão Geral - Todos os planos
@@ -20,14 +20,13 @@ export const TENANT_FEATURE_REQUIREMENTS = {
     descriptionKey: 'settings.features.reports_basic.description',
   },
 
-  // Análise do Negócio - Standard+
+  // Análise do Negócio e Insights Avançados - Pro
   enableBusinessReports: {
     labelKey: 'settings.features.reports_business.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.reports_business.description',
   },
 
-  // Insights Avançados - Pro
   enableAdvancedReports: {
     labelKey: 'settings.features.reports_advanced.label',
     requiredPlan: 'Pro',
@@ -38,10 +37,10 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // APLICATIVOS E PWA
   // ==========================================
 
-  // PWA para Clientes - Basic+
+  // PWA para Clientes - Todos os planos
   enableCustomerPwa: {
     labelKey: 'settings.features.pwa.label',
-    requiredPlan: 'Basic',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.pwa.description',
   },
 
@@ -57,24 +56,24 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // NOTIFICAÇÕES
   // ==========================================
 
-  // Push Web - Basic+
+  // Push Web - Todos os planos
   enableWebPush: {
     labelKey: 'settings.features.webpush.label',
-    requiredPlan: 'Basic',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.webpush.description',
   },
 
-  // SMS - Standard+
+  // SMS - Todos os planos
   enableSmsNotifications: {
     labelKey: 'settings.features.sms_notifications.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.sms_notifications.description',
   },
 
-  // WhatsApp - Pro
+  // WhatsApp - Todos os planos
   enableWhatsappIntegration: {
     labelKey: 'settings.features.whatsapp_integration.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.whatsapp_integration.description',
   },
 
@@ -94,26 +93,26 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // AGENDAMENTO E GESTÃO
   // ==========================================
 
-  // Agendamento Avançado - Standard+ (ROADMAP)
+  // Agendamento Avançado - Pro (ROADMAP)
   enableAdvancedScheduling: {
     labelKey: 'settings.features.advanced_scheduling.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.advanced_scheduling.description',
     comingSoon: true,
   },
 
-  // Gestão de Equipe - Standard+ (ROADMAP)
+  // Gestão de Equipe - Todos os planos
   enableTeamManagement: {
     labelKey: 'settings.features.team_management.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.team_management.description',
     comingSoon: true,
   },
 
-  // Campos Personalizados - Standard+ (ROADMAP)
+  // Campos Personalizados - Pro (ROADMAP)
   enableCustomFields: {
     labelKey: 'settings.features.custom_fields.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.custom_fields.description',
     comingSoon: true,
   },
@@ -138,10 +137,10 @@ export const TENANT_FEATURE_REQUIREMENTS = {
     comingSoon: true,
   },
 
-  // Automações - Standard+ (ROADMAP)
+  // Automações - Pro (ROADMAP)
   enableAutomations: {
     labelKey: 'settings.features.automations.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.automations.description',
     comingSoon: true,
   },
@@ -150,18 +149,18 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // PAGAMENTOS E SUPORTE
   // ==========================================
 
-  // Pagamentos Online - Standard+ (ROADMAP)
+  // Pagamentos Online - Pro (ROADMAP)
   enableOnlinePayments: {
     labelKey: 'settings.features.online_payments.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.online_payments.description',
     comingSoon: true,
   },
 
-  // Exportação de Dados - Standard+ (ROADMAP Parcial)
+  // Exportação de Dados - Pro (ROADMAP Parcial)
   enableDataExport: {
     labelKey: 'settings.features.data_export.label',
-    requiredPlan: 'Standard',
+    requiredPlan: 'Pro',
     descriptionKey: 'settings.features.data_export.description',
     comingSoon: true,
   },

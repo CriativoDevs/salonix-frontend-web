@@ -3,8 +3,7 @@ import { DEFAULT_TENANT_META, PLAN_NAME_BY_TIER } from './tenant';
 export const PLAN_TIER_PRIORITY = {
   founder: 1,
   basic: 1,
-  standard: 2,
-  pro: 3,
+  pro: 2,
 };
 
 export function resolvePlanTier(

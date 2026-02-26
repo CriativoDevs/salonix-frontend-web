@@ -329,8 +329,8 @@ const TenantDetail = () => {
                 onChange={(e) => setNewPlan(e.target.value)}
                 className="w-full bg-gray-700 border border-gray-600 rounded text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
+                <option value="founder">Founder</option>
                 <option value="basic">Basic</option>
-                <option value="standard">Standard</option>
                 <option value="pro">Pro</option>
               </select>
             </div>

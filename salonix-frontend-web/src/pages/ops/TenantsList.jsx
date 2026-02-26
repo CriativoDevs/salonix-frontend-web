@@ -99,8 +99,8 @@ const TenantsList = () => {
             }}
           >
             <option value="">Todos os Planos</option>
+            <option value="founder">Founder</option>
             <option value="basic">Basic</option>
-            <option value="standard">Standard</option>
             <option value="pro">Pro</option>
           </select>
         </form>

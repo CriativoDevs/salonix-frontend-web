@@ -1128,16 +1128,6 @@
           "2": "€5 communication credit"
         }
       },
-      "standard": {
-        "name": "Standard",
-        "price": "€55",
-        "highlights": {
-          "0": "Everything in Basic",
-          "1": "Native Apps (Admin / Staff)",
-          "2": "Reports: Business Analysis",
-          "3": "€10 communication credit"
-        }
-      },
       "pro": {
         "name": "Pro",
         "price": "€55",
