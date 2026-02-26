@@ -2,49 +2,38 @@ import client from './client';
 
 export const PLAN_OPTIONS = [
   {
-    code: 'founder',
-    name: 'Founder',
-    price: '€15/mês',
-    price_annual: '€150/ano',
-    highlights: [
-      'Preço Vitalício',
-      'PWA Admin, Staff e Client',
-      'Relatórios: Visão Geral',
-      '€5 de crédito para comunicações',
-    ],
-  },
-  {
     code: 'basic',
     name: 'Basic',
-    price: '€29/mês',
-    price_annual: '€290/ano',
+    price: '€29',
+    price_annual: '€290',
     highlights: [
-      'PWA Admin, Staff e Client',
-      'Relatórios: Visão Geral',
+      'PWA para Admin e Clientes',
+      'Relatórios Básicos e Visão Geral',
+      'Notificações por Email e Web Push',
       '€5 de crédito para comunicações',
     ],
   },
   {
-    code: 'standard',
-    name: 'Standard',
-    price: '€55/mês',
-    price_annual: '€550/ano',
+    code: 'founder',
+    name: 'Founder',
+    price: '€15',
+    price_annual: '€150',
     highlights: [
-      'Tudo do Basic',
-      'Apps Nativos (Admin / Staff)',
-      'Relatórios: Análise do Negócio',
-      '€10 de crédito para comunicações',
+      'Preço Vitalício',
+      'PWA para Admin e Clientes',
+      'Relatórios Básicos e Visão Geral',
+      '€5 de crédito para comunicações',
     ],
   },
   {
     code: 'pro',
     name: 'Pro',
-    price: '€95/mês',
-    price_annual: '€950/ano',
+    price: '€55',
+    price_annual: '€550',
     highlights: [
-      'Tudo do Standard',
-      'Apps Nativos (Client)',
-      'Relatórios: Insights Avançados',
+      'Tudo do Basic',
+      'Relatórios Avançados e Insights',
+      'Apps Nativos (Admin / Staff) - (Cliente - em breve)',
       '€15 de crédito para comunicações',
     ],
   },
@@ -60,8 +49,6 @@ export async function createCheckoutSession(planCode, options = {}) {
     params.tenant = slug;
   }
 
-  // Problema 3: Removendo fallbacks em cascata para garantir que erros reais do backend apareçam
-  // e usem o endpoint correto: payments/stripe/create-checkout-session/
   const response = await client.post(
     'payments/stripe/create-checkout-session/',
     { plan: planCode, interval },

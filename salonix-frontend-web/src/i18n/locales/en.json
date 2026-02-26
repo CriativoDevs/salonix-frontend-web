@@ -1113,10 +1113,15 @@
     "checkout_error": "Failed to start checkout.",
     "portal_link_error": "Could not obtain the portal link.",
     "portal_error": "Failed to open billing portal.",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "per_month": "/month",
+    "per_year": "/year",
     "options": {
       "basic": {
         "name": "Basic",
-        "price": "€29/month",
+        "price": "€29",
+        "price_annual": "€290",
         "highlights": {
           "0": "PWA Admin, Staff and Client",
           "1": "Reports: Overview",
@@ -1125,7 +1130,7 @@
       },
       "standard": {
         "name": "Standard",
-        "price": "€55/month",
+        "price": "€55",
         "highlights": {
           "0": "Everything in Basic",
           "1": "Native Apps (Admin / Staff)",
@@ -1135,24 +1140,25 @@
       },
       "pro": {
         "name": "Pro",
-        "price": "€95/month",
+        "price": "€55",
+        "price_annual": "€550",
         "highlights": {
-          "0": "Everything in Standard",
-          "1": "Native Apps (Client)",
-          "2": "Reports: Advanced Insights",
+          "0": "Everything in Basic",
+          "1": "Reports: Advanced Insights",
+          "2": "Native Apps (Admin / Staff) - (Client - soon)",
           "3": "€15 communication credit"
         }
       },
       "founder": {
         "name": "Founder",
-        "price": "€15/month",
-        "price_annual": "€150/year",
+        "price": "€15",
+        "price_annual": "€150",
         "badge": "Limited Offer",
         "highlights": {
-          "0": "Everything in Pro",
+          "0": "Admin and staff PWA",
           "1": "Lifetime price guarantee",
-          "2": "Limited to 500 businesses",
-          "3": "€20 communication credit"
+          "2": "Limited to 500 new businesses",
+          "3": "€5 communication credit"
         }
       }
     },

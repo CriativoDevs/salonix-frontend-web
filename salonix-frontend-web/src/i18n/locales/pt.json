@@ -1109,31 +1109,36 @@
     "checkout_error": "Falha ao iniciar checkout.",
     "portal_link_error": "Não foi possível obter o link do portal.",
     "portal_error": "Falha ao abrir o portal de faturação.",
+    "monthly": "Mensal",
+    "annual": "Anual",
+    "per_month": "/mês",
+    "per_year": "/ano",
     "options": {
       "founder": {
         "name": "Founder",
-        "price": "€15/mês",
-        "price_annual": "€150/ano",
+        "price": "€15",
+        "price_annual": "€150",
         "badge": "Oferta Limitada",
         "highlights": {
-          "0": "Tudo do Pro",
+          "0": "PWA para Admin e Clientes",
           "1": "Preço Vitalício Garantido",
-          "2": "Limitado a 500 salões",
-          "3": "€20 de crédito para comunicações"
+          "2": "Limitado a 500 novos negócios",
+          "3": "€5 de crédito para comunicações"
         }
       },
       "basic": {
         "name": "Basic",
-        "price": "€29/mês",
+        "price": "€29",
+        "price_annual": "€290",
         "highlights": {
-          "0": "PWA Admin, Staff e Client",
+          "0": "PWA para Admin e Clientes",
           "1": "Relatórios: Visão Geral",
           "2": "€5 de crédito para comunicações"
         }
       },
       "standard": {
         "name": "Standard",
-        "price": "€55/mês",
+        "price": "€55",
         "highlights": {
           "0": "Tudo do Basic",
           "1": "Apps Nativos (Admin / Staff)",
@@ -1143,11 +1148,12 @@
       },
       "pro": {
         "name": "Pro",
-        "price": "€95/mês",
+        "price": "€55",
+        "price_annual": "€550",
         "highlights": {
-          "0": "Tudo do Standard",
-          "1": "Apps Nativos (Client)",
-          "2": "Relatórios: Insights Avançados",
+          "0": "Tudo do Basic",
+          "1": "Relatórios Avançados e Insights",
+          "2": "Apps Nativos (Admin / Staff) - (Cliente - em breve)",
           "3": "€15 de crédito para comunicações"
         }
       }

@@ -23,7 +23,7 @@ function Plans() {
     loading: overviewLoading,
     refresh: refreshOverview,
   } = useBillingOverview({ pollIntervalMs: 3000 });
-  const [selected, setSelected] = useState('standard');
+  const [selected, setSelected] = useState('basic');
   const [loading, setLoading] = useState(false);
   const [managing, setManaging] = useState(false);
   const [error, setError] = useState(null);
@@ -89,10 +89,7 @@ function Plans() {
     ).toLowerCase();
     const tier = (plan?.tier || plan?.code || '').toLowerCase();
     const candidate = fromOverview || tier;
-    if (
-      candidate &&
-      ['basic', 'standard', 'pro', 'founder'].includes(candidate)
-    ) {
+    if (candidate && ['basic', 'pro', 'founder'].includes(candidate)) {
       setSelected(candidate);
     }
   }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code]);
@@ -251,7 +248,7 @@ function Plans() {
                   : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
-              Mensal
+              {t('plans.monthly')}
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
@@ -261,7 +258,7 @@ function Plans() {
                   : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
-              Anual
+              {t('plans.annual')}
               <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
                 -17%
               </span>
@@ -269,7 +266,7 @@ function Plans() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {plans.map((p) => {
             const isAnnual = billingCycle === 'annual';
             const showPrice =
@@ -315,6 +312,7 @@ function Plans() {
                     `plans.options.${p.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
                     showPrice
                   )}
+                  {isAnnual ? t('plans.per_year') : t('plans.per_month')}
                 </div>
                 {isAnnual && p.price_annual && (
                   <p className="mt-1 text-[10px] font-bold text-emerald-600">
@@ -461,7 +459,7 @@ function Plans() {
                 <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
                   {t(
                     'plans.founder.warning_message',
-                    'O Plano Founder é limitado a 500 usuários ativos por salão. Após esse limite, será necessário fazer upgrade para outro plano.'
+                    'O Plano Founder é limitado a 500 usuários ativos por negócio. Após esse limite, será necessário fazer upgrade para outro plano.'
                   )}
                 </p>
                 <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">

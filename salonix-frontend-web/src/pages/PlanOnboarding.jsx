@@ -18,7 +18,7 @@ export default function PlanOnboarding() {
     loading: overviewLoading,
     refresh: refreshOverview,
   } = useBillingOverview({ pollIntervalMs: 3000 });
-  const [selected, setSelected] = useState('standard');
+  const [selected, setSelected] = useState('basic');
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -60,7 +60,7 @@ export default function PlanOnboarding() {
     ).toLowerCase();
     const tier = (plan?.tier || plan?.code || '').toLowerCase();
     const candidate = fromOverview || tier;
-    if (candidate && ['basic', 'standard', 'pro'].includes(candidate)) {
+    if (candidate && ['basic', 'pro'].includes(candidate)) {
       setSelected(candidate);
     }
   }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code]);
@@ -169,7 +169,7 @@ export default function PlanOnboarding() {
                   : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
-              Mensal
+              {t('plans.monthly')}
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
@@ -179,7 +179,7 @@ export default function PlanOnboarding() {
                   : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`}
             >
-              Anual
+              {t('plans.annual')}
               <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
                 -17%
               </span>
@@ -235,7 +235,7 @@ export default function PlanOnboarding() {
                     )}
                   </span>
                   <span className="text-xs text-gray-400">
-                    {isAnnual ? '/ano' : '/mês'}
+                    {isAnnual ? t('plans.per_year') : t('plans.per_month')}
                   </span>
                 </div>
                 {isAnnual && p.price_annual && (

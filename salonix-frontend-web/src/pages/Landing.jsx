@@ -922,7 +922,7 @@ function Landing() {
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    Mensal
+                    {t('plans.monthly')}
                   </button>
                   <button
                     onClick={() => setBillingCycle('annual')}
@@ -932,7 +932,7 @@ function Landing() {
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    Anual
+                    {t('plans.annual')}
                     <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
                       -17%
                     </span>
@@ -941,7 +941,7 @@ function Landing() {
               </div>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+            <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
               {plans.map((plan) => {
                 const isAnnual = billingCycle === 'annual';
                 const showPrice =
@@ -949,14 +949,11 @@ function Landing() {
                     ? plan.price_annual
                     : plan.price;
 
-                // Limpar o sufixo hardcoded se existir na string (apenas para exibição limpa se necessário)
-                // Mas como vem do objeto, vamos usar direto por enquanto.
-
                 return (
                   <div
                     key={plan.code}
                     className={`flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
-                      plan.code === 'standard'
+                      plan.code === 'pro'
                         ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
                         : plan.code === 'founder'
                           ? 'border border-yellow-500/50 bg-yellow-50/5'
@@ -972,7 +969,7 @@ function Landing() {
                           )}
                         </div>
                       )}
-                      {plan.code === 'standard' && (
+                      {plan.code === 'pro' && (
                         <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
                           {t('landing.pricing.most_chosen', 'Mais escolhido')}
                         </span>
@@ -989,11 +986,13 @@ function Landing() {
                         <p className="text-3xl font-bold">
                           {t(
                             `plans.options.${plan.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
-                            showPrice.replace('/mês', '').replace('/ano', '')
+                            showPrice
                           )}
                         </p>
                         <span className="text-sm text-slate-400">
-                          {isAnnual ? '/ano' : '/mês'}
+                          {isAnnual
+                            ? t('plans.per_year')
+                            : t('plans.per_month')}
                         </span>
                       </div>
 
