@@ -62,7 +62,7 @@ const faqs = [
   },
   {
     q: 'Como funcionam os créditos de SMS/WhatsApp?',
-    a: 'Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel.',
+    a: 'Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel. WhatsApp estará disponível em breve após aprovação Meta Business.',
   },
   {
     q: 'O TimelyOne é compatível com o RGPD?',
@@ -82,7 +82,7 @@ const faqs = [
   },
   {
     q: 'O TimelyOne envia lembretes automáticos?',
-    a: 'Sim. Email, SMS e WhatsApp — configuráveis conforme antecedência desejada.',
+    a: 'Sim. Email e SMS — configuráveis conforme antecedência desejada. WhatsApp em breve.',
   },
   {
     q: 'O sistema suporta várias unidades/filiais?',
@@ -648,7 +648,7 @@ function Landing() {
                   <li>
                     {t(
                       'landing.solution.items.3',
-                      'Lembretes automáticos por email / SMS / WhatsApp'
+                      'Lembretes automáticos por email e SMS (WhatsApp em breve)'
                     )}
                   </li>
                   <li>
@@ -812,7 +812,7 @@ function Landing() {
                   ),
                   desc: t(
                     'landing.features.items.2.desc',
-                    'Email, SMS e WhatsApp para reduzir faltas.'
+                    'Email e SMS para reduzir faltas (WhatsApp em breve).'
                   ),
                 },
                 {
