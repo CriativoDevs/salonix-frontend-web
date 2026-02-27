@@ -353,6 +353,7 @@
     }
   },
   "credits": {
+    "title": "Créditos",
     "add_credits": "Adicionar créditos",
     "description": "Selecione um valor para comprar. Pagamento via Stripe (checkout).",
     "current_balance": "Saldo atual",

@@ -364,6 +364,7 @@
     }
   },
   "credits": {
+    "title": "Credits",
     "add_credits": "Add credits",
     "description": "Select an amount to purchase. Payment via Stripe (checkout).",
     "current_balance": "Current balance",

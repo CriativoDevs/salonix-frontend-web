@@ -32,8 +32,7 @@ export default function CreditSettings() {
   const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   const currentBalance = balance?.current_balance ?? 0;
-  const planName =
-    tenant?.plan?.name || t('common.unknown_plan');
+  const planName = tenant?.plan?.name || t('common.unknown_plan');
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -96,7 +95,7 @@ export default function CreditSettings() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-brand-surfaceForeground">
-          {t('settings.credits.title')}
+          {t('credits.title')}
         </h3>
         <button
           type="button"
