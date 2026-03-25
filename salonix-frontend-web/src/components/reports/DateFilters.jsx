@@ -1,7 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDateChange, onApplyFilters, loading }) {
+export default function DateFilters({
+  fromDate,
+  toDate,
+  onFromDateChange,
+  onToDateChange,
+  onApplyFilters,
+  loading,
+}) {
   const { t } = useTranslation();
 
   const handleSubmit = (e) => {
@@ -11,9 +18,15 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
 
   return (
     <div className="bg-brand-surface border border-brand-border rounded-lg p-4 mb-6">
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 items-end">
-        <div className="flex-1">
-          <label htmlFor="from-date" className="block text-sm font-medium text-brand-surfaceForeground mb-1">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-end sm:justify-between"
+      >
+        <div className="flex-1 min-w-0">
+          <label
+            htmlFor="from-date"
+            className="block text-sm font-medium text-brand-surfaceForeground mb-2"
+          >
             {t('reports.filters.from_date', 'Data inicial')}
           </label>
           <input
@@ -21,18 +34,21 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
             id="from-date"
             value={fromDate}
             onChange={(e) => onFromDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+            className="w-full px-3 py-2.5 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
               borderColor: 'var(--border-primary)',
-              colorScheme: 'light dark'
+              colorScheme: 'light dark',
             }}
           />
         </div>
-        
-        <div className="flex-1">
-          <label htmlFor="to-date" className="block text-sm font-medium text-brand-surfaceForeground mb-1">
+
+        <div className="flex-1 min-w-0">
+          <label
+            htmlFor="to-date"
+            className="block text-sm font-medium text-brand-surfaceForeground mb-2"
+          >
             {t('reports.filters.to_date', 'Data final')}
           </label>
           <input
@@ -40,20 +56,20 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
             id="to-date"
             value={toDate}
             onChange={(e) => onToDateChange(e.target.value)}
-            className="w-full px-3 py-2 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+            className="w-full px-3 py-2.5 border border-brand-border rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent text-sm"
             style={{
               backgroundColor: 'var(--bg-primary)',
               color: 'var(--text-primary)',
               borderColor: 'var(--border-primary)',
-              colorScheme: 'light dark'
+              colorScheme: 'light dark',
             }}
           />
         </div>
-        
+
         <button
           type="submit"
           disabled={loading}
-          className="text-brand-primary hover:text-brand-primaryHover font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2"
+          className="w-full sm:w-auto text-brand-primary hover:text-brand-primaryHover font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-4 py-2.5 mt-2 sm:mt-0"
         >
           {loading ? (
             <div className="flex items-center">
@@ -65,9 +81,12 @@ export default function DateFilters({ fromDate, toDate, onFromDateChange, onToDa
           )}
         </button>
       </form>
-      
+
       <div className="mt-3 text-xs text-brand-surfaceForeground/60">
-        {t('reports.filters.help', 'Selecione o período para filtrar os dados dos relatórios')}
+        {t(
+          'reports.filters.help',
+          'Selecione o período para filtrar os dados dos relatórios'
+        )}
       </div>
     </div>
   );

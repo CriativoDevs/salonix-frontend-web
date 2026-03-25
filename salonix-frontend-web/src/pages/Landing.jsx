@@ -18,9 +18,11 @@ import {
   Plug,
   Menu,
   X,
+  Lock,
 } from 'lucide-react';
 import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 import LanguageToggle from '../components/ui/LanguageToggle';
+import Tooltip from '../components/ui/Tooltip';
 import { PLAN_OPTIONS } from '../api/billing';
 import Modal from '../components/ui/Modal';
 
@@ -948,18 +950,42 @@ function Landing() {
                   isAnnual && plan.price_annual
                     ? plan.price_annual
                     : plan.price;
+                const isProBlocked = plan.code === 'pro';
 
                 return (
                   <div
                     key={plan.code}
-                    className={`flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
-                      plan.code === 'pro'
-                        ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
-                        : plan.code === 'founder'
-                          ? 'border border-yellow-500/50 bg-yellow-50/5'
-                          : 'border border-white/10 hover:border-white/40'
+                    className={`relative flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
+                      isProBlocked
+                        ? 'opacity-80 border border-indigo-400/30 ring-1 ring-indigo-400/20'
+                        : plan.code === 'pro'
+                          ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
+                          : plan.code === 'founder'
+                            ? 'border border-yellow-500/50 bg-yellow-50/5'
+                            : 'border border-white/10 hover:border-white/40'
                     }`}
                   >
+                    {/* Coming Soon Badge for Pro */}
+                    {isProBlocked && (
+                      <div className="absolute top-4 right-4 pointer-events-auto z-50">
+                        <Tooltip
+                          tooltip={t(
+                            'plans.options.pro.locked_tooltip',
+                            'Disponível em breve após aprovação nas App Stores oficiais (iOS e Android).'
+                          )}
+                          position="left"
+                        >
+                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-500 to-slate-600 px-3 py-1.5 text-xs font-bold text-white cursor-help hover:shadow-lg transition-shadow">
+                            <Lock className="h-4 w-4" />
+                            {t(
+                              'plans.options.pro.badge_coming_soon',
+                              'Em breve'
+                            )}
+                          </span>
+                        </Tooltip>
+                      </div>
+                    )}
+
                     <div className="flex-1 space-y-3">
                       {plan.code === 'founder' && (
                         <div className="mb-2 inline-block rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">
@@ -968,11 +994,6 @@ function Landing() {
                             '⚠️ Limitado a 500 usuários'
                           )}
                         </div>
-                      )}
-                      {plan.code === 'pro' && (
-                        <span className="inline-block rounded-full border border-white/20 px-2 py-1 text-xs text-white">
-                          {t('landing.pricing.most_chosen', 'Mais escolhido')}
-                        </span>
                       )}
                       <h3 className="text-2xl font-semibold flex items-center gap-2">
                         {t(`plans.options.${plan.code}.name`, plan.name)}

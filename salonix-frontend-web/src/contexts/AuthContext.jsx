@@ -190,12 +190,11 @@ export const AuthProvider = ({ children }) => {
           clearStoredTenantSlug();
         }
         setIsAuthenticated(true);
-        let userLoaded = true;
+        let userLoaded;
         if (user) {
           setUserInfo(user);
-        } else {
-          userLoaded = await loadCurrentUser();
         }
+        userLoaded = await loadCurrentUser();
         if (userLoaded) {
           await loadFeatureFlags();
         }

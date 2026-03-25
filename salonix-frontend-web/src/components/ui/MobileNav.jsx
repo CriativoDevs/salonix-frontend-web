@@ -28,6 +28,7 @@ function MobileNavLinkWithLock({
   icon: IconComponent,
   label,
   featureKey,
+  dataTour,
   onClick,
 }) {
   const { t } = useTranslation();
@@ -38,6 +39,7 @@ function MobileNavLinkWithLock({
     <NavLink
       to={to}
       onClick={onClick}
+      data-tour={dataTour}
       className="flex flex-col items-center justify-center p-4 rounded-xl border border-brand-border hover:bg-brand-light hover:border-brand-border hover:shadow-md transition-all duration-200 group relative"
       title={
         isLocked
@@ -153,10 +155,19 @@ function MobileNav() {
       <nav className="fixed bottom-[env(safe-area-inset-bottom)] left-0 w-full bg-brand-surface border-t border-brand-border shadow-md flex justify-around items-center py-2 md:hidden z-50">
         {mainLinks.map(({ to, icon: IconComponent, label }) => {
           const Icon = IconComponent;
+          const tourId =
+            to === '/dashboard'
+              ? 'nav-dashboard'
+              : to === '/bookings'
+                ? 'nav-bookings'
+                : to === '/slots'
+                  ? 'nav-slots'
+                  : undefined;
           return (
             <NavLink
               key={to}
               to={to}
+              data-tour={tourId}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center text-xs transition-colors ${
                   isActive
@@ -175,6 +186,7 @@ function MobileNav() {
         {expandedLinks.length > 0 && (
           <button
             onClick={toggleMenu}
+            data-tour="nav-more"
             className={`flex flex-col items-center justify-center text-xs transition-all duration-200 ${
               isMenuOpen
                 ? 'text-brand-primary font-semibold scale-110'
@@ -247,16 +259,27 @@ function MobileNav() {
           {/* Área de conteúdo rolável */}
           <div className="flex-1 overflow-y-auto p-4 pt-2">
             <div className="grid grid-cols-2 gap-4">
-              {expandedLinks.map(({ to, icon, label, featureKey }) => (
-                <MobileNavLinkWithLock
-                  key={to}
-                  to={to}
-                  icon={icon}
-                  label={label}
-                  featureKey={featureKey}
-                  onClick={() => setIsMenuOpen(false)}
-                />
-              ))}
+              {expandedLinks.map(({ to, icon, label, featureKey }) => {
+                const dataTour =
+                  to === '/services'
+                    ? 'nav-services'
+                    : to === '/team'
+                      ? 'nav-team'
+                      : to === '/customers'
+                        ? 'nav-customers'
+                        : undefined;
+                return (
+                  <MobileNavLinkWithLock
+                    key={to}
+                    to={to}
+                    icon={icon}
+                    label={label}
+                    featureKey={featureKey}
+                    dataTour={dataTour}
+                    onClick={() => setIsMenuOpen(false)}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>

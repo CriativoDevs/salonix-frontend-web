@@ -2,7 +2,26 @@ import React, { useState, useEffect } from 'react';
 import Joyride, { STATUS } from 'react-joyride';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
+import { useTenant } from '../../hooks/useTenant';
 import { updateCurrentUser } from '../../api/auth';
+
+const TOUR_VERSION = 'v1';
+
+function isMobileViewport() {
+  if (
+    typeof window === 'undefined' ||
+    typeof window.matchMedia !== 'function'
+  ) {
+    return false;
+  }
+  return window.matchMedia('(max-width: 767px)').matches;
+}
+
+function buildTourStorageKey(user, tenantSlug) {
+  const userId = user?.id || user?.pk || user?.email || 'anonymous';
+  const slug = tenantSlug || 'global';
+  return `onboarding_tour_completed:${TOUR_VERSION}:${slug}:${userId}`;
+}
 
 function CustomTooltip({
   index,
@@ -59,12 +78,31 @@ function CustomTooltip({
 export default function OnboardingTour() {
   const { t } = useTranslation();
   const { user, refreshUser } = useAuth();
+  const { slug } = useTenant();
   const [run, setRun] = useState(false);
   const [steps, setSteps] = useState([]);
+  const [isMobile, setIsMobile] = useState(isMobileViewport);
 
   useEffect(() => {
-    // Definir passos
-    const tourSteps = [
+    if (
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function'
+    ) {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const handleChange = (event) => {
+      setIsMobile(event.matches);
+    };
+
+    setIsMobile(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
+    const mobileTourSteps = [
       {
         target: 'body',
         content: t(
@@ -78,50 +116,135 @@ export default function OnboardingTour() {
         target: '[data-tour="nav-dashboard"]',
         content: t(
           'tour.dashboard',
-          'Esta é a sua Dashboard. Aqui você terá uma visão geral do seu negócio.'
+          'Este e o seu painel principal. Aqui voce acompanha o que ja foi configurado e o que falta ativar.'
         ),
       },
       {
         target: '[data-tour="nav-slots"]',
         content: t(
-          'tour.slots',
-          'Gerencie seus horários disponíveis e bloqueios aqui.'
+          'tour.setup_slots',
+          'Proximo passo: defina horarios disponiveis para abrir a agenda ao publico.'
         ),
       },
       {
         target: '[data-tour="nav-bookings"]',
         content: t(
-          'tour.bookings',
-          'Acompanhe e gerencie todos os agendamentos.'
+          'tour.first_booking',
+          'Depois dos horarios, crie o primeiro agendamento para validar o fluxo completo.'
         ),
-      },
-      {
-        target: '[data-tour="nav-customers"]',
-        content: t('tour.customers', 'Cadastre e fidelize seus clientes aqui.'),
       },
       {
         target: '[data-tour="nav-more"]',
         content: t(
-          'tour.more',
-          'Acesse Configurações, Relatórios e Planos neste menu.'
+          'tour.more_setup',
+          'No menu Mais voce acessa Servicos, Equipe, Configuracoes e Planos para concluir a configuracao inicial.'
         ),
       },
     ];
 
-    setSteps(tourSteps);
-  }, [t]);
+    const desktopTourSteps = [
+      {
+        target: 'body',
+        content: t(
+          'tour.welcome',
+          'Bem-vindo ao TimelyOne! Vamos fazer um tour rápido pela plataforma.'
+        ),
+        placement: 'center',
+        disableBeacon: true,
+      },
+      {
+        target: '[data-tour="nav-dashboard"]',
+        content: t(
+          'tour.dashboard',
+          'Este e o seu painel principal. Aqui voce acompanha o que ja foi configurado e o que falta ativar.'
+        ),
+      },
+      {
+        target: '[data-tour="nav-services"]',
+        content: t(
+          'tour.setup_service',
+          'Primeiro passo: cadastre pelo menos um servico com preco e duracao.'
+        ),
+      },
+      {
+        target: '[data-tour="nav-slots"]',
+        content: t(
+          'tour.setup_slots',
+          'Segundo passo: defina horarios disponiveis para abrir a agenda ao publico.'
+        ),
+      },
+      {
+        target: '[data-tour="nav-bookings"]',
+        content: t(
+          'tour.first_booking',
+          'Terceiro passo: crie o primeiro agendamento para validar o fluxo completo.'
+        ),
+      },
+      {
+        target: '[data-tour="nav-team"]',
+        content: t(
+          'tour.invite_team',
+          'Se houver equipe, convide os profissionais e ajuste as permissoes de acesso.'
+        ),
+      },
+      {
+        target: '[data-tour="nav-more"]',
+        content: t(
+          'tour.more_setup',
+          'No menu Mais voce acessa Configuracoes, Relatorios e Planos para concluir a configuracao inicial.'
+        ),
+      },
+    ];
+
+    const rawSteps = isMobile ? mobileTourSteps : desktopTourSteps;
+    const filteredSteps = rawSteps.filter((step) => {
+      if (step.target === 'body') {
+        return true;
+      }
+      if (typeof document === 'undefined') {
+        return false;
+      }
+      return Boolean(document.querySelector(step.target));
+    });
+
+    setSteps(filteredSteps);
+  }, [isMobile, t]);
 
   useEffect(() => {
-    // Se o usuário não tiver status de onboarding ou não tiver completado o tour
-    if (user) {
-      const status = user.onboarding_status || {};
-      if (!status.tour_completed) {
-        // Pequeno delay para garantir renderização do DOM
-        const timer = setTimeout(() => setRun(true), 1500);
-        return () => clearTimeout(timer);
-      }
+    if (!user || typeof window === 'undefined') {
+      setRun(false);
+      return;
     }
-  }, [user]);
+
+    if (window.location.pathname !== '/dashboard') {
+      setRun(false);
+      return;
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(user, 'onboarding_status')) {
+      setRun(false);
+      return;
+    }
+
+    const storageKey = buildTourStorageKey(user, slug);
+    const localCompleted = window.localStorage.getItem(storageKey) === 'true';
+    const status = user.onboarding_status || {};
+
+    if (status.tour_completed && !localCompleted) {
+      window.localStorage.setItem(storageKey, 'true');
+    }
+
+    const canRun =
+      !status.tour_completed && !localCompleted && steps.length > 0;
+
+    if (!canRun) {
+      setRun(false);
+      return;
+    }
+
+    const timer = setTimeout(() => setRun(true), 1200);
+    return () => clearTimeout(timer);
+  }, [user, slug, steps]);
 
   const handleJoyrideCallback = async (data) => {
     const { status } = data;
@@ -129,12 +252,17 @@ export default function OnboardingTour() {
 
     if (finishedStatuses.includes(status)) {
       setRun(false);
-      // Persistir conclusão
+
+      if (typeof window !== 'undefined' && user) {
+        const storageKey = buildTourStorageKey(user, slug);
+        window.localStorage.setItem(storageKey, 'true');
+      }
+
       try {
         await updateCurrentUser({
           onboarding_status: { tour_completed: true },
         });
-        // Atualizar contexto local para evitar reaparecimento
+
         if (refreshUser) {
           await refreshUser();
         }
@@ -144,7 +272,7 @@ export default function OnboardingTour() {
     }
   };
 
-  if (!run) return null;
+  if (!run || steps.length === 0) return null;
 
   return (
     <Joyride

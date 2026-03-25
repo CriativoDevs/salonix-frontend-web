@@ -4,11 +4,13 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 jest.unmock('./OnboardingTour');
 import OnboardingTour from './OnboardingTour';
 import { useAuth } from '../../hooks/useAuth';
+import { useTenant } from '../../hooks/useTenant';
 import { updateCurrentUser } from '../../api/auth';
 import { STATUS } from 'react-joyride';
 
 // Mocks
 jest.mock('../../hooks/useAuth');
+jest.mock('../../hooks/useTenant');
 jest.mock('../../api/auth');
 
 const t = (key, fallback) => fallback;
@@ -52,10 +54,18 @@ jest.mock('react-joyride', () => {
 describe('OnboardingTour', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.history.pushState({}, '', '/dashboard');
+    window.localStorage.clear();
+    window.matchMedia = jest.fn().mockImplementation(() => ({
+      matches: false,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    }));
+    useTenant.mockReturnValue({ slug: 'test-salon' });
   });
 
   it('does not render if user is not logged in', () => {
-    useAuth.mockReturnValue({ user: null });
+    useAuth.mockReturnValue({ user: null, refreshUser: jest.fn() });
     render(<OnboardingTour />);
     expect(screen.queryByTestId('joyride-mock')).not.toBeInTheDocument();
   });
@@ -65,6 +75,7 @@ describe('OnboardingTour', () => {
       user: {
         onboarding_status: { tour_completed: true },
       },
+      refreshUser: jest.fn(),
     });
     render(<OnboardingTour />);
 
@@ -77,6 +88,7 @@ describe('OnboardingTour', () => {
       user: {
         onboarding_status: { tour_completed: false },
       },
+      refreshUser: jest.fn(),
     });
 
     render(<OnboardingTour />);
@@ -134,6 +146,7 @@ describe('OnboardingTour', () => {
       user: {
         onboarding_status: { tour_completed: false },
       },
+      refreshUser: jest.fn(),
     });
 
     render(<OnboardingTour />);
@@ -157,5 +170,42 @@ describe('OnboardingTour', () => {
     expect(updateCurrentUser).toHaveBeenCalledWith({
       onboarding_status: { tour_completed: true },
     });
+  });
+
+  it('does not render outside dashboard route', async () => {
+    window.history.pushState({}, '', '/bookings');
+    useAuth.mockReturnValue({
+      user: {
+        onboarding_status: { tour_completed: false },
+      },
+      refreshUser: jest.fn(),
+    });
+
+    render(<OnboardingTour />);
+
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId('joyride-mock')).not.toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
+  });
+
+  it('does not render if onboarding_status is missing in user payload', async () => {
+    useAuth.mockReturnValue({
+      user: {
+        id: 1,
+      },
+      refreshUser: jest.fn(),
+    });
+
+    render(<OnboardingTour />);
+
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId('joyride-mock')).not.toBeInTheDocument();
+      },
+      { timeout: 2000 }
+    );
   });
 });

@@ -112,7 +112,12 @@
     "customers": "Cadastre e fidelize seus clientes aqui.",
     "services": "Configure seus serviços e preços aqui.",
     "team": "Gerencie sua equipe e permissões aqui.",
-    "more": "Acesse Configurações, Relatórios e Planos neste menu."
+    "more": "Acesse Configurações, Relatórios e Planos neste menu.",
+    "setup_service": "Primeiro passo: cadastre pelo menos um serviço com preço e duração.",
+    "setup_slots": "Próximo passo: defina horários disponíveis para abrir a agenda ao público.",
+    "first_booking": "Depois dos horários, crie o primeiro agendamento para validar o fluxo completo.",
+    "invite_team": "Se houver equipe, convide profissionais e ajuste as permissões de acesso.",
+    "more_setup": "No menu Mais você acessa Serviços, Equipe, Configurações e Planos para concluir a configuração inicial."
   },
   "services": {
     "title": "Serviços",
@@ -1145,6 +1150,8 @@
         "name": "Pro",
         "price": "€55",
         "price_annual": "€550",
+        "badge_coming_soon": "Em breve",
+        "locked_tooltip": "Disponível em breve após aprovação nas App Stores oficiais (iOS e Android).",
         "highlights": {
           "0": "Tudo do Basic",
           "1": "Relatórios Avançados e Insights",

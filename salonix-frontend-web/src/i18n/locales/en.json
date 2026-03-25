@@ -111,7 +111,12 @@
     "customers": "Register and retain your customers here.",
     "services": "Configure your services and prices here.",
     "team": "Manage your team and permissions here.",
-    "more": "Access Settings, Reports, and Plans in this menu."
+    "more": "Access Settings, Reports, and Plans in this menu.",
+    "setup_service": "First step: add at least one service with price and duration.",
+    "setup_slots": "Next step: define available time slots to open your calendar.",
+    "first_booking": "After setting slots, create your first booking to validate the full flow.",
+    "invite_team": "If you have staff, invite team members and set access permissions.",
+    "more_setup": "In the More menu, you can access Services, Team, Settings, and Plans to complete initial setup."
   },
   "services": {
     "title": "Services",
@@ -1137,6 +1142,8 @@
         "name": "Pro",
         "price": "€55",
         "price_annual": "€550",
+        "badge_coming_soon": "Coming soon",
+        "locked_tooltip": "Available soon after approval on official App Stores (iOS and Android).",
         "highlights": {
           "0": "Everything in Basic",
           "1": "Reports: Advanced Insights",
