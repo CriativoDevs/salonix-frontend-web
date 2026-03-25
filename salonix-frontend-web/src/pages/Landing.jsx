@@ -88,7 +88,7 @@ const faqs = [
   },
   {
     q: 'O sistema suporta várias unidades/filiais?',
-    a: 'Sim, nos planos Pro e Enterprise: gestão multiunidade, permissões avançadas e relatórios consolidados.',
+    a: 'Atualmente oferecemos permissões avançadas e relatórios consolidados no Pro. Multiunidade está em roadmap (em breve).',
   },
   {
     q: 'A minha equipa pode ter acessos diferentes?',
@@ -1173,7 +1173,7 @@ function Landing() {
                 ),
                 t(
                   'landing.testimonials.quotes.1',
-                  'A minha equipa deixou de gerir horários no WhatsApp.'
+                  'A minha equipa deixou de gerir horários no telefone e passou a centralizar tudo no painel.'
                 ),
                 t(
                   'landing.testimonials.quotes.2',

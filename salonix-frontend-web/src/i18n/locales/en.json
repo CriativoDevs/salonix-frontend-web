@@ -1367,14 +1367,18 @@
           "a": "Yes. Email and SMS — configurable according to the desired lead time. WhatsApp soon."
         },
         "11": {
+          "q": "Does the system support multiple units/branches?",
+          "a": "We currently offer advanced permissions and consolidated reports in Pro. Multi-location is on the roadmap (coming soon)."
+        },
+        "12": {
           "q": "Can my team have different access levels?",
           "a": "Yes. Permission profiles: owner, manager and professional."
         },
-        "12": {
+        "13": {
           "q": "Can I see revenue and performance reports?",
           "a": "Yes. The dashboard includes metrics for revenue, occupancy, top‑selling services, performance per professional and more."
         },
-        "13": {
+        "14": {
           "q": "How long does setup take?",
           "a": "Between 10 and 20 minutes, depending on the number of services and professionals."
         }
@@ -1401,7 +1405,7 @@
       "title": "Real professionals. Real results.",
       "quotes": [
         "We reduced no-shows by 40% in the first month.",
-        "My team stopped managing schedules on WhatsApp.",
+        "My team stopped managing schedules by phone and centralized everything in the dashboard.",
         "The dashboard is fast, intuitive and truly professional."
       ],
       "rating": "Average rating: ★ 4.9 / 5.0"

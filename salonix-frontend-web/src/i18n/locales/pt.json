@@ -1399,14 +1399,18 @@
           "a": "Sim. Email e SMS — configuráveis conforme antecedência desejada. WhatsApp em breve."
         },
         "11": {
+          "q": "O sistema suporta várias unidades/filiais?",
+          "a": "Atualmente oferecemos permissões avançadas e relatórios consolidados no Pro. Multiunidade está em roadmap (em breve)."
+        },
+        "12": {
           "q": "A minha equipa pode ter acessos diferentes?",
           "a": "Sim. Perfis de permissão: administrador, gestor e profissional."
         },
-        "12": {
+        "13": {
           "q": "Posso ver relatórios de faturação e desempenho?",
           "a": "Sim. O painel inclui métricas de faturação, ocupação, serviços mais vendidos, desempenho por profissional e muito mais."
         },
-        "13": {
+        "14": {
           "q": "Quanto tempo leva para configurar tudo?",
           "a": "Entre 10 e 20 minutos, dependendo da quantidade de serviços e profissionais."
         }
@@ -1433,7 +1437,7 @@
       "title": "Profissionais reais. Resultados reais.",
       "quotes": [
         "Reduzimos as faltas em 40% no primeiro mês.",
-        "A minha equipa deixou de gerir horários no WhatsApp.",
+        "A minha equipa deixou de gerir horários no telefone e passou a centralizar tudo no painel.",
         "O painel é rápido, intuitivo e realmente profissional."
       ],
       "rating": "Avaliação média: ★ 4.9 / 5.0"
