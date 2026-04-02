@@ -1,6 +1,27 @@
 import client from './client';
 import { parsePaginationHeaders } from './pagination';
 
+const isFileLike = (value) =>
+  typeof File !== 'undefined' && value instanceof File;
+
+const buildCustomerPayload = (payload = {}) => {
+  if (!Object.values(payload).some(isFileLike)) {
+    return { data: payload, isMultipart: false };
+  }
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined) return;
+    if (value === null) {
+      formData.append(key, '');
+      return;
+    }
+    formData.append(key, value);
+  });
+
+  return { data: formData, isMultipart: true };
+};
+
 const normalizePaginated = (data) => {
   if (!data) {
     return { results: [], count: 0, next: null, previous: null };
@@ -13,7 +34,12 @@ const normalizePaginated = (data) => {
   const { results, count, next, previous } = data;
   return {
     results: Array.isArray(results) ? results : [],
-    count: typeof count === 'number' ? count : Array.isArray(results) ? results.length : 0,
+    count:
+      typeof count === 'number'
+        ? count
+        : Array.isArray(results)
+          ? results.length
+          : 0,
     next: next || null,
     previous: previous || null,
   };
@@ -76,7 +102,12 @@ export async function createCustomer(payload, { slug } = {}) {
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
   }
-  const { data } = await client.post('salon/customers/', payload, { headers });
+  const { data: body, isMultipart } = buildCustomerPayload(payload);
+  const { data } = await client.post('salon/customers/', body, {
+    headers: isMultipart
+      ? { ...headers, 'Content-Type': 'multipart/form-data' }
+      : headers,
+  });
   return data;
 }
 
@@ -85,7 +116,12 @@ export async function updateCustomer(id, payload, { slug } = {}) {
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
   }
-  const { data } = await client.patch(`salon/customers/${id}/`, payload, { headers });
+  const { data: body, isMultipart } = buildCustomerPayload(payload);
+  const { data } = await client.patch(`salon/customers/${id}/`, body, {
+    headers: isMultipart
+      ? { ...headers, 'Content-Type': 'multipart/form-data' }
+      : headers,
+  });
   return data;
 }
 
@@ -108,7 +144,7 @@ export async function resendCustomerInvite(id, { slug } = {}) {
   const { data } = await client.post(
     `salon/customers/${id}/invite/`,
     {},
-    { headers, params },
+    { headers, params }
   );
   return data;
 }

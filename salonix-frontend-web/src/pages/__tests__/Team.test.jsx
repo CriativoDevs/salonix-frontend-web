@@ -9,6 +9,7 @@ import {
   fetchProfessionals,
   fetchProfessionalsWithMeta,
 } from '../../api/professionals';
+import { fetchStaffMembers } from '../../api/staff';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 
 if (typeof globalThis.TextEncoder === 'undefined') {
@@ -65,6 +66,26 @@ jest.mock('../../api/professionals', () => ({
   deleteProfessional: jest.fn(() => Promise.resolve(true)),
 }));
 
+jest.mock('../../api/staff', () => ({
+  fetchStaffMembers: jest.fn(() =>
+    Promise.resolve({
+      staff: [
+        {
+          id: 1,
+          email: 'manager@example.com',
+          role: 'manager',
+          status: 'active',
+          first_name: 'Casey',
+          last_name: 'Manager',
+        },
+      ],
+      requestId: null,
+    })
+  ),
+  inviteStaffMember: jest.fn(),
+  updateStaffMember: jest.fn(),
+}));
+
 describe('Team page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -74,6 +95,19 @@ describe('Team page', () => {
     fetchProfessionalsWithMeta.mockResolvedValue({
       results: [],
       meta: { totalCount: 0 },
+    });
+    fetchStaffMembers.mockResolvedValue({
+      staff: [
+        {
+          id: 1,
+          email: 'manager@example.com',
+          role: 'manager',
+          status: 'active',
+          first_name: 'Casey',
+          last_name: 'Manager',
+        },
+      ],
+      requestId: null,
     });
   });
 
@@ -87,5 +121,10 @@ describe('Team page', () => {
     );
 
     expect(await screen.findByText('Equipe')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Convidar membro' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Filtros' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Busca')).not.toBeInTheDocument();
   });
 });

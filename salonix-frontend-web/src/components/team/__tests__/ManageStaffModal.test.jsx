@@ -26,6 +26,15 @@ jest.mock('../../../api/staff', () => ({
     staffMember: { id: 3, status: 'active' },
     requestId: 'req-access-1',
   }),
+  updateStaffContact: jest.fn().mockResolvedValue({
+    staffMember: { id: 3, status: 'active' },
+    requestId: 'req-contact-1',
+  }),
+}));
+
+jest.mock('../../../api/services', () => ({
+  __esModule: true,
+  fetchServices: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -69,6 +78,8 @@ describe('ManageStaffModal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    global.URL.createObjectURL = jest.fn(() => 'blob:preview-photo');
+    global.URL.revokeObjectURL = jest.fn();
   });
 
   it('saves role changes', async () => {
@@ -262,6 +273,134 @@ describe('ManageStaffModal', () => {
     expect(
       await screen.findByText(
         'E-mail de acesso não pode ser apagado. Informe um e-mail válido.'
+      )
+    ).toBeInTheDocument();
+    expect(onProfessionalUpdate).not.toHaveBeenCalled();
+  });
+
+  it('updates birthday before saving professional changes', async () => {
+    const { updateStaffContact } = await import('../../../api/staff');
+    const onProfessionalUpdate = jest.fn().mockResolvedValue({ success: true });
+
+    render(
+      <ManageStaffModal
+        open
+        member={baseMember}
+        onClose={jest.fn()}
+        onUpdate={jest.fn()}
+        professionals={[{ id: 21, name: 'Pro', staff_member: baseMember.id }]}
+        onProfessionalUpdate={onProfessionalUpdate}
+        canManageProfessional={() => true}
+        currentUserRole="owner"
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Editar Profissional' })
+    );
+
+    fireEvent.change(screen.getByLabelText('Data de aniversário'), {
+      target: { value: '1992-07-18' },
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salvar profissional' })
+    );
+
+    await waitFor(() => {
+      expect(updateStaffContact).toHaveBeenCalledWith(3, {
+        birthday: '1992-07-18',
+      });
+    });
+
+    await waitFor(() => {
+      expect(onProfessionalUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it('uploads photo when saving professional changes', async () => {
+    const { updateStaffContact } = await import('../../../api/staff');
+    const onProfessionalUpdate = jest.fn().mockResolvedValue({ success: true });
+
+    render(
+      <ManageStaffModal
+        open
+        member={baseMember}
+        onClose={jest.fn()}
+        onUpdate={jest.fn()}
+        professionals={[{ id: 21, name: 'Pro', staff_member: baseMember.id }]}
+        onProfessionalUpdate={onProfessionalUpdate}
+        canManageProfessional={() => true}
+        currentUserRole="owner"
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Editar Profissional' })
+    );
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    const fileInput = screen.getByLabelText('Foto do profissional');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salvar profissional' })
+    );
+
+    await waitFor(() => {
+      expect(updateStaffContact).toHaveBeenCalledWith(3, { photo: file });
+    });
+  });
+
+  it('shows a clear warning when the uploaded photo is rejected', async () => {
+    const { updateStaffContact } = await import('../../../api/staff');
+    const onProfessionalUpdate = jest.fn().mockResolvedValue({ success: true });
+
+    updateStaffContact.mockRejectedValueOnce({
+      response: {
+        status: 400,
+        data: {
+          photo: ['Imagem muito grande. Dimensões máximas: 2000x2000 pixels'],
+        },
+        headers: {},
+      },
+    });
+
+    render(
+      <ManageStaffModal
+        open
+        member={baseMember}
+        onClose={jest.fn()}
+        onUpdate={jest.fn()}
+        professionals={[{ id: 21, name: 'Pro', staff_member: baseMember.id }]}
+        onProfessionalUpdate={onProfessionalUpdate}
+        canManageProfessional={() => true}
+        currentUserRole="owner"
+      />
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Editar Profissional' })
+    );
+
+    expect(
+      screen.getByText(
+        'Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.'
+      )
+    ).toBeInTheDocument();
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText('Foto do profissional'), {
+      target: { files: [file] },
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salvar profissional' })
+    );
+
+    expect(
+      await screen.findByText(
+        'Imagem muito grande. Dimensões máximas: 2000x2000 pixels'
       )
     ).toBeInTheDocument();
     expect(onProfessionalUpdate).not.toHaveBeenCalled();

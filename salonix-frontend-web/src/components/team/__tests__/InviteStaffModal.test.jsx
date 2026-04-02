@@ -4,7 +4,13 @@ import InviteStaffModal from '../InviteStaffModal';
 
 jest.mock('../../ui/Modal', () => ({
   __esModule: true,
-  default: ({ open, children, footer }) => (open ? <div>{children}{footer}</div> : null),
+  default: ({ open, children, footer }) =>
+    open ? (
+      <div>
+        {children}
+        {footer}
+      </div>
+    ) : null,
 }));
 
 jest.mock('react-i18next', () => ({
@@ -14,7 +20,10 @@ jest.mock('react-i18next', () => ({
       let values = {};
       if (typeof defaultValueOrOptions === 'string') {
         template = defaultValueOrOptions;
-      } else if (defaultValueOrOptions && typeof defaultValueOrOptions === 'object') {
+      } else if (
+        defaultValueOrOptions &&
+        typeof defaultValueOrOptions === 'object'
+      ) {
         if (typeof defaultValueOrOptions.defaultValue === 'string') {
           template = defaultValueOrOptions.defaultValue;
         }
@@ -34,6 +43,11 @@ jest.mock('react-i18next', () => ({
 }));
 
 describe('InviteStaffModal', () => {
+  beforeEach(() => {
+    global.URL.createObjectURL = jest.fn(() => 'blob:invite-photo');
+    global.URL.revokeObjectURL = jest.fn();
+  });
+
   it('submits invite and shows success state', async () => {
     const onSubmit = jest.fn().mockResolvedValue({
       success: true,
@@ -54,8 +68,19 @@ describe('InviteStaffModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'guest@example.com' } });
-    fireEvent.change(screen.getByLabelText('Nome do profissional'), { target: { value: 'Guest User' } });
+    fireEvent.change(screen.getByLabelText('E-mail'), {
+      target: { value: 'guest@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Nome do profissional'), {
+      target: { value: 'Guest User' },
+    });
+    fireEvent.change(screen.getByLabelText('Data de aniversário'), {
+      target: { value: '1990-05-10' },
+    });
+    const photo = new File(['photo'], 'guest.png', { type: 'image/png' });
+    fireEvent.change(screen.getByLabelText('Foto do profissional'), {
+      target: { files: [photo] },
+    });
 
     fireEvent.click(screen.getByRole('button', { name: 'Enviar convite' }));
 
@@ -64,10 +89,14 @@ describe('InviteStaffModal', () => {
         email: 'guest@example.com',
         role: 'collaborator',
         first_name: 'Guest User',
+        birthday: '1990-05-10',
+        photo,
       });
     });
 
-    expect(await screen.findByText('Convite enviado com sucesso!')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Convite enviado com sucesso!')
+    ).toBeInTheDocument();
     expect(screen.getByText(/token-123/)).toBeInTheDocument();
     expect(screen.getByText(/Token válido/)).toBeInTheDocument();
   });
@@ -87,8 +116,15 @@ describe('InviteStaffModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'guest@example.com' } });
-    fireEvent.change(screen.getByLabelText('Nome do profissional'), { target: { value: 'Guest User' } });
+    fireEvent.change(screen.getByLabelText('E-mail'), {
+      target: { value: 'guest@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('Nome do profissional'), {
+      target: { value: 'Guest User' },
+    });
+    fireEvent.change(screen.getByLabelText('Data de aniversário'), {
+      target: { value: '1990-05-10' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Enviar convite' }));
 
     await waitFor(() => {

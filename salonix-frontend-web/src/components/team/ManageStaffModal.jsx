@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState, useId } from 'react';
+import { useEffect, useMemo, useRef, useState, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal';
 import FormButton from '../ui/FormButton';
 import FormInput from '../ui/FormInput';
+import Avatar from '../ui/Avatar';
 import { parseApiError } from '../../utils/apiError';
 import { useTenant } from '../../hooks/useTenant';
 import { fetchServices } from '../../api/services';
@@ -15,6 +16,13 @@ function resolveDisplayName(member) {
     .trim();
   if (nameParts) return nameParts;
   return member.email || member.username || '';
+}
+
+function formatBirthday(value) {
+  if (!value) return '—';
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString();
 }
 
 function ManageStaffModal({
@@ -53,7 +61,11 @@ function ManageStaffModal({
   const [professionalEditing, setProfessionalEditing] = useState(false);
   const [professionalFeedback, setProfessionalFeedback] = useState(null);
   const [contactEmail, setContactEmail] = useState(member?.email || '');
+  const [birthday, setBirthday] = useState(member?.birthday || '');
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(member?.photo || '');
   const formId = useId();
+  const photoInputRef = useRef(null);
 
   const [savingRole, setSavingRole] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
@@ -98,6 +110,9 @@ function ManageStaffModal({
       setProfessionalEditing(false);
       setProfessionalFeedback(null);
       setContactEmail(member?.email || '');
+      setBirthday(member?.birthday || '');
+      setPhotoFile(null);
+      setPhotoPreview(member?.photo || '');
       return;
     }
 
@@ -111,7 +126,21 @@ function ManageStaffModal({
         ? professionals[0]
         : null
     );
+    setBirthday(member?.birthday || '');
+    setPhotoFile(null);
+    setPhotoPreview(member?.photo || '');
   }, [open, member, professionals, slug]);
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreview(member?.photo || '');
+      return undefined;
+    }
+
+    const objectUrl = URL.createObjectURL(photoFile);
+    setPhotoPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [photoFile, member?.photo]);
 
   const memberName = useMemo(() => resolveDisplayName(member), [member]);
 
@@ -329,11 +358,27 @@ function ManageStaffModal({
       role: member?.role || 'collaborator',
       serviceIds: (currentProfessional?.service_ids || []).map(Number),
     });
+    setBirthday(member?.birthday || '');
+    setPhotoFile(null);
+    setPhotoPreview(member?.photo || '');
   };
 
   const handleProfessionalCancel = () => {
     setProfessionalEditing(false);
     resetProfessionalForm();
+    setBirthday(member?.birthday || '');
+    setPhotoFile(null);
+    setPhotoPreview(member?.photo || '');
+  };
+
+  const handlePhotoClick = () => {
+    photoInputRef.current?.click();
+  };
+
+  const handlePhotoChange = (event) => {
+    const nextFile = event.target.files?.[0] || null;
+    if (!nextFile) return;
+    setPhotoFile(nextFile);
   };
 
   const handleServiceToggle = (serviceId) => {
@@ -387,10 +432,23 @@ function ManageStaffModal({
         setProfessionalModalSubmitting(false);
         return;
       }
-      if (emailTrimmed && emailTrimmed !== (member?.email || '')) {
+
+      const currentBirthday = member?.birthday || '';
+      const emailChanged = emailTrimmed !== (member?.email || '');
+      const birthdayChanged = birthday !== currentBirthday;
+      const photoChanged = Boolean(photoFile);
+
+      if (emailChanged || birthdayChanged) {
         try {
           const { updateStaffContact } = await import('../../api/staff');
-          await updateStaffContact(member.id, { email: emailTrimmed });
+          const contactPayload = {};
+          if (emailChanged) {
+            contactPayload.email = emailTrimmed;
+          }
+          if (birthdayChanged) {
+            contactPayload.birthday = birthday || null;
+          }
+          await updateStaffContact(member.id, contactPayload);
         } catch (e) {
           const parsed = parseApiError(
             e,
@@ -400,6 +458,26 @@ function ManageStaffModal({
             )
           );
           setProfessionalModalError(parsed);
+          setProfessionalModalSubmitting(false);
+          return;
+        }
+      }
+
+      if (photoChanged) {
+        try {
+          const { updateStaffContact } = await import('../../api/staff');
+          await updateStaffContact(member.id, { photo: photoFile });
+        } catch (e) {
+          const parsed = parseApiError(
+            e,
+            t(
+              'team.manage.contact.photo_error',
+              'Falha ao atualizar foto do membro.'
+            )
+          );
+          setProfessionalModalError(parsed);
+          setProfessionalModalSubmitting(false);
+          return;
         }
       }
 
@@ -517,21 +595,29 @@ function ManageStaffModal({
           {(activeTab === 'professional' || isCollaboratorUser) && (
             <div className="space-y-4">
               <div className="space-y-2 rounded-lg border border-brand-border bg-brand-light p-4">
-                <p className="text-sm font-medium text-brand-surfaceForeground">
-                  {t(
-                    'team.manage.professional.summary',
-                    'Informações Profissionais'
-                  )}
-                </p>
-                <ul className="space-y-1 text-sm text-brand-surfaceForeground/70">
-                  <li>
-                    <strong>{t('team.manage.summary.name', 'Nome')}:</strong>{' '}
-                    {currentProfessional?.name ||
-                      t(
-                        'team.manage.summary.no_professional',
-                        'Nenhum profissional vinculado'
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-brand-surfaceForeground">
+                      {t(
+                        'team.manage.professional.summary',
+                        'Informações Profissionais'
                       )}
-                  </li>
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-brand-surfaceForeground">
+                      {currentProfessional?.name || memberName || '—'}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <Avatar
+                      src={photoPreview || member?.photo || ''}
+                      alt={
+                        memberName ||
+                        t('team.manage.photo.alt', 'Foto do profissional')
+                      }
+                    />
+                  </div>
+                </div>
+                <ul className="space-y-1 text-sm text-brand-surfaceForeground/70">
                   {currentProfessional?.bio && (
                     <li>
                       <strong>
@@ -540,6 +626,12 @@ function ManageStaffModal({
                       {currentProfessional.bio}
                     </li>
                   )}
+                  <li>
+                    <strong>
+                      {t('team.manage.summary.birthday', 'Aniversário')}:
+                    </strong>{' '}
+                    {formatBirthday(member?.birthday)}
+                  </li>
                   <li>
                     <strong>
                       {t('team.manage.summary.email', 'E-mail de acesso')}:
@@ -571,6 +663,64 @@ function ManageStaffModal({
 
               {professionalEditing ? (
                 <div className="space-y-3 rounded-lg border border-brand-border bg-brand-surface p-4">
+                  <div className="flex items-start justify-between gap-4 rounded-lg border border-brand-border/70 bg-brand-light/40 p-3">
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-brand-surfaceForeground">
+                        {t(
+                          'team.manage.professional.form.photo',
+                          'Foto do profissional'
+                        )}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handlePhotoClick}
+                          className="text-sm font-medium text-brand-primary hover:underline"
+                        >
+                          {photoPreview
+                            ? t(
+                                'team.manage.professional.form.change_photo',
+                                'Alterar foto'
+                              )
+                            : t(
+                                'team.manage.professional.form.add_photo',
+                                'Adicionar foto'
+                              )}
+                        </button>
+                        {photoFile ? (
+                          <span className="text-xs text-brand-surfaceForeground/60">
+                            {photoFile.name}
+                          </span>
+                        ) : null}
+                      </div>
+                      <input
+                        ref={photoInputRef}
+                        type="file"
+                        aria-label={t(
+                          'team.manage.professional.form.photo',
+                          'Foto do profissional'
+                        )}
+                        accept="image/png,image/jpeg,image/webp,image/gif"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                      />
+                      <p className="text-xs text-brand-surfaceForeground/60">
+                        {t(
+                          'team.manage.professional.form.photo_requirements',
+                          'Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.'
+                        )}
+                      </p>
+                    </div>
+                    <div className="shrink-0">
+                      <Avatar
+                        src={photoPreview || member?.photo || ''}
+                        alt={
+                          memberName ||
+                          t('team.manage.photo.alt', 'Foto do profissional')
+                        }
+                      />
+                    </div>
+                  </div>
                   <FormInput
                     label={t(
                       'team.manage.professional.form.name',
@@ -589,6 +739,15 @@ function ManageStaffModal({
                     type="email"
                     value={contactEmail}
                     onChange={(event) => setContactEmail(event.target.value)}
+                  />
+                  <FormInput
+                    label={t(
+                      'team.manage.professional.form.birthday',
+                      'Data de aniversário'
+                    )}
+                    type="date"
+                    value={birthday}
+                    onChange={(event) => setBirthday(event.target.value)}
                   />
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-brand-surfaceForeground">

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown, ChevronUp, Filter, Plus } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import EmptyState from '../components/ui/EmptyState';
@@ -218,6 +219,8 @@ function Team() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('active');
+  const [invitePanelOpen, setInvitePanelOpen] = useState(false);
+  const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
   const [professionals, setProfessionals] = useState([]);
@@ -315,7 +318,7 @@ function Team() {
 
   const refetchStaff = useCallback(() => {
     if (!professionalsMountedRef.current) return;
-    loadStaff();
+    return loadStaff();
   }, [loadStaff]);
 
   const inviteStaff = useCallback(
@@ -604,6 +607,12 @@ function Team() {
   const canManageAll =
     currentUserRole === 'owner' || currentUserRole === 'manager';
 
+  const hasSecondaryFilters =
+    Boolean(search.trim()) ||
+    roleFilter !== 'all' ||
+    statusFilter !== 'active' ||
+    sortOption !== 'name';
+
   const activeStaffOptions = useMemo(
     () => staffArray.filter((member) => member?.status === 'active'),
     [staffArray]
@@ -768,7 +777,7 @@ function Team() {
           serviceIds,
         });
         await refetchProfessionals();
-        refetchStaff();
+        await refetchStaff();
         return { success: true, professional: created };
       } catch (err) {
         return {
@@ -785,7 +794,7 @@ function Team() {
       try {
         const updated = await updateProfessional(id, { ...payload, slug });
         await refetchProfessionals();
-        refetchStaff();
+        await refetchStaff();
         return { success: true, professional: updated };
       } catch (err) {
         return {
@@ -949,113 +958,214 @@ function Team() {
                   </p>
                 )}
               </div>
-              {canManageAll && (
+            </div>
+          </div>
+
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              {canManageAll ? (
                 <button
                   type="button"
-                  onClick={openInviteModal}
-                  className="text-[#7F7EED] hover:underline font-medium"
+                  onClick={() => setInvitePanelOpen((current) => !current)}
+                  aria-expanded={invitePanelOpen}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
                 >
-                  {t('team.actions.invite', 'Convidar membro')}
+                  <Plus className="h-4 w-4" />
+                  {invitePanelOpen
+                    ? t('team.actions.hide_invite', 'Fechar convite')
+                    : t('team.actions.show_invite', 'Convidar membro')}
+                  {invitePanelOpen ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
                 </button>
-              )}
-            </div>
-          </div>
+              ) : null}
 
-          <div className="mb-6 grid gap-4 md:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('team.filters.search', 'Busca')}
-              </label>
-              <input
-                type="text"
-                placeholder={t(
-                  'team.filters.search_placeholder',
-                  'Procurar por nome ou email'
-                )}
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-                className="w-full rounded border px-3 py-2 text-sm"
-              />
-            </div>
-            {canManageAll && (
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('team.filters.role', 'Papel')}
-                </label>
-                <select
-                  value={roleFilter}
-                  onChange={(event) => setRoleFilter(event.target.value)}
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    borderColor: 'var(--border-primary)',
-                  }}
-                  className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                >
-                  {roleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('team.filters.status', 'Status')}
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-                className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              <button
+                type="button"
+                onClick={() => setFiltersPanelOpen((current) => !current)}
+                aria-expanded={filtersPanelOpen}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
               >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <Filter className="h-4 w-4" />
+                {filtersPanelOpen
+                  ? t('team.filters.hide', 'Fechar filtros')
+                  : t('team.filters.show', 'Filtros')}
+                {filtersPanelOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+
+              {hasSecondaryFilters ? (
+                <div className="flex flex-wrap items-center gap-2 text-xs text-brand-surfaceForeground/65">
+                  {search.trim() ? (
+                    <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                      {t('team.filters.search_active', {
+                        defaultValue: 'Busca: {{term}}',
+                        term: search.trim(),
+                      })}
+                    </span>
+                  ) : null}
+                  {roleFilter !== 'all' ? (
+                    <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                      {t('team.filters.role_active', {
+                        defaultValue: 'Papel: {{role}}',
+                        role:
+                          roleOptions.find(
+                            (option) => option.value === roleFilter
+                          )?.label || roleFilter,
+                      })}
+                    </span>
+                  ) : null}
+                  {statusFilter !== 'active' ? (
+                    <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                      {t('team.filters.status_active', {
+                        defaultValue: 'Status: {{status}}',
+                        status:
+                          statusOptions.find(
+                            (option) => option.value === statusFilter
+                          )?.label || statusFilter,
+                      })}
+                    </span>
+                  ) : null}
+                  {sortOption !== 'name' ? (
+                    <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                      {t('team.filters.ordering_active', {
+                        defaultValue: 'Ordenação: personalizada',
+                      })}
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-          </div>
-          {/* Ordenação */}
-          <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('team.filters.ordering', 'Ordenação')}
-            </label>
-            <select
-              value={sortOption}
-              onChange={(event) => setSortOption(event.target.value)}
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-              }}
-              className="block w-full rounded-md text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            >
-              <option value="name">
-                {t('team.ordering.name_asc', 'Nome (A→Z)')}
-              </option>
-              <option value="-name">
-                {t('team.ordering.name_desc', 'Nome (Z→A)')}
-              </option>
-              <option value="created_at">
-                {t('team.ordering.created_asc', 'Criado (antigo→recente)')}
-              </option>
-              <option value="-created_at">
-                {t('team.ordering.created_desc', 'Criado (recente→antigo)')}
-              </option>
-            </select>
+
+            {invitePanelOpen && canManageAll ? (
+              <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+                <div className="max-w-3xl">
+                  <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                    {t('team.actions.invite_title', 'Convidar profissional')}
+                  </h2>
+                  <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                    {t(
+                      'team.actions.invite_description',
+                      'Abra o fluxo de convite para cadastrar acesso, papel e dados iniciais do profissional sem poluir a listagem.'
+                    )}
+                  </p>
+                  <div className="mt-5">
+                    <button
+                      type="button"
+                      onClick={openInviteModal}
+                      className="inline-flex items-center justify-center rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+                    >
+                      {t('team.actions.invite', 'Convidar membro')}
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            ) : null}
+
+            {filtersPanelOpen ? (
+              <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                    {t('team.filters.search', 'Busca')}
+                    <input
+                      type="text"
+                      placeholder={t(
+                        'team.filters.search_placeholder',
+                        'Procurar por nome ou email'
+                      )}
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                      }}
+                      className="w-full rounded-xl border px-3 py-2 text-sm"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                    {t('team.filters.ordering', 'Ordenação')}
+                    <select
+                      value={sortOption}
+                      onChange={(event) => setSortOption(event.target.value)}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                      }}
+                      className="block w-full rounded-xl border px-3 py-2 text-sm"
+                    >
+                      <option value="name">
+                        {t('team.ordering.name_asc', 'Nome (A→Z)')}
+                      </option>
+                      <option value="-name">
+                        {t('team.ordering.name_desc', 'Nome (Z→A)')}
+                      </option>
+                      <option value="created_at">
+                        {t(
+                          'team.ordering.created_asc',
+                          'Criado (antigo→recente)'
+                        )}
+                      </option>
+                      <option value="-created_at">
+                        {t(
+                          'team.ordering.created_desc',
+                          'Criado (recente→antigo)'
+                        )}
+                      </option>
+                    </select>
+                  </label>
+
+                  {canManageAll ? (
+                    <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                      {t('team.filters.role', 'Papel')}
+                      <select
+                        value={roleFilter}
+                        onChange={(event) => setRoleFilter(event.target.value)}
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          color: 'var(--text-primary)',
+                          borderColor: 'var(--border-primary)',
+                        }}
+                        className="block w-full rounded-xl border px-3 py-2 text-sm"
+                      >
+                        {roleOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  ) : null}
+
+                  <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                    {t('team.filters.status', 'Status')}
+                    <select
+                      value={statusFilter}
+                      onChange={(event) => setStatusFilter(event.target.value)}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                      }}
+                      className="block w-full rounded-xl border px-3 py-2 text-sm"
+                    >
+                      {statusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </Card>
+            ) : null}
           </div>
 
           {professionalsLoading ? (

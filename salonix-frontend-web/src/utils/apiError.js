@@ -16,7 +16,8 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
 
   if (response?.status === 429) {
     const retryAfter = Number(response?.headers?.['retry-after'] || 0);
-    const seconds = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
+    const seconds =
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : null;
     const msg = seconds
       ? `Muitas tentativas. Tente novamente em ${seconds}s.`
       : 'Muitas tentativas. Tente novamente em instantes.';
@@ -33,7 +34,7 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
     const candidateMessages = [];
 
     if (payload && typeof payload === 'object') {
-      ['logo', 'logo_url', 'logoUrl'].forEach((key) => {
+      ['logo', 'logo_url', 'logoUrl', 'photo'].forEach((key) => {
         const value = payload[key];
         if (typeof value === 'string') {
           candidateMessages.push(value);
@@ -69,8 +70,8 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
       });
     }
 
-    const limitMessage = candidateMessages.find((msg) =>
-      typeof msg === 'string' && msg.toLowerCase().includes('mb')
+    const limitMessage = candidateMessages.find(
+      (msg) => typeof msg === 'string' && msg.toLowerCase().includes('mb')
     );
 
     if (limitMessage) {
@@ -81,9 +82,19 @@ export function parseApiError(error, fallbackMessage = 'Algo deu errado.') {
         requestId,
       };
     }
+
+    if (candidateMessages.length > 0) {
+      return {
+        message: candidateMessages[0],
+        code: apiError?.code || null,
+        details: apiError?.details ?? response?.data?.errors ?? null,
+        requestId,
+      };
+    }
   }
 
-  const message = apiError?.message || response?.data?.detail || fallbackMessage;
+  const message =
+    apiError?.message || response?.data?.detail || fallbackMessage;
   const details = apiError?.details ?? response?.data?.errors ?? null;
   const code = apiError?.code || null;
 
