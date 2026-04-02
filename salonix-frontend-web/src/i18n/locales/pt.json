@@ -121,10 +121,44 @@
   },
   "services": {
     "title": "Serviços",
+    "subtitle": "Organize os serviços como um catálogo claro, com preço e duração fáceis de comparar no dia a dia.",
     "name": "Nome do serviço",
     "price": "Preço (€)",
     "duration": "Duração (minutos)",
     "submit": "Adicionar serviço",
+    "empty_title": "Nenhum serviço encontrado",
+    "empty_description": "Comece cadastrando os serviços principais do salão para montar seu catálogo operacional.",
+    "empty_filtered": "Nenhum serviço corresponde aos filtros atuais.",
+    "stats": {
+      "total": "Total de serviços",
+      "visible": "Visíveis agora"
+    },
+    "filters": {
+      "show": "Filtros",
+      "hide": "Fechar filtros",
+      "order": "Ordenar por",
+      "order_active": "Ordenação: nome",
+      "search": "Busca",
+      "search_placeholder": "Buscar serviço por nome",
+      "search_active": "Busca: {{term}}"
+    },
+    "list": {
+      "price": "Preço",
+      "duration": "Duração"
+    },
+    "form": {
+      "show": "Adicionar serviço",
+      "hide": "Fechar adicionar serviço",
+      "title": "Adicionar serviço",
+      "description": "Cadastre serviços com nome comercial claro, preço bem definido e duração coerente para melhorar agenda e conversão.",
+      "tip": "Serviços bem padronizados deixam a equipa mais rápida no atendimento e reduzem erros de preço e duração.",
+      "helper": "Defina um nome claro, preço objetivo e duração realista para melhorar a agenda e a leitura dos relatórios.",
+      "submitting": "Salvando...",
+      "name_placeholder": "Ex.: Corte masculino premium",
+      "price_placeholder": "25.00",
+      "duration_placeholder": "45",
+      "duration_suffix": "min"
+    },
     "errors": {
       "name_required": "O nome do serviço é obrigatório.",
       "price_invalid": "Informe um preço válido.",
@@ -154,6 +188,7 @@
   },
   "slots": {
     "title": "Horários disponíveis",
+    "subtitle": "Organize a disponibilidade com filtros rápidos, criação guiada e leitura mais clara por dia.",
     "select_date": "Selecionar data",
     "no_slots": "Nenhum horário disponível para essa data.",
     "professional": "Profissional",
@@ -163,9 +198,44 @@
     "slot_date": "Data do slot",
     "start_time": "Início",
     "end_time": "Término",
-    "create_slot": "Criar slot"
+    "create_slot": "Criar slot",
+    "stats": {
+      "total": "Total disponível",
+      "visible": "Visíveis agora",
+      "days": "Dias listados",
+      "today": "Hoje"
+    },
+    "create": {
+      "show": "Criar horário",
+      "hide": "Fechar criação",
+      "title": "Criar novo horário",
+      "description": "Defina a data e o intervalo do horário para o profissional selecionado. Depois da criação, a lista é atualizada automaticamente."
+    },
+    "filters": {
+      "show": "Filtros",
+      "hide": "Fechar filtros",
+      "title": "Filtros e contexto",
+      "description": "Troque o profissional, refine por data e ajuste a ordenação para encontrar ou limpar horários com menos esforço.",
+      "all_dates": "Todas as datas",
+      "reset": "Limpar filtros",
+      "date_active": "Data: {{date}}",
+      "order_active": "Ordenação: mais antigos"
+    },
+    "list": {
+      "title": "Horários cadastrados",
+      "description": "{{count}} horários nesta página.",
+      "group_count": "{{count}} horários neste dia",
+      "slot_label": "Intervalo"
+    },
+    "empty": {
+      "title": "Nenhum horário encontrado",
+      "description": "Ajuste os filtros ou abra a criação para adicionar novos horários ao profissional selecionado.",
+      "no_professionals_title": "Nenhum profissional disponível",
+      "no_professionals_description": "Cadastre ou ative um profissional antes de organizar horários disponíveis."
+    }
   },
   "bookings": {
+    "subtitle": "Organize a operação do dia com filtros rápidos, criação guiada e leitura mais clara da agenda.",
     "actions": {
       "cancel": "Cancelar",
       "reschedule": "Reagendar",
@@ -179,6 +249,16 @@
       "save": "Salvar alterações"
     },
     "title": "Agendamentos",
+    "empty_title": "Nenhum agendamento encontrado",
+    "stats": {
+      "today": "Hoje",
+      "scheduled": "Agendados",
+      "cancelled": "Cancelados",
+      "upcoming": "Próximos"
+    },
+    "card": {
+      "with_professional": "com {{name}}"
+    },
     "client": "Cliente",
     "service": "Serviço",
     "professional": "Profissional",
@@ -188,7 +268,10 @@
     "empty": "Nenhum agendamento encontrado.",
     "client_placeholder": "Cliente",
     "create": {
-      "title": "Criar novo agendamento"
+      "title": "Criar novo agendamento",
+      "show": "Novo agendamento",
+      "hide": "Fechar novo agendamento",
+      "description": "Preencha a agenda em ordem natural: cliente, serviço, profissional e horário."
     },
     "form": {
       "select_service": "Selecione um serviço",
@@ -208,12 +291,36 @@
       "multi_series_short": "Multi/Série"
     },
     "filters": {
+      "show": "Filtros",
+      "hide": "Fechar filtros",
       "status": "Status",
       "status_all": "Todos",
       "customer": "Cliente",
       "customer_all": "Todos",
       "date_from": "Data inicial",
-      "date_to": "Data final"
+      "date_to": "Data final",
+      "customer_active": "Cliente: {{name}}",
+      "status_active": "Status: {{status}}",
+      "from_active": "De: {{date}}",
+      "to_active": "Até: {{date}}",
+      "calendar_range_note": "No modo calendário, o período é controlado pela navegação semanal."
+    },
+    "views": {
+      "agenda": "Agenda",
+      "calendar": "Calendário"
+    },
+    "calendar": {
+      "title": "Calendário semanal",
+      "description": "{{count}} agendamentos entre {{range}}.",
+      "week_label": "Semana visível",
+      "previous_week": "Semana anterior",
+      "next_week": "Próxima semana",
+      "today": "Hoje",
+      "next_appointment": "Próximo agendamento",
+      "no_next": "Não existem próximos agendamentos para os filtros atuais.",
+      "jump_error": "Não foi possível localizar a data do próximo agendamento.",
+      "day_count": "{{count}} agendamentos",
+      "empty_day": "Sem agendamentos neste dia."
     },
     "edit": {
       "keep_slot": "Manter horário atual"
@@ -822,10 +929,25 @@
     "subtitle": "Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.",
     "confirm_delete": "Remover este cliente?",
     "form": {
+      "title": "Adicionar cliente",
+      "description": "Cadastre dados de contato e uma foto clara para identificar rapidamente quem e quem.",
+      "tip": "Fotos e aniversarios ajudam a diferenciar homonimos e melhoram a busca visual no atendimento.",
+      "show": "Adicionar cliente",
+      "hide": "Fechar adicionar cliente",
       "name": "Nome",
       "email": "E-mail",
       "phone": "Telefone",
+      "birthday": "Aniversario",
       "notes": "Notas",
+      "photo": "Foto do cliente",
+      "add_photo": "Adicionar foto",
+      "change_photo": "Alterar foto",
+      "photo_requirements": "Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.",
+      "photo_alt": "Foto do cliente",
+      "photo_ready": "Preview pronto",
+      "photo_empty": "Sem foto adicionada",
+      "photo_ready_hint": "Clique no botao para trocar a imagem.",
+      "photo_empty_hint": "Adicione uma foto para facilitar a identificacao.",
       "name_placeholder": "Nome completo",
       "email_placeholder": "cliente@email.com",
       "phone_placeholder": "+351912345678",
@@ -837,6 +959,7 @@
       "title": "Lista de clientes",
       "subtitle": "Use a busca para encontrar rapidamente por nome, e-mail ou telefone.",
       "removal_hint": "Clientes com histórico não podem ser excluídos; desative para manter o cadastro sem aparecer na agenda.",
+      "quick_hint": "Use os botoes acima para abrir filtros e cadastro apenas quando precisar.",
       "sort_recent": "Mais recentes",
       "sort_name": "Nome (A–Z)",
       "search": "Buscar cliente...",
@@ -847,6 +970,9 @@
     "table": {
       "name": "Cliente",
       "contact": "Contato",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "birthday": "Aniversario",
       "notes": "Notas",
       "status": "Status",
       "actions": "Ações",
@@ -884,6 +1010,45 @@
     "success": {
       "invite_sent": "Convite reenviado com sucesso."
     },
+    "filters": {
+      "show": "Filtros",
+      "hide": "Fechar filtros",
+      "order": "Ordenacao",
+      "search_label": "Busca",
+      "search_active": "Busca: {{term}}",
+      "inactive_active": "Exibindo inativos"
+    },
+    "stats": {
+      "total": "Total cadastrados",
+      "active": "Clientes ativos",
+      "visible": "Visiveis no filtro"
+    },
+    "card": {
+      "unknown": "Cliente",
+      "preview_photo": "Abrir foto de {{name}}"
+    },
+    "editor": {
+      "title": "Gerenciar cliente",
+      "description": "Atualize a identificacao visual e os dados principais do cliente.",
+      "photo": "Foto do cliente",
+      "add_photo": "Adicionar foto",
+      "change_photo": "Alterar foto",
+      "photo_requirements": "Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.",
+      "photo_alt": "Foto do cliente",
+      "photo_ready": "Preview pronto",
+      "photo_empty": "Sem foto adicionada",
+      "photo_ready_hint": "Clique no botao para trocar a imagem.",
+      "photo_empty_hint": "Adicione uma foto para facilitar a identificacao."
+    },
+    "preview": {
+      "title": "Foto do cliente",
+      "description": "Use a foto ampliada para diferenciar clientes com nomes parecidos.",
+      "unknown": "Cliente",
+      "name": "Cliente",
+      "birthday": "Aniversario",
+      "email": "E-mail",
+      "phone": "Telefone"
+    },
     "invite": {
       "status": {
         "success": "Enviado",
@@ -913,7 +1078,12 @@
       "loading": "Identificando seu papel no salão..."
     },
     "actions": {
-      "invite": "Convidar membro"
+      "invite": "Convidar membro",
+      "show_invite": "Convidar membro",
+      "hide_invite": "Fechar convite",
+      "invite_title": "Convidar profissional",
+      "invite_description": "Abra o fluxo de convite para cadastrar acesso, papel e dados iniciais do profissional sem poluir a listagem.",
+      "invite_tip": "Use convites para novos membros e depois finalize foto, aniversário e permissões no gerenciamento individual."
     },
     "list": {
       "manage": "Gerenciar",
@@ -943,11 +1113,17 @@
       "updated_at": "Atualizado em"
     },
     "filters": {
+      "show": "Filtros",
+      "hide": "Fechar filtros",
       "search": "Busca",
       "search_placeholder": "Procurar por nome ou email",
+      "search_active": "Busca: {{term}}",
       "role": "Papel",
+      "role_active": "Papel: {{role}}",
       "status": "Status",
+      "status_active": "Status: {{status}}",
       "ordering": "Ordenação",
+      "ordering_active": "Ordenação: personalizada",
       "role_all": "Todos",
       "status_all": "Todos"
     },
@@ -963,7 +1139,12 @@
       "professional": {
         "title": "Dados do profissional",
         "helper": "Defina como o profissional será apresentado no portal.",
-        "name": "Nome do profissional"
+        "name": "Nome do profissional",
+        "photo": "Foto do profissional",
+        "add_photo": "Adicionar foto",
+        "change_photo": "Alterar foto",
+        "photo_requirements": "Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.",
+        "birthday": "Data de aniversário"
       },
       "roles": {
         "collaborator": "Colaborador",
@@ -1010,13 +1191,77 @@
         "title": "Resumo",
         "name": "Nome",
         "email": "E-mail",
+        "bio": "Bio ou especialidade",
+        "birthday": "Aniversario",
+        "services": "Servicos",
         "role": "Papel atual",
         "status": "Status atual",
         "unknown": "Não informado"
       },
+      "empty": "Selecione um membro para gerenciar.",
       "owner_notice": "O owner não pode ter papel ou status alterados.",
       "fields": {
         "role": "Papel"
+      },
+      "tabs": {
+        "professional": "Dados profissionais",
+        "permissions": "Permissoes"
+      },
+      "photo": {
+        "alt": "Foto do profissional"
+      },
+      "professional": {
+        "summary": "Informacoes profissionais",
+        "edit": "Editar profissional",
+        "create": "Criar profissional",
+        "no_permission": "Sem permissao para editar dados profissionais.",
+        "feedback": {
+          "updated": "Profissional atualizado com sucesso.",
+          "created": "Profissional criado com sucesso."
+        },
+        "errors": {
+          "name_required": "Nome e obrigatorio."
+        },
+        "form": {
+          "photo": "Foto do profissional",
+          "add_photo": "Adicionar foto",
+          "change_photo": "Alterar foto",
+          "photo_requirements": "Use JPG, PNG, GIF ou WEBP com ate 2MB e dimensoes entre 50x50 e 2000x2000 pixels.",
+          "name": "Nome do profissional",
+          "email": "E-mail de acesso",
+          "birthday": "Data de aniversario",
+          "bio": "Bio ou especialidade",
+          "services": "Servicos realizados",
+          "saving": "Salvando...",
+          "save": "Salvar profissional"
+        }
+      },
+      "services": {
+        "empty": "Nenhum servico disponivel."
+      },
+      "permissions": {
+        "summary": "Permissoes de acesso"
+      },
+      "role": {
+        "label": "Papel"
+      },
+      "contact": {
+        "email_required": "E-mail de acesso nao pode ser apagado. Informe um e-mail valido.",
+        "updated_error": "Falha ao atualizar o e-mail do membro.",
+        "photo_error": "Falha ao atualizar a foto do membro."
+      },
+      "invite": {
+        "resend": "Reenviar convite",
+        "resending": "Reenviando...",
+        "resend_success": "Convite reenviado com sucesso.",
+        "resend_error": "Falha ao reenviar o convite."
+      },
+      "access_link": {
+        "send": "Enviar link de acesso",
+        "sending": "Enviando...",
+        "sent_success": "Link de acesso enviado com sucesso.",
+        "sent_error": "Falha ao enviar o link de acesso.",
+        "email_required": "Informe o e-mail do membro para enviar link de acesso."
       },
       "roles": {
         "manager": "Manager",
@@ -1032,6 +1277,8 @@
         "confirm_activate_invite": "Ativar manualmente o convite de {{name}}?",
         "confirm_cancel_invite": "Cancelar o convite enviado para {{name}}?",
         "updating": "Atualizando...",
+        "activate": "Ativar",
+        "disabling": "Desativando...",
         "disable": "Desativar",
         "enable": "Reativar",
         "accept": "Ativar manualmente",

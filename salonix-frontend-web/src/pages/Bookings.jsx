@@ -1,16 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  CalendarDays,
   MoreHorizontal,
   Eye,
   RefreshCw,
   XCircle,
   Copy,
   List,
+  ChevronLeft,
+  ChevronRight,
   ChevronDown,
+  ChevronUp,
+  Filter,
+  Plus,
 } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Dropdown, { DropdownItem } from '../components/ui/Dropdown';
+import Card from '../components/ui/Card';
+import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/ui/PageHeader';
 import {
   fetchAppointments,
   fetchAppointmentDetail,
@@ -94,6 +103,79 @@ function formatDateTimeRange(start, end) {
   }
 }
 
+function formatTimeRange(start, end) {
+  const startDate = parseSlotDate(start);
+  if (!startDate) return '--';
+  const endDate = parseSlotDate(end);
+  try {
+    const formatter = new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const startTime = formatter.format(startDate);
+    const endTime = endDate ? formatter.format(endDate) : null;
+    return endTime ? `${startTime} - ${endTime}` : startTime;
+  } catch {
+    return '--';
+  }
+}
+
+function formatShortDate(value) {
+  const date = parseSlotDate(value);
+  if (!date) return '--';
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+      .format(date)
+      .replace('.', '');
+  } catch {
+    return '--';
+  }
+}
+
+function startOfCalendarDay(value) {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function addCalendarDays(value, days) {
+  const date = startOfCalendarDay(value);
+  date.setDate(date.getDate() + days);
+  return date;
+}
+
+function startOfCalendarWeek(value) {
+  const date = startOfCalendarDay(value);
+  const day = date.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  return addCalendarDays(date, diffToMonday);
+}
+
+function formatDateParam(value) {
+  const date = startOfCalendarDay(value);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getCalendarAppointmentTone(status) {
+  if (status === 'cancelled') {
+    return 'border-rose-200/70 bg-rose-50/70 hover:bg-rose-50';
+  }
+  if (status === 'completed') {
+    return 'border-sky-200/70 bg-sky-50/70 hover:bg-sky-50';
+  }
+  if (status === 'paid') {
+    return 'border-emerald-300/70 bg-emerald-100/80 hover:bg-emerald-100';
+  }
+  return 'border-emerald-200/70 bg-emerald-50/70 hover:bg-emerald-50';
+}
+
 function formatServiceOption(service) {
   if (!service) return '';
   const parts = [service.name].filter(Boolean);
@@ -116,9 +198,9 @@ function formatServiceOption(service) {
 }
 
 function formatProfessionalOption(professional) {
-    if (!professional) return '';
-    return professional.name;
-  }
+  if (!professional) return '';
+  return professional.name;
+}
 
 function combineAppointment(
   base,
@@ -194,6 +276,7 @@ function sortCustomers(list) {
 function Bookings() {
   const { t, i18n } = useTranslation();
   const { slug } = useTenant();
+  const currentLanguage = i18n?.language || 'pt';
 
   const [services, setServices] = useState([]);
   const [professionals, setProfessionals] = useState([]);
@@ -205,6 +288,16 @@ function Bookings() {
   const [loadingList, setLoadingList] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
+  const [viewMode, setViewMode] = useState('agenda');
+  const [createPanelOpen, setCreatePanelOpen] = useState(false);
+  const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
+  const [calendarCursor, setCalendarCursor] = useState(() =>
+    startOfCalendarDay(new Date())
+  );
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState(() =>
+    formatDateParam(new Date())
+  );
+  const [calendarJumpLoading, setCalendarJumpLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const [filters, setFilters] = useState({
@@ -215,6 +308,29 @@ function Bookings() {
   });
 
   // paginação baseada em limit/offset
+
+  const calendarWeekStart = useMemo(
+    () => startOfCalendarWeek(calendarCursor),
+    [calendarCursor]
+  );
+
+  const calendarWeekDays = useMemo(
+    () =>
+      Array.from({ length: 7 }, (_, index) =>
+        addCalendarDays(calendarWeekStart, index)
+      ),
+    [calendarWeekStart]
+  );
+
+  const calendarRangeStart = useMemo(
+    () => formatDateParam(calendarWeekStart),
+    [calendarWeekStart]
+  );
+
+  const calendarRangeEnd = useMemo(
+    () => formatDateParam(addCalendarDays(calendarWeekStart, 6)),
+    [calendarWeekStart]
+  );
 
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formSlots, setFormSlots] = useState([]);
@@ -452,14 +568,27 @@ function Bookings() {
     setLoadingList(true);
     setError(null);
 
-    const params = {
-      limit,
-      offset,
-      ordering: '-created_at',
-    };
+    const params =
+      viewMode === 'calendar'
+        ? {
+            limit: 300,
+            offset: 0,
+            ordering: '-created_at',
+            date_from: calendarRangeStart,
+            date_to: calendarRangeEnd,
+          }
+        : {
+            limit,
+            offset,
+            ordering: '-created_at',
+          };
     if (filters.status) params.status = filters.status;
-    if (filters.dateFrom) params.date_from = filters.dateFrom;
-    if (filters.dateTo) params.date_to = filters.dateTo;
+    if (viewMode !== 'calendar' && filters.dateFrom) {
+      params.date_from = filters.dateFrom;
+    }
+    if (viewMode !== 'calendar' && filters.dateTo) {
+      params.date_to = filters.dateTo;
+    }
     if (filters.customerId) params.customer_id = filters.customerId;
 
     const slotCache = new Map();
@@ -563,6 +692,9 @@ function Bookings() {
     filters,
     limit,
     offset,
+    viewMode,
+    calendarRangeStart,
+    calendarRangeEnd,
     lookupLoading,
     serviceMap,
     professionalMap,
@@ -825,7 +957,99 @@ function Bookings() {
     setOffset(0);
   }, []);
 
+  const openCalendarView = useCallback(() => {
+    if (viewMode === 'calendar') return;
+
+    const firstAppointmentDate = parseSlotDate(appointments[0]?.slotStart);
+    if (firstAppointmentDate) {
+      const normalizedDate = startOfCalendarDay(firstAppointmentDate);
+      setCalendarCursor(normalizedDate);
+      setCalendarSelectedDate(formatDateParam(normalizedDate));
+    }
+
+    setViewMode('calendar');
+  }, [appointments, viewMode]);
+
+  const jumpToNextUpcomingAppointment = useCallback(async () => {
+    try {
+      setCalendarJumpLoading(true);
+      const params = {
+        limit: 1,
+        offset: 0,
+        ordering: 'start_time',
+        date_from: new Date().toISOString(),
+      };
+
+      if (filters.status) params.status = filters.status;
+      if (filters.customerId) params.customer_id = filters.customerId;
+
+      const payload = await fetchAppointments({ slug, params });
+      const nextItem = Array.isArray(payload?.results)
+        ? payload.results[0]
+        : null;
+
+      if (!nextItem?.id) {
+        setError({
+          message: t(
+            'bookings.calendar.no_next',
+            'Não existem próximos agendamentos para os filtros atuais.'
+          ),
+        });
+        return;
+      }
+
+      const detail = await fetchAppointmentDetail(nextItem.id, { slug });
+      const nextStart =
+        detail?.slot?.start_time ||
+        detail?.slot_start ||
+        detail?.start_time ||
+        null;
+
+      const parsedDate = parseSlotDate(nextStart);
+      if (!parsedDate) {
+        setError({
+          message: t(
+            'bookings.calendar.jump_error',
+            'Não foi possível localizar a data do próximo agendamento.'
+          ),
+        });
+        return;
+      }
+
+      const normalizedDate = startOfCalendarDay(parsedDate);
+      setCalendarCursor(normalizedDate);
+      setCalendarSelectedDate(formatDateParam(normalizedDate));
+      setError(null);
+    } catch (err) {
+      setError(
+        parseApiError(
+          err,
+          t(
+            'bookings.calendar.jump_error',
+            'Não foi possível localizar a data do próximo agendamento.'
+          )
+        )
+      );
+    } finally {
+      setCalendarJumpLoading(false);
+    }
+  }, [filters.customerId, filters.status, slug, t]);
+
+  useEffect(() => {
+    const isInsideVisibleWeek = calendarWeekDays.some(
+      (day) => formatDateParam(day) === calendarSelectedDate
+    );
+    if (!isInsideVisibleWeek) {
+      setCalendarSelectedDate(calendarRangeStart);
+    }
+  }, [calendarWeekDays, calendarRangeStart, calendarSelectedDate]);
+
   const loading = lookupLoading || loadingList;
+  const hasActiveFilters = Boolean(
+    filters.status ||
+      filters.customerId ||
+      (viewMode === 'agenda' && (filters.dateFrom || filters.dateTo))
+  );
   const closeDetails = () => {
     cancelEdit();
     setSelectedAppointment(null);
@@ -892,6 +1116,127 @@ function Bookings() {
       }).format(groupDate);
     }
   };
+
+  const calendarAppointmentsByDay = useMemo(() => {
+    const grouped = new Map(
+      calendarWeekDays.map((day) => [formatDateParam(day), []])
+    );
+
+    appointments.forEach((appointment) => {
+      const date = parseSlotDate(appointment.slotStart);
+      if (!date) return;
+      const key = formatDateParam(date);
+      if (!grouped.has(key)) return;
+      grouped.get(key).push(appointment);
+    });
+
+    grouped.forEach((items) => {
+      items.sort((left, right) => {
+        const leftTime = parseSlotDate(left.slotStart)?.getTime() || 0;
+        const rightTime = parseSlotDate(right.slotStart)?.getTime() || 0;
+        return leftTime - rightTime;
+      });
+    });
+
+    return grouped;
+  }, [appointments, calendarWeekDays]);
+
+  const selectedCalendarItems = useMemo(
+    () => calendarAppointmentsByDay.get(calendarSelectedDate) || [],
+    [calendarAppointmentsByDay, calendarSelectedDate]
+  );
+
+  const formatCalendarRange = useCallback(
+    (start, end) => {
+      try {
+        const formatter = new Intl.DateTimeFormat(
+          currentLanguage === 'pt' ? 'pt-PT' : 'en-IE',
+          {
+            day: '2-digit',
+            month: 'short',
+          }
+        );
+        return `${formatter.format(start).replace('.', '')} - ${formatter.format(end).replace('.', '')}`;
+      } catch {
+        return `${formatDateParam(start)} - ${formatDateParam(end)}`;
+      }
+    },
+    [currentLanguage]
+  );
+
+  const formatCalendarDayHeading = useCallback(
+    (value) => {
+      try {
+        return new Intl.DateTimeFormat(
+          currentLanguage === 'pt' ? 'pt-PT' : 'en-IE',
+          {
+            weekday: 'short',
+            day: '2-digit',
+            month: 'short',
+          }
+        )
+          .format(value)
+          .replace('.', '');
+      } catch {
+        return formatDateParam(value);
+      }
+    },
+    [currentLanguage]
+  );
+
+  const summaryStats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let todayCount = 0;
+    let scheduledCount = 0;
+    let cancelledCount = 0;
+    let upcomingCount = 0;
+
+    appointments.forEach((appointment) => {
+      const startDate = parseSlotDate(appointment.slotStart);
+      if (!startDate) return;
+
+      const normalizedDate = new Date(startDate);
+      normalizedDate.setHours(0, 0, 0, 0);
+
+      if (normalizedDate.getTime() === today.getTime()) {
+        todayCount += 1;
+      }
+      if (appointment.status === 'scheduled') {
+        scheduledCount += 1;
+      }
+      if (appointment.status === 'cancelled') {
+        cancelledCount += 1;
+      }
+      if (startDate.getTime() >= Date.now()) {
+        upcomingCount += 1;
+      }
+    });
+
+    return [
+      {
+        key: 'today',
+        label: t('bookings.stats.today', 'Hoje'),
+        value: todayCount,
+      },
+      {
+        key: 'scheduled',
+        label: t('bookings.stats.scheduled', 'Agendados'),
+        value: scheduledCount,
+      },
+      {
+        key: 'cancelled',
+        label: t('bookings.stats.cancelled', 'Cancelados'),
+        value: cancelledCount,
+      },
+      {
+        key: 'upcoming',
+        label: t('bookings.stats.upcoming', 'Próximos'),
+        value: upcomingCount,
+      },
+    ];
+  }, [appointments, t]);
 
   // Série/Multi helpers
   const openSeriesModal = () => {
@@ -1428,401 +1773,801 @@ function Bookings() {
 
   return (
     <FullPageLayout>
-      <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
-        <h1 className="text-2xl font-semibold text-brand-surfaceForeground">
-          {t('bookings.title')}
-        </h1>
+      <div className="space-y-6">
+        <PageHeader
+          title={t('bookings.title', 'Agendamentos')}
+          subtitle={t(
+            'bookings.subtitle',
+            'Organize a operação do dia com filtros rápidos, criação guiada e leitura mais clara da agenda.'
+          )}
+        />
 
-        <section className="mt-4 grid gap-3 sm:grid-cols-4">
-          <div>
-            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('bookings.filters.customer', 'Cliente')}
-            </label>
-            <Dropdown
-              trigger={
-                <button
-                  type="button"
-                  className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                >
-                  <span className="truncate">
-                    {filters.customerId
-                      ? customers.find(
-                          (c) => String(c.id) === filters.customerId
-                        )?.name || t('bookings.filters.customer_all', 'Todos')
-                      : t('bookings.filters.customer_all', 'Todos')}
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className="text-brand-surfaceForeground/70"
-                  />
-                </button>
-              }
-              items={customerFilterItems}
-              searchable={true}
-              searchPlaceholder={t('common.search', 'Pesquisar...')}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('bookings.filters.status', 'Status')}
-            </label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-              }}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="inline-flex w-fit items-center rounded-full border border-brand-border bg-brand-surface/80 p-1 shadow-sm ring-1 ring-brand-border/60">
+            <button
+              type="button"
+              onClick={() => setViewMode('agenda')}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'agenda' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
             >
-              <option
-                value=""
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {t('bookings.filters.status_all', 'Todos')}
-              </option>
-              {STATUS_OPTIONS.map((status) => (
-                <option
-                  key={status}
-                  value={status}
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {t(`bookings.status.${status}`, status)}
-                </option>
-              ))}
-            </select>
+              <List className="h-4 w-4" />
+              {t('bookings.views.agenda', 'Agenda')}
+            </button>
+            <button
+              type="button"
+              onClick={openCalendarView}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'calendar' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
+            >
+              <CalendarDays className="h-4 w-4" />
+              {t('bookings.views.calendar', 'Calendário')}
+            </button>
           </div>
-          <div>
-            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('bookings.filters.date_from', 'Data inicial')}
-            </label>
-            <input
-              type="date"
-              value={filters.dateFrom}
-              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-                colorScheme: 'light dark',
-              }}
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('bookings.filters.date_to', 'Data final')}
-            </label>
-            <input
-              type="date"
-              value={filters.dateTo}
-              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
-              style={{
-                backgroundColor: 'var(--bg-primary)',
-                color: 'var(--text-primary)',
-                borderColor: 'var(--border-primary)',
-                colorScheme: 'light dark',
-              }}
-            />
-          </div>
-        </section>
 
-        <section className="mt-6 rounded-lg border border-brand-border bg-brand-surface/60 p-4">
-          <h2 className="text-lg font-medium text-brand-surfaceForeground">
-            {t('bookings.create.title', 'Criar novo agendamento')}
-          </h2>
-          <form
-            className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
-            onSubmit={handleCreateAppointment}
+          <button
+            type="button"
+            onClick={() => setCreatePanelOpen((current) => !current)}
+            aria-expanded={createPanelOpen}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
           >
-            <div className="col-span-1">
-              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                {t('bookings.form.customer', 'Cliente')}
-              </label>
-              <Dropdown
-                trigger={
-                  <button
-                    type="button"
-                    disabled={lookupLoading || customers.length === 0}
-                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:opacity-50"
-                  >
-                    <span className="truncate">
-                      {formData.customerId
-                        ? customers.find(
-                            (c) => String(c.id) === formData.customerId
-                          )?.name ||
-                          t(
-                            'bookings.form.select_customer',
-                            'Selecione um cliente'
-                          )
-                        : t(
-                            'bookings.form.select_customer',
-                            'Selecione um cliente'
-                          )}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="text-brand-surfaceForeground/70"
-                    />
-                  </button>
-                }
-                items={customerFormItems}
-                searchable={true}
-                searchPlaceholder={t('common.search', 'Pesquisar...')}
-                className="w-full"
-              />
-              {customers.length === 0 && !lookupLoading && (
-                <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                  {t(
-                    'bookings.form.empty_customer',
-                    'Cadastre clientes antes de criar agendamentos.'
-                  )}
-                </p>
-              )}
-            </div>
-            <div className="col-span-1">
-              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                {t('bookings.service', 'Serviço')}
-              </label>
-              <Dropdown
-                trigger={
-                  <button
-                    type="button"
-                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                  >
-                    <span className="truncate">
-                      {formData.serviceId
-                        ? (() => {
-                            const svc = services.find(
-                              (s) => String(s.id) === formData.serviceId
-                            );
-                            return svc
-                              ? formatServiceOption(svc)
-                              : t(
-                                  'bookings.form.select_service',
-                                  'Selecione um serviço'
-                                );
-                          })()
-                        : t(
-                            'bookings.form.select_service',
-                            'Selecione um serviço'
-                          )}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="text-brand-surfaceForeground/70"
-                    />
-                  </button>
-                }
-                items={serviceFormItems}
-                searchable={true}
-                searchPlaceholder={t('common.search', 'Pesquisar...')}
-                className="w-full"
-              />
-            </div>
+            <Plus className="h-4 w-4" />
+            {createPanelOpen
+              ? t('bookings.create.hide', 'Fechar novo agendamento')
+              : t('bookings.create.show', 'Novo agendamento')}
+            {createPanelOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
 
-            <div className="col-span-1">
-              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                {t('bookings.professional', 'Profissional')}
-              </label>
-              <Dropdown
-                trigger={
-                  <button
-                    type="button"
-                    className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                  >
-                    <span className="truncate">
-                      {formData.professionalId
-                        ? (() => {
-                            const p = professionals.find(
-                              (prof) =>
-                                String(prof.id) === formData.professionalId
-                            );
-                            return p
-                              ? formatProfessionalOption(p)
-                              : t(
-                                  'bookings.form.select_professional',
-                                  'Selecione um profissional'
-                                );
-                          })()
-                        : t(
-                            'bookings.form.select_professional',
-                            'Selecione um profissional'
-                          )}
-                    </span>
-                    <ChevronDown
-                      size={16}
-                      className="text-brand-surfaceForeground/70"
-                    />
-                  </button>
-                }
-                items={professionalFormItems}
-                searchable={true}
-                searchPlaceholder={t('common.search', 'Pesquisar...')}
-                className="w-full"
-              />
-            </div>
+          <button
+            type="button"
+            onClick={() => setFiltersPanelOpen((current) => !current)}
+            aria-expanded={filtersPanelOpen}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+          >
+            <Filter className="h-4 w-4" />
+            {filtersPanelOpen
+              ? t('bookings.filters.hide', 'Fechar filtros')
+              : t('bookings.filters.show', 'Filtros')}
+            {filtersPanelOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
 
-            <div className="col-span-1">
-              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                {t('bookings.form.slot', 'Horário')}
-              </label>
-              <select
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                value={formData.slotId}
-                onChange={(e) => handleFormChange('slotId', e.target.value)}
-                disabled={!formData.professionalId}
-                onFocus={() => {
-                  if (formData.professionalId) {
-                    refreshSlotsForProfessional(formData.professionalId);
+          {hasActiveFilters ? (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-brand-surfaceForeground/65">
+              {filters.customerId ? (
+                <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                  {t('bookings.filters.customer_active', {
+                    defaultValue: 'Cliente: {{name}}',
+                    name:
+                      customers.find((c) => String(c.id) === filters.customerId)
+                        ?.name || filters.customerId,
+                  })}
+                </span>
+              ) : null}
+              {filters.status ? (
+                <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                  {t('bookings.filters.status_active', {
+                    defaultValue: 'Status: {{status}}',
+                    status: t(
+                      `bookings.statuses.${filters.status}`,
+                      filters.status
+                    ),
+                  })}
+                </span>
+              ) : null}
+              {viewMode === 'agenda' && filters.dateFrom ? (
+                <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                  {t('bookings.filters.from_active', {
+                    defaultValue: 'De: {{date}}',
+                    date: filters.dateFrom,
+                  })}
+                </span>
+              ) : null}
+              {viewMode === 'agenda' && filters.dateTo ? (
+                <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                  {t('bookings.filters.to_active', {
+                    defaultValue: 'Até: {{date}}',
+                    date: filters.dateTo,
+                  })}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
+          {summaryStats.map((item) => (
+            <Card
+              key={item.key}
+              className="flex min-h-[92px] flex-col items-start justify-center gap-3 rounded-xl border border-brand-border bg-brand-surface/95 px-4 py-3 shadow-sm ring-1 ring-brand-border/70 sm:min-h-[132px] sm:justify-between sm:gap-0 sm:rounded-2xl sm:p-4 xl:min-h-0"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-surfaceForeground/45 sm:text-xs sm:tracking-[0.18em]">
+                {item.label}
+              </p>
+              <p className="text-[1.9rem] font-semibold leading-none text-brand-surfaceForeground sm:mt-3 sm:text-3xl">
+                {item.value}
+              </p>
+            </Card>
+          ))}
+        </div>
+
+        {filtersPanelOpen ? (
+          <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+            <div
+              className={`grid gap-3 sm:grid-cols-2 ${viewMode === 'agenda' ? 'xl:grid-cols-4' : 'xl:grid-cols-2'}`}
+            >
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.filters.customer', 'Cliente')}
+                </label>
+                <Dropdown
+                  trigger={
+                    <button
+                      type="button"
+                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    >
+                      <span className="truncate">
+                        {filters.customerId
+                          ? customers.find(
+                              (c) => String(c.id) === filters.customerId
+                            )?.name ||
+                            t('bookings.filters.customer_all', 'Todos')
+                          : t('bookings.filters.customer_all', 'Todos')}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-brand-surfaceForeground/70"
+                      />
+                    </button>
                   }
-                }}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-              >
-                <option
-                  value=""
+                  items={customerFilterItems}
+                  searchable={true}
+                  searchPlaceholder={t('common.search', 'Pesquisar...')}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.filters.status', 'Status')}
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
                   style={{
                     backgroundColor: 'var(--bg-primary)',
                     color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)',
                   }}
                 >
-                  {t('bookings.form.select_slot', 'Selecione um horário')}
-                </option>
-                {formSlots.map((slot) => (
                   <option
-                    key={slot.id}
-                    value={slot.id}
+                    value=""
                     style={{
                       backgroundColor: 'var(--bg-primary)',
                       color: 'var(--text-primary)',
                     }}
                   >
-                    {formatDateTimeRange(slot.start_time, slot.end_time)}
+                    <button
+                      type="button"
+                      onClick={jumpToNextUpcomingAppointment}
+                      disabled={calendarJumpLoading}
+                      className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {calendarJumpLoading
+                        ? t('common.loading', 'Carregando...')
+                        : t(
+                            'bookings.calendar.next_appointment',
+                            'Próximo agendamento'
+                          )}
+                    </button>
+                    {t('bookings.filters.status_all', 'Todos')}
                   </option>
-                ))}
-              </select>
-              {formSlotsLoading && (
-                <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                  {t(
-                    'bookings.form.loading_slots',
-                    'Carregando horários disponíveis...'
-                  )}
-                </p>
+                  {STATUS_OPTIONS.map((status) => (
+                    <option
+                      key={status}
+                      value={status}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {t(`bookings.status.${status}`, status)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {viewMode === 'agenda' ? (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                      {t('bookings.filters.date_from', 'Data inicial')}
+                    </label>
+                    <input
+                      type="date"
+                      value={filters.dateFrom}
+                      onChange={(e) =>
+                        handleFilterChange('dateFrom', e.target.value)
+                      }
+                      className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                        colorScheme: 'light dark',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                      {t('bookings.filters.date_to', 'Data final')}
+                    </label>
+                    <input
+                      type="date"
+                      value={filters.dateTo}
+                      onChange={(e) =>
+                        handleFilterChange('dateTo', e.target.value)
+                      }
+                      className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        borderColor: 'var(--border-primary)',
+                        colorScheme: 'light dark',
+                      }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <div className="sm:col-span-2 rounded-2xl border border-brand-border bg-brand-light/25 p-4 text-sm text-brand-surfaceForeground/72">
+                  <p className="font-medium text-brand-surfaceForeground/85">
+                    {t('bookings.calendar.week_label', 'Semana visível')}
+                  </p>
+                  <p className="mt-1">
+                    {formatCalendarRange(
+                      calendarWeekStart,
+                      addCalendarDays(calendarWeekStart, 6)
+                    )}
+                  </p>
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/58">
+                    {t(
+                      'bookings.filters.calendar_range_note',
+                      'No modo calendário, o período é controlado pela navegação semanal.'
+                    )}
+                  </p>
+                </div>
               )}
-              {!formSlotsLoading &&
-                formData.professionalId &&
-                formSlots.length === 0 && (
+            </div>
+          </Card>
+        ) : null}
+
+        {createPanelOpen ? (
+          <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+            <div className="max-w-6xl">
+              <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                {t('bookings.create.title', 'Criar novo agendamento')}
+              </h2>
+              <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                {t(
+                  'bookings.create.description',
+                  'Preencha a agenda em ordem natural: cliente, serviço, profissional e horário.'
+                )}
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
+                  1. {t('bookings.form.customer', 'Cliente')}
+                </div>
+                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
+                  2. {t('bookings.service', 'Serviço')}
+                </div>
+                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
+                  3. {t('bookings.professional', 'Profissional')}
+                </div>
+                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
+                  4. {t('bookings.form.slot', 'Horário')}
+                </div>
+                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
+                  5. {t('bookings.notes', 'Observações')}
+                </div>
+              </div>
+            </div>
+
+            <form
+              className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+              onSubmit={handleCreateAppointment}
+            >
+              <div className="col-span-1">
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.form.customer', 'Cliente')}
+                </label>
+                <Dropdown
+                  trigger={
+                    <button
+                      type="button"
+                      disabled={lookupLoading || customers.length === 0}
+                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:opacity-50"
+                    >
+                      <span className="truncate">
+                        {formData.customerId
+                          ? customers.find(
+                              (c) => String(c.id) === formData.customerId
+                            )?.name ||
+                            t(
+                              'bookings.form.select_customer',
+                              'Selecione um cliente'
+                            )
+                          : t(
+                              'bookings.form.select_customer',
+                              'Selecione um cliente'
+                            )}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-brand-surfaceForeground/70"
+                      />
+                    </button>
+                  }
+                  items={customerFormItems}
+                  searchable={true}
+                  searchPlaceholder={t('common.search', 'Pesquisar...')}
+                  className="w-full"
+                />
+                {customers.length === 0 && !lookupLoading && (
                   <p className="mt-1 text-xs text-brand-surfaceForeground/60">
                     {t(
-                      'bookings.form.no_slots',
-                      'Nenhum horário disponível para este profissional.'
+                      'bookings.form.empty_customer',
+                      'Cadastre clientes antes de criar agendamentos.'
                     )}
                   </p>
                 )}
-            </div>
-
-            <div className="col-span-1">
-              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                {t('bookings.notes', 'Observações')}
-              </label>
-              <textarea
-                className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                rows={1}
-                value={formData.notes}
-                onChange={(e) => handleFormChange('notes', e.target.value)}
-                placeholder={t(
-                  'bookings.form.notes_placeholder',
-                  'Notas opcionais'
-                )}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-              />
-            </div>
-
-            <div className="col-span-full grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-center">
-              <div className="lg:col-span-4 flex flex-wrap gap-2">
-                <button
-                  type="submit"
-                  disabled={formSubmitting || customers.length === 0}
-                  className="text-brand-primary hover:text-brand-accent underline font-medium transition"
-                >
-                  {formSubmitting
-                    ? t('common.saving', 'Salvando...')
-                    : t('bookings.form.submit', 'Agendar')}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  style={{ color: '#7F7EED' }}
-                  className="hover:text-brand-accent underline font-medium transition"
-                >
-                  {t('bookings.form.reset', 'Limpar')}
-                </button>
               </div>
-              <div className="lg:col-start-5 lg:col-span-1 flex lg:justify-end items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsCompact(!isCompact)}
-                  className={`p-1.5 rounded transition ${isCompact ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:bg-brand-light'}`}
-                  title={t('bookings.toggle_compact', 'Modo Compacto')}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                {(() => {
-                  const disabled = !formData.customerId; // apenas cliente é obrigatório para abrir
-                  const title = disabled
-                    ? t(
-                        'bookings.form.customer_required',
-                        'Selecione o cliente para continuar.'
-                      )
-                    : undefined;
-                  return (
+              <div className="col-span-1">
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.service', 'Serviço')}
+                </label>
+                <Dropdown
+                  trigger={
                     <button
                       type="button"
-                      onClick={openSeriesModal}
-                      disabled={disabled}
-                      title={title}
-                      className={`font-medium transition ${disabled ? 'text-brand-surfaceForeground/40 cursor-not-allowed' : 'text-brand-surfaceForeground hover:underline'}`}
+                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
                     >
-                      {t('bookings.form.multi_series_short', 'Multi/Série')}
+                      <span className="truncate">
+                        {formData.serviceId
+                          ? (() => {
+                              const svc = services.find(
+                                (s) => String(s.id) === formData.serviceId
+                              );
+                              return svc
+                                ? formatServiceOption(svc)
+                                : t(
+                                    'bookings.form.select_service',
+                                    'Selecione um serviço'
+                                  );
+                            })()
+                          : t(
+                              'bookings.form.select_service',
+                              'Selecione um serviço'
+                            )}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-brand-surfaceForeground/70"
+                      />
                     </button>
-                  );
-                })()}
+                  }
+                  items={serviceFormItems}
+                  searchable={true}
+                  searchPlaceholder={t('common.search', 'Pesquisar...')}
+                  className="w-full"
+                />
               </div>
-            </div>
-          </form>
-          {formError && (
-            <p className="mt-2 text-sm text-red-600">{formError.message}</p>
-          )}
-        </section>
+
+              <div className="col-span-1">
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.professional', 'Profissional')}
+                </label>
+                <Dropdown
+                  trigger={
+                    <button
+                      type="button"
+                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    >
+                      <span className="truncate">
+                        {formData.professionalId
+                          ? (() => {
+                              const p = professionals.find(
+                                (prof) =>
+                                  String(prof.id) === formData.professionalId
+                              );
+                              return p
+                                ? formatProfessionalOption(p)
+                                : t(
+                                    'bookings.form.select_professional',
+                                    'Selecione um profissional'
+                                  );
+                            })()
+                          : t(
+                              'bookings.form.select_professional',
+                              'Selecione um profissional'
+                            )}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className="text-brand-surfaceForeground/70"
+                      />
+                    </button>
+                  }
+                  items={professionalFormItems}
+                  searchable={true}
+                  searchPlaceholder={t('common.search', 'Pesquisar...')}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="col-span-1">
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.form.slot', 'Horário')}
+                </label>
+                <select
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                  value={formData.slotId}
+                  onChange={(e) => handleFormChange('slotId', e.target.value)}
+                  disabled={!formData.professionalId}
+                  onFocus={() => {
+                    if (formData.professionalId) {
+                      refreshSlotsForProfessional(formData.professionalId);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)',
+                  }}
+                >
+                  <option
+                    value=""
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {t('bookings.form.select_slot', 'Selecione um horário')}
+                  </option>
+                  {formSlots.map((slot) => (
+                    <option
+                      key={slot.id}
+                      value={slot.id}
+                      style={{
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                      }}
+                    >
+                      {formatDateTimeRange(slot.start_time, slot.end_time)}
+                    </option>
+                  ))}
+                </select>
+                {formSlotsLoading && (
+                  <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                    {t(
+                      'bookings.form.loading_slots',
+                      'Carregando horários disponíveis...'
+                    )}
+                  </p>
+                )}
+                {!formSlotsLoading &&
+                  formData.professionalId &&
+                  formSlots.length === 0 && (
+                    <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                      {t(
+                        'bookings.form.no_slots',
+                        'Nenhum horário disponível para este profissional.'
+                      )}
+                    </p>
+                  )}
+              </div>
+
+              <div className="col-span-1">
+                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                  {t('bookings.notes', 'Observações')}
+                </label>
+                <textarea
+                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                  rows={1}
+                  value={formData.notes}
+                  onChange={(e) => handleFormChange('notes', e.target.value)}
+                  placeholder={t(
+                    'bookings.form.notes_placeholder',
+                    'Notas opcionais'
+                  )}
+                  style={{
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)',
+                  }}
+                />
+              </div>
+
+              <div className="col-span-full grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-center">
+                <div className="lg:col-span-4 flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    disabled={formSubmitting || customers.length === 0}
+                    className="inline-flex items-center justify-center rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {formSubmitting
+                      ? t('common.saving', 'Salvando...')
+                      : t('bookings.form.submit', 'Agendar')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="inline-flex items-center justify-center rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    {t('bookings.form.reset', 'Limpar')}
+                  </button>
+                </div>
+                <div className="lg:col-start-5 lg:col-span-1 flex lg:justify-end items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsCompact(!isCompact)}
+                    className={`p-1.5 rounded transition ${isCompact ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:bg-brand-light'}`}
+                    title={t('bookings.toggle_compact', 'Modo Compacto')}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                  {(() => {
+                    const disabled = !formData.customerId; // apenas cliente é obrigatório para abrir
+                    const title = disabled
+                      ? t(
+                          'bookings.form.customer_required',
+                          'Selecione o cliente para continuar.'
+                        )
+                      : undefined;
+                    return (
+                      <button
+                        type="button"
+                        onClick={openSeriesModal}
+                        disabled={disabled}
+                        title={title}
+                        className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition ${disabled ? 'border-brand-border bg-brand-light/20 text-brand-surfaceForeground/40 cursor-not-allowed' : 'border-brand-border bg-brand-light/50 text-brand-surfaceForeground/80 hover:bg-brand-light'}`}
+                      >
+                        {t('bookings.form.multi_series_short', 'Multi/Série')}
+                      </button>
+                    );
+                  })()}
+                </div>
+              </div>
+            </form>
+            {formError && (
+              <p className="mt-3 text-sm text-red-600">{formError.message}</p>
+            )}
+          </Card>
+        ) : null}
 
         {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
 
-        <section className="mt-6">
+        <section>
           {loading ? (
             <p className="text-sm text-brand-surfaceForeground/70">
               {t('common.loading', 'Carregando...')}
             </p>
           ) : appointments.length === 0 ? (
-            <p className="text-sm text-brand-surfaceForeground/70">
-              {t('bookings.empty', 'Nenhum agendamento encontrado.')}
-            </p>
+            <EmptyState
+              title={t('bookings.empty_title', 'Nenhum agendamento encontrado')}
+              description={t(
+                'bookings.empty',
+                'Nenhum agendamento encontrado.'
+              )}
+            />
+          ) : viewMode === 'calendar' ? (
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                    {t('bookings.calendar.title', 'Calendário semanal')}
+                  </h2>
+                  <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.calendar.description', {
+                      defaultValue: '{{count}} agendamentos entre {{range}}.',
+                      count: appointments.length,
+                      range: formatCalendarRange(
+                        calendarWeekStart,
+                        addCalendarDays(calendarWeekStart, 6)
+                      ),
+                    })}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCalendarCursor((current) =>
+                        addCalendarDays(current, -7)
+                      )
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    {t('bookings.calendar.previous_week', 'Semana anterior')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCalendarCursor(startOfCalendarDay(new Date()))
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+                  >
+                    {t('bookings.calendar.today', 'Hoje')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCalendarCursor((current) =>
+                        addCalendarDays(current, 7)
+                      )
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    {t('bookings.calendar.next_week', 'Próxima semana')}
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-2 overflow-x-auto pb-1 md:hidden">
+                {calendarWeekDays.map((day) => {
+                  const dayKey = formatDateParam(day);
+                  const dayItems = calendarAppointmentsByDay.get(dayKey) || [];
+                  const active = calendarSelectedDate === dayKey;
+                  return (
+                    <button
+                      key={dayKey}
+                      type="button"
+                      onClick={() => setCalendarSelectedDate(dayKey)}
+                      className={`flex min-w-[92px] shrink-0 flex-col rounded-2xl border px-3 py-3 text-left transition ${active ? 'border-brand-primary/30 bg-brand-primary/10 text-brand-primary' : 'border-brand-border bg-brand-light/20 text-brand-surfaceForeground/75 hover:bg-brand-light/40'}`}
+                    >
+                      <span className="text-xs font-semibold uppercase tracking-[0.16em]">
+                        {formatCalendarDayHeading(day)}
+                      </span>
+                      <span className="mt-2 text-lg font-semibold leading-none">
+                        {dayItems.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-5 hidden gap-3 md:grid md:grid-cols-7">
+                {calendarWeekDays.map((day) => {
+                  const dayKey = formatDateParam(day);
+                  const dayItems = calendarAppointmentsByDay.get(dayKey) || [];
+                  return (
+                    <div
+                      key={dayKey}
+                      className="flex min-h-[320px] flex-col rounded-2xl border border-brand-border bg-brand-light/15 p-3"
+                    >
+                      <div className="border-b border-brand-border/70 pb-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/50">
+                          {formatCalendarDayHeading(day)}
+                        </p>
+                        <p className="mt-2 text-sm text-brand-surfaceForeground/65">
+                          {t('bookings.calendar.day_count', {
+                            defaultValue: '{{count}} agendamentos',
+                            count: dayItems.length,
+                          })}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 flex flex-1 flex-col gap-2">
+                        {dayItems.length === 0 ? (
+                          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-4 text-center text-xs text-brand-surfaceForeground/55">
+                            {t(
+                              'bookings.calendar.empty_day',
+                              'Sem agendamentos neste dia.'
+                            )}
+                          </div>
+                        ) : (
+                          dayItems.map((appointment) => (
+                            <button
+                              key={appointment.id}
+                              type="button"
+                              onClick={() => openEdit(appointment)}
+                              className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition ${getCalendarAppointmentTone(appointment.status)}`}
+                            >
+                              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
+                                {formatTimeRange(
+                                  appointment.slotStart,
+                                  appointment.slotEnd
+                                )}
+                              </div>
+                              <div className="mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground">
+                                {appointment.customerName ||
+                                  appointment.clientName ||
+                                  t('bookings.client_placeholder', 'Cliente')}
+                              </div>
+                              <div className="mt-1 text-xs leading-snug text-brand-surfaceForeground/58">
+                                {appointment.professionalName}
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 md:hidden">
+                <div className="rounded-2xl border border-brand-border bg-brand-light/15 p-3">
+                  <div className="border-b border-brand-border/70 pb-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/50">
+                      {formatCalendarDayHeading(
+                        calendarWeekDays.find(
+                          (day) => formatDateParam(day) === calendarSelectedDate
+                        ) || calendarWeekDays[0]
+                      )}
+                    </p>
+                    <p className="mt-2 text-sm text-brand-surfaceForeground/65">
+                      {t('bookings.calendar.day_count', {
+                        defaultValue: '{{count}} agendamentos',
+                        count: selectedCalendarItems.length,
+                      })}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-2">
+                    {selectedCalendarItems.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-5 text-center text-sm text-brand-surfaceForeground/55">
+                        {t(
+                          'bookings.calendar.empty_day',
+                          'Sem agendamentos neste dia.'
+                        )}
+                      </div>
+                    ) : (
+                      selectedCalendarItems.map((appointment) => (
+                        <button
+                          key={appointment.id}
+                          type="button"
+                          onClick={() => openEdit(appointment)}
+                          className={`rounded-2xl border p-3 text-left shadow-sm transition ${getCalendarAppointmentTone(appointment.status)}`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
+                                {formatTimeRange(
+                                  appointment.slotStart,
+                                  appointment.slotEnd
+                                )}
+                              </div>
+                              <div className="mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground">
+                                {appointment.customerName ||
+                                  appointment.clientName ||
+                                  t('bookings.client_placeholder', 'Cliente')}
+                              </div>
+                              <div className="mt-1 text-xs leading-snug text-brand-surfaceForeground/58">
+                                {appointment.professionalName}
+                              </div>
+                            </div>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                            >
+                              {t(
+                                `bookings.statuses.${appointment.status}`,
+                                appointment.status
+                              )}
+                            </span>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
           ) : (
             <>
               <div className="flex flex-col gap-6">
@@ -1836,46 +2581,58 @@ function Bookings() {
                         <div
                           key={appointment.id}
                           onClick={() => openEdit(appointment)}
-                          className={`group relative flex cursor-pointer flex-col rounded-lg border border-brand-border bg-brand-surface transition hover:bg-brand-surface/50 sm:flex-row sm:items-center ${isCompact ? 'p-1.5 gap-1.5 sm:gap-2 text-sm' : 'p-3 gap-3 sm:gap-4'}`}
+                          className={`group relative flex cursor-pointer flex-col rounded-2xl border border-brand-border bg-brand-surface/95 shadow-sm ring-1 ring-brand-border/70 transition hover:bg-brand-surface/75 sm:flex-row sm:items-center ${isCompact ? 'p-2 gap-2 sm:gap-3 text-sm' : 'p-4 gap-4 sm:gap-5'}`}
                         >
-                          {/* 1. Data e hora (Primary) */}
-                          <div className="flex-shrink-0 sm:min-w-[150px]">
-                            <div className="font-mono text-sm font-medium text-brand-surfaceForeground">
-                              {formatDateTimeRange(
+                          <div className="flex-shrink-0 rounded-2xl border border-brand-border bg-brand-light/30 px-3 py-2 sm:min-w-[160px]">
+                            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-surfaceForeground/45">
+                              {formatShortDate(appointment.slotStart)}
+                            </div>
+                            <div className="mt-1 font-mono text-base font-semibold text-brand-surfaceForeground">
+                              {formatTimeRange(
                                 appointment.slotStart,
                                 appointment.slotEnd
                               )}
                             </div>
                           </div>
 
-                          {/* 2. Nome do cliente (Secondary) */}
                           <div className="flex flex-1 flex-col min-w-0">
-                            <div
-                              className="font-medium text-brand-primary truncate"
-                              title={[
-                                appointment.customerEmail ||
-                                  appointment.clientEmail,
-                                appointment.customerPhone ||
-                                  appointment.clientPhone,
-                              ]
-                                .filter(Boolean)
-                                .join(' • ')}
-                            >
+                            <div className="font-semibold text-brand-surfaceForeground truncate">
+                              {appointment.serviceName}
+                            </div>
+                            <div className="mt-1 text-sm text-brand-primary truncate">
                               {appointment.customerName ||
                                 appointment.clientName ||
                                 t('bookings.client_placeholder', 'Cliente')}
                             </div>
-                            {/* 3. Profissional + serviço (Context) */}
-                            <div className="text-xs text-brand-surfaceForeground/70 truncate">
-                              {appointment.professionalName} •{' '}
-                              {appointment.serviceName}
+                            <div className="mt-1 text-xs text-brand-surfaceForeground/68 truncate">
+                              {t('bookings.card.with_professional', {
+                                defaultValue: 'com {{name}}',
+                                name: appointment.professionalName,
+                              })}
                             </div>
+                            {(appointment.customerPhone ||
+                              appointment.customerEmail ||
+                              appointment.clientEmail) && (
+                              <div className="mt-2 text-xs text-brand-surfaceForeground/55 truncate">
+                                {[
+                                  appointment.customerPhone,
+                                  appointment.customerEmail ||
+                                    appointment.clientEmail,
+                                ]
+                                  .filter(Boolean)
+                                  .join(' • ')}
+                              </div>
+                            )}
+                            {appointment.notes ? (
+                              <div className="mt-2 text-xs text-brand-surfaceForeground/60 line-clamp-2">
+                                {appointment.notes}
+                              </div>
+                            ) : null}
                           </div>
 
-                          {/* 4. Status + Actions (Right) */}
                           <div className="flex-shrink-0 flex items-center gap-3 sm:text-right justify-end">
                             <span
-                              className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                              className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
                             >
                               {t(
                                 `bookings.statuses.${appointment.status}`,
@@ -1883,15 +2640,14 @@ function Bookings() {
                               )}
                             </span>
 
-                            {/* Actions Menu */}
                             <div onClick={(e) => e.stopPropagation()}>
                               <Dropdown
                                 trigger={
                                   <button
                                     type="button"
-                                    className="p-1 rounded-full hover:bg-brand-light text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground transition"
+                                    className="rounded-full p-2 text-brand-surfaceForeground/60 transition hover:bg-brand-light hover:text-brand-surfaceForeground"
                                   >
-                                    <MoreHorizontal className="w-5 h-5" />
+                                    <MoreHorizontal className="h-5 w-5" />
                                   </button>
                                 }
                                 className="ml-1"
@@ -1962,7 +2718,7 @@ function Bookings() {
             </>
           )}
 
-          {totalCount > 0 && (
+          {viewMode !== 'calendar' && totalCount > 0 && (
             <PaginationControls
               totalCount={totalCount}
               limit={limit}

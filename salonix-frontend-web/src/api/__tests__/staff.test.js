@@ -5,6 +5,7 @@ import {
   fetchStaffMembers,
   inviteStaffMember,
   updateStaffMember,
+  updateStaffContact,
   disableStaffMember,
   acceptStaffInvite,
 } from '../staff';
@@ -83,9 +84,14 @@ describe('staff api', () => {
   });
 
   it('disableStaffMember envia DELETE com payload e interpreta 204', async () => {
-    client.delete.mockResolvedValueOnce({ status: 204, headers: { 'x-request-id': 'del-001' } });
+    client.delete.mockResolvedValueOnce({
+      status: 204,
+      headers: { 'x-request-id': 'del-001' },
+    });
 
-    const { success, requestId } = await disableStaffMember(10, { slug: 'aurora' });
+    const { success, requestId } = await disableStaffMember(10, {
+      slug: 'aurora',
+    });
 
     expect(client.delete).toHaveBeenCalledWith('users/staff/', {
       headers: { 'X-Tenant-Slug': 'aurora' },
@@ -94,6 +100,51 @@ describe('staff api', () => {
     });
     expect(success).toBe(true);
     expect(requestId).toBe('del-001');
+  });
+
+  it('updateStaffContact envia payload json quando não há arquivo', async () => {
+    client.patch.mockResolvedValueOnce({
+      data: { id: 7, birthday: '1992-07-18' },
+      headers: { 'x-request-id': 'contact-001' },
+    });
+
+    const result = await updateStaffContact(
+      7,
+      { birthday: '1992-07-18' },
+      { slug: 'aurora' }
+    );
+
+    expect(client.patch).toHaveBeenCalledWith(
+      'users/staff/contact/',
+      { id: 7, birthday: '1992-07-18' },
+      {
+        headers: { 'X-Tenant-Slug': 'aurora' },
+        params: { tenant: 'aurora' },
+      }
+    );
+    expect(result.requestId).toBe('contact-001');
+  });
+
+  it('updateStaffContact envia multipart quando há arquivo', async () => {
+    client.patch.mockResolvedValueOnce({
+      data: { id: 7 },
+      headers: { 'x-request-id': 'contact-002' },
+    });
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    await updateStaffContact(7, { photo: file }, { slug: 'aurora' });
+
+    expect(client.patch).toHaveBeenCalledWith(
+      'users/staff/contact/',
+      expect.any(FormData),
+      {
+        headers: {
+          'X-Tenant-Slug': 'aurora',
+          'Content-Type': 'multipart/form-data',
+        },
+        params: { tenant: 'aurora' },
+      }
+    );
   });
 
   it('acceptStaffInvite posta token e retorna staffMember', async () => {

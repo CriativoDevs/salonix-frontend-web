@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ChevronDown, ChevronUp, Filter, Plus } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import CustomerForm from '../components/CustomerForm';
+import Card from '../components/ui/Card';
+import PageHeader from '../components/ui/PageHeader';
+import CustomerEditorModal from '../components/customers/CustomerEditorModal';
+import CustomerPhotoPreviewModal from '../components/customers/CustomerPhotoPreviewModal';
 import {
   fetchCustomers,
   createCustomer,
@@ -22,6 +27,7 @@ import {
 import PaginationControls from '../components/ui/PaginationControls';
 import CreditBlockModal from '../components/credits/CreditBlockModal';
 import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
+import { resolveTenantAssetUrl } from '../utils/tenant';
 
 const SORT_RECENT = 'recent';
 const SORT_NAME = 'name';
@@ -54,6 +60,94 @@ function sortCustomers(list = [], option = SORT_RECENT) {
   });
 }
 
+function formatDate(value) {
+  if (!value) return '—';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '—';
+  return parsed.toLocaleDateString();
+}
+
+function formatBirthday(value) {
+  if (!value) return '—';
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleDateString();
+}
+
+function getInitials(name) {
+  const tokens = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (!tokens.length) return 'CL';
+  return tokens.map((token) => token.charAt(0).toUpperCase()).join('');
+}
+
+function CustomerAvatarButton({ customer, onClick, t }) {
+  const photoSrc = resolveTenantAssetUrl(customer?.photo || '');
+  const customerName = customer?.name || t('customers.card.unknown', 'Cliente');
+  const content = photoSrc ? (
+    <img
+      src={photoSrc}
+      alt={customerName}
+      className="h-full w-full object-cover"
+    />
+  ) : (
+    <span className="text-lg font-semibold text-brand-primary/75">
+      {getInitials(customerName)}
+    </span>
+  );
+
+  const className =
+    'flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-brand-border bg-brand-light transition hover:border-brand-primary/50 hover:shadow-sm';
+
+  if (!onClick) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={className}
+      aria-label={t('customers.card.preview_photo', {
+        defaultValue: 'Abrir foto de {{name}}',
+        name: customerName,
+      })}
+    >
+      {content}
+    </button>
+  );
+}
+
+function ActionButton({
+  children,
+  tone = 'secondary',
+  className = '',
+  ...props
+}) {
+  const toneClass =
+    tone === 'primary'
+      ? 'border-brand-primary/20 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/15'
+      : tone === 'danger'
+        ? 'border-rose-500/20 bg-rose-500/10 text-rose-700 hover:bg-rose-500/15'
+        : tone === 'success'
+          ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15'
+          : 'border-brand-border bg-brand-light/50 text-brand-surfaceForeground/80 hover:bg-brand-light';
+
+  return (
+    <button
+      type="button"
+      className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${toneClass} ${className}`.trim()}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Customers() {
   const { t } = useTranslation();
   const { slug, flags, featureFlagsRaw } = useTenant();
@@ -70,19 +164,16 @@ function Customers() {
   const [inviteBusyId, setInviteBusyId] = useState(null);
   const [inviteStatuses, setInviteStatuses] = useState({});
   const [activeInviteTooltip, setActiveInviteTooltip] = useState(null);
-  const [editingId, setEditingId] = useState(null);
-  const [editingForm, setEditingForm] = useState({
-    name: '',
-    email: '',
-    phone_number: '',
-    notes: '',
-    marketing_opt_in: false,
-  });
+  const [editingCustomer, setEditingCustomer] = useState(null);
+  const [editingError, setEditingError] = useState(null);
+  const [previewCustomer, setPreviewCustomer] = useState(null);
   const [search, setSearch] = useState('');
   const [showInactive, setShowInactive] = useState(false);
   const [sortOption, setSortOption] = useState(SORT_RECENT);
   const [limit, setLimit] = useState(10);
   const [offset, setOffset] = useState(0);
+  const [createPanelOpen, setCreatePanelOpen] = useState(false);
+  const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
 
   // ordenação derivada de sortOption (evita missing deps em efeitos)
   const orderingFromSort = sortOption === SORT_NAME ? 'name' : '-created_at';
@@ -242,65 +333,37 @@ function Customers() {
   };
 
   const startEdit = (customer) => {
-    setEditingId(customer.id);
-    setEditingForm({
-      name: customer.name || '',
-      email: customer.email || '',
-      phone_number: customer.phone_number || '',
-      notes: customer.notes || '',
-      marketing_opt_in: Boolean(customer.marketing_opt_in),
-    });
+    setEditingCustomer(customer);
+    setEditingError(null);
+    setError(null);
   };
 
   const cancelEdit = () => {
-    setEditingId(null);
-    setEditingForm({
-      name: '',
-      email: '',
-      phone_number: '',
-      notes: '',
-      marketing_opt_in: false,
-    });
+    setEditingCustomer(null);
+    setEditingError(null);
   };
 
-  const saveEdit = async () => {
-    if (!editingId) return;
-    const payload = {
-      name: editingForm.name.trim(),
-      email: editingForm.email.trim(),
-      phone_number: editingForm.phone_number.trim(),
-      notes: editingForm.notes.trim(),
-      marketing_opt_in: Boolean(editingForm.marketing_opt_in),
-    };
-    if (!payload.name) {
-      setError({
-        message: t(
-          'customers.errors.name_required',
-          'Informe o nome do cliente.'
-        ),
-      });
-      return;
-    }
-    if (!payload.email && !payload.phone_number) {
-      setError({
-        message: t(
-          'customers.errors.contact_required',
-          'Informe e-mail ou telefone para contato.'
-        ),
-      });
-      return;
-    }
+  const saveEdit = async (payload) => {
+    if (!editingCustomer?.id) return;
     try {
-      setBusyId(editingId);
-      const updated = await updateCustomer(editingId, payload, { slug });
+      setBusyId(editingCustomer.id);
+      const updated = await updateCustomer(editingCustomer.id, payload, {
+        slug,
+      });
       setCustomers((prev) =>
-        prev.map((item) => (item.id === editingId ? updated : item))
+        prev.map((item) => (item.id === editingCustomer.id ? updated : item))
       );
       setError(null);
-      clearInviteStatus(editingId);
+      setEditingError(null);
+      clearInviteStatus(editingCustomer.id);
+      if (previewCustomer?.id === updated.id) {
+        setPreviewCustomer(updated);
+      }
       cancelEdit();
     } catch (err) {
-      setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
+      setEditingError(
+        parseApiError(err, t('common.save_error', 'Falha ao salvar.'))
+      );
     } finally {
       setBusyId(null);
     }
@@ -317,6 +380,12 @@ function Customers() {
       setCustomers((prev) =>
         prev.map((item) => (item.id === customer.id ? updated : item))
       );
+      if (previewCustomer?.id === updated.id) {
+        setPreviewCustomer(updated);
+      }
+      if (editingCustomer?.id === updated.id) {
+        setEditingCustomer(updated);
+      }
       clearInviteStatus(customer.id);
     } catch (err) {
       setError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
@@ -336,6 +405,12 @@ function Customers() {
       setBusyId(customer.id);
       await deleteCustomer(customer.id, { slug });
       setCustomers((prev) => prev.filter((item) => item.id !== customer.id));
+      if (previewCustomer?.id === customer.id) {
+        setPreviewCustomer(null);
+      }
+      if (editingCustomer?.id === customer.id) {
+        cancelEdit();
+      }
       clearInviteStatus(customer.id);
     } catch (err) {
       const parsed = parseApiError(
@@ -489,172 +564,257 @@ function Customers() {
     }
   };
 
+  const totalCustomers = customers.length;
+  const activeCustomers = useMemo(
+    () => customers.filter((customer) => customer.is_active !== false).length,
+    [customers]
+  );
+  const hasActiveFilters = Boolean(search.trim()) || showInactive;
+
   return (
     <FullPageLayout>
       <div className="space-y-6">
-        <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
-          <h1 className="text-2xl font-semibold text-brand-surfaceForeground">
-            {t('customers.title', 'Clientes')}
-          </h1>
-          <p className="mt-1 text-sm text-brand-surfaceForeground/70">
-            {t(
-              'customers.subtitle',
-              'Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.'
-            )}
-          </p>
-
-          <div className="mt-6">
-            <CustomerForm onAdd={handleAdd} busy={createBusy} />
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-brand-surface p-6 shadow-sm ring-1 ring-brand-border">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-brand-surfaceForeground">
-                {t('customers.list.title', 'Lista de clientes')}
-              </h2>
-              <p className="text-sm text-brand-surfaceForeground/70">
-                {t(
-                  'customers.list.subtitle',
-                  'Use a busca para encontrar rapidamente por nome, e-mail ou telefone.'
-                )}
-              </p>
-              <p className="text-xs text-brand-surfaceForeground/60">
-                {t(
-                  'customers.list.removal_hint',
-                  'Clientes com histórico não podem ser excluídos; desative para manter o cadastro sem aparecer na agenda.'
-                )}
-              </p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <select
-                value={sortOption}
-                onChange={(e) => {
-                  setSortOption(e.target.value);
-                  setOffset(0);
-                }}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-                className="rounded border px-3 py-2 text-sm"
-              >
-                <option value={SORT_RECENT}>
-                  {t('customers.list.sort_recent', 'Mais recentes')}
-                </option>
-                <option value={SORT_NAME}>
-                  {t('customers.list.sort_name', 'Nome (A–Z)')}
-                </option>
-              </select>
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setOffset(0);
-                }}
-                placeholder={t('customers.list.search', 'Buscar cliente...')}
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-primary)',
-                }}
-                className="w-full rounded border px-3 py-2 text-sm sm:w-64"
-              />
-              <label className="flex items-center gap-2 text-sm text-brand-surfaceForeground/70">
-                <input
-                  type="checkbox"
-                  checked={showInactive}
-                  onChange={(e) => {
-                    setShowInactive(e.target.checked);
-                    setOffset(0);
-                  }}
-                  className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
-                />
-                {t('customers.list.show_inactive', 'Exibir inativos')}
-              </label>
-              {/* Paginação movida para o rodapé */}
-            </div>
-          </div>
-
-          {error && (
-            <p className="mt-4 text-sm text-red-600">{error.message}</p>
+        <PageHeader
+          title={t('customers.title', 'Clientes')}
+          subtitle={t(
+            'customers.subtitle',
+            'Organize a base de clientes com identificacao visual mais clara para desktop e PWA.'
           )}
-          {loading ? (
-            <p className="mt-4 text-sm text-brand-surfaceForeground/70">
-              {t('common.loading', 'Carregando...')}
-            </p>
-          ) : filtered.length === 0 ? (
-            <p className="mt-4 text-sm text-brand-surfaceForeground/70">
-              {search
-                ? t(
-                    'customers.list.no_results',
-                    'Nenhum cliente encontrado para esta busca.'
-                  )
-                : t(
-                    'customers.list.empty',
-                    'Nenhum cliente cadastrado até o momento.'
+        />
+
+        <div className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <button
+              type="button"
+              onClick={() => setCreatePanelOpen((current) => !current)}
+              aria-expanded={createPanelOpen}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+            >
+              <Plus className="h-4 w-4" />
+              {createPanelOpen
+                ? t('customers.form.hide', 'Fechar adicionar cliente')
+                : t('customers.form.show', 'Adicionar cliente')}
+              {createPanelOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setFiltersPanelOpen((current) => !current)}
+              aria-expanded={filtersPanelOpen}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+            >
+              <Filter className="h-4 w-4" />
+              {filtersPanelOpen
+                ? t('customers.filters.hide', 'Fechar filtros')
+                : t('customers.filters.show', 'Filtros')}
+              {filtersPanelOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+
+            {hasActiveFilters ? (
+              <div className="flex flex-wrap items-center gap-2 text-xs text-brand-surfaceForeground/65">
+                {search.trim() ? (
+                  <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                    {t('customers.filters.search_active', {
+                      defaultValue: 'Busca: {{term}}',
+                      term: search.trim(),
+                    })}
+                  </span>
+                ) : null}
+                {showInactive ? (
+                  <span className="rounded-full border border-brand-border bg-brand-light/40 px-3 py-1">
+                    {t(
+                      'customers.filters.inactive_active',
+                      'Exibindo inativos'
+                    )}
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+
+          {createPanelOpen ? (
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="max-w-4xl">
+                <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                  {t('customers.form.title', 'Adicionar cliente')}
+                </h2>
+                <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                  {t(
+                    'customers.form.description',
+                    'Cadastre dados de contato e uma foto clara para identificar rapidamente quem e quem.'
                   )}
-            </p>
-          ) : (
-            <div className="mt-4 overflow-x-auto md:overflow-visible">
-              <table className="min-w-full divide-y divide-brand-border text-sm text-brand-surfaceForeground">
-                <thead className="bg-brand-light/60 text-xs uppercase tracking-wide text-brand-surfaceForeground/70">
-                  <tr>
-                    <th className="px-3 py-2 text-left">
-                      {t('customers.table.name', 'Cliente')}
-                    </th>
-                    <th className="px-3 py-2 text-left">
-                      {t('customers.table.contact', 'Contato')}
-                    </th>
-                    <th className="px-3 py-2 text-left">
-                      {t('customers.table.notes', 'Notas')}
-                    </th>
-                    <th className="px-3 py-2 text-left">
-                      {t('customers.table.status', 'Status')}
-                    </th>
-                    <th className="px-3 py-2 text-right">
-                      {t('customers.table.actions', 'Ações')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-border/50">
+                </p>
+                <div className="mt-4 rounded-2xl border border-brand-border bg-brand-light/35 p-4 text-sm text-brand-surfaceForeground/75">
+                  {t(
+                    'customers.form.tip',
+                    'Fotos e aniversarios ajudam a diferenciar homonimos e melhoram a busca visual no atendimento.'
+                  )}
+                </div>
+                <div className="mt-5">
+                  <CustomerForm onAdd={handleAdd} busy={createBusy} />
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
+          {filtersPanelOpen ? (
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="grid gap-3 md:grid-cols-[180px_minmax(0,1fr)_auto] md:items-end">
+                <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                  {t('customers.filters.order', 'Ordenacao')}
+                  <select
+                    value={sortOption}
+                    onChange={(e) => {
+                      setSortOption(e.target.value);
+                      setOffset(0);
+                    }}
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      borderColor: 'var(--border-primary)',
+                    }}
+                    className="rounded-xl border px-3 py-2 text-sm"
+                  >
+                    <option value={SORT_RECENT}>
+                      {t('customers.list.sort_recent', 'Mais recentes')}
+                    </option>
+                    <option value={SORT_NAME}>
+                      {t('customers.list.sort_name', 'Nome (A-Z)')}
+                    </option>
+                  </select>
+                </label>
+
+                <label className="flex flex-col gap-2 text-sm font-medium text-brand-surfaceForeground/80">
+                  {t('customers.filters.search_label', 'Busca')}
+                  <input
+                    type="search"
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setOffset(0);
+                    }}
+                    placeholder={t(
+                      'customers.list.search',
+                      'Buscar cliente...'
+                    )}
+                    style={{
+                      backgroundColor: 'var(--bg-primary)',
+                      color: 'var(--text-primary)',
+                      borderColor: 'var(--border-primary)',
+                    }}
+                    className="w-full rounded-xl border px-3 py-2 text-sm"
+                  />
+                </label>
+
+                <label className="flex items-center gap-2 rounded-xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/70 md:self-center">
+                  <input
+                    type="checkbox"
+                    checked={showInactive}
+                    onChange={(e) => {
+                      setShowInactive(e.target.checked);
+                      setOffset(0);
+                    }}
+                    className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
+                  />
+                  {t('customers.list.show_inactive', 'Exibir inativos')}
+                </label>
+              </div>
+            </Card>
+          ) : null}
+
+          <section className="space-y-6">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Card className="rounded-2xl border border-brand-border bg-brand-surface/90 p-4 shadow-sm ring-1 ring-brand-border/70">
+                <p className="text-xs uppercase tracking-wide text-brand-surfaceForeground/55">
+                  {t('customers.stats.total', 'Total cadastrados')}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-brand-surfaceForeground">
+                  {totalCustomers}
+                </p>
+              </Card>
+              <Card className="rounded-2xl border border-brand-border bg-brand-surface/90 p-4 shadow-sm ring-1 ring-brand-border/70">
+                <p className="text-xs uppercase tracking-wide text-brand-surfaceForeground/55">
+                  {t('customers.stats.active', 'Clientes ativos')}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-brand-surfaceForeground">
+                  {activeCustomers}
+                </p>
+              </Card>
+              <Card className="rounded-2xl border border-brand-border bg-brand-surface/90 p-4 shadow-sm ring-1 ring-brand-border/70">
+                <p className="text-xs uppercase tracking-wide text-brand-surfaceForeground/55">
+                  {t('customers.stats.visible', 'Visiveis no filtro')}
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-brand-surfaceForeground">
+                  {filtered.length}
+                </p>
+              </Card>
+            </div>
+
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="flex flex-col gap-3 border-b border-brand-border pb-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-brand-surfaceForeground">
+                    {t('customers.list.title', 'Lista de clientes')}
+                  </h2>
+                  <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                    {t(
+                      'customers.list.subtitle',
+                      'A foto ganha prioridade visual para evitar confusao entre clientes com nomes parecidos.'
+                    )}
+                  </p>
+                  <p className="mt-2 text-xs text-brand-surfaceForeground/55">
+                    {t(
+                      'customers.list.removal_hint',
+                      'Clientes com historico nao podem ser excluidos; desative para manter o cadastro fora da agenda.'
+                    )}
+                  </p>
+                </div>
+                <p className="text-xs text-brand-surfaceForeground/55">
+                  {t(
+                    'customers.list.quick_hint',
+                    'Use os botoes acima para abrir filtros e cadastro apenas quando precisar.'
+                  )}
+                </p>
+              </div>
+
+              {error ? (
+                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                  {error.message}
+                </div>
+              ) : null}
+
+              {loading ? (
+                <p className="mt-5 text-sm text-brand-surfaceForeground/70">
+                  {t('common.loading', 'Carregando...')}
+                </p>
+              ) : filtered.length === 0 ? (
+                <p className="mt-5 text-sm text-brand-surfaceForeground/70">
+                  {search
+                    ? t(
+                        'customers.list.no_results',
+                        'Nenhum cliente encontrado para esta busca.'
+                      )
+                    : t(
+                        'customers.list.empty',
+                        'Nenhum cliente cadastrado ate o momento.'
+                      )}
+                </p>
+              ) : (
+                <div className="mt-5 grid gap-4">
                   {paged.map((customer) => {
-                    const isEditing = editingId === customer.id;
                     const disabled = busyId === customer.id;
                     const inviteStatus = inviteStatuses[customer.id];
                     const inviteInFlight = inviteBusyId === customer.id;
                     const inviteButtonDisabled =
                       inviteInFlight || customer.is_active === false;
-                    const inviteButtonTitle = inviteButtonDisabled
-                      ? customer.is_active === false
-                        ? t(
-                            'customers.actions.invite.require_active',
-                            'Ative o cliente para reenviar convites.'
-                          )
-                        : t(
-                            'customers.actions.invite.in_progress',
-                            'Reenvio em andamento...'
-                          )
-                      : !customer.email
-                        ? t(
-                            'customers.actions.invite.require_email',
-                            'Cadastre um e-mail para reenviar convites.'
-                          )
-                        : '';
-                    const inviteButtonClasses = [
-                      'block text-right text-xs font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed',
-                      inviteInFlight
-                        ? 'text-brand-primary opacity-60 cursor-not-allowed'
-                        : !customer.email
-                          ? 'text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground/80'
-                          : 'text-brand-primary hover:underline',
-                    ]
-                      .filter(Boolean)
-                      .join(' ');
-
                     const inviteMeta = normalizeInviteMeta(
                       customer,
                       inviteStatus
@@ -689,13 +849,13 @@ function Customers() {
                             {
                               label: t(
                                 'credits.block.title',
-                                'Limite de créditos'
+                                'Limite de creditos'
                               ),
-                              text: t(
+                              value: t(
                                 'credits.block.sms_unavailable',
-                                `Envio por SMS indisponível. Necessário pelo menos ${getCost(
+                                `Envio por SMS indisponivel. Necessario pelo menos ${getCost(
                                   'sms'
-                                )} crédito.`
+                                )} credito.`
                               ),
                             },
                           ]
@@ -705,13 +865,13 @@ function Customers() {
                             {
                               label: t(
                                 'credits.block.title',
-                                'Limite de créditos'
+                                'Limite de creditos'
                               ),
-                              text: t(
+                              value: t(
                                 'credits.block.whatsapp_unavailable',
-                                `Envio por WhatsApp indisponível. Necessário pelo menos ${getCost(
+                                `Envio por WhatsApp indisponivel. Necessario pelo menos ${getCost(
                                   'whatsapp'
-                                )} crédito.`
+                                )} credito.`
                               ),
                             },
                           ]
@@ -723,367 +883,291 @@ function Customers() {
                       inviteStatusKey !== 'none' &&
                       inviteStatusKey !== 'disabled';
                     const inviteBadgeClass = [
-                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 transition',
+                      'inline-flex items-center rounded-full px-2 py-1 text-[11px] font-medium leading-4 ring-1 transition',
                       showInviteDot ? 'gap-1' : '',
                       inviteVariant.toneClass,
                     ]
                       .filter(Boolean)
                       .join(' ');
                     const inviteDotClass = [
-                      'h-1 w-1 rounded-full',
+                      'h-1.5 w-1.5 rounded-full',
                       inviteVariant.dotClass,
                     ]
                       .filter(Boolean)
                       .join(' ');
-                    const handleInviteTooltipToggle = () => {
-                      setActiveInviteTooltip((current) =>
-                        current === customer.id ? null : customer.id
-                      );
-                    };
-                    const handleInviteTooltipOpen = () => {
-                      setActiveInviteTooltip(customer.id);
-                    };
-                    const handleInviteTooltipClose = () => {
-                      setActiveInviteTooltip((current) =>
-                        current === customer.id ? null : current
-                      );
-                    };
+
                     return (
-                      <tr key={customer.id}>
-                        <td className="px-3 py-3 align-top">
-                          {isEditing ? (
-                            <input
-                              className="w-full rounded px-2 py-1 text-sm"
-                              style={{
-                                backgroundColor: 'var(--bg-primary)',
-                                color: 'var(--text-primary)',
-                                borderColor: 'var(--border-primary)',
-                                border: '1px solid',
-                              }}
-                              value={editingForm.name}
-                              onChange={(e) =>
-                                setEditingForm((prev) => ({
-                                  ...prev,
-                                  name: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <div className="font-medium">{customer.name}</div>
-                          )}
-                          <div className="text-xs text-brand-surfaceForeground/60">
-                            {t('customers.table.created', 'Criado em:')}{' '}
-                            {(() => {
-                              const date = customer.created_at
-                                ? new Date(customer.created_at)
-                                : null;
-                              return date && !Number.isNaN(date.getTime())
-                                ? date.toLocaleDateString()
-                                : t(
-                                    'customers.table.created_unknown',
-                                    'Data indisponível'
-                                  );
-                            })()}
-                          </div>
-                        </td>
-                        <td className="px-3 py-3 align-top">
-                          {isEditing ? (
-                            <div className="space-y-1">
-                              <input
-                                className="w-full rounded px-2 py-1 text-sm"
-                                style={{
-                                  backgroundColor: 'var(--bg-primary)',
-                                  color: 'var(--text-primary)',
-                                  borderColor: 'var(--border-primary)',
-                                  border: '1px solid',
-                                }}
-                                value={editingForm.email}
-                                onChange={(e) =>
-                                  setEditingForm((prev) => ({
-                                    ...prev,
-                                    email: e.target.value,
-                                  }))
+                      <Card
+                        key={customer.id}
+                        className="rounded-2xl border border-brand-border bg-brand-surface/80 p-5 shadow-sm ring-1 ring-brand-border/60"
+                      >
+                        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                          <div className="min-w-0 flex-1 space-y-4">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                              <CustomerAvatarButton
+                                customer={customer}
+                                t={t}
+                                onClick={
+                                  customer.photo
+                                    ? () => setPreviewCustomer(customer)
+                                    : undefined
                                 }
-                                placeholder={t(
-                                  'customers.form.email_placeholder',
-                                  'cliente@email.com'
-                                )}
                               />
-                              <input
-                                className="w-full rounded px-2 py-1 text-sm"
-                                style={{
-                                  backgroundColor: 'var(--bg-primary)',
-                                  color: 'var(--text-primary)',
-                                  borderColor: 'var(--border-primary)',
-                                  border: '1px solid',
-                                }}
-                                value={editingForm.phone_number}
-                                onChange={(e) =>
-                                  setEditingForm((prev) => ({
-                                    ...prev,
-                                    phone_number: e.target.value,
-                                  }))
-                                }
-                                placeholder={t(
-                                  'customers.form.phone_placeholder',
-                                  '+351912345678'
-                                )}
-                              />
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              {customer.email && <div>{customer.email}</div>}
-                              {customer.phone_number && (
-                                <div className="text-sm text-brand-surfaceForeground/80">
-                                  {customer.phone_number}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-3 py-3 align-top">
-                          {isEditing ? (
-                            <textarea
-                              className="w-full rounded px-2 py-1 text-sm"
-                              style={{
-                                backgroundColor: 'var(--bg-primary)',
-                                color: 'var(--text-primary)',
-                                borderColor: 'var(--border-primary)',
-                                border: '1px solid',
-                              }}
-                              rows={2}
-                              value={editingForm.notes}
-                              onChange={(e) =>
-                                setEditingForm((prev) => ({
-                                  ...prev,
-                                  notes: e.target.value,
-                                }))
-                              }
-                            />
-                          ) : (
-                            <div className="text-sm text-brand-surfaceForeground/80">
-                              {customer.notes ||
-                                t('customers.table.no_notes', 'Sem notas.')}
-                            </div>
-                          )}
-                          {/* {isEditing && (
-                            <label className="mt-2 flex items-center gap-2 text-xs text-brand-surfaceForeground/70">
-                              <input
-                                type="checkbox"
-                                checked={editingForm.marketing_opt_in}
-                                onChange={(e) =>
-                                  setEditingForm((prev) => ({
-                                    ...prev,
-                                    marketing_opt_in: e.target.checked,
-                                  }))
-                                }
-                                className="h-4 w-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
-                              />
-                              {t(
-                                'customers.form.marketing_opt_in',
-                                'Aceita receber comunicações de marketing'
-                              )}
-                            </label>
-                          )} */}
-                        </td>
-                        <td className="px-3 py-3 align-top">
-                          <div className="flex flex-col items-start gap-2">
-                            <span
-                              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                                customer.is_active !== false
-                                  ? 'bg-emerald-100 text-emerald-700'
-                                  : 'bg-brand-light text-brand-surfaceForeground/70'
-                              }`}
-                            >
-                              {customer.is_active !== false
-                                ? t('customers.status.active', 'Ativo')
-                                : t('customers.status.inactive', 'Inativo')}
-                            </span>
 
-                            <div
-                              className="relative"
-                              onMouseEnter={handleInviteTooltipOpen}
-                              onMouseLeave={handleInviteTooltipClose}
-                            >
-                              <button
-                                type="button"
-                                onClick={handleInviteTooltipToggle}
-                                onFocus={handleInviteTooltipOpen}
-                                onBlur={handleInviteTooltipClose}
-                                aria-expanded={inviteTooltipOpen}
-                                className={`${inviteBadgeClass} focus:outline-none focus:ring-2 focus:ring-brand-primary/60`}
-                              >
-                                {showInviteDot ? (
-                                  <span
-                                    className={inviteDotClass}
-                                    aria-hidden="true"
-                                  />
-                                ) : null}
-                                <span>{inviteStatusLabel}</span>
-                              </button>
+                              <div className="min-w-0 flex-1 space-y-4">
+                                <div className="flex flex-wrap items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <h3 className="text-lg font-semibold text-brand-surfaceForeground">
+                                      {customer.name}
+                                    </h3>
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                                      <span
+                                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                          customer.is_active !== false
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-brand-light text-brand-surfaceForeground/70'
+                                        }`}
+                                      >
+                                        {customer.is_active !== false
+                                          ? t(
+                                              'customers.status.active',
+                                              'Ativo'
+                                            )
+                                          : t(
+                                              'customers.status.inactive',
+                                              'Inativo'
+                                            )}
+                                      </span>
 
-                              {inviteTooltipOpen ? (
-                                <div
-                                  className="absolute z-20 mt-2 w-64 max-w-xs rounded-lg p-3 text-left text-xs shadow-lg"
-                                  style={{
-                                    backgroundColor: 'var(--bg-primary)',
-                                    color: 'var(--text-primary)',
-                                    borderColor: 'var(--border-primary)',
-                                    border: '1px solid',
-                                  }}
-                                >
-                                  <div className="flex flex-col gap-2">
-                                    {inviteTooltipLines.map((line, index) => (
-                                      <div key={index}>
-                                        {line.label ? (
-                                          <p
-                                            className="font-semibold"
-                                            style={{
-                                              color: 'var(--text-secondary)',
-                                            }}
-                                          >
-                                            {line.label}
-                                          </p>
-                                        ) : null}
-                                        <p
-                                          style={{
-                                            color: 'var(--text-primary)',
-                                          }}
-                                        >
-                                          {line.value}
-                                        </p>
+                                      <span className="inline-flex items-center rounded-full border border-brand-border bg-brand-light/40 px-2 py-1 text-xs font-medium text-brand-surfaceForeground/70">
+                                        {t(
+                                          'customers.table.created',
+                                          'Criado em'
+                                        )}
+                                        : {formatDate(customer.created_at)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div
+                                    className="relative shrink-0"
+                                    onMouseEnter={() =>
+                                      setActiveInviteTooltip(customer.id)
+                                    }
+                                    onMouseLeave={() =>
+                                      setActiveInviteTooltip((current) =>
+                                        current === customer.id ? null : current
+                                      )
+                                    }
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setActiveInviteTooltip((current) =>
+                                          current === customer.id
+                                            ? null
+                                            : customer.id
+                                        )
+                                      }
+                                      className={`${inviteBadgeClass} focus:outline-none focus:ring-2 focus:ring-brand-primary/60`}
+                                      aria-expanded={inviteTooltipOpen}
+                                    >
+                                      {showInviteDot ? (
+                                        <span
+                                          className={inviteDotClass}
+                                          aria-hidden="true"
+                                        />
+                                      ) : null}
+                                      <span>{inviteStatusLabel}</span>
+                                    </button>
+
+                                    {inviteTooltipOpen ? (
+                                      <div className="absolute left-0 z-20 mt-2 w-64 max-w-xs rounded-xl border border-brand-border bg-brand-surface p-3 text-left text-xs shadow-lg">
+                                        <div className="flex flex-col gap-2 text-brand-surfaceForeground/80">
+                                          {inviteTooltipLines.map(
+                                            (line, index) => (
+                                              <div key={index}>
+                                                {line.label ? (
+                                                  <p className="font-semibold text-brand-surfaceForeground/65">
+                                                    {line.label}
+                                                  </p>
+                                                ) : null}
+                                                <p>{line.value}</p>
+                                              </div>
+                                            )
+                                          )}
+                                        </div>
                                       </div>
-                                    ))}
+                                    ) : null}
                                   </div>
                                 </div>
-                              ) : null}
+
+                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                  <div className="rounded-xl border border-brand-border/70 bg-brand-light/20 p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-surfaceForeground/55">
+                                      {t('customers.table.email', 'E-mail')}
+                                    </p>
+                                    <p className="mt-1 break-words text-sm text-brand-surfaceForeground/85">
+                                      {customer.email || '—'}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-xl border border-brand-border/70 bg-brand-light/20 p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-surfaceForeground/55">
+                                      {t('customers.table.phone', 'Telefone')}
+                                    </p>
+                                    <p className="mt-1 break-words text-sm text-brand-surfaceForeground/85">
+                                      {customer.phone_number || '—'}
+                                    </p>
+                                  </div>
+                                  <div className="rounded-xl border border-brand-border/70 bg-brand-light/20 p-3 sm:col-span-2 lg:col-span-1">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-surfaceForeground/55">
+                                      {t(
+                                        'customers.table.birthday',
+                                        'Aniversario'
+                                      )}
+                                    </p>
+                                    <p className="mt-1 text-sm text-brand-surfaceForeground/85">
+                                      {formatBirthday(customer.birthday)}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="rounded-xl border border-brand-border/70 bg-brand-light/35 p-4">
+                                  <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-surfaceForeground/55">
+                                    {t('customers.table.notes', 'Notas')}
+                                  </p>
+                                  <p className="mt-2 text-sm leading-6 text-brand-surfaceForeground/85">
+                                    {customer.notes ||
+                                      t(
+                                        'customers.table.no_notes',
+                                        'Sem notas.'
+                                      )}
+                                  </p>
+                                </div>
+
+                                {pwaClientEnabled && inviteStatus ? (
+                                  <div
+                                    className={`text-xs ${
+                                      inviteStatus.type === 'success'
+                                        ? 'text-emerald-600'
+                                        : 'text-rose-600'
+                                    }`}
+                                  >
+                                    {inviteStatus.text}
+                                  </div>
+                                ) : null}
+                              </div>
                             </div>
                           </div>
-                        </td>
-                        <td className="px-3 py-3 text-right align-top">
-                          {isEditing ? (
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={saveEdit}
-                                disabled={disabled}
-                                className="text-xs font-medium hover:underline disabled:opacity-50"
-                                style={{ color: '#7F7EED' }}
-                              >
-                                {t('common.save', 'Salvar')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEdit}
-                                className="text-xs font-medium hover:underline"
-                                style={{ color: '#7F7EED' }}
-                              >
-                                {t('common.cancel', 'Cancelar')}
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="flex flex-col items-end gap-1 text-right">
-                                <button
-                                  type="button"
-                                  onClick={() => startEdit(customer)}
-                                  className="block text-xs font-semibold text-[#7F7EED] hover:underline"
-                                >
-                                  {t('common.edit', 'Editar')}
-                                </button>
-                                {pwaClientEnabled ? (
-                                  <button
-                                    type="button"
-                                    disabled={inviteButtonDisabled}
-                                    onClick={() => {
-                                      if (inviteButtonDisabled) return;
-                                      resendInvite(customer);
-                                    }}
-                                    className={inviteButtonClasses}
-                                    title={inviteButtonTitle || undefined}
-                                    aria-busy={inviteInFlight}
-                                  >
-                                    {inviteInFlight
-                                      ? t(
-                                          'customers.actions.resending',
-                                          'Reenviando...'
-                                        )
-                                      : t(
-                                          'customers.actions.resend_invite',
-                                          'Reenviar convite'
-                                        )}
-                                  </button>
-                                ) : null}
-                                <button
-                                  type="button"
-                                  disabled={disabled}
-                                  onClick={() => toggleActive(customer)}
-                                  className="block text-xs font-semibold text-[#AD2409] hover:underline disabled:opacity-50"
-                                >
-                                  {customer.is_active !== false
+
+                          <div className="flex flex-wrap gap-2 xl:max-w-[260px] xl:justify-end">
+                            <ActionButton
+                              tone="primary"
+                              onClick={() => startEdit(customer)}
+                            >
+                              {t('common.edit', 'Editar')}
+                            </ActionButton>
+
+                            {pwaClientEnabled ? (
+                              <ActionButton
+                                disabled={inviteButtonDisabled}
+                                onClick={() => {
+                                  if (inviteButtonDisabled) return;
+                                  resendInvite(customer);
+                                }}
+                                title={
+                                  inviteButtonDisabled &&
+                                  customer.is_active === false
                                     ? t(
-                                        'customers.actions.deactivate',
-                                        'Desativar'
+                                        'customers.actions.invite.require_active',
+                                        'Ative o cliente para reenviar convites.'
                                       )
-                                    : t(
-                                        'customers.actions.activate',
-                                        'Reativar'
-                                      )}
-                                </button>
-                                {customer.is_active === false && (
-                                  <button
-                                    type="button"
-                                    disabled={disabled}
-                                    onClick={() => removeCustomer(customer)}
-                                    className="block text-xs font-semibold text-[#CF3B1D] hover:underline disabled:opacity-50"
-                                  >
-                                    {t('common.delete', 'Excluir')}
-                                  </button>
-                                )}
-                              </div>
-                              {pwaClientEnabled && inviteStatus ? (
-                                <div
-                                  className={`mt-2 text-xs ${
-                                    inviteStatus.type === 'success'
-                                      ? 'text-emerald-600'
-                                      : 'text-rose-600'
-                                  }`}
-                                >
-                                  {inviteStatus.text}
-                                </div>
-                              ) : null}
-                            </>
-                          )}
-                        </td>
-                      </tr>
+                                    : !customer.email
+                                      ? t(
+                                          'customers.actions.invite.require_email',
+                                          'Cadastre um e-mail para reenviar convites.'
+                                        )
+                                      : undefined
+                                }
+                              >
+                                {inviteInFlight
+                                  ? t(
+                                      'customers.actions.resending',
+                                      'Reenviando...'
+                                    )
+                                  : t(
+                                      'customers.actions.resend_invite',
+                                      'Reenviar convite'
+                                    )}
+                              </ActionButton>
+                            ) : null}
+
+                            <ActionButton
+                              tone={
+                                customer.is_active !== false
+                                  ? 'danger'
+                                  : 'success'
+                              }
+                              disabled={disabled}
+                              onClick={() => toggleActive(customer)}
+                            >
+                              {customer.is_active !== false
+                                ? t('customers.actions.deactivate', 'Desativar')
+                                : t('customers.actions.activate', 'Reativar')}
+                            </ActionButton>
+
+                            {customer.is_active === false ? (
+                              <ActionButton
+                                tone="danger"
+                                disabled={disabled}
+                                onClick={() => removeCustomer(customer)}
+                              >
+                                {t('common.delete', 'Excluir')}
+                              </ActionButton>
+                            ) : null}
+                          </div>
+                        </div>
+                      </Card>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                </div>
+              )}
 
-          {/* Controles de paginação no rodapé da lista */}
-          {!loading && !error && filtered.length > 0 && (
-            <PaginationControls
-              totalCount={filtered.length}
-              limit={limit}
-              offset={offset}
-              onChangeLimit={(n) => {
-                setLimit(n);
-                setOffset(0);
-              }}
-              onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
-              onNext={() =>
-                setOffset((prev) =>
-                  prev + limit < filtered.length ? prev + limit : prev
-                )
-              }
-              className="mt-6"
-            />
-          )}
+              {!loading && !error && filtered.length > 0 ? (
+                <PaginationControls
+                  totalCount={filtered.length}
+                  limit={limit}
+                  offset={offset}
+                  onChangeLimit={(n) => {
+                    setLimit(n);
+                    setOffset(0);
+                  }}
+                  onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+                  onNext={() =>
+                    setOffset((prev) =>
+                      prev + limit < filtered.length ? prev + limit : prev
+                    )
+                  }
+                  className="mt-6"
+                />
+              ) : null}
+            </Card>
+          </section>
         </div>
       </div>
+
+      <CustomerEditorModal
+        open={Boolean(editingCustomer)}
+        customer={editingCustomer}
+        busy={Boolean(editingCustomer && busyId === editingCustomer.id)}
+        error={editingError}
+        onClose={cancelEdit}
+        onSubmit={saveEdit}
+      />
+      <CustomerPhotoPreviewModal
+        open={Boolean(previewCustomer)}
+        customer={previewCustomer}
+        onClose={() => setPreviewCustomer(null)}
+      />
       <CreditPurchaseModal
         open={creditsModalOpen}
         onClose={() => setCreditsModalOpen(false)}

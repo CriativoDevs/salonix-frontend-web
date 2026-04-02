@@ -13,6 +13,47 @@ const buildTenantParams = (slug) => {
   return { headers, params };
 };
 
+const isFileLike = (value) =>
+  typeof File !== 'undefined' && value instanceof File;
+
+const buildInvitePayload = (payload = {}) => {
+  if (!Object.values(payload).some(isFileLike)) {
+    return { data: payload, isMultipart: false };
+  }
+
+  const formData = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value === undefined) return;
+    if (value === null) {
+      formData.append(key, '');
+      return;
+    }
+    formData.append(key, value);
+  });
+
+  return { data: formData, isMultipart: true };
+};
+
+const buildContactPayload = (id, payload = {}) => {
+  const values = { id, ...payload };
+
+  if (!Object.values(payload).some(isFileLike)) {
+    return { data: values, isMultipart: false };
+  }
+
+  const formData = new FormData();
+  Object.entries(values).forEach(([key, value]) => {
+    if (value === undefined) return;
+    if (value === null) {
+      formData.append(key, '');
+      return;
+    }
+    formData.append(key, value);
+  });
+
+  return { data: formData, isMultipart: true };
+};
+
 export async function fetchStaffMembers({ slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
   const response = await client.get('users/staff/', { headers, params });
@@ -25,8 +66,11 @@ export async function fetchStaffMembers({ slug } = {}) {
 
 export async function inviteStaffMember(payload, { slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
-  const response = await client.post('users/staff/', payload, {
-    headers,
+  const { data, isMultipart } = buildInvitePayload(payload);
+  const response = await client.post('users/staff/', data, {
+    headers: isMultipart
+      ? { ...headers, 'Content-Type': 'multipart/form-data' }
+      : headers,
     params,
   });
   return {
@@ -63,7 +107,11 @@ export async function resendStaffInvite(id, { slug } = {}) {
 
 export async function sendStaffAccessLink(id, { slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
-  const response = await client.post('users/staff/access-link/', { id }, { headers, params });
+  const response = await client.post(
+    'users/staff/access-link/',
+    { id },
+    { headers, params }
+  );
   return {
     staffMember: response.data,
     requestId: extractRequestId(response.headers),
@@ -72,7 +120,13 @@ export async function sendStaffAccessLink(id, { slug } = {}) {
 
 export async function updateStaffContact(id, payload = {}, { slug } = {}) {
   const { headers, params } = buildTenantParams(slug);
-  const response = await client.patch('users/staff/contact/', { id, ...payload }, { headers, params });
+  const { data, isMultipart } = buildContactPayload(id, payload);
+  const response = await client.patch('users/staff/contact/', data, {
+    headers: isMultipart
+      ? { ...headers, 'Content-Type': 'multipart/form-data' }
+      : headers,
+    params,
+  });
   return {
     staffMember: response.data,
     requestId: extractRequestId(response.headers),

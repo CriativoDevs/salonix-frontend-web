@@ -53,12 +53,37 @@ describe('customers api', () => {
   it('createCustomer posts payload to tenant scope', async () => {
     client.post.mockResolvedValueOnce({ data: { id: 10 } });
 
-    await createCustomer({ name: 'Cliente', email: 'a@b.c' }, { slug: 'default' });
+    await createCustomer(
+      { name: 'Cliente', email: 'a@b.c' },
+      { slug: 'default' }
+    );
 
     expect(client.post).toHaveBeenCalledWith(
       'salon/customers/',
       { name: 'Cliente', email: 'a@b.c' },
-      { headers: { 'X-Tenant-Slug': 'default' } },
+      { headers: { 'X-Tenant-Slug': 'default' } }
+    );
+  });
+
+  it('createCustomer uses multipart when photo file is present', async () => {
+    client.post.mockResolvedValueOnce({ data: { id: 11 } });
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+
+    await createCustomer(
+      { name: 'Cliente', email: 'a@b.c', photo: file },
+      { slug: 'default' }
+    );
+
+    expect(client.post).toHaveBeenCalledWith(
+      'salon/customers/',
+      expect.any(FormData),
+      {
+        headers: {
+          'X-Tenant-Slug': 'default',
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     );
   });
 
@@ -70,7 +95,26 @@ describe('customers api', () => {
     expect(client.patch).toHaveBeenCalledWith(
       'salon/customers/7/',
       { name: 'Atualizado' },
-      { headers: { 'X-Tenant-Slug': 'default' } },
+      { headers: { 'X-Tenant-Slug': 'default' } }
+    );
+  });
+
+  it('updateCustomer uses multipart when photo file is present', async () => {
+    client.patch.mockResolvedValueOnce({ data: { id: 7, name: 'Atualizado' } });
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+
+    await updateCustomer(7, { photo: file }, { slug: 'default' });
+
+    expect(client.patch).toHaveBeenCalledWith(
+      'salon/customers/7/',
+      expect.any(FormData),
+      {
+        headers: {
+          'X-Tenant-Slug': 'default',
+          'Content-Type': 'multipart/form-data',
+        },
+      }
     );
   });
 
@@ -96,7 +140,7 @@ describe('customers api', () => {
       {
         headers: { 'X-Tenant-Slug': 'default' },
         params: { tenant: 'default' },
-      },
+      }
     );
   });
 });

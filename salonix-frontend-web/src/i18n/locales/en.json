@@ -120,10 +120,44 @@
   },
   "services": {
     "title": "Services",
+    "subtitle": "Organize services as a clear catalog, with price and duration easy to compare during daily operations.",
     "name": "Service name",
     "price": "Price (€)",
     "duration": "Duration (minutes)",
     "submit": "Add service",
+    "empty_title": "No services found",
+    "empty_description": "Start by registering the main services offered by the salon to build an operational catalog.",
+    "empty_filtered": "No services match the current filters.",
+    "stats": {
+      "total": "Total services",
+      "visible": "Visible now"
+    },
+    "filters": {
+      "show": "Filters",
+      "hide": "Close filters",
+      "order": "Order by",
+      "order_active": "Ordering: name",
+      "search": "Search",
+      "search_placeholder": "Search services by name",
+      "search_active": "Search: {{term}}"
+    },
+    "list": {
+      "price": "Price",
+      "duration": "Duration"
+    },
+    "form": {
+      "show": "Add service",
+      "hide": "Close add service",
+      "title": "Add service",
+      "description": "Register services with a clear commercial name, well-defined price and realistic duration to improve scheduling and conversion.",
+      "tip": "Well-standardized services make the team faster during service and reduce price and duration mistakes.",
+      "helper": "Define a clear name, objective price and realistic duration to improve scheduling and reporting readability.",
+      "submitting": "Saving...",
+      "name_placeholder": "Ex: Premium men's haircut",
+      "price_placeholder": "25.00",
+      "duration_placeholder": "45",
+      "duration_suffix": "min"
+    },
     "errors": {
       "name_required": "Service name is required.",
       "price_invalid": "Enter a valid price.",
@@ -153,6 +187,7 @@
   },
   "slots": {
     "title": "Available time slots",
+    "subtitle": "Organize availability with quick filters, guided creation and a clearer day-by-day view.",
     "select_date": "Select date",
     "no_slots": "No slots available for this date.",
     "professional": "Professional",
@@ -162,9 +197,44 @@
     "slot_date": "Slot date",
     "start_time": "Start",
     "end_time": "End",
-    "create_slot": "Create slot"
+    "create_slot": "Create slot",
+    "stats": {
+      "total": "Total available",
+      "visible": "Visible now",
+      "days": "Days listed",
+      "today": "Today"
+    },
+    "create": {
+      "show": "Create slot",
+      "hide": "Close creation",
+      "title": "Create new slot",
+      "description": "Define the date and time range for the selected professional. After creation, the list refreshes automatically."
+    },
+    "filters": {
+      "show": "Filters",
+      "hide": "Close filters",
+      "title": "Filters and context",
+      "description": "Switch professional, refine by date and adjust ordering to find or clear slots with less effort.",
+      "all_dates": "All dates",
+      "reset": "Clear filters",
+      "date_active": "Date: {{date}}",
+      "order_active": "Ordering: oldest first"
+    },
+    "list": {
+      "title": "Registered slots",
+      "description": "{{count}} slots on this page.",
+      "group_count": "{{count}} slots on this day",
+      "slot_label": "Time range"
+    },
+    "empty": {
+      "title": "No slots found",
+      "description": "Adjust the filters or open the creation panel to add new slots for the selected professional.",
+      "no_professionals_title": "No professionals available",
+      "no_professionals_description": "Create or activate a professional before organizing available time slots."
+    }
   },
   "bookings": {
+    "subtitle": "Organize daily operations with quick filters, guided creation and a clearer agenda view.",
     "actions": {
       "cancel": "Cancel",
       "reschedule": "Reschedule",
@@ -178,6 +248,16 @@
       "save": "Save changes"
     },
     "title": "Bookings",
+    "empty_title": "No bookings found",
+    "stats": {
+      "today": "Today",
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "upcoming": "Upcoming"
+    },
+    "card": {
+      "with_professional": "with {{name}}"
+    },
     "client": "Client",
     "service": "Service",
     "professional": "Professional",
@@ -187,7 +267,10 @@
     "empty": "No bookings found.",
     "client_placeholder": "Client",
     "create": {
-      "title": "Create appointment"
+      "title": "Create appointment",
+      "show": "New booking",
+      "hide": "Close new booking",
+      "description": "Fill the agenda in natural order: client, service, professional and time slot."
     },
     "form": {
       "select_service": "Select a service",
@@ -207,12 +290,36 @@
       "multi_series_short": "Multi/Series"
     },
     "filters": {
+      "show": "Filters",
+      "hide": "Close filters",
       "status": "Status",
       "status_all": "All statuses",
       "customer": "Client",
       "customer_all": "All",
       "date_from": "From",
-      "date_to": "To"
+      "date_to": "To",
+      "customer_active": "Client: {{name}}",
+      "status_active": "Status: {{status}}",
+      "from_active": "From: {{date}}",
+      "to_active": "To: {{date}}",
+      "calendar_range_note": "In calendar mode, the visible period is controlled by weekly navigation."
+    },
+    "views": {
+      "agenda": "Agenda",
+      "calendar": "Calendar"
+    },
+    "calendar": {
+      "title": "Weekly calendar",
+      "description": "{{count}} bookings between {{range}}.",
+      "week_label": "Visible week",
+      "previous_week": "Previous week",
+      "next_week": "Next week",
+      "today": "Today",
+      "next_appointment": "Next appointment",
+      "no_next": "There are no upcoming appointments for the current filters.",
+      "jump_error": "Could not locate the next appointment date.",
+      "day_count": "{{count}} bookings",
+      "empty_day": "No bookings on this day."
     },
     "edit": {
       "keep_slot": "Keep current slot"
@@ -822,10 +929,25 @@
     "subtitle": "Register customers to link them directly in bookings and track contacts.",
     "confirm_delete": "Remove this customer?",
     "form": {
+      "title": "Add customer",
+      "description": "Enter contact details and a clear photo to quickly identify each person.",
+      "tip": "Photos and birthdays help differentiate customers with similar names and improve visual lookup during service.",
+      "show": "Add customer",
+      "hide": "Close add customer",
       "name": "Name",
       "email": "Email",
       "phone": "Phone",
+      "birthday": "Birthday",
       "notes": "Notes",
+      "photo": "Customer photo",
+      "add_photo": "Add photo",
+      "change_photo": "Change photo",
+      "photo_requirements": "Use JPG, PNG, GIF or WEBP up to 2MB and dimensions between 50x50 and 2000x2000 pixels.",
+      "photo_alt": "Customer photo",
+      "photo_ready": "Preview ready",
+      "photo_empty": "No photo added",
+      "photo_ready_hint": "Click the button to replace the image.",
+      "photo_empty_hint": "Add a photo to make identification easier.",
       "name_placeholder": "Full name",
       "email_placeholder": "customer@email.com",
       "phone_placeholder": "+351912345678",
@@ -837,6 +959,7 @@
       "title": "Customer list",
       "subtitle": "Use search to quickly find by name, email or phone.",
       "removal_hint": "Customers with history cannot be deleted; deactivate to keep the registry without appearing in the schedule.",
+      "quick_hint": "Use the buttons above to open filters and registration only when needed.",
       "sort_recent": "Most recent",
       "sort_name": "Name (A–Z)",
       "search": "Search customer...",
@@ -847,6 +970,9 @@
     "table": {
       "name": "Customer",
       "contact": "Contact",
+      "email": "Email",
+      "phone": "Phone",
+      "birthday": "Birthday",
       "notes": "Notes",
       "status": "Status",
       "actions": "Actions",
@@ -884,6 +1010,45 @@
     "success": {
       "invite_sent": "Invitation resent successfully."
     },
+    "filters": {
+      "show": "Filters",
+      "hide": "Close filters",
+      "order": "Sorting",
+      "search_label": "Search",
+      "search_active": "Search: {{term}}",
+      "inactive_active": "Showing inactive"
+    },
+    "stats": {
+      "total": "Total registered",
+      "active": "Active customers",
+      "visible": "Visible in filter"
+    },
+    "card": {
+      "unknown": "Customer",
+      "preview_photo": "Open photo of {{name}}"
+    },
+    "editor": {
+      "title": "Manage customer",
+      "description": "Update the customer's visual identification and key details.",
+      "photo": "Customer photo",
+      "add_photo": "Add photo",
+      "change_photo": "Change photo",
+      "photo_requirements": "Use JPG, PNG, GIF or WEBP up to 2MB and dimensions between 50x50 and 2000x2000 pixels.",
+      "photo_alt": "Customer photo",
+      "photo_ready": "Preview ready",
+      "photo_empty": "No photo added",
+      "photo_ready_hint": "Click the button to replace the image.",
+      "photo_empty_hint": "Add a photo to make identification easier."
+    },
+    "preview": {
+      "title": "Customer photo",
+      "description": "Use the enlarged photo to distinguish customers with similar names.",
+      "unknown": "Customer",
+      "name": "Customer",
+      "birthday": "Birthday",
+      "email": "Email",
+      "phone": "Phone"
+    },
     "invite": {
       "status": {
         "success": "Delivered",
@@ -913,7 +1078,12 @@
       "loading": "Detecting your role in the business..."
     },
     "actions": {
-      "invite": "Invite member"
+      "invite": "Invite member",
+      "show_invite": "Invite member",
+      "hide_invite": "Close invite",
+      "invite_title": "Invite professional",
+      "invite_description": "Open the invitation flow to define access, role and initial professional details without crowding the list.",
+      "invite_tip": "Use invitations for new team members and then complete photo, birthday and permissions in the individual management view."
     },
     "list": {
       "manage": "Manage",
@@ -943,11 +1113,17 @@
       "updated_at": "Updated"
     },
     "filters": {
+      "show": "Filters",
+      "hide": "Close filters",
       "search": "Search",
       "search_placeholder": "Search by name or email",
+      "search_active": "Search: {{term}}",
       "role": "Role",
+      "role_active": "Role: {{role}}",
       "status": "Status",
+      "status_active": "Status: {{status}}",
       "ordering": "Ordering",
+      "ordering_active": "Ordering: custom",
       "role_all": "All",
       "status_all": "All"
     },
@@ -963,7 +1139,12 @@
       "professional": {
         "title": "Professional data",
         "helper": "Define how the professional will appear on the portal.",
-        "name": "Professional name"
+        "name": "Professional name",
+        "photo": "Professional photo",
+        "add_photo": "Add photo",
+        "change_photo": "Change photo",
+        "photo_requirements": "Use JPG, PNG, GIF or WEBP up to 2MB and dimensions between 50x50 and 2000x2000 pixels.",
+        "birthday": "Birthday"
       },
       "roles": {
         "collaborator": "Collaborator",
@@ -1010,13 +1191,77 @@
         "title": "Summary",
         "name": "Name",
         "email": "Email",
+        "bio": "Bio or specialty",
+        "birthday": "Birthday",
+        "services": "Services",
         "role": "Current role",
         "status": "Current status",
         "unknown": "Not provided"
       },
+      "empty": "Select a member to manage.",
       "owner_notice": "The owner cannot have role or status changed.",
       "fields": {
         "role": "Role"
+      },
+      "tabs": {
+        "professional": "Professional details",
+        "permissions": "Permissions"
+      },
+      "photo": {
+        "alt": "Professional photo"
+      },
+      "professional": {
+        "summary": "Professional information",
+        "edit": "Edit professional",
+        "create": "Create professional",
+        "no_permission": "You do not have permission to edit professional details.",
+        "feedback": {
+          "updated": "Professional updated successfully.",
+          "created": "Professional created successfully."
+        },
+        "errors": {
+          "name_required": "Name is required."
+        },
+        "form": {
+          "photo": "Professional photo",
+          "add_photo": "Add photo",
+          "change_photo": "Change photo",
+          "photo_requirements": "Use JPG, PNG, GIF or WEBP up to 2MB and dimensions between 50x50 and 2000x2000 pixels.",
+          "name": "Professional name",
+          "email": "Access email",
+          "birthday": "Birthday",
+          "bio": "Bio or specialty",
+          "services": "Services provided",
+          "saving": "Saving...",
+          "save": "Save professional"
+        }
+      },
+      "services": {
+        "empty": "No services available."
+      },
+      "permissions": {
+        "summary": "Access permissions"
+      },
+      "role": {
+        "label": "Role"
+      },
+      "contact": {
+        "email_required": "Access email cannot be cleared. Enter a valid email.",
+        "updated_error": "Failed to update the member email.",
+        "photo_error": "Failed to update the member photo."
+      },
+      "invite": {
+        "resend": "Resend invitation",
+        "resending": "Resending...",
+        "resend_success": "Invitation resent successfully.",
+        "resend_error": "Failed to resend the invitation."
+      },
+      "access_link": {
+        "send": "Send access link",
+        "sending": "Sending...",
+        "sent_success": "Access link sent successfully.",
+        "sent_error": "Failed to send the access link.",
+        "email_required": "Add the member email to send an access link."
       },
       "roles": {
         "manager": "Manager",
@@ -1032,6 +1277,8 @@
         "confirm_activate_invite": "Manually activate {{name}}'s invitation?",
         "confirm_cancel_invite": "Cancel the invitation sent to {{name}}?",
         "updating": "Updating...",
+        "activate": "Activate",
+        "disabling": "Disabling...",
         "disable": "Disable",
         "enable": "Enable",
         "accept": "Activate manually",
