@@ -37,13 +37,42 @@ jest.mock(
 // Mock i18n
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (k, d, o) => {
-      if (k === 'credits.days_remaining' && o?.days)
-        return `approx. ${o.days} dias`;
-      if (k === 'common.enabled_at' && o?.val) return `Ativo (< ${o.val})`;
-      if (k === 'credits.alert_threshold' && o?.val)
-        return `Alerta: < ${o.val}`;
-      return d || k;
+    t: (key, defaultValueOrOptions, maybeOptions) => {
+      let template = key;
+      let values = {};
+
+      if (typeof defaultValueOrOptions === 'string') {
+        template = defaultValueOrOptions;
+      } else if (
+        defaultValueOrOptions &&
+        typeof defaultValueOrOptions === 'object'
+      ) {
+        if (typeof defaultValueOrOptions.defaultValue === 'string') {
+          template = defaultValueOrOptions.defaultValue;
+        }
+        values = defaultValueOrOptions;
+      }
+
+      if (maybeOptions && typeof maybeOptions === 'object') {
+        if (typeof maybeOptions.defaultValue === 'string') {
+          template = maybeOptions.defaultValue;
+        }
+        values = { ...values, ...maybeOptions };
+      }
+
+      if (key === 'credits.days_remaining' && values.days !== undefined) {
+        return `approx. ${values.days} dias`;
+      }
+      if (key === 'common.enabled_at' && values.val !== undefined) {
+        return `Ativo (< ${values.val})`;
+      }
+      if (key === 'credits.alert_threshold' && values.val !== undefined) {
+        return `Alerta: < ${values.val}`;
+      }
+
+      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+        Object.prototype.hasOwnProperty.call(values, token) ? values[token] : ''
+      );
     },
   }),
 }));
@@ -87,18 +116,18 @@ describe('CreditSettings', () => {
     render(<CreditSettings />);
 
     // Check Title
-    expect(screen.getByText('Gerenciamento de Créditos')).toBeInTheDocument();
+    expect(screen.getByText('credits.title')).toBeInTheDocument();
 
     // Check Balance
-    expect(screen.getByText('Saldo Atual')).toBeInTheDocument();
+    expect(screen.getByText('credits.current_balance')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('Pro Plan')).toBeInTheDocument();
 
     // Check Stats Placeholders (empty history)
-    expect(screen.getByText('Consumo (Mês)')).toBeInTheDocument();
+    expect(screen.getByText('credits.consumption_month')).toBeInTheDocument();
     expect(screen.getAllByText('0.00')).toHaveLength(2); // Month consumption and Avg
-    expect(screen.getByText('Média Mensal')).toBeInTheDocument();
-    expect(screen.getByText('Previsão')).toBeInTheDocument();
+    expect(screen.getByText('credits.avg_consumption')).toBeInTheDocument();
+    expect(screen.getByText('credits.forecast')).toBeInTheDocument();
     expect(screen.getByText('--')).toBeInTheDocument(); // Forecast
 
     // Check Alert Settings
@@ -148,7 +177,7 @@ describe('CreditSettings', () => {
   it('opens purchase modal when buy button is clicked', () => {
     render(<CreditSettings />);
 
-    const buyButton = screen.getByText('Comprar Créditos');
+    const buyButton = screen.getByText('credits.buy');
     fireEvent.click(buyButton);
 
     expect(screen.getByTestId('purchase-modal')).toBeInTheDocument();

@@ -35,10 +35,17 @@ describe('useDashboardData', () => {
         revenue_total: 5400,
         avg_ticket: 168,
       });
-    fetchDashboardRevenueSeries.mockResolvedValueOnce({ interval: 'month', series: [] });
+    fetchDashboardRevenueSeries.mockResolvedValueOnce({
+      interval: 'month',
+      series: [],
+    });
 
     const { result } = renderHook(() =>
-      useDashboardData({ slug: 'aurora', reportsEnabled: true, planTier: 'standard' })
+      useDashboardData({
+        slug: 'aurora',
+        reportsEnabled: true,
+        planTier: 'pro',
+      })
     );
 
     expect(result.current.loading).toBe(true);
@@ -68,21 +75,30 @@ describe('useDashboardData', () => {
       1,
       expect.objectContaining({
         slug: 'aurora',
-        params: expect.objectContaining({ from: expect.any(String), to: expect.any(String) }),
+        params: expect.objectContaining({
+          from: expect.any(String),
+          to: expect.any(String),
+        }),
       })
     );
     expect(fetchDashboardOverview).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         slug: 'aurora',
-        params: expect.objectContaining({ from: expect.any(String), to: expect.any(String) }),
+        params: expect.objectContaining({
+          from: expect.any(String),
+          to: expect.any(String),
+        }),
       })
     );
     expect(fetchDashboardRevenueSeries).toHaveBeenCalledWith(
       expect.objectContaining({
         slug: 'aurora',
         interval: 'month',
-        params: expect.objectContaining({ from: expect.any(String), to: expect.any(String) }),
+        params: expect.objectContaining({
+          from: expect.any(String),
+          to: expect.any(String),
+        }),
       })
     );
   });
@@ -98,9 +114,14 @@ describe('useDashboardData', () => {
         revenue_total: 0,
         avg_ticket: 0,
       });
-    fetchDashboardRevenueSeries.mockResolvedValueOnce({ interval: 'month', series: [] });
+    fetchDashboardRevenueSeries.mockResolvedValueOnce({
+      interval: 'month',
+      series: [],
+    });
 
-    const { result } = renderHook(() => useDashboardData({ slug: 'aurora', reportsEnabled: true }));
+    const { result } = renderHook(() =>
+      useDashboardData({ slug: 'aurora', reportsEnabled: true })
+    );
 
     await act(async () => {
       await Promise.resolve();
@@ -126,9 +147,14 @@ describe('useDashboardData', () => {
         revenue_total: 0,
         avg_ticket: 0,
       });
-    fetchDashboardRevenueSeries.mockResolvedValueOnce({ interval: 'month', series: [] });
+    fetchDashboardRevenueSeries.mockResolvedValueOnce({
+      interval: 'month',
+      series: [],
+    });
 
-    const { result } = renderHook(() => useDashboardData({ slug: 'aurora', reportsEnabled: true }));
+    const { result } = renderHook(() =>
+      useDashboardData({ slug: 'aurora', reportsEnabled: true })
+    );
 
     await act(async () => {
       await Promise.resolve();

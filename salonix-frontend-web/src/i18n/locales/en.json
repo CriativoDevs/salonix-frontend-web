@@ -1429,9 +1429,12 @@
     "error": "Error loading reports",
     "retry": "Try again",
     "forbidden": "Your current plan does not include access to reports.",
+    "upgrade_button": "Upgrade plan",
     "tabs": {
       "basic": "Basic",
-      "advanced": "Advanced"
+      "advanced": "Advanced",
+      "business": "Business Analysis",
+      "insights": "Advanced Insights"
     },
     "metrics": {
       "total_appointments": "Total Appointments",
@@ -1444,6 +1447,12 @@
       "description": "Essential reports to track your business's performance",
       "coming_soon": "Coming soon: Basic reports for appointments, revenue and customers",
       "data_loaded": "Data loaded successfully"
+    },
+    "business": {
+      "title": "Business Analysis",
+      "description": "Track your top-selling services and revenue evolution",
+      "upgrade_required": "Available from the Pro plan. Upgrade to access this section.",
+      "no_data": "No data available for the selected period."
     },
     "advanced": {
       "title": "Advanced Reports",

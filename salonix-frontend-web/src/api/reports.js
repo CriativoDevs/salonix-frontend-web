@@ -54,7 +54,7 @@ export async function fetchAdvancedReports(params = {}) {
 
 /**
  * Busca Top Services (Business Analysis)
- * Disponível para planos Standard e superiores
+ * Disponível apenas para planos Pro
  */
 export async function fetchTopServices(params = {}) {
   const { from, to, limit, offset, slug } = params;
@@ -80,7 +80,7 @@ export async function fetchTopServices(params = {}) {
 
 /**
  * Busca Revenue Series (Business Analysis)
- * Disponível para planos Standard e superiores
+ * Disponível apenas para planos Pro
  */
 export async function fetchRevenue(params = {}) {
   const { from, to, interval, limit, offset, slug } = params;

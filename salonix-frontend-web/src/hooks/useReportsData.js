@@ -10,7 +10,7 @@ import { parseApiError } from '../utils/apiError';
 
 const INITIAL_DATA = {
   basicReports: null,
-  businessReports: null, // Top Services + Revenue (Standard+)
+  businessReports: null, // Top Services + Revenue (Pro)
   insightsReports: null, // Retention + Advanced (Pro)
   advancedReports: null, // Legacy/Aggregate (Optional)
 };
@@ -110,7 +110,7 @@ export function useReportsData({ slug, type, filters } = {}) {
         });
         
       } else if (type === 'business') {
-        // Business Analysis (Standard+): Top Services + Revenue
+        // Business Analysis (Pro): Top Services + Revenue
         const [topServicesResult, revenueResult] = await Promise.allSettled([
           fetchTopServices({ slug, ...memoizedFilters }),
           fetchRevenue({ slug, ...memoizedFilters })
