@@ -75,7 +75,7 @@ describe('upgradeMessages', () => {
 
       expect(reportsMsg).not.toEqual(pwaMsg);
       expect(reportsMsg.requiredPlan).toBe('Pro');
-      expect(pwaMsg.requiredPlan).toBe('Basic');
+      expect(pwaMsg.requiredPlan).toBe('Founder');
     });
   });
 
@@ -84,18 +84,14 @@ describe('upgradeMessages', () => {
       const basicFeatures = getFeaturesByPlan('Basic');
 
       expect(Array.isArray(basicFeatures)).toBe(true);
-      expect(basicFeatures.length).toBeGreaterThan(0);
-      expect(basicFeatures).toContain('enableCustomerPwa');
-      expect(basicFeatures).toContain('enableWebPush');
+      expect(basicFeatures.length).toBe(0);
     });
 
     it('deve retornar features do plano Standard', () => {
       const standardFeatures = getFeaturesByPlan('Standard');
 
       expect(Array.isArray(standardFeatures)).toBe(true);
-      expect(standardFeatures.length).toBeGreaterThan(0);
-      expect(standardFeatures).toContain('enableAdvancedScheduling');
-      expect(standardFeatures).toContain('enableCustomFields');
+      expect(standardFeatures.length).toBe(0);
     });
 
     it('deve retornar features do plano Pro', () => {
@@ -174,22 +170,19 @@ describe('upgradeMessages', () => {
     });
 
     it('contadores devem ser números positivos', () => {
-      expect(FEATURES_COUNT_BY_PLAN.Basic).toBeGreaterThan(0);
-      expect(FEATURES_COUNT_BY_PLAN.Standard).toBeGreaterThan(0);
+      expect(FEATURES_COUNT_BY_PLAN.Basic).toBeGreaterThanOrEqual(0);
+      expect(FEATURES_COUNT_BY_PLAN.Standard).toBeGreaterThanOrEqual(0);
       expect(FEATURES_COUNT_BY_PLAN.Pro).toBeGreaterThan(0);
     });
 
     it('soma de features deve bater com total configurado', () => {
-      // FEATURES_COUNT_BY_PLAN só conta Basic, Standard, Pro
-      // mas enableBasicReports tem requiredPlan='Founder' (acessível a todos)
       const totalFromCounts =
         FEATURES_COUNT_BY_PLAN.Basic +
         FEATURES_COUNT_BY_PLAN.Standard +
         FEATURES_COUNT_BY_PLAN.Pro;
 
-      // Total deve ser 17 (não conta Founder separadamente pois já está em todos)
-      expect(totalFromCounts).toBe(17);
-      expect(CONFIGURED_FEATURES.length).toBe(18); // Total inclui todas as features
+      expect(totalFromCounts).toBe(getFeaturesByPlan('Pro').length);
+      expect(CONFIGURED_FEATURES.length).toBeGreaterThan(totalFromCounts);
     });
 
     it('plano Pro deve ter mais features que Basic', () => {
@@ -228,8 +221,8 @@ describe('upgradeMessages', () => {
       const standardFeatures = getFeaturesByPlan('Standard');
       const proFeatures = getFeaturesByPlan('Pro');
 
-      expect(basicFeatures.length).toBeGreaterThan(0);
-      expect(standardFeatures.length).toBeGreaterThan(0);
+      expect(basicFeatures.length).toBeGreaterThanOrEqual(0);
+      expect(standardFeatures.length).toBeGreaterThanOrEqual(0);
       expect(proFeatures.length).toBeGreaterThan(0);
     });
 

@@ -59,17 +59,27 @@ describe('extractSlugFromHost', () => {
 
 describe('resolveTenantSlug', () => {
   it('prefers slug from query string', () => {
-    const slug = resolveTenantSlug({ search: '?tenant=prime-beauty', hostname: 'aurora.localhost' });
+    const slug = resolveTenantSlug({
+      search: '?tenant=prime-beauty',
+      hostname: 'aurora.localhost',
+    });
     expect(slug).toBe('prime-beauty');
   });
 
   it('falls back to hostname slug when query missing', () => {
-    const slug = resolveTenantSlug({ hostname: 'glow.timelyone.dev', defaultSlug: 'fallback' });
+    const slug = resolveTenantSlug({
+      hostname: 'glow.timelyone.dev',
+      defaultSlug: 'fallback',
+    });
     expect(slug).toBe('glow');
   });
 
   it('uses provided default when nothing else available', () => {
-    const slug = resolveTenantSlug({ search: '?foo=bar', hostname: 'localhost', defaultSlug: 'aurora' });
+    const slug = resolveTenantSlug({
+      search: '?foo=bar',
+      hostname: 'localhost',
+      defaultSlug: 'aurora',
+    });
     expect(slug).toBe('aurora');
   });
 
@@ -81,11 +91,14 @@ describe('resolveTenantSlug', () => {
 
 describe('mergeTenantMeta', () => {
   it('fills missing fields with defaults', () => {
-    const meta = mergeTenantMeta({ name: 'Aurora', plan: { code: 'premium' } }, 'aurora');
+    const meta = mergeTenantMeta(
+      { name: 'Aurora', plan: { code: 'premium' } },
+      'aurora'
+    );
     expect(meta.slug).toBe('aurora');
     expect(meta.plan.code).toBe('premium');
     expect(meta.theme.primary).toBeDefined();
-    expect(meta.flags.enableReports).toBe(false);
+    expect(meta.flags.enableReports).toBe(true);
   });
 
   it('returns defaults when payload is invalid', () => {

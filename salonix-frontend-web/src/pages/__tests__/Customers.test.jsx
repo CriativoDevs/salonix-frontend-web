@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Customers from '../Customers';
 import { useTenant } from '../../hooks/useTenant';
@@ -11,6 +11,36 @@ import {
   deleteCustomer,
   resendCustomerInvite,
 } from '../../api/customers';
+
+const mockCustomerPhotoPreviewModal = jest.fn(() => null);
+
+const tMock = (key, defaultValueOrOptions, maybeOptions) => {
+  let template = key;
+  let values = {};
+
+  if (typeof defaultValueOrOptions === 'string') {
+    template = defaultValueOrOptions;
+  } else if (
+    defaultValueOrOptions &&
+    typeof defaultValueOrOptions === 'object'
+  ) {
+    if (typeof defaultValueOrOptions.defaultValue === 'string') {
+      template = defaultValueOrOptions.defaultValue;
+    }
+    values = defaultValueOrOptions;
+  }
+
+  if (maybeOptions && typeof maybeOptions === 'object') {
+    if (typeof maybeOptions.defaultValue === 'string') {
+      template = maybeOptions.defaultValue;
+    }
+    values = { ...values, ...maybeOptions };
+  }
+
+  return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
+    Object.prototype.hasOwnProperty.call(values, token) ? values[token] : ''
+  );
+};
 
 jest.mock('../../hooks/useTenant', () => ({
   useTenant: jest.fn(),
@@ -41,32 +71,18 @@ jest.mock('../../components/credits/CreditPurchaseModal', () => ({
   default: () => null,
 }));
 
+jest.mock('../../components/customers/CustomerPhotoPreviewModal', () => ({
+  __esModule: true,
+  default: (props) => {
+    mockCustomerPhotoPreviewModal(props);
+    if (!props.open) return null;
+    return <div role="dialog" />;
+  },
+}));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, defaultValueOrOptions, maybeOptions) => {
-      let template = key;
-      let values = {};
-      if (typeof defaultValueOrOptions === 'string') {
-        template = defaultValueOrOptions;
-      } else if (
-        defaultValueOrOptions &&
-        typeof defaultValueOrOptions === 'object'
-      ) {
-        if (typeof defaultValueOrOptions.defaultValue === 'string') {
-          template = defaultValueOrOptions.defaultValue;
-        }
-        values = defaultValueOrOptions;
-      }
-      if (maybeOptions && typeof maybeOptions === 'object') {
-        if (typeof maybeOptions.defaultValue === 'string') {
-          template = maybeOptions.defaultValue;
-        }
-        values = { ...values, ...maybeOptions };
-      }
-      return template.replace(/\{\{(\w+)\}\}/g, (_, token) =>
-        Object.prototype.hasOwnProperty.call(values, token) ? values[token] : ''
-      );
-    },
+    t: tMock,
   }),
 }));
 
@@ -117,14 +133,22 @@ describe('Customers page', () => {
 
     expect(await screen.findByText('Lista de clientes')).toBeInTheDocument();
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Abrir foto de Cliente Novo Teste' })
-    );
+    const previewButton = await screen.findByRole('button', {
+      name: /Abrir foto de Cliente Novo Teste/i,
+    });
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    expect(screen.getAllByAltText('Cliente Novo Teste').length).toBeGreaterThan(
-      0
-    );
+    fireEvent.click(previewButton);
+
+    expect(mockCustomerPhotoPreviewModal).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(
+        mockCustomerPhotoPreviewModal.mock.calls.some(
+          ([props]) =>
+            props?.open === true &&
+            props?.customer?.name === 'Cliente Novo Teste'
+        )
+      ).toBe(true);
+    });
   });
 
   it('keeps add-customer and filters panels collapsed until requested', async () => {

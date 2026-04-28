@@ -30,7 +30,7 @@ import {
 export default function Reports() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { slug, profile, plan } = useTenant();
+  const { slug, profile } = useTenant();
   const { user } = useAuth();
   const { staff, error: staffError, forbidden } = useStaff({ slug });
   const [activeTab, setActiveTab] = useState('basic');
@@ -133,13 +133,6 @@ export default function Reports() {
   const { isLocked: advancedReportsLocked } = useFeatureLock(
     'enableAdvancedReports'
   );
-
-  // Verificar permissões baseadas no plano (mantido para compatibilidade)
-  const planTier = plan?.tier?.toLowerCase();
-
-  const canViewAdvancedInsights = useMemo(() => {
-    return planTier === 'pro';
-  }, [planTier]);
 
   // Hook para dados de relatórios
   const reportType = useMemo(() => {
@@ -562,7 +555,26 @@ export default function Reports() {
                   )}
 
                   {/* Content */}
-                  {!reportsLoading && !reportsError && (
+                  {!reportsLoading && !reportsError && reportsForbidden && (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <p className="text-sm text-brand-surfaceForeground mb-3">
+                        {t(
+                          'reports.business.upgrade_required',
+                          'Disponível a partir do plano Pro. Faça upgrade para acessar esta seção.'
+                        )}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/plans')}
+                        className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
+                      >
+                        {t('reports.upgrade_button', 'Atualizar plano')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  {!reportsLoading && !reportsError && !reportsForbidden && (
                     <div className="space-y-8">
                       {reportsData?.businessReports ? (
                         <>
@@ -717,7 +729,42 @@ export default function Reports() {
                     )}
                   </p>
 
-                  {!canViewAdvancedInsights ? (
+                  {reportsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+                      <span className="ml-3 text-brand-surfaceForeground/70">
+                        {t('reports.loading', 'Carregando relatórios...')}
+                      </span>
+                    </div>
+                  ) : reportsError ? (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-red-500 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p className="text-sm text-brand-surfaceForeground">
+                          {reportsError.message ||
+                            t('reports.error', 'Erro ao carregar relatórios')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={refetchReports}
+                        className="mt-2 text-sm text-brand-primary hover:text-brand-primary/80"
+                      >
+                        {t('reports.retry', 'Tentar novamente')}
+                      </button>
+                    </div>
+                  ) : reportsForbidden ? (
                     <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
                       <p className="text-sm text-brand-surfaceForeground mb-3">
                         {t(
