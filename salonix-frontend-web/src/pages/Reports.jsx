@@ -208,6 +208,36 @@ export default function Reports() {
 
   const retention = reportsData?.insightsReports?.retention;
   const insightsPeriod = reportsData?.insightsReports?.period;
+  const basicReports = reportsData?.basicReports || null;
+
+  const hasBasicMetrics = useMemo(() => {
+    if (!basicReports) return false;
+
+    const overview = basicReports.overview || {};
+    const total = Number(
+      overview.appointments_total ?? basicReports.appointments_total ?? 0
+    );
+    const completed = Number(
+      overview.appointments_completed ??
+        basicReports.appointments_completed ??
+        0
+    );
+    const revenue = Number(
+      overview.revenue_total ?? basicReports.revenue_total ?? 0
+    );
+
+    return [total, completed, revenue].some(
+      (value) => Number.isFinite(value) && value > 0
+    );
+  }, [basicReports]);
+
+  const handleResetBasicPeriod = () => {
+    const from = getDefaultFromDate();
+    const to = getDefaultToDate();
+    setFromDate(from);
+    setToDate(to);
+    setAppliedFilters({ from, to });
+  };
 
   // Se não for owner, não tem acesso
   if (!isOwner) {
@@ -278,13 +308,13 @@ export default function Reports() {
       ) : (
         <div className="space-y-6">
           {/* Tabs */}
-          <div className="border-b border-brand-border">
-            <nav className="-mb-px flex space-x-8">
+          <div className="overflow-x-auto border-b border-brand-border">
+            <nav className="-mb-px flex min-w-max space-x-6 sm:space-x-8">
               {/* Tab Básicos - Disponível para todos os planos (Founder+) */}
               <button
                 onClick={() => !basicReportsLocked && setActiveTab('basic')}
                 disabled={basicReportsLocked}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-1.5 ${
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium flex items-center gap-1.5 ${
                   activeTab === 'basic'
                     ? 'border-brand-primary text-brand-primary'
                     : basicReportsLocked
@@ -310,7 +340,7 @@ export default function Reports() {
                   !businessReportsLocked && setActiveTab('business')
                 }
                 disabled={businessReportsLocked}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-1.5 ${
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium flex items-center gap-1.5 ${
                   activeTab === 'business'
                     ? 'border-brand-primary text-brand-primary'
                     : businessReportsLocked
@@ -336,7 +366,7 @@ export default function Reports() {
                   !advancedReportsLocked && setActiveTab('insights')
                 }
                 disabled={advancedReportsLocked}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-1.5 ${
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium flex items-center gap-1.5 ${
                   activeTab === 'insights'
                     ? 'border-brand-primary text-brand-primary'
                     : advancedReportsLocked
@@ -370,7 +400,7 @@ export default function Reports() {
 
           {/* Conteúdo das tabs */}
           {activeTab === 'basic' && (
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               {/* Verificar se tab está bloqueada */}
               {basicReportsLocked ? (
                 <UpgradePrompt
@@ -379,21 +409,21 @@ export default function Reports() {
                 />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <h3 className="text-lg font-medium text-brand-surfaceForeground">
                       {t('reports.basic.title', 'Relatórios Básicos')}
                     </h3>
-                    {reportsData?.basicReports?.period && (
+                    {basicReports?.period && (
                       <span className="text-xs font-medium text-brand-surfaceForeground/50 bg-brand-light/50 px-2 py-1 rounded">
                         {t(
                           'reports.insights.period_label',
                           'Dados de {{start}} até {{end}}',
                           {
                             start: new Date(
-                              reportsData.basicReports.period.start
+                              basicReports.period.start
                             ).toLocaleDateString(i18n.language),
                             end: new Date(
-                              reportsData.basicReports.period.end
+                              basicReports.period.end
                             ).toLocaleDateString(i18n.language),
                           }
                         )}
@@ -409,20 +439,37 @@ export default function Reports() {
 
                   {/* Loading state */}
                   {reportsLoading && (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
-                      <span className="ml-3 text-brand-surfaceForeground/70">
-                        {t('reports.loading', 'Carregando relatórios...')}
-                      </span>
+                    <div className="space-y-4 py-2">
+                      <div className="flex items-center gap-3 rounded-lg border border-brand-border bg-brand-light/40 px-4 py-3 text-sm text-brand-surfaceForeground/70">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-primary/30 border-t-brand-primary" />
+                        <span>
+                          {t(
+                            'reports.basic.loading_message',
+                            'Carregando indicadores e comparativos do período...'
+                          )}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        {[0, 1, 2, 3].map((item) => (
+                          <div
+                            key={item}
+                            className="animate-pulse rounded-xl border border-brand-border bg-brand-surface p-4"
+                          >
+                            <div className="mb-3 h-3 w-1/2 rounded bg-brand-border/50" />
+                            <div className="h-8 w-2/3 rounded bg-brand-border/60" />
+                            <div className="mt-3 h-2 w-5/6 rounded bg-brand-border/40" />
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
                   {/* Error state */}
                   {reportsError && !reportsLoading && (
-                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                      <div className="flex items-center">
+                    <div className="rounded-lg border border-red-200 bg-red-50/70 p-4">
+                      <div className="flex items-start">
                         <svg
-                          className="h-5 w-5 text-red-500 mr-2"
+                          className="mr-2 mt-0.5 h-5 w-5 text-red-500"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -434,24 +481,43 @@ export default function Reports() {
                             d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        <p className="text-sm text-brand-surfaceForeground">
-                          {reportsError.message ||
-                            t('reports.error', 'Erro ao carregar relatórios')}
-                        </p>
+                        <div>
+                          <p className="text-sm font-medium text-red-700">
+                            {t(
+                              'reports.basic.error_title',
+                              'Não foi possível carregar os relatórios básicos'
+                            )}
+                          </p>
+                          <p className="mt-1 text-sm text-red-700/90">
+                            {reportsError.message ||
+                              t('reports.error', 'Erro ao carregar relatórios')}
+                          </p>
+                        </div>
                       </div>
-                      <button
-                        onClick={refetchReports}
-                        className="mt-2 text-sm text-brand-primary hover:text-brand-primary/80"
-                      >
-                        {t('reports.retry', 'Tentar novamente')}
-                      </button>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={refetchReports}
+                          className="rounded-md bg-brand-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-primary/90"
+                        >
+                          {t('reports.retry', 'Tentar novamente')}
+                        </button>
+                        <button
+                          onClick={handleResetBasicPeriod}
+                          className="rounded-md border border-brand-border px-3 py-1.5 text-sm text-brand-surfaceForeground hover:bg-brand-light/30"
+                        >
+                          {t(
+                            'reports.basic.reset_period',
+                            'Restaurar período padrão'
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
 
                   {/* Forbidden state */}
                   {reportsForbidden && !reportsLoading && (
-                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                      <p className="text-sm text-brand-surfaceForeground">
+                    <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-4">
+                      <p className="text-sm text-amber-800">
                         {t(
                           'reports.forbidden',
                           'Seu plano atual não inclui acesso aos relatórios.'
@@ -463,28 +529,67 @@ export default function Reports() {
                   {/* Content */}
                   {!reportsLoading && !reportsError && !reportsForbidden && (
                     <div>
-                      {reportsData?.basicReports ? (
+                      {!basicReports ? (
+                        <div className="rounded-lg border border-brand-border bg-brand-light/40 p-4">
+                          <p className="text-sm text-brand-surfaceForeground/70">
+                            {t(
+                              'reports.basic.unavailable',
+                              'Os dados de relatórios ainda não estão disponíveis para este tenant. Tente novamente em instantes.'
+                            )}
+                          </p>
+                        </div>
+                      ) : !hasBasicMetrics ? (
+                        <div className="rounded-lg border border-brand-border bg-brand-light/40 p-6">
+                          <div className="flex items-start gap-3">
+                            <svg
+                              className="mt-0.5 h-5 w-5 text-brand-primary"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 17v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v8m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                              />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-brand-surfaceForeground">
+                                {t(
+                                  'reports.basic.empty_title',
+                                  'Sem dados para o período selecionado'
+                                )}
+                              </p>
+                              <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                                {t(
+                                  'reports.basic.empty_description',
+                                  'Ajuste o intervalo de datas ou aguarde novos agendamentos concluídos para visualizar os indicadores.'
+                                )}
+                              </p>
+                              <button
+                                onClick={handleResetBasicPeriod}
+                                className="mt-3 rounded-md border border-brand-border px-3 py-1.5 text-sm text-brand-surfaceForeground hover:bg-brand-surface"
+                              >
+                                {t(
+                                  'reports.basic.reset_period',
+                                  'Restaurar período padrão'
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
                         <div>
-                          <BasicReportsMetrics
-                            data={reportsData.basicReports}
-                          />
+                          <BasicReportsMetrics data={basicReports} />
 
                           {/* Export Button */}
-                          <div className="mt-4 flex justify-end">
+                          <div className="mt-4 flex justify-stretch sm:justify-end">
                             <ExportButton
                               filters={appliedFilters}
                               disabled={reportsLoading}
                             />
                           </div>
-                        </div>
-                      ) : (
-                        <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
-                          <p className="text-sm text-brand-surfaceForeground/60">
-                            {t(
-                              'reports.basic.coming_soon',
-                              'Em breve: Relatórios básicos de agendamentos, receita e clientes'
-                            )}
-                          </p>
                         </div>
                       )}
                     </div>
@@ -495,7 +600,7 @@ export default function Reports() {
           )}
 
           {activeTab === 'business' && (
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               {/* Verificar se tab está bloqueada */}
               {businessReportsLocked ? (
                 <UpgradePrompt
@@ -588,8 +693,8 @@ export default function Reports() {
                           />
 
                           {/* Top Services */}
-                          <Card className="p-6">
-                            <div className="flex justify-between items-center mb-4">
+                          <Card className="p-4 sm:p-6">
+                            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>
                                 <h4 className="text-lg font-medium text-brand-surfaceForeground">
                                   {t(
@@ -636,8 +741,8 @@ export default function Reports() {
                           </Card>
 
                           {/* Revenue Chart */}
-                          <Card className="p-6">
-                            <div className="flex justify-between items-center mb-4">
+                          <Card className="p-4 sm:p-6">
+                            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                               <h4 className="text-base font-medium text-brand-surfaceForeground">
                                 {t(
                                   'reports.revenue.title',
@@ -692,7 +797,7 @@ export default function Reports() {
           )}
 
           {activeTab === 'insights' && (
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               {/* Verificar se tab está bloqueada */}
               {advancedReportsLocked ? (
                 <UpgradePrompt
@@ -701,7 +806,7 @@ export default function Reports() {
                 />
               ) : (
                 <>
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <h3 className="text-lg font-medium text-brand-surfaceForeground">
                       {t('reports.insights.title', 'Insights Avançados')}
                     </h3>
