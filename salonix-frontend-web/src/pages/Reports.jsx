@@ -158,7 +158,11 @@ export default function Reports() {
   // Toast notifications based on data loading state
   useEffect(() => {
     if (reportsError) {
-      showError(t('reports.error', 'Erro ao carregar relatórios'));
+      const base = t('reports.error', 'Erro ao carregar relatórios');
+      const message = reportsError.requestId
+        ? `${base} (Ref: ${reportsError.requestId})`
+        : base;
+      showError(message);
     }
   }, [reportsError, showError, t]);
 
