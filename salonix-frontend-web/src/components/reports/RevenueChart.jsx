@@ -1,9 +1,20 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '../../utils/format';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import TableLoadingSpinner from '../ui/TableLoadingSpinner';
 
 export default function RevenueChart({ data, loading, interval = 'day' }) {
   const { t } = useTranslation();
+  const [view, setView] = useState('chart'); // 'chart' | 'table'
 
   // Usar a estrutura correta dos dados: data.revenue.series
   const revenueData = useMemo(() => {
@@ -43,13 +54,6 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
     );
   }
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value || 0);
-  };
-
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
     switch (interval) {
@@ -79,8 +83,42 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
     filteredData.length > 0 ? totalRevenue / filteredData.length : 0;
   const maxRevenue = Math.max(...filteredData.map((item) => item.revenue || 0));
 
+  const chartData = useMemo(
+    () =>
+      filteredData.map((item) => ({
+        label: formatDate(item.period_start),
+        revenue: item.revenue || 0,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filteredData, interval]
+  );
+
   return (
     <div className="space-y-6">
+      {/* View toggle */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setView('chart')}
+          className={`text-sm transition-colors ${
+            view === 'chart'
+              ? 'text-brand-primary underline font-medium'
+              : 'text-brand-surfaceForeground/60 hover:text-brand-primary hover:underline'
+          }`}
+        >
+          {t('reports.advanced.revenue.view_chart', 'Gráfico')}
+        </button>
+        <button
+          onClick={() => setView('table')}
+          className={`text-sm transition-colors ${
+            view === 'table'
+              ? 'text-brand-primary underline font-medium'
+              : 'text-brand-surfaceForeground/60 hover:text-brand-primary hover:underline'
+          }`}
+        >
+          {t('reports.advanced.revenue.view_table', 'Tabela')}
+        </button>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-brand-light/30 rounded-lg p-4">
@@ -109,49 +147,107 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
         </div>
       </div>
 
+      {/* Bar Chart */}
+      {view === 'chart' && (
+        <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={chartData}
+              margin={{ top: 4, right: 16, left: 0, bottom: 4 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="var(--color-border, #e5e7eb)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 12, fill: 'currentColor' }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tickFormatter={(v) =>
+                  new Intl.NumberFormat('pt-BR', {
+                    notation: 'compact',
+                    style: 'currency',
+                    currency: 'EUR',
+                    maximumFractionDigits: 0,
+                  }).format(v)
+                }
+                tick={{ fontSize: 11, fill: 'currentColor' }}
+                tickLine={false}
+                axisLine={false}
+                width={72}
+              />
+              <Tooltip
+                formatter={(value) => [
+                  formatCurrency(value),
+                  t('reports.advanced.revenue.revenue', 'Receita'),
+                ]}
+                labelStyle={{ fontWeight: 600 }}
+                contentStyle={{
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-border, #e5e7eb)',
+                  background: 'var(--color-surface, #fff)',
+                }}
+              />
+              <Bar
+                dataKey="revenue"
+                fill="var(--color-primary, #6366f1)"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={48}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
       {/* Data Table */}
-      <div className="overflow-x-auto rounded-lg border border-brand-border">
-        <table className="min-w-[720px] divide-y divide-brand-border sm:min-w-full">
-          <thead className="bg-brand-light/30">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
-                {t('reports.advanced.revenue.period', 'Período')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
-                {t('reports.advanced.revenue.revenue', 'Receita')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
-                {t('reports.advanced.revenue.appointments', 'Agendamentos')}
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
-                {t('reports.advanced.revenue.avg_ticket', 'Ticket Médio')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-brand-surface divide-y divide-brand-border">
-            {filteredData.map((item, index) => (
-              <tr key={index} className="hover:bg-brand-light/20">
-                <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-brand-surfaceForeground sm:px-6">
-                  {formatDate(item.period_start)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-brand-surfaceForeground sm:px-6">
-                  {formatCurrency(item.revenue)}
-                </td>
-                <td className="whitespace-nowrap px-4 py-4 text-sm text-brand-surfaceForeground sm:px-6">
-                  {item.appointment_count || 0}
-                </td>
-                <td className="whitespace-nowrap px-4 py-4 text-sm text-brand-surfaceForeground sm:px-6">
-                  {formatCurrency(
-                    item.appointment_count > 0
-                      ? item.revenue / item.appointment_count
-                      : 0
-                  )}
-                </td>
+      {view === 'table' && (
+        <div className="overflow-x-auto rounded-lg border border-brand-border">
+          <table className="min-w-[720px] divide-y divide-brand-border sm:min-w-full">
+            <thead className="bg-brand-light/30">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
+                  {t('reports.advanced.revenue.period', 'Período')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
+                  {t('reports.advanced.revenue.revenue', 'Receita')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
+                  {t('reports.advanced.revenue.appointments', 'Agendamentos')}
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-surfaceForeground/70 sm:px-6">
+                  {t('reports.advanced.revenue.avg_ticket', 'Ticket Médio')}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-brand-surface divide-y divide-brand-border">
+              {filteredData.map((item, index) => (
+                <tr key={index} className="hover:bg-brand-light/20">
+                  <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-brand-surfaceForeground sm:px-6">
+                    {formatDate(item.period_start)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-brand-surfaceForeground sm:px-6">
+                    {formatCurrency(item.revenue)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-sm text-brand-surfaceForeground sm:px-6">
+                    {item.appointment_count || 0}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-4 text-sm text-brand-surfaceForeground sm:px-6">
+                    {formatCurrency(
+                      item.appointment_count > 0
+                        ? item.revenue / item.appointment_count
+                        : 0
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

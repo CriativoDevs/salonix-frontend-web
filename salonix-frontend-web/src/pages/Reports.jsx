@@ -12,6 +12,7 @@ import AdvancedExportButton from '../components/reports/AdvancedExportButton';
 import TopServices from '../components/reports/TopServices';
 import RevenueChart from '../components/reports/RevenueChart';
 import AdvancedFilters from '../components/reports/AdvancedFilters';
+import RetentionMetrics from '../components/reports/RetentionMetrics';
 import ToastContainer from '../components/ui/ToastContainer';
 import UpgradePrompt from '../components/security/UpgradePrompt';
 import useFeatureLock from '../hooks/useFeatureLock';
@@ -887,130 +888,8 @@ export default function Reports() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {retention ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {/* New Clients */}
-                          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-sm font-medium text-brand-surfaceForeground/70">
-                                {t(
-                                  'reports.insights.new_clients',
-                                  'Novos Clientes'
-                                )}
-                              </h4>
-                              <div className="h-8 w-8 rounded-full bg-brand-primary/10 flex items-center justify-center">
-                                <svg
-                                  className="h-4 w-4 text-brand-primary"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-end">
-                              <div>
-                                <div className="text-3xl font-bold text-brand-surfaceForeground">
-                                  {retention.new_clients?.qty || 0}
-                                </div>
-                                <div className="text-xs text-brand-surfaceForeground/60 mt-1">
-                                  {t(
-                                    'reports.insights.clients_count',
-                                    'Clientes cadastrados'
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-brand-primary">
-                                  {new Intl.NumberFormat('pt-BR', {
-                                    style: 'currency',
-                                    currency: 'EUR',
-                                  }).format(
-                                    retention.new_clients?.revenue || 0
-                                  )}
-                                </div>
-                                <div className="text-xs text-brand-surfaceForeground/60 mt-1">
-                                  {t(
-                                    'reports.insights.revenue_generated',
-                                    'Receita gerada'
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Returning Clients */}
-                          <div className="bg-brand-surface border border-brand-border rounded-lg p-6">
-                            <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-sm font-medium text-brand-surfaceForeground/70">
-                                {t(
-                                  'reports.insights.returning_clients',
-                                  'Clientes Recorrentes'
-                                )}
-                              </h4>
-                              <div className="h-8 w-8 rounded-full bg-success/10 flex items-center justify-center">
-                                <svg
-                                  className="h-4 w-4 text-success"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-end">
-                              <div>
-                                <div className="text-3xl font-bold text-brand-surfaceForeground">
-                                  {retention.returning_clients?.qty || 0}
-                                </div>
-                                <div className="text-xs text-brand-surfaceForeground/60 mt-1">
-                                  {t(
-                                    'reports.insights.clients_count',
-                                    'Clientes que retornaram'
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-semibold text-brand-primary">
-                                  {new Intl.NumberFormat('pt-BR', {
-                                    style: 'currency',
-                                    currency: 'EUR',
-                                  }).format(
-                                    retention.returning_clients?.revenue || 0
-                                  )}
-                                </div>
-                                <div className="text-xs text-brand-surfaceForeground/60 mt-1">
-                                  {t(
-                                    'reports.insights.revenue_generated',
-                                    'Receita gerada'
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="rounded-lg p-4 bg-brand-light/50 border border-brand-border">
-                          <p className="text-sm text-brand-surfaceForeground/60">
-                            {t(
-                              'reports.insights.no_data',
-                              'Nenhum dado disponível para o período selecionado.'
-                            )}
-                          </p>
-                        </div>
-                      )}
+                      {/* RetentionMetrics handles both data and empty states */}
+                      <RetentionMetrics data={retention} />
                     </div>
                   )}
                 </>
