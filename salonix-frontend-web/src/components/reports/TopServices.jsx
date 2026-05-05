@@ -55,6 +55,19 @@ export default function TopServices({ data, loading, limit = 25 }) {
   if (!data?.top_services?.length) {
     return (
       <div className="text-center py-8">
+        <svg
+          className="mx-auto h-10 w-10 text-brand-surfaceForeground/30 mb-3"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
+        </svg>
         <p className="text-brand-surfaceForeground/60">
           {t(
             'reports.advanced.no_services',
@@ -64,12 +77,6 @@ export default function TopServices({ data, loading, limit = 25 }) {
       </div>
     );
   }
-
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value || 0);
 
   const toggleSort = (key) => {
     if (sortKey === key) {

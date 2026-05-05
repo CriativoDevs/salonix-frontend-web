@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { 
-  fetchBasicReports, 
+import {
+  fetchBasicReports,
   fetchAdvancedReports,
   fetchTopServices,
   fetchRevenue,
-  fetchRetention
+  fetchRetention,
 } from '../api/reports';
 import { parseApiError } from '../utils/apiError';
 
@@ -26,20 +26,20 @@ function getCacheKey(slug, type, filters) {
 function getCachedData(key) {
   const cached = cache.get(key);
   if (!cached) return null;
-  
+
   const now = Date.now();
   if (now - cached.timestamp > CACHE_DURATION) {
     cache.delete(key);
     return null;
   }
-  
+
   return cached.data;
 }
 
 function setCachedData(key, data) {
   cache.set(key, {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 }
 
@@ -71,7 +71,7 @@ export function useReportsData({ slug, type, filters } = {}) {
     // Verificar cache primeiro
     const cacheKey = getCacheKey(slug, type, memoizedFilters);
     const cachedResult = getCachedData(cacheKey);
-    
+
     if (cachedResult) {
       setData(cachedResult.data);
       setError(cachedResult.error);
@@ -89,31 +89,30 @@ export function useReportsData({ slug, type, filters } = {}) {
       if (type === 'basic') {
         const result = await fetchBasicReports({ slug, ...memoizedFilters });
         if (!mountedRef.current) return;
-        
-        const newData = { 
-          ...INITIAL_DATA, 
+
+        const newData = {
+          ...INITIAL_DATA,
           basicReports: {
             ...result,
             period: {
-               start: memoizedFilters?.from,
-               end: memoizedFilters?.to
-             }
-          } 
+              start: memoizedFilters?.from,
+              end: memoizedFilters?.to,
+            },
+          },
         };
         setData(newData);
-        
+
         // Cache do resultado
         setCachedData(cacheKey, {
           data: newData,
           error: null,
-          forbidden: false
+          forbidden: false,
         });
-        
       } else if (type === 'business') {
         // Business Analysis (Pro): Top Services + Revenue
         const [topServicesResult, revenueResult] = await Promise.allSettled([
           fetchTopServices({ slug, ...memoizedFilters }),
-          fetchRevenue({ slug, ...memoizedFilters })
+          fetchRevenue({ slug, ...memoizedFilters }),
         ]);
 
         if (!mountedRef.current) return;
@@ -125,69 +124,68 @@ export function useReportsData({ slug, type, filters } = {}) {
         if (topServicesResult.status === 'fulfilled') {
           businessData.top_services = topServicesResult.value;
         } else {
-          if (topServicesResult.reason?.response?.status === 403) hasForbidden = true;
+          if (topServicesResult.reason?.response?.status === 403)
+            hasForbidden = true;
           else hasError = topServicesResult.reason;
         }
 
         if (revenueResult.status === 'fulfilled') {
           // Revenue retorna { interval: "...", series: [...] }
           // Mapeamos para a estrutura esperada pelo componente
-          businessData.revenue = revenueResult.value; 
+          businessData.revenue = revenueResult.value;
         } else {
-          if (revenueResult.reason?.response?.status === 403) hasForbidden = true;
+          if (revenueResult.reason?.response?.status === 403)
+            hasForbidden = true;
           else if (!hasError) hasError = revenueResult.reason;
         }
 
         if (hasError) throw hasError;
-        
+
         const newData = { ...INITIAL_DATA, businessReports: businessData };
         setData(newData);
         setForbidden(hasForbidden);
-        
+
         // Cache do resultado
         setCachedData(cacheKey, {
           data: newData,
           error: null,
-          forbidden: hasForbidden
+          forbidden: hasForbidden,
         });
-
       } else if (type === 'insights') {
         // Advanced Insights (Pro): Retention
         const result = await fetchRetention({ slug, ...memoizedFilters });
         if (!mountedRef.current) return;
-        
-        const newData = { 
-          ...INITIAL_DATA, 
-          insightsReports: { 
+
+        const newData = {
+          ...INITIAL_DATA,
+          insightsReports: {
             retention: result,
             period: {
               start: memoizedFilters.from,
-              end: memoizedFilters.to
-            }
-          } 
+              end: memoizedFilters.to,
+            },
+          },
         };
         setData(newData);
-        
+
         setCachedData(cacheKey, {
           data: newData,
           error: null,
-          forbidden: false
+          forbidden: false,
         });
-
       } else if (type === 'advanced') {
         // Legacy/Pro aggregate
         const result = await fetchAdvancedReports({ slug, ...memoizedFilters });
         if (!mountedRef.current) return;
-        
+
         const newData = { ...INITIAL_DATA, advancedReports: result };
         setData(newData);
-        
+
         setCachedData(cacheKey, {
           data: newData,
           error: null,
-          forbidden: false
+          forbidden: false,
         });
-        
       } else {
         // Carregar ambos quando type não é especificado ou é 'all'
         const [basicResult, advancedResult] = await Promise.allSettled([
@@ -226,14 +224,16 @@ export function useReportsData({ slug, type, filters } = {}) {
         setData(nextData);
         setForbidden(hasForbidden);
 
-        const finalError = hasError ? parseApiError(hasError, 'Falha ao carregar os relatórios.') : null;
+        const finalError = hasError
+          ? parseApiError(hasError, 'Falha ao carregar os relatórios.')
+          : null;
         setError(finalError);
 
         // Cache do resultado
         setCachedData(cacheKey, {
           data: nextData,
           error: finalError,
-          forbidden: hasForbidden
+          forbidden: hasForbidden,
         });
 
         setLoading(false);
@@ -249,17 +249,24 @@ export function useReportsData({ slug, type, filters } = {}) {
       const status = err?.response?.status;
       const isForbidden = status === 403;
       const parsed = parseApiError(err, 'Falha ao carregar os relatórios.');
-      
+      const enriched = { ...parsed, endpoint: `reports/${type}/` };
+
+      if (!isForbidden) {
+        console.error(
+          `[useReportsData] endpoint=reports/${type}/ status=${status ?? 'unknown'} requestId=${parsed.requestId ?? 'none'}`
+        );
+      }
+
       setForbidden(isForbidden);
-      setError(parsed);
-      
+      setError(enriched);
+
       // Cache do erro também
       setCachedData(cacheKey, {
         data: INITIAL_DATA,
-        error: parsed,
-        forbidden: isForbidden
+        error: enriched,
+        forbidden: isForbidden,
       });
-      
+
       setLoading(false);
       setInitialLoading(false);
     }
@@ -276,11 +283,11 @@ export function useReportsData({ slug, type, filters } = {}) {
 
   const refetch = useCallback(() => {
     if (!mountedRef.current) return;
-    
+
     // Limpar cache ao fazer refetch
     const cacheKey = getCacheKey(slug, type, memoizedFilters);
     cache.delete(cacheKey);
-    
+
     load();
   }, [load, slug, type, memoizedFilters]);
 
