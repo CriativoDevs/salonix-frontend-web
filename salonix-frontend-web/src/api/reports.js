@@ -19,7 +19,7 @@ export async function fetchBasicReports(params = {}) {
 
   const response = await client.get('reports/basic/', {
     params: queryParams,
-    headers
+    headers,
   });
 
   return response.data;
@@ -255,6 +255,19 @@ export async function exportAdvancedReportsCSV(params = {}) {
     responseType: 'blob',
   });
   return response;
+}
+
+/**
+ * Consulta o status de um job de exportação assíncrona.
+ * Endpoint futuro: GET reports/exports/{jobId}/
+ * Resposta esperada: { status: 'pending'|'ready'|'error'|'expired', download_url?: string }
+ */
+export async function fetchExportJobStatus(jobId, slug) {
+  const headers = {};
+  if (slug) headers['X-Tenant-Slug'] = slug;
+
+  const response = await client.get(`reports/exports/${jobId}/`, { headers });
+  return response.data;
 }
 
 /**
