@@ -5,7 +5,7 @@ import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import CaptchaGate from '../components/security/CaptchaGate';
-import { getEnvVar } from '../utils/env';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 
 function ForgotPassword() {
   const { t } = useTranslation();
@@ -31,11 +31,10 @@ function ForgotPassword() {
     try {
       const { requestPasswordReset } = await import('../api/auth');
       const resetUrl = `${window.location.origin}/reset-password`;
-      const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN');
       await requestPasswordReset(
         cleanEmail,
         resetUrl,
-        bypass || captchaToken || undefined
+        getCaptchaTokenForRequest(captchaToken)
       );
       setIsSubmitted(true);
     } catch {

@@ -11,7 +11,8 @@ import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { trace } from '../utils/debug';
 import { clearPostAuthRedirect } from '../utils/navigation';
-import { getEnvFlag, getEnvVar } from '../utils/env';
+import { getEnvFlag } from '../utils/env';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 import CaptchaGate from '../components/security/CaptchaGate';
 
 function Register() {
@@ -77,8 +78,7 @@ function Register() {
           phone_number: cleanForm.phone_number,
         },
         {
-          captchaBypassToken:
-            getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || captchaToken || undefined,
+          captchaBypassToken: getCaptchaTokenForRequest(captchaToken),
         }
       );
       trace('register:success', response?.tenant);

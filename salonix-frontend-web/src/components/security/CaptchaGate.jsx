@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getEnvVar } from '../../utils/env';
+import { getCaptchaBypassToken } from '../../utils/captchaPolicy';
 
 function loadScript(src) {
   return new Promise((resolve, reject) => {
@@ -20,7 +21,7 @@ function loadScript(src) {
 export default function CaptchaGate({ onToken, className, resetKey }) {
   const containerRef = useRef(null);
   const provider = getEnvVar('VITE_CAPTCHA_PROVIDER') || '';
-  const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || '';
+  const bypass = getCaptchaBypassToken();
   const { t } = useTranslation();
 
   useEffect(() => {

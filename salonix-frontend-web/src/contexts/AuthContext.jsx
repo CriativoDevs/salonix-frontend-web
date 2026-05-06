@@ -19,7 +19,7 @@ import { parseApiError, hasActionableError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import { DEFAULT_TENANT_META } from '../utils/tenant';
 import { clearStoredTenantSlug, storeTenantSlug } from '../utils/tenantStorage';
-import { getEnvVar } from '../utils/env';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -163,15 +163,15 @@ export const AuthProvider = ({ children }) => {
   }, [loadFeatureFlags, loadTenantBootstrap, loadCurrentUser, resetState]);
 
   const login = useCallback(
-    async ({ email, password }) => {
+    async ({ email, password, captchaToken }) => {
       setAuthError(null);
       try {
-        const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || undefined;
+        const token = getCaptchaTokenForRequest(captchaToken);
         const { access, refresh, tenant, user } = await loginRequest(
           email,
           password,
           {
-            captchaBypassToken: bypass,
+            captchaBypassToken: token,
           }
         );
         // Troca explícita de contexto: login staff invalida sessão de cliente.

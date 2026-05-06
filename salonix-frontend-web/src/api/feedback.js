@@ -1,5 +1,5 @@
 import client from './client';
-import { getEnvVar } from '../utils/env';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 
 export async function submitFeedback(
   { category, custom_category, rating, message, anonymous = false, customerId },
@@ -22,11 +22,9 @@ export async function submitFeedback(
     headers['X-Tenant-Slug'] = slug;
   }
 
-  const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN') || '';
-  if (captchaToken) {
-    headers['X-Captcha-Token'] = captchaToken;
-  } else if (bypass) {
-    headers['X-Captcha-Token'] = bypass;
+  const token = getCaptchaTokenForRequest(captchaToken);
+  if (token) {
+    headers['X-Captcha-Token'] = token;
   }
 
   const response = await client.post('feedbacks/', payload, { headers });
