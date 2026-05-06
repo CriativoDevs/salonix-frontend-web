@@ -216,10 +216,6 @@ function DataSettingsStandalone() {
 
   const track = useCallback((event, props = {}) => {
     try {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', event, props);
-        return;
-      }
       if (
         typeof window !== 'undefined' &&
         window.analytics &&

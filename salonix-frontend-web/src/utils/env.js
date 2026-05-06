@@ -1,17 +1,17 @@
+import { viteEnv } from './viteEnv';
+
 let cachedEnv;
 
 function resolveViteEnv() {
-  try {
-    // embed import.meta access in function body to avoid syntax errors in Jest
-    const evaluateImportMeta = new Function('return (typeof import !== "undefined" && import.meta && import.meta.env) || {};');
-    return evaluateImportMeta();
-  } catch {
-    return {};
+  if (viteEnv && typeof viteEnv === 'object') {
+    return viteEnv;
   }
+  return {};
 }
 
 function resolveProcessEnv() {
-  const maybeProcess = typeof globalThis !== 'undefined' ? globalThis.process : undefined;
+  const maybeProcess =
+    typeof globalThis !== 'undefined' ? globalThis.process : undefined;
   if (maybeProcess?.env) {
     return maybeProcess.env;
   }

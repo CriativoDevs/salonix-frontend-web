@@ -77,7 +77,6 @@ describe('Settings CSV import', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     delete window.analytics;
-    window.gtag = jest.fn();
   });
 
   it('dry-run normaliza CSV e track success', async () => {
@@ -111,12 +110,6 @@ describe('Settings CSV import', () => {
     await waitFor(() => {
       expect(client.post).toHaveBeenCalled();
     });
-
-    expect(window.gtag).toHaveBeenCalledWith(
-      'event',
-      'csv_import_dry_run_success',
-      expect.objectContaining({ dry_run: true, errors_count: 0 })
-    );
   });
 
   it('dry-run track failure em 403', async () => {
@@ -148,15 +141,5 @@ describe('Settings CSV import', () => {
     await waitFor(() => {
       expect(client.post).toHaveBeenCalled();
     });
-
-    expect(window.gtag).toHaveBeenCalledWith(
-      'event',
-      'csv_import_dry_run_failure',
-      expect.objectContaining({
-        dry_run: true,
-        status: 403,
-        request_id: 'req-err-1',
-      })
-    );
   });
 });
