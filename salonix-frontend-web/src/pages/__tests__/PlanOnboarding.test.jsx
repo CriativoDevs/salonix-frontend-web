@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import PlanOnboarding from '../PlanOnboarding';
 import * as billingApi from '../../api/billing';
+import * as safeRedirectUtils from '../../utils/safeRedirect';
+import * as usersApi from '../../api/users';
 
 jest.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
@@ -33,6 +35,18 @@ jest.mock('../../api/billing', () => ({
   })),
 }));
 
+jest.mock('../../api/users', () => ({
+  checkFounderAvailability: jest.fn(async () => ({
+    available: false,
+  })),
+}));
+
+jest.mock('../../utils/safeRedirect', () => ({
+  safeRedirect: jest.fn(),
+  isRedirectValidationError: jest.fn(),
+  REDIRECT_VALIDATION_ERROR_CODE: 'REDIRECT_URL_BLOCKED',
+}));
+
 describe('PlanOnboarding', () => {
   const originalError = console.error;
 
@@ -47,6 +61,16 @@ describe('PlanOnboarding', () => {
 
   afterAll(() => {
     console.error = originalError;
+  });
+
+  beforeEach(() => {
+    safeRedirectUtils.safeRedirect.mockReset();
+    safeRedirectUtils.isRedirectValidationError.mockReset();
+    safeRedirectUtils.isRedirectValidationError.mockReturnValue(false);
+    usersApi.checkFounderAvailability.mockResolvedValue({ available: false });
+    billingApi.createCheckoutSession.mockResolvedValue({
+      url: 'https://checkout.stripe.com/pay/cs_test_123',
+    });
   });
 
   it('abre modal de confirmação e inicia checkout ao confirmar', async () => {
@@ -66,6 +90,9 @@ describe('PlanOnboarding', () => {
 
     await waitFor(() => {
       expect(billingApi.createCheckoutSession).toHaveBeenCalled();
+      expect(safeRedirectUtils.safeRedirect).toHaveBeenCalledWith(
+        'https://checkout.stripe.com/pay/cs_test_123'
+      );
     });
   });
 
@@ -87,5 +114,37 @@ describe('PlanOnboarding', () => {
       const stored = window.localStorage.getItem('onboarding.plan.selection');
       expect(stored).toBeTruthy();
     });
+  });
+
+  it('mostra erro amigável quando o redirect é bloqueado', async () => {
+    const redirectError = new TypeError('Redirect URL failed validation.');
+    redirectError.code = 'REDIRECT_URL_BLOCKED';
+
+    safeRedirectUtils.safeRedirect.mockImplementation(() => {
+      throw redirectError;
+    });
+    safeRedirectUtils.isRedirectValidationError.mockImplementation(
+      (error) => error?.code === 'REDIRECT_URL_BLOCKED'
+    );
+
+    render(
+      <MemoryRouter>
+        <PlanOnboarding />
+      </MemoryRouter>
+    );
+
+    const continueBtn = await screen.findByText(/Continuar para checkout/i);
+    fireEvent.click(continueBtn);
+
+    const confirmInModal = await screen.findAllByText(
+      /Continuar para checkout/i
+    );
+    fireEvent.click(confirmInModal[confirmInModal.length - 1]);
+
+    expect(
+      await screen.findByText(
+        /Não foi possível abrir o checkout com segurança/i
+      )
+    ).toBeInTheDocument();
   });
 });

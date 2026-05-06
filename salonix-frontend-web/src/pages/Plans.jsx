@@ -11,6 +11,7 @@ import {
 } from '../api/billing';
 import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
+import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 import useBillingOverview from '../hooks/useBillingOverview';
@@ -137,7 +138,7 @@ function Plans() {
         interval: billingCycle,
       });
       if (url) {
-        window.location.assign(url);
+        safeRedirect(url);
       } else {
         setError({
           message: t(
@@ -147,12 +148,24 @@ function Plans() {
         });
       }
     } catch (e) {
-      setError(
-        parseApiError(
-          e,
-          t('plans.checkout_error', 'Falha ao iniciar checkout.')
-        )
-      );
+      if (isRedirectValidationError(e)) {
+        setError({
+          message: t(
+            'plans.checkout_redirect_invalid',
+            'Não foi possível abrir o checkout com segurança. Tente novamente em instantes.'
+          ),
+          code: e.code,
+          details: null,
+          requestId: null,
+        });
+      } else {
+        setError(
+          parseApiError(
+            e,
+            t('plans.checkout_error', 'Falha ao iniciar checkout.')
+          )
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -168,7 +181,7 @@ function Plans() {
     try {
       const { url } = await createBillingPortalSession({ slug });
       if (url) {
-        window.location.assign(url);
+        safeRedirect(url);
       } else {
         setError({
           message: t(
@@ -178,12 +191,24 @@ function Plans() {
         });
       }
     } catch (e) {
-      setError(
-        parseApiError(
-          e,
-          t('plans.portal_error', 'Falha ao abrir o portal de faturação.')
-        )
-      );
+      if (isRedirectValidationError(e)) {
+        setError({
+          message: t(
+            'plans.portal_redirect_invalid',
+            'Não foi possível abrir o portal de faturação com segurança. Tente novamente em instantes.'
+          ),
+          code: e.code,
+          details: null,
+          requestId: null,
+        });
+      } else {
+        setError(
+          parseApiError(
+            e,
+            t('plans.portal_error', 'Falha ao abrir o portal de faturação.')
+          )
+        );
+      }
     } finally {
       setManaging(false);
     }

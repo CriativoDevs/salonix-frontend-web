@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchCreditPackages, createCreditCheckoutSession } from '../api/credits';
+import {
+  fetchCreditPackages,
+  createCreditCheckoutSession,
+} from '../api/credits';
 import { useTenant } from './useTenant';
+import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 
 /**
  * Hook para gerenciar compra de créditos.
@@ -36,17 +40,26 @@ export default function useCreditPurchase() {
     setPurchaseLoading(true);
     setError(null);
     try {
-      const { checkout_url } = await createCreditCheckoutSession(amountEur, { slug });
+      const { checkout_url } = await createCreditCheckoutSession(amountEur, {
+        slug,
+      });
       if (checkout_url) {
-        console.log('[CreditPurchase] Redirecting to:', checkout_url);
-        window.location.href = checkout_url;
+        safeRedirect(checkout_url);
       } else {
         console.error('[CreditPurchase] No checkout URL returned');
         throw new Error('No checkout URL returned');
       }
     } catch (err) {
       console.error('Failed to start purchase', err);
-      setError(err);
+      if (isRedirectValidationError(err)) {
+        setError({
+          message:
+            'Não foi possível abrir o checkout de créditos com segurança. Tente novamente em instantes.',
+          code: err.code,
+        });
+      } else {
+        setError(err);
+      }
     } finally {
       setPurchaseLoading(false);
     }

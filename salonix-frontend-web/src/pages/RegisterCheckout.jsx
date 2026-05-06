@@ -6,6 +6,7 @@ import { Lock } from 'lucide-react';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
 import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
+import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 
@@ -48,7 +49,7 @@ function RegisterCheckout() {
         interval: billingCycle,
       });
       if (url) {
-        window.location.assign(url);
+        safeRedirect(url);
       } else {
         setError({
           message: t(
@@ -58,12 +59,24 @@ function RegisterCheckout() {
         });
       }
     } catch (e) {
-      setError(
-        parseApiError(
-          e,
-          t('plans.checkout_error', 'Falha ao iniciar checkout.')
-        )
-      );
+      if (isRedirectValidationError(e)) {
+        setError({
+          message: t(
+            'plans.checkout_redirect_invalid',
+            'Não foi possível abrir o checkout com segurança. Tente novamente em instantes.'
+          ),
+          code: e.code,
+          details: null,
+          requestId: null,
+        });
+      } else {
+        setError(
+          parseApiError(
+            e,
+            t('plans.checkout_error', 'Falha ao iniciar checkout.')
+          )
+        );
+      }
     } finally {
       setLoading(false);
     }
