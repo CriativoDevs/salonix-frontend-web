@@ -11,7 +11,7 @@ import {
 } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
 import { getAppointmentStatusBadge } from '../utils/badgeStyles';
-import { downloadFile } from '../utils/downloadFile';
+import { downloadICSSecure } from '../utils/icsDownload';
 
 function parseSlotDate(raw) {
   if (!raw) return null;
@@ -46,9 +46,6 @@ function AppointmentCard({ item, onCancel }) {
 
   // Usar token fornecido pela API para gerar URL do ICS público
   const icsToken = item?.ics_token || '';
-  const icsHref = icsToken
-    ? `${API_BASE_URL}public/appointments/${item?.id}/ics/?token=${icsToken}`
-    : '#';
 
   const handleDownloadICS = async (e) => {
     e.preventDefault();
@@ -56,11 +53,9 @@ function AppointmentCard({ item, onCancel }) {
 
     const filename = `agendamento_${serviceName.replace(/\s+/g, '_')}_${item?.id}.ics`;
     try {
-      await downloadFile(icsHref, filename);
+      await downloadICSSecure(API_BASE_URL, item?.id, icsToken, filename);
     } catch (error) {
       console.error('Failed to download ICS file:', error);
-      // Fallback: try opening in new window
-      window.open(icsHref, '_blank');
     }
   };
 
@@ -114,8 +109,9 @@ function AppointmentCard({ item, onCancel }) {
       {/* Ações (desktop) */}
       <div className="mt-3 hidden sm:flex items-center justify-end gap-3">
         <a
-          href={icsHref}
+          href="#"
           onClick={handleDownloadICS}
+          rel="noreferrer"
           className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary cursor-pointer"
           aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
           title="Adicionar ao calendário (atalho: A)"
@@ -146,8 +142,9 @@ function AppointmentCard({ item, onCancel }) {
       {/* Ações (mobile) */}
       <div className="mt-3 flex sm:hidden flex-col gap-2 items-center">
         <a
-          href={icsHref}
+          href="#"
           onClick={handleDownloadICS}
+          rel="noreferrer"
           className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
           aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
           title="Adicionar ao calendário"
@@ -180,9 +177,6 @@ function HistoryCard({ item }) {
 
   // Usar token fornecido pela API para gerar URL do ICS público
   const icsToken = item?.ics_token || '';
-  const icsHref = icsToken
-    ? `${API_BASE_URL}public/appointments/${item?.id}/ics/?token=${icsToken}`
-    : '#';
 
   const handleDownloadICS = async (e) => {
     e.preventDefault();
@@ -190,11 +184,9 @@ function HistoryCard({ item }) {
 
     const filename = `agendamento_${serviceName.replace(/\s+/g, '_')}_${item?.id}.ics`;
     try {
-      await downloadFile(icsHref, filename);
+      await downloadICSSecure(API_BASE_URL, item?.id, icsToken, filename);
     } catch (error) {
       console.error('Failed to download ICS file:', error);
-      // Fallback: try opening in new window
-      window.open(icsHref, '_blank');
     }
   };
 
@@ -250,8 +242,9 @@ function HistoryCard({ item }) {
       </div>
       <div className="mt-3 hidden sm:flex items-center justify-end gap-3">
         <a
-          href={icsHref}
+          href="#"
           onClick={handleDownloadICS}
+          rel="noreferrer"
           className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary cursor-pointer"
           aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
           title="Adicionar ao calendário (atalho: A)"
@@ -265,8 +258,9 @@ function HistoryCard({ item }) {
       </div>
       <div className="mt-3 flex sm:hidden flex-col gap-2 items-center">
         <a
-          href={icsHref}
+          href="#"
           onClick={handleDownloadICS}
+          rel="noreferrer"
           className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
           aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
           title="Adicionar ao calendário"
