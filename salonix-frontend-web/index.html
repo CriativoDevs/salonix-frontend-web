@@ -11,17 +11,20 @@
     <meta name="apple-mobile-web-app-title" content="TimelyOne" />
     <title>TimelyOne</title>
     <script>
-      if (window.location.pathname.startsWith('/ops')) {
-        var link = document.querySelector('link[rel="manifest"]');
-        if (link) {
-          link.href = '/manifest-ops.webmanifest';
+      // CSP-compliant dynamic manifest management: no eval, no Function()
+      (function() {
+        if (window.location.pathname.startsWith('/ops')) {
+          var link = document.querySelector('link[rel="manifest"]');
+          if (link) {
+            link.href = '/manifest-ops.webmanifest';
+          }
+          document.title = 'TimelyOne Ops';
+          var metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+          if (metaTitle) {
+            metaTitle.content = 'TimelyOne Ops';
+          }
         }
-        document.title = 'TimelyOne Ops';
-        var metaTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-        if (metaTitle) {
-          metaTitle.content = 'TimelyOne Ops';
-        }
-      }
+      })();
     </script>
   </head>
   <body>
