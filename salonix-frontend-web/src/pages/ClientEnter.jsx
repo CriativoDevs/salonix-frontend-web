@@ -6,7 +6,7 @@ import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import CaptchaGate from '../components/security/CaptchaGate';
 import { requestClientAccessLinkPublic } from '../api/clientAccess';
-import { getEnvFlag } from '../utils/env';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 
 export default function ClientEnter() {
   const { t } = useTranslation();
@@ -14,7 +14,7 @@ export default function ClientEnter() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
-  const captchaBypassToken = getEnvFlag('VITE_CAPTCHA_BYPASS_TOKEN');
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,7 +22,10 @@ export default function ClientEnter() {
     setLoading(true);
     setError(null);
     try {
-      await requestClientAccessLinkPublic({ email, captchaBypassToken });
+      await requestClientAccessLinkPublic({
+        email,
+        captchaBypassToken: getCaptchaTokenForRequest(captchaToken),
+      });
       setSuccess(true);
     } catch (err) {
       const detail =
@@ -48,7 +51,7 @@ export default function ClientEnter() {
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-            <CaptchaGate />
+            <CaptchaGate onToken={setCaptchaToken} />
             <FormButton
               type="submit"
               variant="link"

@@ -5,8 +5,8 @@ import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
 import ErrorPopup from '../components/ui/ErrorPopup';
 import { useAuth } from '../hooks/useAuth';
-import { getEnvVar } from '../utils/env';
 import CaptchaGate from '../components/security/CaptchaGate';
+import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 
 function Login() {
   const { t } = useTranslation();
@@ -18,6 +18,19 @@ function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [popupError, setPopupError] = useState(null);
   const [captchaToken, setCaptchaToken] = useState(null);
+
+  const handleCaptchaToken = (token) => {
+    setCaptchaToken(token);
+    if (token) {
+      setErrors((prev) => {
+        if (!prev.captcha) {
+          return prev;
+        }
+        const { captcha, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,15 +50,23 @@ function Login() {
       setErrors({ password: t('login.errors.password_required') });
       return;
     }
+    const resolvedCaptchaToken = getCaptchaTokenForRequest(captchaToken);
+    if (!resolvedCaptchaToken) {
+      setErrors({
+        captcha: t(
+          'auth.errors.captcha_required',
+          'Marque a opção "Eu não sou um robô" para continuar.'
+        ),
+      });
+      return;
+    }
     setErrors({}); // Clear errors if valid
 
     setSubmitting(true);
     setPopupError(null);
     clearAuthError();
     try {
-      const bypass = getEnvVar('VITE_CAPTCHA_BYPASS_TOKEN');
-      const token = bypass || captchaToken || undefined;
-      await login({ email: cleanEmail, password, captchaToken: token });
+      await login({ email: cleanEmail, password, captchaToken });
     } catch (err) {
       setPopupError(err);
     } finally {
@@ -105,7 +126,12 @@ function Login() {
           </button>
         </div>
 
-        <CaptchaGate onToken={setCaptchaToken} className="mt-3" />
+        <CaptchaGate onToken={handleCaptchaToken} className="mt-3" />
+        {errors.captcha && (
+          <p className="text-sm text-red-600" role="alert">
+            {errors.captcha}
+          </p>
+        )}
 
         <div className="mt-4 text-sm text-center">
           {t('login.no_account')}{' '}

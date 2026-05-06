@@ -64,7 +64,8 @@
       "password_mismatch": "Passwords don't match",
       "invalid_link": "Invalid or expired link",
       "weak_password": "Password must be at least 8 characters",
-      "reset_failed": "Could not reset password. Try again."
+      "reset_failed": "Could not reset password. Try again.",
+      "captcha_required": "Check \"I am not a robot\" to continue."
     }
   },
   "dashboard": {

@@ -8,6 +8,8 @@ import { useAuth } from '../../hooks/useAuth';
 import { registerUser, requestPasswordReset } from '../../api/auth';
 import { useTenant } from '../../hooks/useTenant';
 
+let mockCaptchaAutoResolve = true;
+
 // Mocks
 jest.mock('../../hooks/useAuth');
 jest.mock('../../api/auth');
@@ -23,15 +25,24 @@ jest.mock('react-i18next', () => ({
 jest.mock('../../layouts/AuthLayout', () => ({ children }) => (
   <div>{children}</div>
 ));
-jest.mock('../../components/security/CaptchaGate', () => () => (
-  <div>CaptchaGate</div>
-));
+jest.mock('../../components/security/CaptchaGate', () => ({ onToken }) => {
+  const ReactLib = require('react');
+
+  ReactLib.useEffect(() => {
+    if (mockCaptchaAutoResolve) {
+      onToken?.('builtin-ok');
+    }
+  }, [onToken]);
+
+  return <div>CaptchaGate</div>;
+});
 
 // Mock environment variables
 
 describe('Auth Hardening (FEW-210)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCaptchaAutoResolve = true;
     useAuth.mockReturnValue({
       login: jest.fn(),
       authError: null,
@@ -116,6 +127,34 @@ describe('Auth Hardening (FEW-210)', () => {
       resolveLogin({});
       await waitFor(() => expect(submitButton).not.toBeDisabled());
     });
+
+    it('blocks submit and shows message when captcha token is missing', async () => {
+      mockCaptchaAutoResolve = false;
+      const mockLogin = jest.fn().mockResolvedValue({});
+      useAuth.mockReturnValue({
+        login: mockLogin,
+        authError: null,
+        isLoading: false,
+        isAuthenticated: false,
+        clearAuthError: jest.fn(),
+      });
+
+      render(<Login />);
+
+      fireEvent.change(screen.getByLabelText(/login.email/i), {
+        target: { value: 'test@test.com' },
+      });
+      fireEvent.change(screen.getByLabelText(/login.password/i), {
+        target: { value: 'pass' },
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /login.submit/i }));
+
+      expect(mockLogin).not.toHaveBeenCalled();
+      expect(
+        screen.getByText('auth.errors.captcha_required')
+      ).toBeInTheDocument();
+    });
   });
 
   describe('Register Component', () => {
@@ -194,7 +233,7 @@ describe('Auth Hardening (FEW-210)', () => {
         expect(requestPasswordReset).toHaveBeenCalledWith(
           'forgot@test.com',
           expect.stringContaining('/reset-password'),
-          undefined
+          'builtin-ok'
         );
       });
     });
