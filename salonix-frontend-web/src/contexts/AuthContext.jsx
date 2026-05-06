@@ -7,6 +7,7 @@ import {
   clearTokens,
   setLogoutHandler,
 } from '../utils/authStorage';
+import { clearClientTokens } from '../utils/clientAuthStorage';
 import {
   login as loginRequest,
   refreshToken,
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = useCallback(() => {
     clearTokens();
+    clearClientTokens();
     resetState();
   }, [resetState]);
 
@@ -107,6 +109,7 @@ export const AuthProvider = ({ children }) => {
         );
         setAuthError(friendlyError);
         clearTokens();
+        clearClientTokens();
         resetState();
         return false;
       }
@@ -143,6 +146,7 @@ export const AuthProvider = ({ children }) => {
         if (status === 401 || status === 403) {
           console.warn('[Auth] refresh token invalid/expired, clearing tokens');
           clearTokens();
+          clearClientTokens();
           resetState();
         } else {
           console.warn(
@@ -170,6 +174,8 @@ export const AuthProvider = ({ children }) => {
             captchaBypassToken: bypass,
           }
         );
+        // Troca explícita de contexto: login staff invalida sessão de cliente.
+        clearClientTokens();
         if (access) {
           setAccessToken(access);
         }

@@ -6,6 +6,7 @@ import {
   setClientAccessToken,
   clearClientTokens,
 } from '../utils/clientAuthStorage';
+import { clearTokens } from '../utils/authStorage';
 import { refreshClientToken } from '../api/clientAccess';
 import { useTenant } from '../hooks/useTenant';
 
@@ -18,6 +19,7 @@ export const ClientAuthProvider = ({ children }) => {
 
   const handleLogout = useCallback(() => {
     clearClientTokens();
+    clearTokens();
     setIsAuthenticated(false);
     setCustomerId(null);
     setTenantSlug(null);
@@ -38,6 +40,8 @@ export const ClientAuthProvider = ({ children }) => {
   // Marcar cliente como autenticado após login
   const handleLogin = useCallback(
     (accessToken) => {
+      // Troca explícita de contexto: login cliente invalida sessão staff.
+      clearTokens();
       const payload = decodeToken(accessToken);
       if (payload?.customer_id && payload?.tenant_slug) {
         setIsAuthenticated(true);
@@ -64,6 +68,7 @@ export const ClientAuthProvider = ({ children }) => {
       if (storedAccess) {
         const payload = decodeToken(storedAccess);
         if (payload?.customer_id && payload?.tenant_slug) {
+          clearTokens();
           setIsAuthenticated(true);
           setCustomerId(payload.customer_id);
           setTenantSlug(payload.tenant_slug);
@@ -78,6 +83,7 @@ export const ClientAuthProvider = ({ children }) => {
       try {
         const { access } = await refreshClientToken(storedRefresh);
         if (access) {
+          clearTokens();
           setClientAccessToken(access);
           const payload = decodeToken(access);
           if (payload?.customer_id && payload?.tenant_slug) {
@@ -98,6 +104,7 @@ export const ClientAuthProvider = ({ children }) => {
               '), clearing tokens'
           );
           clearClientTokens();
+          clearTokens();
         } else {
           console.warn(
             '[ClientAuth] refresh failed with network error, keeping tokens:',

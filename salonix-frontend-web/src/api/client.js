@@ -3,6 +3,7 @@ import i18n from '../i18n';
 import {
   getAccessToken,
   getRefreshToken,
+  clearTokens,
   setAccessToken,
   setRefreshToken,
   triggerLogout,
@@ -98,6 +99,12 @@ const resolvePendingRequests = (token) => {
   pendingRequests = [];
 };
 
+const clearAllAuthContexts = () => {
+  clearClientTokens();
+  clearTokens();
+  triggerLogout();
+};
+
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -144,11 +151,7 @@ client.interceptors.response.use(
     const refresh = isClientToken ? getClientRefreshToken() : getRefreshToken();
 
     if (!refresh) {
-      if (isClientToken) {
-        clearClientTokens();
-      } else {
-        triggerLogout();
-      }
+      clearAllAuthContexts();
       return Promise.reject(error);
     }
 
@@ -202,11 +205,7 @@ client.interceptors.response.use(
       return client(config);
     } catch (refreshError) {
       resolvePendingRequests(null);
-      if (isClientToken) {
-        clearClientTokens();
-      } else {
-        triggerLogout();
-      }
+      clearAllAuthContexts();
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

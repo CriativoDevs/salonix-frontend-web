@@ -9,6 +9,7 @@ import {
   setClientAccessToken,
   setClientRefreshToken,
 } from '../utils/clientAuthStorage';
+import { clearTokens } from '../utils/authStorage';
 
 export default function ClientAccess() {
   const { t } = useTranslation();
@@ -37,6 +38,9 @@ export default function ClientAccess() {
         }
         const data = await acceptClientAccessToken({ token });
         setResult(data);
+
+        // Troca explícita de contexto: acesso cliente invalida sessão staff.
+        clearTokens();
 
         // Store tokens using clientAuthStorage (sessionStorage + localStorage)
         if (data.access) {
