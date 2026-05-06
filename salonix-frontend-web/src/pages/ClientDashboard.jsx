@@ -7,7 +7,7 @@ import PageHeader from '../components/ui/PageHeader';
 import { fetchClientUpcoming, cancelClientAppointment } from '../api/clientMe';
 import { API_BASE_URL } from '../api/client';
 import { useClientTenant } from '../hooks/useClientTenant';
-import { downloadFile } from '../utils/downloadFile';
+import { downloadICSSecure } from '../utils/icsDownload';
 
 export default function ClientDashboard() {
   const { t } = useTranslation();
@@ -68,14 +68,16 @@ export default function ClientDashboard() {
 
     const serviceName = next?.service?.name || 'Serviço';
     const filename = `agendamento_${serviceName.replace(/\s+/g, '_')}_${next?.id}.ics`;
-    const icsUrl = `${API_BASE_URL}public/appointments/${next?.id}/ics/?token=${next.ics_token}`;
 
     try {
-      await downloadFile(icsUrl, filename);
+      await downloadICSSecure(
+        API_BASE_URL,
+        next?.id,
+        next?.ics_token,
+        filename
+      );
     } catch (error) {
       console.error('Failed to download ICS file:', error);
-      // Fallback: try opening in new window
-      window.open(icsUrl, '_blank');
     }
   };
 
@@ -185,12 +187,9 @@ export default function ClientDashboard() {
                 </div>
                 <div className="mt-3 flex items-center justify-end gap-3">
                   <a
-                    href={
-                      next?.ics_token
-                        ? `${API_BASE_URL}public/appointments/${next?.id}/ics/?token=${next.ics_token}`
-                        : '#'
-                    }
+                    href="#"
                     onClick={handleDownloadICS}
+                    rel="noreferrer"
                     className="text-brand-primary hover:text-brand-accent underline underline-offset-4 cursor-pointer"
                   >
                     {t(
