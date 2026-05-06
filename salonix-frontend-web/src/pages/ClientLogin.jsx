@@ -10,6 +10,7 @@ import {
   setClientAccessToken,
   setClientRefreshToken,
 } from '../utils/clientAuthStorage';
+import { clearTokens } from '../utils/authStorage';
 
 function ClientLogin() {
   const { t } = useTranslation();
@@ -85,6 +86,9 @@ function ClientLogin() {
         password,
         tenantSlug: cleanTenantSlug,
       });
+
+      // Troca explícita de contexto: login cliente invalida sessão staff.
+      clearTokens();
 
       // Store JWT tokens using clientAuthStorage (sessionStorage + localStorage)
       clientLogin(data.access); // Atualizar estado do ClientAuthContext

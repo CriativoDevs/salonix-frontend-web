@@ -7,6 +7,7 @@ import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
 import { fetchClientProfile, updateClientProfile } from '../api/clientMe';
 import { clearClientTokens } from '../utils/clientAuthStorage';
+import { clearTokens } from '../utils/authStorage';
 
 export default function ClientProfile() {
   const { t } = useTranslation();
@@ -162,6 +163,7 @@ export default function ClientProfile() {
           onClick={() => {
             try {
               clearClientTokens();
+              clearTokens();
             } catch {
               void 0;
             }

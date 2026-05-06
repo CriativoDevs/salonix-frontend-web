@@ -1,27 +1,80 @@
 /**
  * Gerenciamento de tokens JWT para autenticação de clientes.
  *
- * MUDANÇA: Ambos tokens agora em localStorage para persistir sessão ao fechar app.
- * Isso garante que clientes tenham a mesma experiência de owner/manager/staff.
+ * Estratégia de hardening:
+ * - Access token em sessionStorage (menor persistência)
+ * - Refresh token em localStorage com expiração local por metadados
  *
- * - Access token em localStorage (persiste entre sessões)
- * - Refresh token em localStorage (persiste entre sessões)
+ * Fluxo esperado:
+ * - Ao reabrir app, access pode não existir (sessionStorage vazio)
+ * - Refresh válido permite restaurar sessão via endpoint de refresh
  */
 
 const CLIENT_ACCESS_KEY = 'client_access_token';
 const CLIENT_REFRESH_KEY = 'client_refresh_token';
+const CLIENT_REFRESH_META_KEY = 'client_refresh_token_meta';
+const CLIENT_REFRESH_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Estado em memória (cache)
 let accessToken = null;
 let refreshToken = null;
+
+const clearStoredRefreshToken = () => {
+  localStorage.removeItem(CLIENT_REFRESH_KEY);
+  localStorage.removeItem(CLIENT_REFRESH_META_KEY);
+};
+
+const writeStoredRefreshToken = (token) => {
+  if (!token) {
+    clearStoredRefreshToken();
+    return;
+  }
+
+  localStorage.setItem(CLIENT_REFRESH_KEY, token);
+  localStorage.setItem(
+    CLIENT_REFRESH_META_KEY,
+    JSON.stringify({ storedAt: Date.now() })
+  );
+};
+
+const readStoredRefreshToken = () => {
+  const token = localStorage.getItem(CLIENT_REFRESH_KEY);
+  if (!token) {
+    clearStoredRefreshToken();
+    return null;
+  }
+
+  const rawMeta = localStorage.getItem(CLIENT_REFRESH_META_KEY);
+  if (!rawMeta) {
+    // Migração suave: token legado sem metadados recebe timestamp atual.
+    writeStoredRefreshToken(token);
+    return token;
+  }
+
+  try {
+    const parsedMeta = JSON.parse(rawMeta);
+    const storedAt = Number(parsedMeta?.storedAt);
+    if (
+      !Number.isFinite(storedAt) ||
+      Date.now() - storedAt > CLIENT_REFRESH_MAX_AGE_MS
+    ) {
+      clearStoredRefreshToken();
+      return null;
+    }
+    return token;
+  } catch {
+    clearStoredRefreshToken();
+    return null;
+  }
+};
 
 /**
  * Inicializar tokens da storage ao carregar o módulo
  */
 function initializeTokens() {
   try {
-    accessToken = localStorage.getItem(CLIENT_ACCESS_KEY) || null;
-    refreshToken = localStorage.getItem(CLIENT_REFRESH_KEY) || null;
+    accessToken = sessionStorage.getItem(CLIENT_ACCESS_KEY) || null;
+    refreshToken = readStoredRefreshToken();
   } catch (error) {
     console.error('Error initializing client tokens:', error);
     accessToken = null;
@@ -34,15 +87,15 @@ initializeTokens();
 
 /**
  * Define o access token (JWT de curta duração)
- * Armazenado em localStorage para persistir entre sessões
+ * Armazenado em sessionStorage para reduzir persistência desnecessária
  */
 export const setClientAccessToken = (token) => {
   accessToken = token || null;
   try {
     if (token) {
-      localStorage.setItem(CLIENT_ACCESS_KEY, token);
+      sessionStorage.setItem(CLIENT_ACCESS_KEY, token);
     } else {
-      localStorage.removeItem(CLIENT_ACCESS_KEY);
+      sessionStorage.removeItem(CLIENT_ACCESS_KEY);
     }
   } catch (error) {
     console.error('Error setting client access token:', error);
@@ -51,15 +104,15 @@ export const setClientAccessToken = (token) => {
 
 /**
  * Define o refresh token (JWT de longa duração)
- * Armazenado em localStorage para persistir entre sessões
+ * Armazenado em localStorage com metadados de expiração local
  */
 export const setClientRefreshToken = (token) => {
   refreshToken = token || null;
   try {
     if (token) {
-      localStorage.setItem(CLIENT_REFRESH_KEY, token);
+      writeStoredRefreshToken(token);
     } else {
-      localStorage.removeItem(CLIENT_REFRESH_KEY);
+      clearStoredRefreshToken();
     }
   } catch (error) {
     console.error('Error setting client refresh token:', error);
@@ -70,10 +123,10 @@ export const setClientRefreshToken = (token) => {
  * Retorna o access token atual
  */
 export const getClientAccessToken = () => {
-  // Se não temos em memória, tentar ler do localStorage
+  // Se não temos em memória, tentar ler do sessionStorage
   if (!accessToken) {
     try {
-      accessToken = localStorage.getItem(CLIENT_ACCESS_KEY) || null;
+      accessToken = sessionStorage.getItem(CLIENT_ACCESS_KEY) || null;
     } catch (error) {
       console.error('Error getting client access token:', error);
     }
@@ -85,13 +138,11 @@ export const getClientAccessToken = () => {
  * Retorna o refresh token atual
  */
 export const getClientRefreshToken = () => {
-  // Se não temos em memória, tentar ler do localStorage
-  if (!refreshToken) {
-    try {
-      refreshToken = localStorage.getItem(CLIENT_REFRESH_KEY) || null;
-    } catch (error) {
-      console.error('Error getting client refresh token:', error);
-    }
+  try {
+    refreshToken = readStoredRefreshToken();
+  } catch (error) {
+    console.error('Error getting client refresh token:', error);
+    refreshToken = null;
   }
   return refreshToken;
 };
