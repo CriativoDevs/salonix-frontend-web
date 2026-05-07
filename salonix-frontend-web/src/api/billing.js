@@ -22,7 +22,7 @@ export const PLAN_OPTIONS = [
       'Funcionalidades do Plano Basic',
       'Preço Vitalício Garantido',
       'PWA para Admin e Clientes',
-      '€5 de crédito para comunicações',
+      '€2 de crédito para comunicações',
     ],
   },
   {
