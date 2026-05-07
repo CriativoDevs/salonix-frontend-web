@@ -161,7 +161,9 @@ function Landing() {
   const [screenshotsProgress, setScreenshotsProgress] = useState(0);
   const [activeShot, setActiveShot] = useState(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const desktopMenuRef = useRef(null);
   const [installEvt, setInstallEvt] = useState(null);
   const [installHelpOpen, setInstallHelpOpen] = useState(false);
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -206,6 +208,20 @@ function Landing() {
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        desktopMenuRef.current &&
+        !desktopMenuRef.current.contains(event.target)
+      ) {
+        setDesktopMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
   const handleInstallClick = async () => {
@@ -346,23 +362,6 @@ function Landing() {
               onToggle={toggleTheme}
               className="mr-2"
             />
-            <LanguageToggle />
-            <button
-              onClick={handleInstallClick}
-              className={`font-medium underline transition hover:opacity-80 ${
-                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
-              }`}
-            >
-              {t('landing.nav.install_pwa', 'Instalar App')}
-            </button>
-            <Link
-              to="/client/enter"
-              className={`font-medium transition hover:opacity-80 ${
-                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
-              }`}
-            >
-              {t('landing.nav.client_area', 'Área do Cliente')}
-            </Link>
             <Link
               to="/login"
               className={`font-medium transition hover:opacity-80 ${
@@ -379,6 +378,63 @@ function Landing() {
             >
               {t('landing.nav.register', 'Registar')}
             </Link>
+            <div className="relative" ref={desktopMenuRef}>
+              <button
+                type="button"
+                aria-label={t('landing.nav.open_menu', 'Abrir menu')}
+                aria-expanded={desktopMenuOpen}
+                aria-controls="landing-desktop-menu"
+                onClick={() => setDesktopMenuOpen((v) => !v)}
+                className={`rounded-md p-1.5 transition hover:opacity-80 ${
+                  isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+                }`}
+              >
+                {desktopMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </button>
+              {desktopMenuOpen && (
+                <div
+                  id="landing-desktop-menu"
+                  role="menu"
+                  className={`absolute right-0 top-full mt-2 w-56 rounded-lg border shadow-lg ${
+                    isDarkTheme
+                      ? 'border-[#2d2d2d] bg-[#181818] text-slate-200'
+                      : 'border-slate-200 bg-white text-slate-700'
+                  }`}
+                >
+                  <button
+                    onClick={() => {
+                      setDesktopMenuOpen(false);
+                      handleInstallClick();
+                    }}
+                    className="block w-full px-4 py-3 text-left font-medium hover:opacity-80"
+                    role="menuitem"
+                  >
+                    {t('landing.nav.install_pwa', 'Instalar App')}
+                  </button>
+                  <Link
+                    to="/client/enter"
+                    onClick={() => setDesktopMenuOpen(false)}
+                    className="block px-4 py-3 font-medium hover:opacity-80"
+                    role="menuitem"
+                  >
+                    {t('landing.nav.client_area', 'Área do Cliente')}
+                  </Link>
+                  <div
+                    className={`px-4 py-3 ${
+                      isDarkTheme
+                        ? 'border-t border-slate-700'
+                        : 'border-t border-slate-200'
+                    }`}
+                  >
+                    <LanguageToggle />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="sm:hidden flex items-center gap-2">
@@ -387,7 +443,22 @@ function Landing() {
               onToggle={toggleTheme}
               className="mr-1"
             />
-            <LanguageToggle />
+            <Link
+              to="/login"
+              className={`font-medium transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {t('landing.nav.login', 'Entrar')}
+            </Link>
+            <Link
+              to="/register"
+              className={`font-medium transition hover:opacity-80 ${
+                isDarkTheme ? 'text-slate-300' : 'text-slate-600'
+              }`}
+            >
+              {t('landing.nav.register', 'Registar')}
+            </Link>
             <button
               type="button"
               aria-label={t('landing.nav.open_menu', 'Abrir menu')}
@@ -403,7 +474,6 @@ function Landing() {
               ) : (
                 <Menu className="h-5 w-5" />
               )}
-              {t('landing.nav.menu', 'Menu')}
             </button>
             {mobileMenuOpen && (
               <div
@@ -423,22 +493,6 @@ function Landing() {
                 >
                   {t('landing.nav.client_area', 'Área do Cliente')}
                 </Link>
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 font-medium hover:opacity-80"
-                  role="menuitem"
-                >
-                  {t('landing.nav.login', 'Entrar')}
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 font-medium hover:opacity-80"
-                  role="menuitem"
-                >
-                  {t('landing.nav.register', 'Registar')}
-                </Link>
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
@@ -449,6 +503,15 @@ function Landing() {
                 >
                   {t('landing.nav.install_pwa', 'Instalar App')}
                 </button>
+                <div
+                  className={`px-4 py-3 ${
+                    isDarkTheme
+                      ? 'border-t border-slate-700'
+                      : 'border-t border-slate-200'
+                  }`}
+                >
+                  <LanguageToggle />
+                </div>
               </div>
             )}
           </div>
