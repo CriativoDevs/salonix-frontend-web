@@ -164,17 +164,22 @@ function formatDateParam(value) {
   return `${year}-${month}-${day}`;
 }
 
-function getCalendarAppointmentTone(status) {
-  if (status === 'cancelled') {
-    return 'border-rose-200/70 bg-rose-50/70 hover:bg-rose-50';
-  }
-  if (status === 'completed') {
-    return 'border-sky-200/70 bg-sky-50/70 hover:bg-sky-50';
-  }
-  if (status === 'paid') {
-    return 'border-emerald-300/70 bg-emerald-100/80 hover:bg-emerald-100';
-  }
-  return 'border-emerald-200/70 bg-emerald-50/70 hover:bg-emerald-50';
+const PROFESSIONAL_COLOR_PALETTE = [
+  { border: 'border-violet-300/60', bg: 'bg-violet-50/80',   dot: 'bg-violet-500'   },
+  { border: 'border-sky-300/60',    bg: 'bg-sky-50/80',      dot: 'bg-sky-500'      },
+  { border: 'border-amber-300/60',  bg: 'bg-amber-50/80',    dot: 'bg-amber-500'    },
+  { border: 'border-rose-300/60',   bg: 'bg-rose-50/80',     dot: 'bg-rose-500'     },
+  { border: 'border-teal-300/60',   bg: 'bg-teal-50/80',     dot: 'bg-teal-500'     },
+  { border: 'border-fuchsia-300/60',bg: 'bg-fuchsia-50/80',  dot: 'bg-fuchsia-500'  },
+  { border: 'border-lime-300/60',   bg: 'bg-lime-50/80',     dot: 'bg-lime-500'     },
+  { border: 'border-orange-300/60', bg: 'bg-orange-50/80',   dot: 'bg-orange-500'   },
+  { border: 'border-cyan-300/60',   bg: 'bg-cyan-50/80',     dot: 'bg-cyan-500'     },
+  { border: 'border-pink-300/60',   bg: 'bg-pink-50/80',     dot: 'bg-pink-500'     },
+];
+
+function getProfessionalColor(professionalId) {
+  const index = Math.abs(Number.parseInt(professionalId, 10) || 0) % PROFESSIONAL_COLOR_PALETTE.length;
+  return PROFESSIONAL_COLOR_PALETTE[index];
 }
 
 function formatServiceOption(service) {
@@ -288,8 +293,8 @@ function Bookings() {
   const [totalCount, setTotalCount] = useState(0);
   const [loadingList, setLoadingList] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
-  const [isCompact, setIsCompact] = useState(false);
-  const [viewMode, setViewMode] = useState('agenda');
+
+  const [viewMode, setViewMode] = useState('calendar');
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [calendarCursor, setCalendarCursor] = useState(() =>
@@ -335,9 +340,8 @@ function Bookings() {
 
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formSlots, setFormSlots] = useState([]);
-  const [formSlotsLoading, setFormSlotsLoading] = useState(false);
 
-  const [formError, setFormError] = useState(null);
+
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -403,19 +407,12 @@ function Bookings() {
         setFormSlots([]);
         return Promise.resolve();
       }
-      setFormSlotsLoading(true);
       return fetchSlots({ professionalId, slug })
         .then((slots) => {
           setFormSlots(Array.isArray(slots) ? slots : []);
         })
-        .catch((err) => {
+        .catch(() => {
           setFormSlots([]);
-          setFormError(
-            parseApiError(err, t('common.load_error', 'Falha ao carregar.'))
-          );
-        })
-        .finally(() => {
-          setFormSlotsLoading(false);
         });
     },
     [slug, t]
@@ -706,7 +703,6 @@ function Bookings() {
   const resetForm = () => {
     setFormData(INITIAL_FORM);
     setFormSlots([]);
-    setFormError(null);
     setSeriesSelections([]);
     setIsSeriesModalOpen(false);
     // Limpeza de estado da aba Multi
@@ -1682,40 +1678,32 @@ function Bookings() {
             {t('bookings.create.show', 'Novo agendamento')}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setFiltersPanelOpen((current) => !current)}
-            aria-expanded={filtersPanelOpen}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
-          >
-            <Filter className="h-4 w-4" />
-            {filtersPanelOpen
-              ? t('bookings.filters.hide', 'Fechar filtros')
-              : t('bookings.filters.show', 'Filtros')}
-            {filtersPanelOpen ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFiltersPanelOpen((current) => !current)}
+              aria-expanded={filtersPanelOpen}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light sm:flex-none"
+            >
+              <Filter className="h-4 w-4" />
+              {filtersPanelOpen
+                ? t('bookings.filters.hide', 'Fechar filtros')
+                : t('bookings.filters.show', 'Filtros')}
+              {filtersPanelOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
 
-          <button
-            type="button"
-            onClick={openSeriesModal}
-            className="inline-flex items-center justify-center rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
-          >
-            {t('bookings.form.multi_series_short', 'Multi/Série')}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsCompact((c) => !c)}
-            className={`inline-flex items-center justify-center rounded-full border p-2 transition ${isCompact ? 'border-brand-primary/20 bg-brand-primary/10 text-brand-primary' : 'border-brand-border bg-brand-light/50 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground'}`}
-            title={t('bookings.toggle_compact', 'Modo Compacto')}
-            aria-pressed={isCompact}
-          >
-            <List className="h-4 w-4" />
-          </button>
+            <button
+              type="button"
+              onClick={openSeriesModal}
+              className="inline-flex flex-1 items-center justify-center rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light sm:flex-none"
+            >
+              {t('bookings.form.multi_series_short', 'Multi/Série')}
+            </button>
+          </div>
 
           {hasActiveFilters ? (
             <div className="flex flex-wrap items-center gap-2 text-xs text-brand-surfaceForeground/65">
@@ -1760,17 +1748,17 @@ function Bookings() {
           ) : null}
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-2.5 xl:grid-cols-4">
           {summaryStats.map((item) => (
             <Card
               key={item.key}
-              className="flex min-h-[92px] flex-col items-start justify-center gap-3 rounded-xl border border-brand-border bg-brand-surface/95 px-4 py-3 shadow-sm ring-1 ring-brand-border/70 sm:min-h-[132px] sm:justify-between sm:gap-0 sm:rounded-2xl sm:p-4 xl:min-h-0"
+              className="flex items-center gap-3 rounded-xl border border-brand-border bg-brand-surface/95 px-4 py-3 shadow-sm ring-1 ring-brand-border/70"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-surfaceForeground/45 sm:text-xs sm:tracking-[0.18em]">
-                {item.label}
-              </p>
-              <p className="text-[1.9rem] font-semibold leading-none text-brand-surfaceForeground sm:mt-3 sm:text-3xl">
+              <p className="text-xl font-semibold leading-none text-brand-surfaceForeground">
                 {item.value}
+              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-surfaceForeground/45">
+                {item.label}
               </p>
             </Card>
           ))}
@@ -2007,6 +1995,31 @@ function Bookings() {
                 </div>
               </div>
 
+              {(() => {
+                const weekProfessionals = [];
+                const seen = new Set();
+                appointments.forEach((appt) => {
+                  if (appt.professionalId && !seen.has(appt.professionalId)) {
+                    seen.add(appt.professionalId);
+                    weekProfessionals.push({ id: appt.professionalId, name: appt.professionalName });
+                  }
+                });
+                if (weekProfessionals.length === 0) return null;
+                return (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {weekProfessionals.map((prof) => {
+                      const color = getProfessionalColor(prof.id);
+                      return (
+                        <span key={prof.id} className="inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs font-medium text-brand-surfaceForeground/70">
+                          <span className={`h-2 w-2 shrink-0 rounded-full ${color.dot}`} />
+                          {prof.name}
+                        </span>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
               <div className="mt-5 flex gap-2 overflow-x-auto pb-1 md:hidden">
                 {calendarWeekDays.map((day) => {
                   const dayKey = formatDateParam(day);
@@ -2060,29 +2073,41 @@ function Bookings() {
                             )}
                           </div>
                         ) : (
-                          dayItems.map((appointment) => (
-                            <button
-                              key={appointment.id}
-                              type="button"
-                              onClick={() => openEdit(appointment)}
-                              className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition ${getCalendarAppointmentTone(appointment.status)}`}
-                            >
-                              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
-                                {formatTimeRange(
-                                  appointment.slotStart,
-                                  appointment.slotEnd
-                                )}
-                              </div>
-                              <div className="mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground">
-                                {appointment.customerName ||
-                                  appointment.clientName ||
-                                  t('bookings.client_placeholder', 'Cliente')}
-                              </div>
-                              <div className="mt-1 text-xs leading-snug text-brand-surfaceForeground/58">
-                                {appointment.professionalName}
-                              </div>
-                            </button>
-                          ))
+                          dayItems.map((appointment) => {
+                            const isCancelled = appointment.status === 'cancelled';
+                            const color = getProfessionalColor(appointment.professionalId);
+                            return (
+                              <button
+                                key={appointment.id}
+                                type="button"
+                                onClick={() => openEdit(appointment)}
+                                className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition hover:brightness-95 ${isCancelled ? 'border-brand-border/50 bg-brand-light/30 opacity-60' : `${color.border} ${color.bg}`}`}
+                              >
+                                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
+                                  {formatTimeRange(
+                                    appointment.slotStart,
+                                    appointment.slotEnd
+                                  )}
+                                </div>
+                                <div className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}>
+                                  {appointment.customerName ||
+                                    appointment.clientName ||
+                                    t('bookings.client_placeholder', 'Cliente')}
+                                </div>
+                                {appointment.serviceName ? (
+                                  <div className="mt-0.5 text-[11px] leading-snug text-brand-surfaceForeground/60 truncate">
+                                    {appointment.serviceName}
+                                  </div>
+                                ) : null}
+                                <div className="mt-1 flex items-center gap-1">
+                                  <span className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`} />
+                                  <span className="text-[11px] leading-snug text-brand-surfaceForeground/58 truncate">
+                                    {appointment.professionalName}
+                                  </span>
+                                </div>
+                              </button>
+                            );
+                          })
                         )}
                       </div>
                     </div>
@@ -2117,41 +2142,53 @@ function Bookings() {
                         )}
                       </div>
                     ) : (
-                      selectedCalendarItems.map((appointment) => (
-                        <button
-                          key={appointment.id}
-                          type="button"
-                          onClick={() => openEdit(appointment)}
-                          className={`rounded-2xl border p-3 text-left shadow-sm transition ${getCalendarAppointmentTone(appointment.status)}`}
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
-                                {formatTimeRange(
-                                  appointment.slotStart,
-                                  appointment.slotEnd
+                      selectedCalendarItems.map((appointment) => {
+                        const isCancelled = appointment.status === 'cancelled';
+                        const color = getProfessionalColor(appointment.professionalId);
+                        return (
+                          <button
+                            key={appointment.id}
+                            type="button"
+                            onClick={() => openEdit(appointment)}
+                            className={`w-full rounded-2xl border p-3 text-left shadow-sm transition hover:brightness-95 ${isCancelled ? 'border-brand-border/50 bg-brand-light/30 opacity-60' : `${color.border} ${color.bg}`}`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 flex-1">
+                                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
+                                  {formatTimeRange(
+                                    appointment.slotStart,
+                                    appointment.slotEnd
+                                  )}
+                                </div>
+                                <div className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}>
+                                  {appointment.customerName ||
+                                    appointment.clientName ||
+                                    t('bookings.client_placeholder', 'Cliente')}
+                                </div>
+                                {appointment.serviceName ? (
+                                  <div className="mt-0.5 text-xs leading-snug text-brand-surfaceForeground/60 truncate">
+                                    {appointment.serviceName}
+                                  </div>
+                                ) : null}
+                                <div className="mt-1 flex items-center gap-1">
+                                  <span className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`} />
+                                  <span className="text-xs leading-snug text-brand-surfaceForeground/58 truncate">
+                                    {appointment.professionalName}
+                                  </span>
+                                </div>
+                              </div>
+                              <span
+                                className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
+                              >
+                                {t(
+                                  `bookings.statuses.${appointment.status}`,
+                                  appointment.status
                                 )}
-                              </div>
-                              <div className="mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground">
-                                {appointment.customerName ||
-                                  appointment.clientName ||
-                                  t('bookings.client_placeholder', 'Cliente')}
-                              </div>
-                              <div className="mt-1 text-xs leading-snug text-brand-surfaceForeground/58">
-                                {appointment.professionalName}
-                              </div>
+                              </span>
                             </div>
-                            <span
-                              className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
-                            >
-                              {t(
-                                `bookings.statuses.${appointment.status}`,
-                                appointment.status
-                              )}
-                            </span>
-                          </div>
-                        </button>
-                      ))
+                          </button>
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -2170,7 +2207,7 @@ function Bookings() {
                         <div
                           key={appointment.id}
                           onClick={() => openEdit(appointment)}
-                          className={`group relative flex cursor-pointer flex-col rounded-2xl border border-brand-border bg-brand-surface/95 shadow-sm ring-1 ring-brand-border/70 transition hover:bg-brand-surface/75 sm:flex-row sm:items-center ${isCompact ? 'p-2 gap-2 sm:gap-3 text-sm' : 'p-4 gap-4 sm:gap-5'}`}
+                          className="group relative flex cursor-pointer flex-col rounded-2xl border border-brand-border bg-brand-surface/95 shadow-sm ring-1 ring-brand-border/70 transition hover:bg-brand-surface/75 sm:flex-row sm:items-center p-4 gap-4 sm:gap-5"
                         >
                           <div className="flex-shrink-0 rounded-2xl border border-brand-border bg-brand-light/30 px-3 py-2 sm:min-w-[160px]">
                             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-surfaceForeground/45">
