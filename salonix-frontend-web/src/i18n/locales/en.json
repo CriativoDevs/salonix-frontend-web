@@ -187,8 +187,8 @@
     }
   },
   "slots": {
-    "title": "Available time slots",
-    "subtitle": "Organize availability with quick filters, guided creation and a clearer day-by-day view.",
+    "title": "Manage slots",
+    "subtitle": "Manage each professional's available slots. Generate in bulk by date range or remove individually.",
     "select_date": "Select date",
     "no_slots": "No slots available for this date.",
     "professional": "Professional",
@@ -219,7 +219,9 @@
       "all_dates": "All dates",
       "reset": "Clear filters",
       "date_active": "Date: {{date}}",
-      "order_active": "Ordering: oldest first"
+      "order_active": "Ordering: oldest first",
+      "clear_professional": "Clear professional",
+      "select_professional": "Select professional"
     },
     "list": {
       "title": "Registered slots",
@@ -231,7 +233,38 @@
       "title": "No slots found",
       "description": "Adjust the filters or open the creation panel to add new slots for the selected professional.",
       "no_professionals_title": "No professionals available",
-      "no_professionals_description": "Create or activate a professional before organizing available time slots."
+      "no_professionals_description": "Create or activate a professional before organizing available time slots.",
+      "select_professional_title": "Select a professional",
+      "select_professional_description": "Open the filters and select a professional to view and manage their registered slots."
+    },
+    "hours_notice": "Configure operating hours on the settings page to generate slots automatically.",
+    "hours_notice_cta": "Go to settings",
+    "bulk": {
+      "open": "Generate slots",
+      "title": "Bulk slot generation",
+      "professional": "Professional",
+      "period": "Period",
+      "period_today": "Today",
+      "period_week": "This week",
+      "period_month": "This month",
+      "date_from": "From",
+      "date_to": "To",
+      "weekdays": "Weekdays",
+      "weekdays_short": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "interval": "Slot duration",
+      "preview_count": "{{count}} slots will be created",
+      "preview_empty": "Configure the period to see a preview",
+      "creating": "{{done}}/{{total}}",
+      "create_btn": "Generate {{count}} slots",
+      "create_btn_empty": "Generate slots"
     }
   },
   "bookings": {
@@ -667,15 +700,8 @@
     "appointment_duration": "Appointment duration",
     "buffer_time": "Buffer time",
     "notifications": {
-      "emailNotifications": "Email notifications",
-      "emailNotifications_description": "Receive email notifications",
-      "smsNotifications": "SMS notifications",
-      "smsNotifications_description": "Receive SMS notifications",
-      "appointmentReminders": "Appointment reminders",
-      "appointmentReminders_description": "Automatic appointment reminders",
-      "marketingEmails": "Marketing emails",
-      "marketingEmails_description": "Receive promotional emails",
-      "pro_only": "Available only on the Pro plan"
+      "whatsapp_coming_soon_tooltip": "WhatsApp will be activated after Meta Business approval. Stay tuned!",
+      "whatsapp_waiting_meta": "WhatsApp will be available soon. We are waiting for Meta Business approval."
     },
     "save": "Save",
     "branding": {
@@ -769,10 +795,6 @@
       "push_web": "Web Push",
       "push_mobile": "Mobile Push"
     },
-    "notifications": {
-      "whatsapp_coming_soon_tooltip": "WhatsApp will be activated after Meta Business approval. Stay tuned!",
-      "whatsapp_waiting_meta": "WhatsApp will be available soon. We are waiting for Meta Business approval."
-    },
     "notifications_paywall_hint": "Advanced channels available with credits.",
     "tooltip": {
       "add_credits": "Buy credits to unlock advanced channels",
@@ -783,7 +805,6 @@
     "channel_disabled": "Inactive",
     "add_credits": "Add credits",
     "credits_available": "Credits available",
-
     "data": {
       "title": "Import (CSV)",
       "description": "Import customers, services or team members via CSV file.",
@@ -1560,14 +1581,38 @@
     },
     "features": {
       "items": {
-        "0": { "title": "24/7 Bookings", "desc": "Online bookings anytime, with automatic confirmation." },
-        "1": { "title": "Team Management", "desc": "Schedules, time off, rooms, chairs and more." },
-        "2": { "title": "Smart Reminders", "desc": "Email and SMS to reduce no-shows (WhatsApp soon)." },
-        "3": { "title": "PWA for Team and Clients", "desc": "Installable on mobile, no app stores." },
-        "4": { "title": "Real-time Reports", "desc": "Revenue, occupancy and top-selling services." },
-        "5": { "title": "Scalable for Franchises", "desc": "Permissions and consolidated reports." },
-        "6": { "title": "Custom Domain (Pro)", "desc": "Own brand and URL." },
-        "7": { "title": "Integrations (Enterprise)", "desc": "Google Calendar, Stripe and more." }
+        "0": {
+          "title": "24/7 Bookings",
+          "desc": "Online bookings anytime, with automatic confirmation."
+        },
+        "1": {
+          "title": "Team Management",
+          "desc": "Schedules, time off, rooms, chairs and more."
+        },
+        "2": {
+          "title": "Smart Reminders",
+          "desc": "Email and SMS to reduce no-shows (WhatsApp soon)."
+        },
+        "3": {
+          "title": "PWA for Team and Clients",
+          "desc": "Installable on mobile, no app stores."
+        },
+        "4": {
+          "title": "Real-time Reports",
+          "desc": "Revenue, occupancy and top-selling services."
+        },
+        "5": {
+          "title": "Scalable for Franchises",
+          "desc": "Permissions and consolidated reports."
+        },
+        "6": {
+          "title": "Custom Domain (Pro)",
+          "desc": "Own brand and URL."
+        },
+        "7": {
+          "title": "Integrations (Enterprise)",
+          "desc": "Google Calendar, Stripe and more."
+        }
       }
     },
     "pricing": {
@@ -1643,19 +1688,43 @@
     },
     "steps": {
       "title": "Getting started is simple.",
-      "1": { "title": "Create your account.", "desc": "No card, no commitment." },
-      "2": { "title": "Configure team and services.", "desc": "All set in minutes." },
-      "3": { "title": "Enable online bookings.", "desc": "Clients start booking." }
+      "1": {
+        "title": "Create your account.",
+        "desc": "No card, no commitment."
+      },
+      "2": {
+        "title": "Configure team and services.",
+        "desc": "All set in minutes."
+      },
+      "3": {
+        "title": "Enable online bookings.",
+        "desc": "Clients start booking."
+      }
     },
     "niches": {
       "title": "Made for real businesses.",
       "subtitle": "Fits your flow — whatever the segment.",
       "items": {
-        "0": { "title": "Beauty Salons", "desc": "Different services and durations" },
-        "1": { "title": "Barbershops", "desc": "Fast chair rotation" },
-        "2": { "title": "Tattoo", "desc": "Long sessions and deposits" },
-        "3": { "title": "Aesthetics", "desc": "Packages and treatment rooms" },
-        "4": { "title": "Freelancers", "desc": "Simple view, everything in one place" }
+        "0": {
+          "title": "Beauty Salons",
+          "desc": "Different services and durations"
+        },
+        "1": {
+          "title": "Barbershops",
+          "desc": "Fast chair rotation"
+        },
+        "2": {
+          "title": "Tattoo",
+          "desc": "Long sessions and deposits"
+        },
+        "3": {
+          "title": "Aesthetics",
+          "desc": "Packages and treatment rooms"
+        },
+        "4": {
+          "title": "Freelancers",
+          "desc": "Simple view, everything in one place"
+        }
       }
     },
     "testimonials": {

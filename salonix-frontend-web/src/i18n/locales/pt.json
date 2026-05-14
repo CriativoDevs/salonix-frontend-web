@@ -188,8 +188,8 @@
     }
   },
   "slots": {
-    "title": "Horários disponíveis",
-    "subtitle": "Organize a disponibilidade com filtros rápidos, criação guiada e leitura mais clara por dia.",
+    "title": "Gerir horários",
+    "subtitle": "Gerencie os horários disponíveis de cada profissional. Gere em massa por período ou remova individualmente.",
     "select_date": "Selecionar data",
     "no_slots": "Nenhum horário disponível para essa data.",
     "professional": "Profissional",
@@ -220,7 +220,9 @@
       "all_dates": "Todas as datas",
       "reset": "Limpar filtros",
       "date_active": "Data: {{date}}",
-      "order_active": "Ordenação: mais antigos"
+      "order_active": "Ordenação: mais antigos",
+      "clear_professional": "Limpar profissional",
+      "select_professional": "Selecionar profissional"
     },
     "list": {
       "title": "Horários cadastrados",
@@ -232,7 +234,38 @@
       "title": "Nenhum horário encontrado",
       "description": "Ajuste os filtros ou abra a criação para adicionar novos horários ao profissional selecionado.",
       "no_professionals_title": "Nenhum profissional disponível",
-      "no_professionals_description": "Cadastre ou ative um profissional antes de organizar horários disponíveis."
+      "no_professionals_description": "Cadastre ou ative um profissional antes de organizar horários disponíveis.",
+      "select_professional_title": "Selecione um profissional",
+      "select_professional_description": "Abra os filtros e selecione um profissional para visualizar e gerenciar os horários cadastrados."
+    },
+    "hours_notice": "Configure o horário de funcionamento na página de configurações para gerar horários automaticamente.",
+    "hours_notice_cta": "Ir para configurações",
+    "bulk": {
+      "open": "Gerar horários",
+      "title": "Geração em massa de horários",
+      "professional": "Profissional",
+      "period": "Período",
+      "period_today": "Hoje",
+      "period_week": "Esta semana",
+      "period_month": "Este mês",
+      "date_from": "De",
+      "date_to": "Até",
+      "weekdays": "Dias da semana",
+      "weekdays_short": {
+        "mon": "Seg",
+        "tue": "Ter",
+        "wed": "Qua",
+        "thu": "Qui",
+        "fri": "Sex",
+        "sat": "Sáb",
+        "sun": "Dom"
+      },
+      "interval": "Duração por slot",
+      "preview_count": "{{count}} horários serão criados",
+      "preview_empty": "Configure o período para ver uma prévia",
+      "creating": "{{done}}/{{total}}",
+      "create_btn": "Gerar {{count}} horários",
+      "create_btn_empty": "Gerar horários"
     }
   },
   "bookings": {
@@ -553,7 +586,6 @@
         "go_plans": "Ir para Planos"
       }
     },
-
     "features": {
       "pwa": {
         "label": "PWA Cliente",
@@ -722,15 +754,8 @@
     "appointment_duration": "Duração do agendamento",
     "buffer_time": "Tempo de intervalo",
     "notifications": {
-      "emailNotifications": "Notificações por e-mail",
-      "emailNotifications_description": "Receber notificações por e-mail",
-      "smsNotifications": "Notificações por SMS",
-      "smsNotifications_description": "Receber notificações por SMS",
-      "appointmentReminders": "Lembretes de agendamento",
-      "appointmentReminders_description": "Lembretes automáticos de agendamentos",
-      "marketingEmails": "E-mails de marketing",
-      "marketingEmails_description": "Receber e-mails promocionais",
-      "pro_only": "Disponível somente no plano Pro"
+      "whatsapp_coming_soon_tooltip": "WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!",
+      "whatsapp_waiting_meta": "WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business."
     },
     "business": {
       "placeholder": "Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.",
@@ -827,10 +852,6 @@
       "whatsapp": "WhatsApp",
       "push_web": "Web Push",
       "push_mobile": "Mobile Push"
-    },
-    "notifications": {
-      "whatsapp_coming_soon_tooltip": "WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!",
-      "whatsapp_waiting_meta": "WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business."
     },
     "notifications_paywall_hint": "Canais avançados disponíveis com créditos.",
     "tooltip": {
@@ -1592,14 +1613,38 @@
     },
     "features": {
       "items": {
-        "0": { "title": "Agendamentos 24/7", "desc": "Reservas online a qualquer hora, com confirmação automática." },
-        "1": { "title": "Gestão de Equipa", "desc": "Horários, folgas, salas, cadeiras e mais." },
-        "2": { "title": "Lembretes Inteligentes", "desc": "Email e SMS para reduzir faltas (WhatsApp em breve)." },
-        "3": { "title": "PWA Equipa e Clientes", "desc": "Instalável no telemóvel, sem lojas tradicionais." },
-        "4": { "title": "Relatórios em Tempo Real", "desc": "Faturação, ocupação e serviços mais vendidos." },
-        "5": { "title": "Escalável para Franquias", "desc": "Permissões e relatórios consolidados." },
-        "6": { "title": "Domínio Personalizado (Pro)", "desc": "Marca e URL próprios." },
-        "7": { "title": "Integrações (Enterprise)", "desc": "Google Calendar, Stripe e mais." }
+        "0": {
+          "title": "Agendamentos 24/7",
+          "desc": "Reservas online a qualquer hora, com confirmação automática."
+        },
+        "1": {
+          "title": "Gestão de Equipa",
+          "desc": "Horários, folgas, salas, cadeiras e mais."
+        },
+        "2": {
+          "title": "Lembretes Inteligentes",
+          "desc": "Email e SMS para reduzir faltas (WhatsApp em breve)."
+        },
+        "3": {
+          "title": "PWA Equipa e Clientes",
+          "desc": "Instalável no telemóvel, sem lojas tradicionais."
+        },
+        "4": {
+          "title": "Relatórios em Tempo Real",
+          "desc": "Faturação, ocupação e serviços mais vendidos."
+        },
+        "5": {
+          "title": "Escalável para Franquias",
+          "desc": "Permissões e relatórios consolidados."
+        },
+        "6": {
+          "title": "Domínio Personalizado (Pro)",
+          "desc": "Marca e URL próprios."
+        },
+        "7": {
+          "title": "Integrações (Enterprise)",
+          "desc": "Google Calendar, Stripe e mais."
+        }
       }
     },
     "pricing": {
@@ -1675,19 +1720,43 @@
     },
     "steps": {
       "title": "Começar é simples.",
-      "1": { "title": "Crie a sua conta.", "desc": "Sem cartão, sem compromisso." },
-      "2": { "title": "Configure a equipa e serviços.", "desc": "Tudo pronto em minutos." },
-      "3": { "title": "Ative os agendamentos online.", "desc": "Os clientes começam a reservar." }
+      "1": {
+        "title": "Crie a sua conta.",
+        "desc": "Sem cartão, sem compromisso."
+      },
+      "2": {
+        "title": "Configure a equipa e serviços.",
+        "desc": "Tudo pronto em minutos."
+      },
+      "3": {
+        "title": "Ative os agendamentos online.",
+        "desc": "Os clientes começam a reservar."
+      }
     },
     "niches": {
       "title": "Criado para negócios reais.",
       "subtitle": "Adapta-se ao seu fluxo — seja qual for o setor.",
       "items": {
-        "0": { "title": "Salões de Beleza", "desc": "Serviços e durações diferentes" },
-        "1": { "title": "Barbearias", "desc": "Rotação rápida de cadeiras" },
-        "2": { "title": "Tatuagem", "desc": "Sessões longas e depósitos" },
-        "3": { "title": "Estética", "desc": "Pacotes e salas de tratamento" },
-        "4": { "title": "Freelancers", "desc": "Visão simples, tudo num lugar" }
+        "0": {
+          "title": "Salões de Beleza",
+          "desc": "Serviços e durações diferentes"
+        },
+        "1": {
+          "title": "Barbearias",
+          "desc": "Rotação rápida de cadeiras"
+        },
+        "2": {
+          "title": "Tatuagem",
+          "desc": "Sessões longas e depósitos"
+        },
+        "3": {
+          "title": "Estética",
+          "desc": "Pacotes e salas de tratamento"
+        },
+        "4": {
+          "title": "Freelancers",
+          "desc": "Visão simples, tudo num lugar"
+        }
       }
     },
     "testimonials": {
@@ -1728,8 +1797,7 @@
     "page_size": "Itens por página",
     "prev": "Anterior",
     "next": "Próximo"
-  }
-  ,
+  },
   "client": {
     "nav": {
       "appointments": "Agendamentos",
@@ -1763,7 +1831,6 @@
   "toast": {
     "close": "Fechar notificação"
   },
-
   "client_login": {
     "title": "Área do Cliente",
     "subtitle": "Acesse seus agendamentos",
