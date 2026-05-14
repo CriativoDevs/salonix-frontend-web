@@ -51,7 +51,13 @@ function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] overflow-y-auto bg-gray-900/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-gray-900/40 backdrop-blur-sm"
+      style={{
+        paddingTop: 'max(1rem, env(safe-area-inset-top))',
+        paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
+        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+        paddingRight: 'max(1rem, env(safe-area-inset-right))',
+      }}
       onMouseDown={handleOverlayClick}
       role="presentation"
     >
@@ -60,7 +66,7 @@ function Modal({
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? 'modal-title' : undefined}
-          className={`relative my-6 flex max-h-[calc(100vh-3rem)] w-full transform flex-col overflow-hidden rounded-xl border border-brand-border bg-brand-surface shadow-2xl transition-all ${sizeClass}`}
+          className={`relative my-6 flex max-h-[calc(100dvh-3rem)] w-full transform flex-col overflow-hidden rounded-xl border border-brand-border bg-brand-surface shadow-2xl transition-all ${sizeClass}`}
           onMouseDown={(event) => event.stopPropagation()}
         >
           <button
