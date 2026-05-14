@@ -21,6 +21,7 @@ import PageHeader from '../components/ui/PageHeader';
 import SlotBulkModal from '../components/slots/SlotBulkModal';
 import { fetchProfessionals } from '../api/professionals';
 import { fetchSlotsWithMeta, deleteSlot } from '../api/slots';
+import { fetchTenantBusinessHours } from '../api/tenant';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import PaginationControls from '../components/ui/PaginationControls';
@@ -52,6 +53,7 @@ function AvailableSlots() {
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [businessHoursPreset, setBusinessHoursPreset] = useState(null);
 
   const handleProfessionalChange = useCallback((professionalId) => {
     setSelectedProfessional(String(professionalId));
@@ -88,8 +90,7 @@ function AvailableSlots() {
   );
 
   const getProfessionalName = useCallback(
-    (id) =>
-      professionals.find((p) => String(p.id) === String(id))?.name || '',
+    (id) => professionals.find((p) => String(p.id) === String(id))?.name || '',
     [professionals]
   );
 
@@ -135,6 +136,50 @@ function AvailableSlots() {
     };
   }, [slug, t]);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!slug) {
+      setBusinessHoursPreset(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const weekdayOrder = [1, 2, 3, 4, 5, 6, 0];
+
+    fetchTenantBusinessHours()
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : [];
+        const active = list.filter((item) => Boolean(item?.is_active));
+        const activeWeekdays = active
+          .map((item) => item?.day_of_week)
+          .filter((value) => Number.isInteger(value));
+
+        const sortedActive = [...active].sort(
+          (a, b) =>
+            weekdayOrder.indexOf(a?.day_of_week) -
+            weekdayOrder.indexOf(b?.day_of_week)
+        );
+        const firstActive = sortedActive[0] || null;
+
+        setBusinessHoursPreset({
+          weekdays: activeWeekdays,
+          startTime: String(firstActive?.start_time || '').slice(0, 5),
+          endTime: String(firstActive?.end_time || '').slice(0, 5),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBusinessHoursPreset(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
   const triggerRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
   }, []);
@@ -162,7 +207,9 @@ function AvailableSlots() {
             ? payload
             : [];
         setSlotItems(list);
-        setTotalCount(payload?.meta?.totalCount ?? payload?.count ?? list.length);
+        setTotalCount(
+          payload?.meta?.totalCount ?? payload?.count ?? list.length
+        );
       })
       .catch((e) => {
         if (!cancelled) setError(parseApiError(e, t('common.load_error')));
@@ -518,9 +565,15 @@ function AvailableSlots() {
             />
           ) : null}
 
-          {!loading && !error && professionals.length > 0 && !selectedProfessional ? (
+          {!loading &&
+          !error &&
+          professionals.length > 0 &&
+          !selectedProfessional ? (
             <EmptyState
-              title={t('slots.empty.select_professional_title', 'Selecione um profissional')}
+              title={t(
+                'slots.empty.select_professional_title',
+                'Selecione um profissional'
+              )}
               description={t(
                 'slots.empty.select_professional_description',
                 'Abra os filtros e escolha um profissional para visualizar e gerenciar os horários cadastrados.'
@@ -592,10 +645,9 @@ function AvailableSlots() {
 
                   <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {items.map((slot) => {
-                      const profName =
-                        selectedProfessional
-                          ? ''
-                          : getProfessionalName(slot.professional);
+                      const profName = selectedProfessional
+                        ? ''
+                        : getProfessionalName(slot.professional);
                       return (
                         <div
                           key={slot.id}
@@ -674,6 +726,7 @@ function AvailableSlots() {
         }}
         professionals={professionals}
         slug={slug}
+        businessHoursPreset={businessHoursPreset}
       />
     </FullPageLayout>
   );

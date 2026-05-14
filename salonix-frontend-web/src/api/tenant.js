@@ -129,6 +129,16 @@ export async function updateTenantContact({
   return response.data;
 }
 
+export async function fetchTenantBusinessHours() {
+  const { data } = await client.get('users/tenant/business-hours/');
+  return data;
+}
+
+export async function updateTenantBusinessHours(payload) {
+  const { data } = await client.put('users/tenant/business-hours/', payload);
+  return data;
+}
+
 export async function cancelTenantAccount({
   password,
   confirmationText,
