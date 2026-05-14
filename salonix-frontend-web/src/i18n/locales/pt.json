@@ -270,6 +270,8 @@
   },
   "bookings": {
     "subtitle": "Organize a operação do dia com filtros rápidos, criação guiada e leitura mais clara da agenda.",
+    "hours_notice": "Configure o horário de funcionamento do salão para gerar horários automaticamente.",
+    "hours_notice_cta": "Configurar horário",
     "actions": {
       "cancel": "Cancelar",
       "reschedule": "Reagendar",

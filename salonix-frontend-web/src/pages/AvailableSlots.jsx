@@ -54,6 +54,9 @@ function AvailableSlots() {
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [businessHoursPreset, setBusinessHoursPreset] = useState(null);
+  const [hasConfiguredBusinessHours, setHasConfiguredBusinessHours] =
+    useState(null);
+  const [businessHoursChecked, setBusinessHoursChecked] = useState(false);
 
   const handleProfessionalChange = useCallback((professionalId) => {
     setSelectedProfessional(String(professionalId));
@@ -136,25 +139,26 @@ function AvailableSlots() {
     };
   }, [slug, t]);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadBusinessHours = useCallback(() => {
     if (!slug) {
       setBusinessHoursPreset(null);
-      return () => {
-        cancelled = true;
-      };
+      setHasConfiguredBusinessHours(null);
+      setBusinessHoursChecked(false);
+      return Promise.resolve();
     }
 
     const weekdayOrder = [1, 2, 3, 4, 5, 6, 0];
+    setBusinessHoursChecked(false);
 
-    fetchTenantBusinessHours()
+    return fetchTenantBusinessHours()
       .then((data) => {
-        if (cancelled) return;
         const list = Array.isArray(data) ? data : [];
         const active = list.filter((item) => Boolean(item?.is_active));
         const activeWeekdays = active
           .map((item) => item?.day_of_week)
           .filter((value) => Number.isInteger(value));
+
+        setHasConfiguredBusinessHours(activeWeekdays.length > 0);
 
         const sortedActive = [...active].sort(
           (a, b) =>
@@ -170,15 +174,39 @@ function AvailableSlots() {
         });
       })
       .catch(() => {
-        if (!cancelled) {
-          setBusinessHoursPreset(null);
-        }
+        setBusinessHoursPreset(null);
+        setHasConfiguredBusinessHours(null);
+      })
+      .finally(() => {
+        setBusinessHoursChecked(true);
       });
+  }, [slug]);
+
+  useEffect(() => {
+    loadBusinessHours();
+  }, [loadBusinessHours]);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const handleWindowFocus = () => {
+      loadBusinessHours();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadBusinessHours();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      cancelled = true;
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [slug]);
+  }, [slug, loadBusinessHours]);
 
   const triggerRefresh = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -336,6 +364,8 @@ function AvailableSlots() {
 
   const hasActiveFilters =
     Boolean(selectedDate) || sortOption !== '-start_time';
+  const shouldShowBusinessHoursNotice =
+    businessHoursChecked && hasConfiguredBusinessHours === false;
 
   return (
     <FullPageLayout>
@@ -348,23 +378,24 @@ function AvailableSlots() {
           )}
         />
 
-        {/* Aviso de horário de funcionamento */}
-        <div className="flex items-start gap-3 rounded-2xl border border-brand-primary/20 bg-brand-primary/5 px-4 py-3">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary" />
-          <p className="text-sm text-brand-surfaceForeground/80">
-            {t(
-              'slots.hours_notice',
-              'Configure o horário de funcionamento do salão para gerar horários automaticamente.'
-            )}{' '}
-            <Link
-              to="/settings"
-              className="font-medium text-brand-primary underline-offset-2 hover:underline"
-            >
-              <Settings className="inline h-3.5 w-3.5" />{' '}
-              {t('slots.hours_notice_cta', 'Ir para configurações')}
-            </Link>
-          </p>
-        </div>
+        {shouldShowBusinessHoursNotice ? (
+          <div className="flex items-start gap-2 rounded-xl border border-brand-primary/15 bg-brand-primary/5 px-3 py-2 sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-3">
+            <Info className="mt-0.5 hidden h-4 w-4 shrink-0 text-brand-primary sm:block" />
+            <p className="text-xs leading-relaxed text-brand-surfaceForeground/75 sm:text-sm sm:text-brand-surfaceForeground/80">
+              {t(
+                'slots.hours_notice',
+                'Configure o horário de funcionamento do salão para gerar horários automaticamente.'
+              )}{' '}
+              <Link
+                to="/settings"
+                className="font-semibold text-brand-primary underline-offset-2 hover:underline"
+              >
+                <Settings className="inline h-3.5 w-3.5" />{' '}
+                {t('slots.hours_notice_cta', 'Ir para configurações')}
+              </Link>
+            </p>
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <button
