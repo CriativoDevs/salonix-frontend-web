@@ -331,7 +331,7 @@ function Landing() {
       }`}
     >
       <header
-        className={`sticky top-0 z-10 border-b backdrop-blur transition-colors duration-300 ${
+        className={`sticky top-0 z-10 border-b backdrop-blur transition-colors duration-300 pt-[env(safe-area-inset-top)] ${
           isDarkTheme
             ? 'border-slate-700 bg-slate-900/70'
             : 'border-white/60 bg-white/70'
