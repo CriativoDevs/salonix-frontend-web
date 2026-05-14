@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Loader2, Zap } from 'lucide-react';
 import Modal from '../ui/Modal';
@@ -107,7 +107,14 @@ function monthRangeStr() {
   };
 }
 
-function SlotBulkModal({ open, onClose, onCreated, professionals, slug }) {
+function SlotBulkModal({
+  open,
+  onClose,
+  onCreated,
+  professionals,
+  slug,
+  businessHoursPreset,
+}) {
   const { t } = useTranslation();
   const [professionalId, setProfessionalId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -121,6 +128,33 @@ function SlotBulkModal({ open, onClose, onCreated, professionals, slug }) {
   const [creating, setCreating] = useState(false);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const presetWeekdays = Array.isArray(businessHoursPreset?.weekdays)
+      ? businessHoursPreset.weekdays.filter((value) => Number.isInteger(value))
+      : [];
+    const safeWeekdays = presetWeekdays.length
+      ? presetWeekdays
+      : [1, 2, 3, 4, 5];
+
+    const startTime = String(businessHoursPreset?.startTime || '').trim();
+    const endTime = String(businessHoursPreset?.endTime || '').trim();
+
+    const [presetStartH, presetStartM] = /^\d{2}:\d{2}$/.test(startTime)
+      ? startTime.split(':')
+      : ['09', '00'];
+    const [presetEndH, presetEndM] = /^\d{2}:\d{2}$/.test(endTime)
+      ? endTime.split(':')
+      : ['18', '00'];
+
+    setStartH(presetStartH);
+    setStartM(presetStartM);
+    setEndH(presetEndH);
+    setEndM(presetEndM);
+    setWeekdays(safeWeekdays);
+  }, [open, businessHoursPreset]);
 
   const professionalItems = useMemo(
     () =>

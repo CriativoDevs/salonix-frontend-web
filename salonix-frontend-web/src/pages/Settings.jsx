@@ -25,6 +25,8 @@ import {
   updateTenantAutoInvite,
   updateTenantModules,
   updateTenantContact,
+  fetchTenantBusinessHours,
+  updateTenantBusinessHours,
 } from '../api/tenant';
 import FormInput from '../components/ui/FormInput';
 import { TENANT_FEATURE_REQUIREMENTS } from '../constants/tenantFeatures';
@@ -103,6 +105,129 @@ const CHANNEL_CONFIG = [
   { key: 'push_web', defaultLabel: 'Web Push' },
   { key: 'push_mobile', defaultLabel: 'Mobile Push' },
 ];
+
+const WEEKDAY_KEYS = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+];
+
+const DAY_KEY_TO_DOW = {
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+  sunday: 0,
+};
+
+const DOW_TO_DAY_KEY = {
+  0: 'sunday',
+  1: 'monday',
+  2: 'tuesday',
+  3: 'wednesday',
+  4: 'thursday',
+  5: 'friday',
+  6: 'saturday',
+};
+
+function normalizeWorkingHoursFromApi(items) {
+  const base = { ...DEFAULT_TENANT_META.profile.workingHours };
+  if (!Array.isArray(items)) return base;
+
+  const next = { ...base };
+  items.forEach((item) => {
+    const dayKey = DOW_TO_DAY_KEY[item?.day_of_week];
+    if (!dayKey) return;
+
+    const fallbackDay = base[dayKey] || {
+      open: '09:00',
+      close: '18:00',
+      closed: false,
+    };
+
+    const startTime = String(item?.start_time || fallbackDay.open).slice(0, 5);
+    const endTime = String(item?.end_time || fallbackDay.close).slice(0, 5);
+
+    next[dayKey] = {
+      ...fallbackDay,
+      open: startTime,
+      close: endTime,
+      closed: !item?.is_active,
+    };
+  });
+
+  return next;
+}
+
+function buildBusinessHoursPayload(workingHours = {}) {
+  return WEEKDAY_KEYS.map((dayKey) => {
+    const fallbackDay = DEFAULT_TENANT_META.profile.workingHours?.[dayKey] || {
+      open: '09:00',
+      close: '18:00',
+      closed: false,
+    };
+    const day = workingHours[dayKey] || fallbackDay;
+
+    return {
+      day_of_week: DAY_KEY_TO_DOW[dayKey],
+      start_time: String(day?.open || fallbackDay.open).slice(0, 5),
+      end_time: String(day?.close || fallbackDay.close).slice(0, 5),
+      is_active: !day?.closed,
+    };
+  });
+}
+
+function validateWorkingHours(workingHours, t) {
+  const errors = {};
+
+  WEEKDAY_KEYS.forEach((dayKey) => {
+    const fallbackDay = DEFAULT_TENANT_META.profile.workingHours?.[dayKey] || {
+      open: '09:00',
+      close: '18:00',
+      closed: false,
+    };
+    const day = workingHours?.[dayKey] || fallbackDay;
+
+    if (day?.closed) return;
+
+    const open = String(day?.open || '').trim();
+    const close = String(day?.close || '').trim();
+
+    if (!open) {
+      errors[dayKey] = t(
+        'settings.general.working_hours_error_start_required',
+        'Hora de início obrigatória para dia ativo.'
+      );
+      return;
+    }
+
+    if (!close) {
+      errors[dayKey] = t(
+        'settings.general.working_hours_error_end_required',
+        'Hora de fim obrigatória para dia ativo.'
+      );
+      return;
+    }
+
+    if (close <= open) {
+      errors[dayKey] = t(
+        'settings.general.working_hours_error_range',
+        'Hora de fim deve ser maior que a hora de início.'
+      );
+    }
+  });
+
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+  };
+}
 
 function formatPostalCodePT(value) {
   const digits = String(value || '')
@@ -1989,13 +2114,33 @@ function Settings() {
   const [generalSaving, setGeneralSaving] = useState(false);
   const [generalError, setGeneralError] = useState(null);
   const [generalSuccess, setGeneralSuccess] = useState('');
+  const [businessHoursLoading, setBusinessHoursLoading] = useState(false);
+  const [businessHoursSaving, setBusinessHoursSaving] = useState(false);
+  const [businessHoursError, setBusinessHoursError] = useState(null);
+  const [businessHoursSuccess, setBusinessHoursSuccess] = useState('');
+  const [businessHoursFieldErrors, setBusinessHoursFieldErrors] = useState({});
+  const [businessHoursLoadedSlug, setBusinessHoursLoadedSlug] = useState(null);
 
   useEffect(() => {
-    setSettings(initialSettings);
+    setSettings((previous) => {
+      const preserveWorkingHours =
+        businessHoursLoadedSlug && businessHoursLoadedSlug === tenant?.slug;
+
+      return {
+        ...initialSettings,
+        business: {
+          ...(initialSettings.business || {}),
+          workingHours: preserveWorkingHours
+            ? previous?.business?.workingHours ||
+              initialSettings.business?.workingHours
+            : initialSettings.business?.workingHours,
+        },
+      };
+    });
     setBrandingFile(null);
     setBrandingSuccess('');
     setBrandingError(null);
-  }, [initialSettings]);
+  }, [initialSettings, businessHoursLoadedSlug, tenant?.slug]);
 
   useEffect(() => {
     setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
@@ -2539,6 +2684,100 @@ function Settings() {
     }
   };
 
+  const loadBusinessHours = useCallback(async () => {
+    setBusinessHoursLoading(true);
+    setBusinessHoursError(null);
+    try {
+      const data = await fetchTenantBusinessHours();
+      const normalizedHours = normalizeWorkingHoursFromApi(data);
+      setSettings((prev) => ({
+        ...prev,
+        business: {
+          ...(prev.business || {}),
+          workingHours: normalizedHours,
+        },
+      }));
+      setBusinessHoursLoadedSlug(tenant?.slug || null);
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.general.working_hours_load_error',
+          'Não foi possível carregar os horários de funcionamento.'
+        )
+      );
+      setBusinessHoursError(parsed);
+    } finally {
+      setBusinessHoursLoading(false);
+    }
+  }, [t, tenant?.slug]);
+
+  useEffect(() => {
+    if (!tenant?.slug) return;
+    loadBusinessHours();
+  }, [tenant?.slug, loadBusinessHours]);
+
+  const handleBusinessHoursSave = useCallback(async () => {
+    if (businessHoursSaving) return;
+
+    const currentHours = settings.business?.workingHours || {};
+    const validation = validateWorkingHours(currentHours, t);
+    if (!validation.isValid) {
+      setBusinessHoursFieldErrors(validation.errors);
+      setBusinessHoursError({
+        message: t(
+          'settings.general.working_hours_fix_errors',
+          'Corrija os erros dos dias ativos antes de salvar.'
+        ),
+      });
+      setBusinessHoursSuccess('');
+      return;
+    }
+
+    setBusinessHoursSaving(true);
+    setBusinessHoursError(null);
+    setBusinessHoursSuccess('');
+    setBusinessHoursFieldErrors({});
+
+    try {
+      const payload = buildBusinessHoursPayload(currentHours);
+      const response = await updateTenantBusinessHours(payload);
+      const normalizedHours = normalizeWorkingHoursFromApi(response);
+
+      setSettings((prev) => ({
+        ...prev,
+        business: {
+          ...(prev.business || {}),
+          workingHours: normalizedHours,
+        },
+      }));
+
+      setBusinessHoursSuccess(
+        t(
+          'settings.general.working_hours_save_success',
+          'Horário de funcionamento salvo com sucesso.'
+        )
+      );
+      await refreshTenantData();
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.general.working_hours_save_error',
+          'Não foi possível salvar os horários de funcionamento.'
+        )
+      );
+      setBusinessHoursError(parsed);
+    } finally {
+      setBusinessHoursSaving(false);
+    }
+  }, [
+    businessHoursSaving,
+    settings.business?.workingHours,
+    t,
+    refreshTenantData,
+  ]);
+
   const renderPlanSummary = () => (
     <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -2815,6 +3054,79 @@ function Settings() {
   );
 
   const renderGeneralSettings = () => {
+    const toggleWorkingDay = (dayKey) => {
+      setSettings((prev) => {
+        const fallbackDay = DEFAULT_TENANT_META.profile.workingHours?.[
+          dayKey
+        ] || {
+          open: '09:00',
+          close: '18:00',
+          closed: false,
+        };
+        const currentDay = prev.business?.workingHours?.[dayKey] || fallbackDay;
+        const nextClosed = !currentDay.closed;
+
+        return {
+          ...prev,
+          business: {
+            ...(prev.business || {}),
+            workingHours: {
+              ...(prev.business?.workingHours || {}),
+              [dayKey]: {
+                ...fallbackDay,
+                ...currentDay,
+                closed: nextClosed,
+              },
+            },
+          },
+        };
+      });
+      setBusinessHoursSuccess('');
+      setBusinessHoursError(null);
+      setBusinessHoursFieldErrors((prev) => {
+        if (!prev?.[dayKey]) return prev;
+        const next = { ...prev };
+        delete next[dayKey];
+        return next;
+      });
+    };
+
+    const updateWorkingDayTime = (dayKey, field, value) => {
+      setSettings((prev) => {
+        const fallbackDay = DEFAULT_TENANT_META.profile.workingHours?.[
+          dayKey
+        ] || {
+          open: '09:00',
+          close: '18:00',
+          closed: false,
+        };
+        const currentDay = prev.business?.workingHours?.[dayKey] || fallbackDay;
+
+        return {
+          ...prev,
+          business: {
+            ...(prev.business || {}),
+            workingHours: {
+              ...(prev.business?.workingHours || {}),
+              [dayKey]: {
+                ...fallbackDay,
+                ...currentDay,
+                [field]: value,
+              },
+            },
+          },
+        };
+      });
+      setBusinessHoursSuccess('');
+      setBusinessHoursError(null);
+      setBusinessHoursFieldErrors((prev) => {
+        if (!prev?.[dayKey]) return prev;
+        const next = { ...prev };
+        delete next[dayKey];
+        return next;
+      });
+    };
+
     const cardItems = [];
 
     cardItems.push({
@@ -3089,6 +3401,162 @@ function Settings() {
               {generalSaving
                 ? t('common.saving', 'Salvando...')
                 : t('common.save_changes', 'Salvar Alterações')}
+            </button>
+          </div>
+        </Card>
+
+        <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
+          <h3 className="mb-2 text-lg font-semibold text-brand-surfaceForeground">
+            {t(
+              'settings.general.working_hours_title',
+              'Horário de funcionamento'
+            )}
+          </h3>
+          <p className="text-sm text-brand-surfaceForeground/80">
+            {t(
+              'settings.general.working_hours_description',
+              'Configure os horários de abertura por dia da semana para geração automática de horários.'
+            )}
+          </p>
+          <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+            {t(
+              'settings.general.working_hours_placeholder',
+              'A configuração detalhada por dia será adicionada nos próximos itens desta tarefa.'
+            )}
+          </p>
+
+          <div
+            className="mt-4 space-y-2"
+            role="group"
+            aria-label={t(
+              'settings.general.working_hours_title',
+              'Horário de funcionamento'
+            )}
+          >
+            {WEEKDAY_KEYS.map((dayKey) => {
+              const fallbackDay =
+                DEFAULT_TENANT_META.profile.workingHours?.[dayKey] ||
+                DEFAULT_TENANT_META.profile.workingHours?.monday;
+              const daySettings =
+                settings.business?.workingHours?.[dayKey] || fallbackDay;
+              const isActive = !daySettings?.closed;
+              const dayError = businessHoursFieldErrors?.[dayKey];
+
+              return (
+                <div
+                  key={dayKey}
+                  className="rounded-lg border border-brand-border bg-brand-surface/70 px-3 py-2"
+                >
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-sm text-brand-surfaceForeground">
+                      {t(`settings.days.${dayKey}`, dayKey)}
+                    </span>
+
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="time"
+                          value={daySettings?.open || ''}
+                          onChange={(e) =>
+                            updateWorkingDayTime(dayKey, 'open', e.target.value)
+                          }
+                          disabled={!isActive || businessHoursSaving}
+                          aria-label={`${t(`settings.days.${dayKey}`, dayKey)} ${t('settings.general.working_hours_start', 'Início')}`}
+                          className="w-24 rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm text-brand-surfaceForeground disabled:cursor-not-allowed disabled:opacity-60"
+                        />
+                        <span className="text-xs text-brand-surfaceForeground/60">
+                          {t('common.to', 'até')}
+                        </span>
+                        <input
+                          type="time"
+                          value={daySettings?.close || ''}
+                          onChange={(e) =>
+                            updateWorkingDayTime(
+                              dayKey,
+                              'close',
+                              e.target.value
+                            )
+                          }
+                          disabled={!isActive || businessHoursSaving}
+                          aria-label={`${t(`settings.days.${dayKey}`, dayKey)} ${t('settings.general.working_hours_end', 'Fim')}`}
+                          className="w-24 rounded border border-brand-border bg-brand-surface px-2 py-1 text-sm text-brand-surfaceForeground disabled:cursor-not-allowed disabled:opacity-60"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`text-xs font-medium ${
+                            isActive
+                              ? 'text-emerald-600'
+                              : 'text-brand-surfaceForeground/60'
+                          }`}
+                        >
+                          {isActive
+                            ? t('common.active', 'Ativo')
+                            : t('common.inactive', 'Inativo')}
+                        </span>
+
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={isActive}
+                          aria-label={t(`settings.days.${dayKey}`, dayKey)}
+                          onClick={() => toggleWorkingDay(dayKey)}
+                          disabled={businessHoursSaving}
+                          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40 ${
+                            isActive ? 'bg-brand-primary' : 'bg-gray-300'
+                          } ${businessHoursSaving ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                              isActive ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {dayError ? (
+                    <p className="mt-2 text-xs text-red-600">{dayError}</p>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+
+          {businessHoursLoading ? (
+            <p className="mt-3 text-xs text-brand-surfaceForeground/60">
+              {t(
+                'settings.general.working_hours_loading',
+                'Carregando horários...'
+              )}
+            </p>
+          ) : null}
+          {businessHoursError ? (
+            <p className="mt-3 text-sm text-red-600">
+              {businessHoursError.message}
+            </p>
+          ) : null}
+          {businessHoursSuccess ? (
+            <p className="mt-3 text-sm text-emerald-600">
+              {businessHoursSuccess}
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={handleBusinessHoursSave}
+              disabled={businessHoursSaving || businessHoursLoading}
+              className="rounded-lg px-4 py-2 text-brand-primary hover:text-brand-primary/90 disabled:opacity-50 bg-transparent border-0 underline"
+            >
+              {businessHoursSaving
+                ? t('common.saving', 'Salvando...')
+                : t(
+                    'settings.general.working_hours_save_button',
+                    'Salvar alterações'
+                  )}
             </button>
           </div>
         </Card>
