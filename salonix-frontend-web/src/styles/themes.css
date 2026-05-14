@@ -130,21 +130,29 @@
   color: var(--text-muted);
 }
 
-/* Estilos para inputs de data - corrigir ícones no tema escuro */
-input[type="date"] {
+/* Estilos para inputs de data/hora - corrigir ícones e popup no tema escuro */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"] {
   color-scheme: light dark;
 }
 
-[data-theme="dark"] input[type="date"] {
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="datetime-local"],
+[data-theme="dark"] input[type="time"] {
   color-scheme: dark;
 }
 
-[data-theme="light"] input[type="date"] {
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="datetime-local"],
+[data-theme="light"] input[type="time"] {
   color-scheme: light;
 }
 
-/* Estilos para o popup do datepicker - força visibilidade */
-input[type="date"]::-webkit-calendar-picker-indicator {
+/* Ícone do picker - força visibilidade em ambos os temas */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
   cursor: pointer !important;
   opacity: 1 !important;
   display: block !important;
@@ -152,12 +160,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   height: 16px !important;
 }
 
-[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator {
   filter: none !important;
   opacity: 1 !important;
 }
 
-[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1) !important;
   opacity: 1 !important;
 }

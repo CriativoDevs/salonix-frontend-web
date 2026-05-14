@@ -23,7 +23,6 @@ import PageHeader from '../components/ui/PageHeader';
 import {
   fetchAppointments,
   fetchAppointmentDetail,
-  createAppointment,
   updateAppointment,
   createAppointmentsSeries,
   createAppointmentsMixedBulk,
@@ -36,6 +35,7 @@ import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
+import AppointmentModal from '../components/appointments/AppointmentModal';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
 
@@ -43,7 +43,8 @@ const INITIAL_FORM = {
   customerId: '',
   serviceId: '',
   professionalId: '',
-  slotId: '',
+  startTime: '',
+  endTime: '',
   notes: '',
 };
 
@@ -289,7 +290,7 @@ function Bookings() {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [viewMode, setViewMode] = useState('agenda');
-  const [createPanelOpen, setCreatePanelOpen] = useState(false);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [calendarCursor, setCalendarCursor] = useState(() =>
     startOfCalendarDay(new Date())
@@ -335,7 +336,7 @@ function Bookings() {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formSlots, setFormSlots] = useState([]);
   const [formSlotsLoading, setFormSlotsLoading] = useState(false);
-  const [formSubmitting, setFormSubmitting] = useState(false);
+
   const [formError, setFormError] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
@@ -715,70 +716,10 @@ function Bookings() {
     setMultiDefaultNotes('');
   };
 
-  const handleFormChange = useCallback(
-    (field, value) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      if (field === 'professionalId') {
-        setFormSlots([]);
-        setFormData((prev) => ({ ...prev, slotId: '' }));
-        if (!value) return;
-        refreshSlotsForProfessional(value);
-      }
-      if (field !== 'professionalId' && field !== 'slotId') {
-        setFormError(null);
-      }
-    },
-    [refreshSlotsForProfessional]
-  );
 
-  const handleCreateAppointment = async (event) => {
-    event.preventDefault();
-    setFormError(null);
-
-    if (!formData.customerId) {
-      setFormError({
-        message: t(
-          'bookings.form.customer_required',
-          'Selecione um cliente para o agendamento.'
-        ),
-      });
-      return;
-    }
-    if (!formData.serviceId || !formData.professionalId || !formData.slotId) {
-      setFormError({
-        message: t(
-          'bookings.form.required',
-          'Selecione serviço, profissional e horário.'
-        ),
-      });
-      return;
-    }
-
-    const payload = {
-      customer: Number.parseInt(formData.customerId, 10),
-      service: Number.parseInt(formData.serviceId, 10),
-      professional: Number.parseInt(formData.professionalId, 10),
-      slot: Number.parseInt(formData.slotId, 10),
-    };
-    if (formData.notes && formData.notes.trim()) {
-      payload.notes = formData.notes.trim();
-    }
-
-    try {
-      setFormSubmitting(true);
-      await createAppointment(payload, { slug });
-      resetForm();
-      // reload list
-      setOffset(0);
-      // trigger effect by updating filters (force rerender). We'll update to new object to re-run effect.
-      setFilters((prev) => ({ ...prev }));
-    } catch (err) {
-      setFormError(
-        parseApiError(err, t('common.save_error', 'Falha ao salvar.'))
-      );
-    } finally {
-      setFormSubmitting(false);
-    }
+  const handleAppointmentCreated = () => {
+    setOffset(0);
+    setFilters((prev) => ({ ...prev }));
   };
 
   const openEdit = (appointment) => {
@@ -1241,30 +1182,9 @@ function Bookings() {
   // Série/Multi helpers
   const openSeriesModal = () => {
     setSeriesError(null);
-    // Gating atualizado: exigir apenas cliente para abrir o modal.
-    if (!formData.customerId) {
-      setFormError({
-        message: t(
-          'bookings.form.customer_required',
-          'Selecione o cliente para continuar.'
-        ),
-      });
-      return;
-    }
-    // Inicializar defaults da aba Multi
-    setMultiProfessionalId(formData.professionalId || '');
-    setMultiDefaultNotes((formData.notes || '').trim());
-    // garantir que slots estejam carregados para o profissional selecionado
-    const profForSlots = formData.professionalId || '';
-    if (formSlots.length === 0 || profForSlots) {
-      refreshSlotsForProfessional(profForSlots);
-    }
-    // Se serviço/profissional não estiverem definidos, abrir diretamente na aba Multi.
-    if (!formData.serviceId || !formData.professionalId) {
-      setActiveSeriesTab('multi');
-    } else {
-      setActiveSeriesTab('series');
-    }
+    setMultiProfessionalId('');
+    setMultiDefaultNotes('');
+    setActiveSeriesTab('multi');
     setIsSeriesModalOpen(true);
   };
 
@@ -1721,55 +1641,6 @@ function Bookings() {
     return [allOption, ...customerOptions];
   }, [customers, t, handleFilterChange]);
 
-  const customerFormItems = useMemo(() => {
-    const defaultOption = {
-      label: t('bookings.form.select_customer', 'Selecione um cliente'),
-      onClick: () => handleFormChange('customerId', ''),
-    };
-    const options = customers.map((c) => ({
-      label: c.name,
-      onClick: () => handleFormChange('customerId', String(c.id)),
-    }));
-    return [defaultOption, ...options];
-  }, [customers, t, handleFormChange]);
-
-  const serviceFormItems = useMemo(() => {
-    const defaultOption = {
-      label: t('bookings.form.select_service', 'Selecione um serviço'),
-      onClick: () => handleFormChange('serviceId', ''),
-    };
-    const options = services.map((s) => ({
-      label: formatServiceOption(s),
-      onClick: () => handleFormChange('serviceId', String(s.id)),
-    }));
-    return [defaultOption, ...options];
-  }, [services, t, handleFormChange]);
-
-  const professionalFormItems = useMemo(() => {
-    const svcId = formData.serviceId
-      ? Number.parseInt(formData.serviceId, 10)
-      : null;
-    const profOptions = svcId
-      ? professionalsWithServices.filter(
-          (p) =>
-            Array.isArray(p.service_ids) &&
-            p.service_ids.map((id) => Number.parseInt(id, 10)).includes(svcId)
-        )
-      : professionalsWithServices;
-
-    const defaultOption = {
-      label: t(
-        'bookings.form.select_professional',
-        'Selecione um profissional'
-      ),
-      onClick: () => handleFormChange('professionalId', ''),
-    };
-    const options = profOptions.map((p) => ({
-      label: formatProfessionalOption(p),
-      onClick: () => handleFormChange('professionalId', String(p.id)),
-    }));
-    return [defaultOption, ...options];
-  }, [professionalsWithServices, formData.serviceId, t, handleFormChange]);
 
   return (
     <FullPageLayout>
@@ -1804,19 +1675,11 @@ function Bookings() {
 
           <button
             type="button"
-            onClick={() => setCreatePanelOpen((current) => !current)}
-            aria-expanded={createPanelOpen}
+            onClick={() => setIsAppointmentModalOpen(true)}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
           >
             <Plus className="h-4 w-4" />
-            {createPanelOpen
-              ? t('bookings.create.hide', 'Fechar novo agendamento')
-              : t('bookings.create.show', 'Novo agendamento')}
-            {createPanelOpen ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
+            {t('bookings.create.show', 'Novo agendamento')}
           </button>
 
           <button
@@ -1834,6 +1697,24 @@ function Bookings() {
             ) : (
               <ChevronDown className="h-4 w-4" />
             )}
+          </button>
+
+          <button
+            type="button"
+            onClick={openSeriesModal}
+            className="inline-flex items-center justify-center rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+          >
+            {t('bookings.form.multi_series_short', 'Multi/Série')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsCompact((c) => !c)}
+            className={`inline-flex items-center justify-center rounded-full border p-2 transition ${isCompact ? 'border-brand-primary/20 bg-brand-primary/10 text-brand-primary' : 'border-brand-border bg-brand-light/50 text-brand-surfaceForeground/70 hover:bg-brand-light hover:text-brand-surfaceForeground'}`}
+            title={t('bookings.toggle_compact', 'Modo Compacto')}
+            aria-pressed={isCompact}
+          >
+            <List className="h-4 w-4" />
           </button>
 
           {hasActiveFilters ? (
@@ -2044,308 +1925,16 @@ function Bookings() {
           </Card>
         ) : null}
 
-        {createPanelOpen ? (
-          <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
-            <div className="max-w-6xl">
-              <h2 className="text-xl font-semibold text-brand-surfaceForeground">
-                {t('bookings.create.title', 'Criar novo agendamento')}
-              </h2>
-              <p className="mt-1 text-sm text-brand-surfaceForeground/70">
-                {t(
-                  'bookings.create.description',
-                  'Preencha a agenda em ordem natural: cliente, serviço, profissional e horário.'
-                )}
-              </p>
-              <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
-                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
-                  1. {t('bookings.form.customer', 'Cliente')}
-                </div>
-                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
-                  2. {t('bookings.service', 'Serviço')}
-                </div>
-                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
-                  3. {t('bookings.professional', 'Profissional')}
-                </div>
-                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
-                  4. {t('bookings.form.slot', 'Horário')}
-                </div>
-                <div className="rounded-2xl border border-brand-border bg-brand-light/25 px-3 py-2 text-sm text-brand-surfaceForeground/75">
-                  5. {t('bookings.notes', 'Observações')}
-                </div>
-              </div>
-            </div>
-
-            <form
-              className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
-              onSubmit={handleCreateAppointment}
-            >
-              <div className="col-span-1">
-                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                  {t('bookings.form.customer', 'Cliente')}
-                </label>
-                <Dropdown
-                  trigger={
-                    <button
-                      type="button"
-                      disabled={lookupLoading || customers.length === 0}
-                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:opacity-50"
-                    >
-                      <span className="truncate">
-                        {formData.customerId
-                          ? customers.find(
-                              (c) => String(c.id) === formData.customerId
-                            )?.name ||
-                            t(
-                              'bookings.form.select_customer',
-                              'Selecione um cliente'
-                            )
-                          : t(
-                              'bookings.form.select_customer',
-                              'Selecione um cliente'
-                            )}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className="text-brand-surfaceForeground/70"
-                      />
-                    </button>
-                  }
-                  items={customerFormItems}
-                  searchable={true}
-                  searchPlaceholder={t('common.search', 'Pesquisar...')}
-                  className="w-full"
-                />
-                {customers.length === 0 && !lookupLoading && (
-                  <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                    {t(
-                      'bookings.form.empty_customer',
-                      'Cadastre clientes antes de criar agendamentos.'
-                    )}
-                  </p>
-                )}
-              </div>
-              <div className="col-span-1">
-                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                  {t('bookings.service', 'Serviço')}
-                </label>
-                <Dropdown
-                  trigger={
-                    <button
-                      type="button"
-                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                    >
-                      <span className="truncate">
-                        {formData.serviceId
-                          ? (() => {
-                              const svc = services.find(
-                                (s) => String(s.id) === formData.serviceId
-                              );
-                              return svc
-                                ? formatServiceOption(svc)
-                                : t(
-                                    'bookings.form.select_service',
-                                    'Selecione um serviço'
-                                  );
-                            })()
-                          : t(
-                              'bookings.form.select_service',
-                              'Selecione um serviço'
-                            )}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className="text-brand-surfaceForeground/70"
-                      />
-                    </button>
-                  }
-                  items={serviceFormItems}
-                  searchable={true}
-                  searchPlaceholder={t('common.search', 'Pesquisar...')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="col-span-1">
-                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                  {t('bookings.professional', 'Profissional')}
-                </label>
-                <Dropdown
-                  trigger={
-                    <button
-                      type="button"
-                      className="mt-1 w-full flex items-center justify-between rounded border border-brand-border bg-brand-surface px-3 py-2 text-sm text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                    >
-                      <span className="truncate">
-                        {formData.professionalId
-                          ? (() => {
-                              const p = professionals.find(
-                                (prof) =>
-                                  String(prof.id) === formData.professionalId
-                              );
-                              return p
-                                ? formatProfessionalOption(p)
-                                : t(
-                                    'bookings.form.select_professional',
-                                    'Selecione um profissional'
-                                  );
-                            })()
-                          : t(
-                              'bookings.form.select_professional',
-                              'Selecione um profissional'
-                            )}
-                      </span>
-                      <ChevronDown
-                        size={16}
-                        className="text-brand-surfaceForeground/70"
-                      />
-                    </button>
-                  }
-                  items={professionalFormItems}
-                  searchable={true}
-                  searchPlaceholder={t('common.search', 'Pesquisar...')}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="col-span-1">
-                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                  {t('bookings.form.slot', 'Horário')}
-                </label>
-                <select
-                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                  value={formData.slotId}
-                  onChange={(e) => handleFormChange('slotId', e.target.value)}
-                  disabled={!formData.professionalId}
-                  onFocus={() => {
-                    if (formData.professionalId) {
-                      refreshSlotsForProfessional(formData.professionalId);
-                    }
-                  }}
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    borderColor: 'var(--border-primary)',
-                  }}
-                >
-                  <option
-                    value=""
-                    style={{
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    {t('bookings.form.select_slot', 'Selecione um horário')}
-                  </option>
-                  {formSlots.map((slot) => (
-                    <option
-                      key={slot.id}
-                      value={slot.id}
-                      style={{
-                        backgroundColor: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      {formatDateTimeRange(slot.start_time, slot.end_time)}
-                    </option>
-                  ))}
-                </select>
-                {formSlotsLoading && (
-                  <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                    {t(
-                      'bookings.form.loading_slots',
-                      'Carregando horários disponíveis...'
-                    )}
-                  </p>
-                )}
-                {!formSlotsLoading &&
-                  formData.professionalId &&
-                  formSlots.length === 0 && (
-                    <p className="mt-1 text-xs text-brand-surfaceForeground/60">
-                      {t(
-                        'bookings.form.no_slots',
-                        'Nenhum horário disponível para este profissional.'
-                      )}
-                    </p>
-                  )}
-              </div>
-
-              <div className="col-span-1">
-                <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-                  {t('bookings.notes', 'Observações')}
-                </label>
-                <textarea
-                  className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                  rows={1}
-                  value={formData.notes}
-                  onChange={(e) => handleFormChange('notes', e.target.value)}
-                  placeholder={t(
-                    'bookings.form.notes_placeholder',
-                    'Notas opcionais'
-                  )}
-                  style={{
-                    backgroundColor: 'var(--bg-primary)',
-                    color: 'var(--text-primary)',
-                    borderColor: 'var(--border-primary)',
-                  }}
-                />
-              </div>
-
-              <div className="col-span-full grid gap-2 sm:grid-cols-2 lg:grid-cols-5 items-center">
-                <div className="lg:col-span-4 flex flex-wrap gap-2">
-                  <button
-                    type="submit"
-                    disabled={formSubmitting || customers.length === 0}
-                    className="inline-flex items-center justify-center rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {formSubmitting
-                      ? t('common.saving', 'Salvando...')
-                      : t('bookings.form.submit', 'Agendar')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="inline-flex items-center justify-center rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
-                  >
-                    {t('bookings.form.reset', 'Limpar')}
-                  </button>
-                </div>
-                <div className="lg:col-start-5 lg:col-span-1 flex lg:justify-end items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsCompact(!isCompact)}
-                    className={`p-1.5 rounded transition ${isCompact ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/60 hover:text-brand-surfaceForeground hover:bg-brand-light'}`}
-                    title={t('bookings.toggle_compact', 'Modo Compacto')}
-                  >
-                    <List className="w-4 h-4" />
-                  </button>
-                  {(() => {
-                    const disabled = !formData.customerId; // apenas cliente é obrigatório para abrir
-                    const title = disabled
-                      ? t(
-                          'bookings.form.customer_required',
-                          'Selecione o cliente para continuar.'
-                        )
-                      : undefined;
-                    return (
-                      <button
-                        type="button"
-                        onClick={openSeriesModal}
-                        disabled={disabled}
-                        title={title}
-                        className={`inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition ${disabled ? 'border-brand-border bg-brand-light/20 text-brand-surfaceForeground/40 cursor-not-allowed' : 'border-brand-border bg-brand-light/50 text-brand-surfaceForeground/80 hover:bg-brand-light'}`}
-                      >
-                        {t('bookings.form.multi_series_short', 'Multi/Série')}
-                      </button>
-                    );
-                  })()}
-                </div>
-              </div>
-            </form>
-            {formError && (
-              <p className="mt-3 text-sm text-red-600">{formError.message}</p>
-            )}
-          </Card>
-        ) : null}
+        <AppointmentModal
+          open={isAppointmentModalOpen}
+          onClose={() => setIsAppointmentModalOpen(false)}
+          onCreated={handleAppointmentCreated}
+          customers={customers}
+          services={services}
+          professionals={professionals}
+          lookupLoading={lookupLoading}
+          slug={slug}
+        />
 
         {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
 
