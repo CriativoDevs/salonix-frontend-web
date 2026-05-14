@@ -269,6 +269,8 @@
   },
   "bookings": {
     "subtitle": "Organize daily operations with quick filters, guided creation and a clearer agenda view.",
+    "hours_notice": "Configure operating hours to generate slots automatically.",
+    "hours_notice_cta": "Configure hours",
     "actions": {
       "cancel": "Cancel",
       "reschedule": "Reschedule",

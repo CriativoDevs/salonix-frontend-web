@@ -14,7 +14,10 @@ import {
   ChevronUp,
   Filter,
   Plus,
+  Info,
+  Settings,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Dropdown, { DropdownItem } from '../components/ui/Dropdown';
 import Card from '../components/ui/Card';
@@ -31,6 +34,7 @@ import { fetchCustomers } from '../api/customers';
 import { fetchServices } from '../api/services';
 import { fetchProfessionals } from '../api/professionals';
 import { fetchSlots, fetchSlotDetail } from '../api/slots';
+import { fetchTenantBusinessHours } from '../api/tenant';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
@@ -165,20 +169,34 @@ function formatDateParam(value) {
 }
 
 const PROFESSIONAL_COLOR_PALETTE = [
-  { border: 'border-violet-300/60', bg: 'bg-violet-50/80',   dot: 'bg-violet-500'   },
-  { border: 'border-sky-300/60',    bg: 'bg-sky-50/80',      dot: 'bg-sky-500'      },
-  { border: 'border-amber-300/60',  bg: 'bg-amber-50/80',    dot: 'bg-amber-500'    },
-  { border: 'border-rose-300/60',   bg: 'bg-rose-50/80',     dot: 'bg-rose-500'     },
-  { border: 'border-teal-300/60',   bg: 'bg-teal-50/80',     dot: 'bg-teal-500'     },
-  { border: 'border-fuchsia-300/60',bg: 'bg-fuchsia-50/80',  dot: 'bg-fuchsia-500'  },
-  { border: 'border-lime-300/60',   bg: 'bg-lime-50/80',     dot: 'bg-lime-500'     },
-  { border: 'border-orange-300/60', bg: 'bg-orange-50/80',   dot: 'bg-orange-500'   },
-  { border: 'border-cyan-300/60',   bg: 'bg-cyan-50/80',     dot: 'bg-cyan-500'     },
-  { border: 'border-pink-300/60',   bg: 'bg-pink-50/80',     dot: 'bg-pink-500'     },
+  {
+    border: 'border-violet-300/60',
+    bg: 'bg-violet-50/80',
+    dot: 'bg-violet-500',
+  },
+  { border: 'border-sky-300/60', bg: 'bg-sky-50/80', dot: 'bg-sky-500' },
+  { border: 'border-amber-300/60', bg: 'bg-amber-50/80', dot: 'bg-amber-500' },
+  { border: 'border-rose-300/60', bg: 'bg-rose-50/80', dot: 'bg-rose-500' },
+  { border: 'border-teal-300/60', bg: 'bg-teal-50/80', dot: 'bg-teal-500' },
+  {
+    border: 'border-fuchsia-300/60',
+    bg: 'bg-fuchsia-50/80',
+    dot: 'bg-fuchsia-500',
+  },
+  { border: 'border-lime-300/60', bg: 'bg-lime-50/80', dot: 'bg-lime-500' },
+  {
+    border: 'border-orange-300/60',
+    bg: 'bg-orange-50/80',
+    dot: 'bg-orange-500',
+  },
+  { border: 'border-cyan-300/60', bg: 'bg-cyan-50/80', dot: 'bg-cyan-500' },
+  { border: 'border-pink-300/60', bg: 'bg-pink-50/80', dot: 'bg-pink-500' },
 ];
 
 function getProfessionalColor(professionalId) {
-  const index = Math.abs(Number.parseInt(professionalId, 10) || 0) % PROFESSIONAL_COLOR_PALETTE.length;
+  const index =
+    Math.abs(Number.parseInt(professionalId, 10) || 0) %
+    PROFESSIONAL_COLOR_PALETTE.length;
   return PROFESSIONAL_COLOR_PALETTE[index];
 }
 
@@ -296,6 +314,9 @@ function Bookings() {
 
   const [viewMode, setViewMode] = useState('calendar');
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [hasConfiguredBusinessHours, setHasConfiguredBusinessHours] =
+    useState(null);
+  const [businessHoursChecked, setBusinessHoursChecked] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [calendarCursor, setCalendarCursor] = useState(() =>
     startOfCalendarDay(new Date())
@@ -340,8 +361,6 @@ function Bookings() {
 
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formSlots, setFormSlots] = useState([]);
-
-
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -415,7 +434,7 @@ function Bookings() {
           setFormSlots([]);
         });
     },
-    [slug, t]
+    [slug]
   );
 
   // Helpers para validação de itens Multi
@@ -529,6 +548,54 @@ function Bookings() {
     },
     [slotMap, professionalServices, t]
   );
+
+  const loadBusinessHoursStatus = useCallback(() => {
+    if (!slug) {
+      setHasConfiguredBusinessHours(null);
+      setBusinessHoursChecked(false);
+      return Promise.resolve();
+    }
+
+    setBusinessHoursChecked(false);
+    return fetchTenantBusinessHours()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+        const hasActiveDays = list.some((item) => Boolean(item?.is_active));
+        setHasConfiguredBusinessHours(hasActiveDays);
+      })
+      .catch(() => {
+        setHasConfiguredBusinessHours(null);
+      })
+      .finally(() => {
+        setBusinessHoursChecked(true);
+      });
+  }, [slug]);
+
+  useEffect(() => {
+    loadBusinessHoursStatus();
+  }, [loadBusinessHoursStatus]);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const handleWindowFocus = () => {
+      loadBusinessHoursStatus();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadBusinessHoursStatus();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [slug, loadBusinessHoursStatus]);
 
   useEffect(() => {
     if (!slug) return;
@@ -711,7 +778,6 @@ function Bookings() {
     setMultiProfessionalId('');
     setMultiDefaultNotes('');
   };
-
 
   const handleAppointmentCreated = () => {
     setOffset(0);
@@ -1637,6 +1703,8 @@ function Bookings() {
     return [allOption, ...customerOptions];
   }, [customers, t, handleFilterChange]);
 
+  const shouldShowBusinessHoursNotice =
+    businessHoursChecked && hasConfiguredBusinessHours === false;
 
   return (
     <FullPageLayout>
@@ -1648,6 +1716,25 @@ function Bookings() {
             'Organize a operação do dia com filtros rápidos, criação guiada e leitura mais clara da agenda.'
           )}
         />
+
+        {shouldShowBusinessHoursNotice ? (
+          <div className="flex items-start gap-2 rounded-xl border border-brand-primary/15 bg-brand-primary/5 px-3 py-2 sm:gap-3 sm:rounded-2xl sm:px-4 sm:py-3">
+            <Info className="mt-0.5 hidden h-4 w-4 shrink-0 text-brand-primary sm:block" />
+            <p className="text-xs leading-relaxed text-brand-surfaceForeground/75 sm:text-sm sm:text-brand-surfaceForeground/80">
+              {t(
+                'bookings.hours_notice',
+                'Configure o horário de funcionamento do salão para gerar horários automaticamente.'
+              )}{' '}
+              <Link
+                to="/settings"
+                className="font-semibold text-brand-primary underline-offset-2 hover:underline"
+              >
+                <Settings className="inline h-3.5 w-3.5" />{' '}
+                {t('bookings.hours_notice_cta', 'Configurar horário')}
+              </Link>
+            </p>
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="inline-flex w-fit items-center rounded-full border border-brand-border bg-brand-surface/80 p-1 shadow-sm ring-1 ring-brand-border/60">
@@ -1922,6 +2009,8 @@ function Bookings() {
           professionals={professionals}
           lookupLoading={lookupLoading}
           slug={slug}
+          hasConfiguredBusinessHours={hasConfiguredBusinessHours}
+          businessHoursChecked={businessHoursChecked}
         />
 
         {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
@@ -2001,7 +2090,10 @@ function Bookings() {
                 appointments.forEach((appt) => {
                   if (appt.professionalId && !seen.has(appt.professionalId)) {
                     seen.add(appt.professionalId);
-                    weekProfessionals.push({ id: appt.professionalId, name: appt.professionalName });
+                    weekProfessionals.push({
+                      id: appt.professionalId,
+                      name: appt.professionalName,
+                    });
                   }
                 });
                 if (weekProfessionals.length === 0) return null;
@@ -2010,8 +2102,13 @@ function Bookings() {
                     {weekProfessionals.map((prof) => {
                       const color = getProfessionalColor(prof.id);
                       return (
-                        <span key={prof.id} className="inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs font-medium text-brand-surfaceForeground/70">
-                          <span className={`h-2 w-2 shrink-0 rounded-full ${color.dot}`} />
+                        <span
+                          key={prof.id}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs font-medium text-brand-surfaceForeground/70"
+                        >
+                          <span
+                            className={`h-2 w-2 shrink-0 rounded-full ${color.dot}`}
+                          />
                           {prof.name}
                         </span>
                       );
@@ -2074,8 +2171,11 @@ function Bookings() {
                           </div>
                         ) : (
                           dayItems.map((appointment) => {
-                            const isCancelled = appointment.status === 'cancelled';
-                            const color = getProfessionalColor(appointment.professionalId);
+                            const isCancelled =
+                              appointment.status === 'cancelled';
+                            const color = getProfessionalColor(
+                              appointment.professionalId
+                            );
                             return (
                               <button
                                 key={appointment.id}
@@ -2089,7 +2189,9 @@ function Bookings() {
                                     appointment.slotEnd
                                   )}
                                 </div>
-                                <div className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}>
+                                <div
+                                  className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}
+                                >
                                   {appointment.customerName ||
                                     appointment.clientName ||
                                     t('bookings.client_placeholder', 'Cliente')}
@@ -2100,7 +2202,9 @@ function Bookings() {
                                   </div>
                                 ) : null}
                                 <div className="mt-1 flex items-center gap-1">
-                                  <span className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`} />
+                                  <span
+                                    className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`}
+                                  />
                                   <span className="text-[11px] leading-snug text-brand-surfaceForeground/58 truncate">
                                     {appointment.professionalName}
                                   </span>
@@ -2144,7 +2248,9 @@ function Bookings() {
                     ) : (
                       selectedCalendarItems.map((appointment) => {
                         const isCancelled = appointment.status === 'cancelled';
-                        const color = getProfessionalColor(appointment.professionalId);
+                        const color = getProfessionalColor(
+                          appointment.professionalId
+                        );
                         return (
                           <button
                             key={appointment.id}
@@ -2160,7 +2266,9 @@ function Bookings() {
                                     appointment.slotEnd
                                   )}
                                 </div>
-                                <div className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}>
+                                <div
+                                  className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}
+                                >
                                   {appointment.customerName ||
                                     appointment.clientName ||
                                     t('bookings.client_placeholder', 'Cliente')}
@@ -2171,7 +2279,9 @@ function Bookings() {
                                   </div>
                                 ) : null}
                                 <div className="mt-1 flex items-center gap-1">
-                                  <span className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`} />
+                                  <span
+                                    className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`}
+                                  />
                                   <span className="text-xs leading-snug text-brand-surfaceForeground/58 truncate">
                                     {appointment.professionalName}
                                   </span>
