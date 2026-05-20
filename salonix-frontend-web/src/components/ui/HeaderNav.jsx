@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  MessageCircleIcon,
   StarIcon,
   SettingsIcon,
   BarChart3Icon,
   LogOutIcon,
   LockIcon,
+  BookOpenIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
@@ -119,7 +119,14 @@ export default function HeaderNav() {
         label: t('nav.settings'),
         icon: SettingsIcon,
         roles: ['owner'],
-        featureKey: null, // Settings sempre acessível
+        featureKey: null,
+      },
+      {
+        to: '/como-funciona',
+        label: t('nav.how_it_works', 'Como funciona'),
+        icon: BookOpenIcon,
+        roles: ['owner', 'manager', 'collaborator'],
+        featureKey: null,
       },
     ];
 

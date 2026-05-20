@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import {
   HomeIcon,
   CalendarIcon,
-  MessageCircleIcon,
   MoreHorizontalIcon,
   XIcon,
   StarIcon,
@@ -14,6 +13,7 @@ import {
   ClockIcon,
   LogOutIcon,
   LockIcon,
+  BookOpenIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
@@ -138,6 +138,12 @@ function MobileNav() {
         icon: SettingsIcon,
         label: t('nav.settings'),
         roles: ['owner'],
+        featureKey: null,
+      },
+      {
+        to: '/como-funciona',
+        icon: BookOpenIcon,
+        label: t('nav.how_it_works', 'Como funciona'),
         featureKey: null,
       },
     ];

@@ -1388,7 +1388,12 @@
       "dark_desc": "Tema escuro",
       "system_desc": "Seguir preferência do sistema",
       "current_title": "Tema atual: {{label}}"
-    }
+    },
+    "how_it_works": "Como funciona",
+    "plans": "Planos",
+    "customers": "Clientes",
+    "team": "Equipa",
+    "go_to_dashboard": "Ir para o dashboard"
   },
   "plans": {
     "title": "Planos",
@@ -1567,7 +1572,8 @@
       "register": "Registar",
       "open_menu": "Abrir menu",
       "menu": "Menu",
-      "install_pwa": "Instalar App"
+      "install_pwa": "Instalar App",
+      "how_it_works": "Como funciona"
     },
     "hero": {
       "tag": "Gestão e Agendamento Inteligente",
