@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { fetchCmsPage } from '../api/cms';
 
 export default function CmsPageDetail() {
   const { slug } = useParams();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ export default function CmsPageDetail() {
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${dark ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600'}`}
           >
             <ChevronLeft className="h-4 w-4" />
-            Como funciona
+            {t('cms.list.title', 'Como funciona')}
           </Link>
           <span className={`font-bold text-xl tracking-tight ${dark ? 'text-indigo-400' : 'text-indigo-600'}`}>
             TimelyOne
@@ -88,13 +90,13 @@ export default function CmsPageDetail() {
         {!loading && notFound && (
           <div className="text-center py-24">
             <p className={`text-lg ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Esta página não está disponível de momento.
+              {t('cms.detail.not_found', 'Esta página não está disponível de momento.')}
             </p>
             <Link
               to="/como-funciona"
               className="mt-6 inline-block text-indigo-500 hover:text-indigo-400 text-sm font-medium"
             >
-              Ver todos os conteúdos
+              {t('cms.detail.see_all', 'Ver todos os conteúdos')}
             </Link>
           </div>
         )}
@@ -102,7 +104,7 @@ export default function CmsPageDetail() {
         {!loading && error && (
           <div className="text-center py-24">
             <p className={`text-lg ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-              Ocorreu um erro ao carregar o conteúdo. Tenta novamente mais tarde.
+              {t('cms.error', 'Ocorreu um erro ao carregar o conteúdo. Tenta novamente mais tarde.')}
             </p>
           </div>
         )}

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { fetchCmsPages } from '../api/cms';
 
 export default function CmsPage() {
+  const { t } = useTranslation();
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -27,13 +29,13 @@ export default function CmsPage() {
   }, []);
 
   useEffect(() => {
-    document.title = 'Como funciona | TimelyOne';
+    document.title = t('cms.list.page_title', 'Como funciona | TimelyOne');
     fetchCmsPages()
       .then(setPages)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
     return () => { document.title = 'TimelyOne'; };
-  }, []);
+  }, [t]);
 
   const dark = isDarkTheme;
 
@@ -46,7 +48,7 @@ export default function CmsPage() {
             className={`flex items-center gap-2 text-sm font-medium transition-colors ${dark ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-600 hover:text-indigo-600'}`}
           >
             <ChevronLeft className="h-4 w-4" />
-            Voltar ao início
+            {t('cms.back_home', 'Voltar ao início')}
           </Link>
           <span className={`font-bold text-xl tracking-tight ${dark ? 'text-indigo-400' : 'text-indigo-600'}`}>
             TimelyOne
@@ -56,23 +58,23 @@ export default function CmsPage() {
 
       <main className="mx-auto max-w-4xl px-6 py-12">
         <h1 className={`text-3xl font-bold mb-2 ${dark ? 'text-white' : 'text-slate-900'}`}>
-          Como funciona
+          {t('cms.list.title', 'Como funciona')}
         </h1>
         <p className={`mb-10 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Tudo o que precisas de saber sobre a plataforma.
+          {t('cms.list.subtitle', 'Tudo o que precisas de saber sobre a plataforma.')}
         </p>
 
         {loading && <ListSkeleton dark={dark} />}
 
         {!loading && error && (
           <p className={`text-center py-16 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Erro ao carregar o conteúdo. Tenta novamente mais tarde.
+            {t('cms.error', 'Erro ao carregar o conteúdo. Tenta novamente mais tarde.')}
           </p>
         )}
 
         {!loading && !error && pages.length === 0 && (
           <p className={`text-center py-16 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Nenhum conteúdo disponível de momento.
+            {t('cms.list.empty', 'Nenhum conteúdo disponível de momento.')}
           </p>
         )}
 

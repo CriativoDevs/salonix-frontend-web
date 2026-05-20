@@ -1550,7 +1550,8 @@
         "Ready to scale: freelancers → franchises."
       ],
       "cta_start": "Start trial (14 days)",
-      "cta_pricing": "See plans and pricing"
+      "cta_pricing": "See plans and pricing",
+      "cta_how_it_works": "How it works →"
     },
     "results": {
       "title": "Results that speak for themselves.",
@@ -2000,6 +2001,20 @@
     "how_to_install": {
       "title": "How to install?",
       "desc": "No need to search the app store. Just open TimelyOne in your browser (Chrome or Safari) and look for the \"Add to Home Screen\" option."
+    }
+  },
+  "cms": {
+    "back_home": "Back to home",
+    "error": "Failed to load content. Please try again later.",
+    "list": {
+      "title": "How it works",
+      "subtitle": "Everything you need to know about the platform.",
+      "empty": "No content available at the moment.",
+      "page_title": "How it works | TimelyOne"
+    },
+    "detail": {
+      "not_found": "This page is not available at the moment.",
+      "see_all": "See all content"
     }
   }
 }

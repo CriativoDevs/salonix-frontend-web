@@ -1586,7 +1586,8 @@
         "Pronto para escalar: freelancers → franquias."
       ],
       "cta_start": "Começar período trial (14 dias)",
-      "cta_pricing": "Ver planos e preços"
+      "cta_pricing": "Ver planos e preços",
+      "cta_how_it_works": "Como funciona →"
     },
     "results": {
       "title": "Resultados que falam por si.",
@@ -2036,6 +2037,20 @@
     "how_to_install": {
       "title": "Como instalar?",
       "desc": "Não precisa de procurar na loja de aplicativos. Basta abrir o TimelyOne no seu navegador (Chrome ou Safari) e procurar a opção \"Adicionar ao Ecrã Principal\"."
+    }
+  },
+  "cms": {
+    "back_home": "Voltar ao início",
+    "error": "Erro ao carregar o conteúdo. Tenta novamente mais tarde.",
+    "list": {
+      "title": "Como funciona",
+      "subtitle": "Tudo o que precisas de saber sobre a plataforma.",
+      "empty": "Nenhum conteúdo disponível de momento.",
+      "page_title": "Como funciona | TimelyOne"
+    },
+    "detail": {
+      "not_found": "Esta página não está disponível de momento.",
+      "see_all": "Ver todos os conteúdos"
     }
   }
 }
