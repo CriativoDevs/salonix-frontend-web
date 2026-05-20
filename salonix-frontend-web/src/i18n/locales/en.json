@@ -1392,7 +1392,8 @@
       "dark_desc": "Dark theme",
       "system_desc": "Follow system preference",
       "current_title": "Current theme: {{label}}"
-    }
+    },
+    "how_it_works": "How it works"
   },
   "plans": {
     "title": "Plans",
@@ -1535,7 +1536,8 @@
       "register": "Sign up",
       "open_menu": "Open menu",
       "menu": "Menu",
-      "install_pwa": "Install App"
+      "install_pwa": "Install App",
+      "how_it_works": "How it works"
     },
     "hero": {
       "tag": "Smart Management & Scheduling",
