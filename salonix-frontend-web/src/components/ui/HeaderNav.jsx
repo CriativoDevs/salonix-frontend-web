@@ -128,6 +128,13 @@ export default function HeaderNav() {
         roles: ['owner', 'manager', 'collaborator'],
         featureKey: null,
       },
+      {
+        to: '/roadmap',
+        label: t('nav.roadmap', 'Roadmap'),
+        icon: BarChart3Icon,
+        roles: ['owner', 'manager', 'collaborator'],
+        featureKey: null,
+      },
     ];
 
     return allItems.filter(

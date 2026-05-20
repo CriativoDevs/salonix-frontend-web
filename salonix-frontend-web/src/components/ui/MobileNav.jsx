@@ -146,6 +146,12 @@ function MobileNav() {
         label: t('nav.how_it_works', 'Como funciona'),
         featureKey: null,
       },
+      {
+        to: '/roadmap',
+        icon: BarChartIcon,
+        label: t('nav.roadmap', 'Roadmap'),
+        featureKey: null,
+      },
     ];
 
     return allLinks.filter(

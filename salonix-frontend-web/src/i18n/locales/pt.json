@@ -1393,7 +1393,8 @@
     "plans": "Planos",
     "customers": "Clientes",
     "team": "Equipa",
-    "go_to_dashboard": "Ir para o dashboard"
+    "go_to_dashboard": "Ir para o dashboard",
+    "roadmap": "Roadmap"
   },
   "plans": {
     "title": "Planos",
@@ -1573,7 +1574,8 @@
       "open_menu": "Abrir menu",
       "menu": "Menu",
       "install_pwa": "Instalar App",
-      "how_it_works": "Como funciona"
+      "how_it_works": "Como funciona",
+      "roadmap": "Roadmap"
     },
     "hero": {
       "tag": "Gestão e Agendamento Inteligente",
@@ -2051,6 +2053,20 @@
     "detail": {
       "not_found": "Esta página não está disponível de momento.",
       "see_all": "Ver todos os conteúdos"
+    },
+    "roadmap": {
+      "page_title": "Roadmap | TimelyOne",
+      "title": "Roadmap",
+      "subtitle": "O que já entregámos e o que vem a seguir.",
+      "empty": "Nenhum item no roadmap de momento.",
+      "error": "Erro ao carregar o roadmap. Tenta novamente mais tarde.",
+      "status": {
+        "delivered": "Entregue",
+        "in_progress": "Em andamento",
+        "planned": "Planejado"
+      },
+      "cta_title": "Quer acesso antecipado às próximas funcionalidades?",
+      "cta_button": "Começar agora (14 dias grátis)"
     }
   }
 }

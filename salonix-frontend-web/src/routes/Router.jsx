@@ -9,6 +9,7 @@ import Rgpd from '../pages/Rgpd';
 import PwaInfo from '../pages/PwaInfo';
 import CmsPage from '../pages/CmsPage';
 import CmsPageDetail from '../pages/CmsPageDetail';
+import Roadmap from '../pages/Roadmap';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/pwa-info" element={<PwaInfo />} />
       <Route path="/como-funciona" element={<CmsPage />} />
       <Route path="/como-funciona/:slug" element={<CmsPageDetail />} />
+      <Route path="/roadmap" element={<Roadmap />} />
       <Route
         path="/login"
         element={

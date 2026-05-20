@@ -10,4 +10,9 @@ export async function fetchCmsPage(slug) {
   return response.data;
 }
 
-export default { fetchCmsPages, fetchCmsPage };
+export async function fetchRoadmap() {
+  const response = await client.get('cms/roadmap/');
+  return response.data;
+}
+
+export default { fetchCmsPages, fetchCmsPage, fetchRoadmap };

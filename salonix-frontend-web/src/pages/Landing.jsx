@@ -431,6 +431,14 @@ function Landing() {
                   >
                     {t('landing.nav.how_it_works', 'Como funciona')}
                   </Link>
+                  <Link
+                    to="/roadmap"
+                    onClick={() => setDesktopMenuOpen(false)}
+                    className="block px-4 py-3 font-medium hover:opacity-80"
+                    role="menuitem"
+                  >
+                    {t('landing.nav.roadmap', 'Roadmap')}
+                  </Link>
                   <div
                     className={`px-4 py-3 ${
                       isDarkTheme
@@ -508,6 +516,14 @@ function Landing() {
                   role="menuitem"
                 >
                   {t('landing.nav.how_it_works', 'Como funciona')}
+                </Link>
+                <Link
+                  to="/roadmap"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 font-medium hover:opacity-80"
+                  role="menuitem"
+                >
+                  {t('landing.nav.roadmap', 'Roadmap')}
                 </Link>
                 <button
                   onClick={() => {
