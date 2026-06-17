@@ -1,9 +1,11 @@
 import { DEFAULT_TENANT_META, PLAN_NAME_BY_TIER } from './tenant';
 
+// FEW-PLANS-01 (#320): plano único — todos os tiers ativos no mesmo nível.
+// 'pro' mantido para tenants legados ainda não migrados (BE-PLANS-01/#481).
 export const PLAN_TIER_PRIORITY = {
   founder: 1,
   basic: 1,
-  pro: 2,
+  pro: 1,
 };
 
 export function resolvePlanTier(

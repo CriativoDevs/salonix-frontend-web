@@ -123,7 +123,8 @@ describe('useFeatureLock', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith('/plans', {
       state: {
-        highlightPlan: 'Pro', // Vem de TENANT_FEATURE_REQUIREMENTS
+        // FEW-PLANS-01 (#320): plano único — requiredPlan vem como Founder.
+        highlightPlan: 'Founder', // Vem de TENANT_FEATURE_REQUIREMENTS
         fromFeature: 'enableAdvancedReports',
       },
     });

@@ -339,7 +339,7 @@ export default function Reports() {
                 {basicReportsLocked && <LockIcon className="h-3.5 w-3.5" />}
               </button>
 
-              {/* Tab Análise de Negócio - Requer Pro */}
+              {/* Tab Análise de Negócio */}
               <button
                 onClick={() =>
                   !businessReportsLocked && setActiveTab('business')
@@ -355,8 +355,8 @@ export default function Reports() {
                 title={
                   businessReportsLocked
                     ? t('upgrade.available_in_plan', {
-                        plan: 'Pro',
-                        defaultValue: 'Disponível no plano Pro',
+                        plan: 'Founder',
+                        defaultValue: 'Disponível no plano Founder',
                       })
                     : ''
                 }
@@ -365,7 +365,7 @@ export default function Reports() {
                 {businessReportsLocked && <LockIcon className="h-3.5 w-3.5" />}
               </button>
 
-              {/* Tab Insights Avançados - Requer Pro */}
+              {/* Tab Insights Avançados */}
               <button
                 onClick={() =>
                   !advancedReportsLocked && setActiveTab('insights')
@@ -381,8 +381,8 @@ export default function Reports() {
                 title={
                   advancedReportsLocked
                     ? t('upgrade.available_in_plan', {
-                        plan: 'Pro',
-                        defaultValue: 'Disponível no plano Pro',
+                        plan: 'Founder',
+                        defaultValue: 'Disponível no plano Founder',
                       })
                     : ''
                 }
@@ -670,7 +670,7 @@ export default function Reports() {
                       <p className="text-sm text-brand-surfaceForeground mb-3">
                         {t(
                           'reports.business.upgrade_required',
-                          'Disponível a partir do plano Pro. Faça upgrade para acessar esta seção.'
+                          'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
                         )}
                       </p>
                       <button
@@ -879,7 +879,7 @@ export default function Reports() {
                       <p className="text-sm text-brand-surfaceForeground mb-3">
                         {t(
                           'reports.insights.upgrade_required',
-                          'Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.'
+                          'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
                         )}
                       </p>
                       <button

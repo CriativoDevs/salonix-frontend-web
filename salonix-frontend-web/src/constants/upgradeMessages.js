@@ -62,7 +62,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.reports.description',
     ctaKey: 'upgrade.features.reports.cta',
     icon: TrendingUp,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
   },
 
   // Insights Avançados - Apenas Pro
@@ -71,7 +71,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.advanced_reports.description',
     ctaKey: 'upgrade.features.advanced_reports.cta',
     icon: TrendingUp,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
   },
 
   // PWA para Clientes - Todos os planos
@@ -93,7 +93,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.white_label.description',
     ctaKey: 'upgrade.features.white_label.cta',
     icon: Palette,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P3
   },
 
@@ -103,7 +103,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.native_client.description',
     ctaKey: 'upgrade.features.native_client.cta',
     icon: Smartphone,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Parcialmente implementado - Roadmap P2
   },
 
@@ -113,7 +113,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.advanced_scheduling.description',
     ctaKey: 'upgrade.features.advanced_scheduling.cta',
     icon: Calendar,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Refere-se a recorrência e listas de espera
   },
 
@@ -123,7 +123,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.multi_location.description',
     ctaKey: 'upgrade.features.multi_location.cta',
     icon: MapPin,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P3 (Muito complexo)
   },
 
@@ -133,7 +133,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.api_access.description',
     ctaKey: 'upgrade.features.api_access.cta',
     icon: Code,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P2
   },
 
@@ -143,7 +143,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.custom_fields.description',
     ctaKey: 'upgrade.features.custom_fields.cta',
     icon: ListCheck,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P2
   },
 
@@ -153,7 +153,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.priority_support.description',
     ctaKey: 'upgrade.features.priority_support.cta',
     icon: Headphones,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Processo, não tech
   },
 
@@ -172,7 +172,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.automations.description',
     ctaKey: 'upgrade.features.automations.cta',
     icon: Zap,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Roadmap P2 (Alta complexidade)
   },
 
@@ -192,7 +192,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.online_payments.description',
     ctaKey: 'upgrade.features.online_payments.cta',
     icon: CreditCard,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Não implementado - Existe billing, mas não checkout integrado
   },
 
@@ -220,7 +220,7 @@ export const FEATURE_UPGRADE_MESSAGES = {
     descriptionKey: 'upgrade.features.data_export.description',
     ctaKey: 'upgrade.features.data_export.cta',
     icon: FileText,
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     comingSoon: true, // ⚠️ Parcialmente implementado - Existe CSV, falta Excel/JSON
   },
 };
@@ -283,6 +283,9 @@ export const CONFIGURED_FEATURES = Object.keys(FEATURE_UPGRADE_MESSAGES);
  * Contadores por plano (útil para páginas de pricing)
  */
 export const FEATURES_COUNT_BY_PLAN = {
+  // FEW-PLANS-01 (#320): plano único — as features concentram-se no Founder;
+  // Basic/Standard/Pro mantidos por compatibilidade (contagem zero).
+  Founder: getFeaturesByPlan('Founder').length,
   Basic: getFeaturesByPlan('Basic').length,
   Standard: getFeaturesByPlan('Standard').length,
   Pro: getFeaturesByPlan('Pro').length,

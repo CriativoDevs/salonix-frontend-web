@@ -608,15 +608,15 @@
       },
       "reports_advanced": {
         "label": "Insights Avançados",
-        "description": "Análise de retenção, comportamento de clientes e relatórios preditivos. Requer plano Pro."
+        "description": "Análise de retenção, comportamento de clientes e relatórios preditivos. Incluído no seu plano."
       },
       "reports": {
         "label": "Relatórios avançados",
-        "description": "Disponível a partir do plano Pro. Desbloqueia métricas detalhadas e exportação avançada."
+        "description": "Métricas detalhadas e exportação avançada. Incluído no seu plano."
       },
       "native_client": {
         "label": "App Nativo Cliente",
-        "description": "Aplicativo iOS e Android para seus clientes. Disponível no plano Pro."
+        "description": "Aplicativo iOS e Android para seus clientes. Em breve — já incluído no plano."
       },
       "sms_notifications": {
         "label": "Notificações SMS",
@@ -624,11 +624,11 @@
       },
       "whatsapp_integration": {
         "label": "Integração WhatsApp",
-        "description": "Mensagens automáticas via WhatsApp Business API. Requer plano Pro."
+        "description": "Mensagens automáticas via WhatsApp Business API. Em breve."
       },
       "white_label": {
         "label": "White Label",
-        "description": "Personalize com sua marca. Disponível no plano Pro."
+        "description": "Personalize com sua marca. Em breve."
       },
       "advanced_scheduling": {
         "label": "Agendamento Avançado",
@@ -644,11 +644,11 @@
       },
       "multi_location": {
         "label": "Múltiplas Unidades",
-        "description": "Gerencie várias localizações. Disponível no plano Pro."
+        "description": "Gerencie várias localizações. Em breve."
       },
       "api_access": {
         "label": "Acesso à API",
-        "description": "API REST completa. Disponível no plano Pro."
+        "description": "API REST completa. Em breve."
       },
       "automations": {
         "label": "Automações",
@@ -664,7 +664,7 @@
       },
       "priority_support": {
         "label": "Suporte Prioritário",
-        "description": "Atendimento prioritário com SLA. Disponível no plano Pro."
+        "description": "Atendimento prioritário com SLA. Em breve."
       },
       "generic": {
         "description": "Funcionalidade disponível em planos superiores."
@@ -758,7 +758,9 @@
     "buffer_time": "Tempo de intervalo",
     "notifications": {
       "whatsapp_coming_soon_tooltip": "WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!",
-      "whatsapp_waiting_meta": "WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business."
+      "whatsapp_waiting_meta": "WhatsApp estará disponível em breve. Estamos aguardando aprovação da Meta Business.",
+      "sms_after_trial": "Disponível após o período de teste",
+      "sms_after_trial_tooltip": "O envio de SMS fica disponível após o período de teste de 14 dias."
     },
     "business": {
       "placeholder": "Gestão de operação (horários, duração de atendimentos, buffers) será conectada ao backend nas tarefas FEW-241a/242.",
@@ -1422,42 +1424,42 @@
         "price_annual": "€150",
         "badge": "Oferta Limitada",
         "highlights": {
-          "0": "Funcionalidades do Plano Basic",
-          "1": "Preço Vitalício Garantido",
-          "2": "PWA para Admin e Clientes",
-          "3": "€2 de crédito para comunicações"
+          "0": "Agenda inteligente com agendamentos online ilimitados",
+          "1": "Profissionais e serviços ilimitados",
+          "2": "Relatórios completos com insights do negócio",
+          "3": "Lembretes automáticos por email, web push e SMS",
+          "4": "€2 de crédito mensal para comunicações",
+          "5": "White-label: a sua marca no portal dos clientes (em breve)",
+          "6": "PWA instalável para equipa e clientes",
+          "7": "App nativo iOS e Android para a sua equipa (já disponível)",
+          "8": "App nativo para os seus clientes (em breve — já incluído no plano)",
+          "9": "Preço de €15/mês garantido para sempre",
+          "10": "Apoio direto da equipa fundadora"
         }
       },
       "basic": {
-        "name": "Basic",
+        "name": "TimelyOne",
         "price": "€29",
         "price_annual": "€290",
         "highlights": {
-          "0": "PWA para Admin e Clientes",
-          "1": "Relatórios: Visão Geral",
-          "2": "€5 de crédito para comunicações"
-        }
-      },
-      "pro": {
-        "name": "Pro",
-        "price": "€55",
-        "price_annual": "€550",
-        "badge_coming_soon": "Em breve",
-        "locked_tooltip": "Disponível em breve após aprovação nas App Stores oficiais (iOS e Android).",
-        "highlights": {
-          "0": "Tudo do Basic",
-          "1": "Relatórios Avançados e Insights",
-          "2": "Apps Nativos (Admin / Staff) - (Cliente - em breve)",
-          "3": "€15 de crédito para comunicações"
+          "0": "Agenda inteligente com agendamentos online ilimitados",
+          "1": "Profissionais e serviços ilimitados",
+          "2": "Relatórios completos com insights do negócio",
+          "3": "Lembretes automáticos por email, web push e SMS",
+          "4": "€5 de crédito mensal para comunicações",
+          "5": "White-label: a sua marca no portal dos clientes (em breve)",
+          "6": "PWA instalável para equipa e clientes",
+          "7": "App nativo iOS e Android para a sua equipa (já disponível)",
+          "8": "App nativo para os seus clientes (em breve — já incluído no plano)"
         }
       }
     },
     "founder": {
-      "limited_badge": "⚠️ Limitado a 500 usuários",
+      "limited_badge": "Oferta de lançamento — limitada a 500 contas",
       "offer_badge": "Oferta Limitada",
       "annual_savings": "(10 meses pagos, 2 grátis) - Vitalício",
-      "warning_title": "Plano Founder: Limitações Importantes",
-      "warning_message": "O Plano Founder é limitado a 500 usuários ativos por salão. Após esse limite, será necessário fazer upgrade para outro plano.",
+      "warning_title": "Plano Founder: Oferta de Lançamento",
+      "warning_message": "O plano Founder é uma oferta de lançamento limitada às primeiras 500 contas. O preço de €15/mês fica garantido para sempre.",
       "warning_note": "💡 Este plano foi criado para apoiar os primeiros 500 clientes da TimelyOne.",
       "warning_cancel": "Cancelar",
       "warning_confirm": "Entendi, Continuar"
@@ -1492,7 +1494,7 @@
     "business": {
       "title": "Análise de Negócio",
       "description": "Acompanhe os serviços mais vendidos e a evolução da receita",
-      "upgrade_required": "Disponível a partir do plano Pro. Faça upgrade para acessar esta seção.",
+      "upgrade_required": "Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.",
       "no_data": "Nenhum dado disponível para o período selecionado."
     },
     "advanced": {
@@ -1500,7 +1502,7 @@
       "description": "Análises detalhadas e métricas avançadas",
       "coming_soon": "Em breve: Análises avançadas, comparativos e insights detalhados",
       "data_loaded": "Dados avançados carregados com sucesso",
-      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie métricas detalhadas e exportação avançada.",
+      "upgrade_required": "Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.",
       "upgrade_button": "Atualizar plano",
       "intervals": {
         "day": "Diário",
@@ -1542,7 +1544,7 @@
     "insights": {
       "title": "Insights Avançados",
       "description": "Análise de retenção e comportamento de clientes",
-      "upgrade_required": "Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.",
+      "upgrade_required": "Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.",
       "coming_soon": "Em breve: Relatórios de Retenção e Cohort Analysis",
       "new_clients": "Novos Clientes",
       "returning_clients": "Clientes Recorrentes",
@@ -1579,25 +1581,24 @@
     },
     "hero": {
       "tag": "Gestão e Agendamento Inteligente",
-      "title": "A plataforma premium de agendamento e gestão para negócios modernos.",
-      "subtitle": "O TimelyOne automatiza horários, reduz faltas, melhora a experiência dos clientes e profissionaliza a operação do seu negócio — tudo num painel rápido, elegante e pronto para equipas de qualquer dimensão.",
+      "title": "Tudo o que o seu negócio precisa. Um plano. Sem surpresas.",
+      "subtitle": "Para cabeleireiros, barbearias, clínicas de estética, fisioterapeutas e qualquer negócio que trabalhe por marcação. O TimelyOne automatiza horários, reduz faltas e profissionaliza a sua operação — num único plano, sem níveis nem extras escondidos.",
       "bullets": [
-        "Reduza faltas até 35% com lembretes automáticos.",
+        "Reduza faltas com lembretes automáticos.",
         "Agendamentos 24/7, mesmo fora do horário.",
-        "Interface intuitiva para equipa e clientes.",
-        "Pronto para escalar: freelancers → franquias."
+        "App nativo iOS e Android para a sua equipa — já disponível.",
+        "RGPD nativo — dados dos seus clientes protegidos por lei."
       ],
       "cta_start": "Começar período trial (14 dias)",
-      "cta_pricing": "Ver planos e preços",
+      "cta_pricing": "Ver o plano e preço",
       "cta_how_it_works": "Como funciona →"
     },
     "results": {
-      "title": "Resultados que falam por si.",
+      "title": "A plataforma em números",
       "metrics": [
-        "Clientes a reservar online",
-        "Tempo perdido ao telefone",
-        "Receita média por cliente",
-        "Uptime e fiabilidade"
+        "Agendamentos realizados",
+        "Clientes geridos",
+        "Receita gerida"
       ]
     },
     "usability": {
@@ -1631,7 +1632,7 @@
       "items": [
         "Agenda unificada para toda a equipa",
         "Agendamentos online para clientes",
-        "Sincronização automática entre unidades",
+        "Equipa sincronizada em qualquer dispositivo — web, PWA e app nativo",
         "Lembretes automáticos por email e SMS (WhatsApp em breve)",
         "Painel com KPIs, fluxo diário e histórico",
         "Relatórios inteligentes: faturação, serviços, horários, ocupação"
@@ -1649,96 +1650,103 @@
         },
         "2": {
           "title": "Lembretes Inteligentes",
-          "desc": "Email e SMS para reduzir faltas (WhatsApp em breve)."
+          "desc": "Email e SMS para reduzir faltas. WhatsApp em breve."
         },
         "3": {
-          "title": "PWA Equipa e Clientes",
-          "desc": "Instalável no telemóvel, sem lojas tradicionais."
+          "title": "App Nativo + PWA",
+          "desc": "App iOS e Android para a sua equipa, já disponível. App para clientes em breve. PWA instalável para equipa e clientes, sem depender das lojas."
         },
         "4": {
-          "title": "Relatórios em Tempo Real",
-          "desc": "Faturação, ocupação e serviços mais vendidos."
+          "title": "Relatórios Completos",
+          "desc": "Faturação, ocupação, retenção de clientes e insights do negócio, com exportação."
         },
         "5": {
-          "title": "Escalável para Franquias",
-          "desc": "Permissões e relatórios consolidados."
+          "title": "Permissões de Equipa",
+          "desc": "Perfis de administrador, gestor e profissional, com acessos separados."
         },
         "6": {
-          "title": "Domínio Personalizado (Pro)",
-          "desc": "Marca e URL próprios."
+          "title": "A sua marca em destaque",
+          "desc": "White-label: o portal dos seus clientes com o seu nome e identidade visual. Em breve."
         },
         "7": {
-          "title": "Integrações (Enterprise)",
-          "desc": "Google Calendar, Stripe e mais."
+          "title": "Conformidade RGPD",
+          "desc": "Dados em conformidade com a legislação portuguesa e europeia. Sem configurações extra, sem risco legal."
         }
       }
     },
     "pricing": {
-      "title": "Planos claros. Sem taxas escondidas.",
-      "subtitle": "Escolha o plano que acompanha o crescimento do seu negócio.",
+      "title": "Um plano. Tudo incluído.",
+      "subtitle": "Sem níveis, sem upgrades forçados, sem taxas escondidas. Cresce o negócio, o preço não.",
       "most_chosen": "Mais escolhido",
-      "start_trial": "Iniciar 14 dias grátis"
+      "start_trial": "Iniciar 14 dias grátis",
+      "cta_founder": "Garantir a minha vaga Founder",
+      "cta_basic": "Começar 14 dias grátis",
+      "founder_note": "O plano Founder é uma oferta de lançamento limitada às primeiras 500 contas. O preço de €15/mês fica garantido para sempre."
     },
     "faq": {
       "title": "FAQ",
       "items": {
         "0": {
-          "q": "Como funciona o período trial?",
-          "a": "Durante 14 dias tens acesso total ao TimelyOne, sem limites de agendamentos ou profissionais. Não é necessário cartão. Ao final, escolhes um plano ou simplesmente não continuas."
+          "q": "O que está incluído no plano?",
+          "a": "Tudo. Agenda inteligente, agendamentos online ilimitados, profissionais e serviços ilimitados, relatórios completos, lembretes automáticos, conformidade RGPD, PWA instalável e app nativo para a equipa. Não há níveis nem funcionalidades bloqueadas."
         },
         "1": {
-          "q": "Posso mudar de plano a qualquer momento?",
-          "a": "Sim. A alteração é imediata e não perdes nenhum dado. Upgrades desbloqueiam funcionalidades no mesmo instante."
+          "q": "Como funciona o período trial?",
+          "a": "Durante 14 dias tens acesso total ao TimelyOne — agendamentos, profissionais e relatórios sem limites. Inicias com um cartão (pagamento seguro via Stripe), mas não há qualquer cobrança durante os 14 dias: só és cobrado no fim se não cancelares. O envio de SMS fica disponível depois do período de teste. Cancela quando quiseres, sem fidelização."
         },
         "2": {
           "q": "Preciso de cartão de crédito para começar?",
-          "a": "Não. O registo é simples e sem compromisso."
+          "a": "Sim, para iniciar o trial. Não há qualquer cobrança durante os 14 dias e podes cancelar a qualquer momento antes do fim — só passas a pagar se decidires continuar."
         },
         "3": {
           "q": "O TimelyOne funciona no telemóvel?",
-          "a": "Sim. Disponibilizamos uma PWA para equipa e clientes, instalável em iPhone e Android como uma app normal, sem depender das lojas."
+          "a": "Sim — e de várias formas. A equipa tem app nativo TimelyOne disponível na App Store e no Google Play. Existe também uma PWA instalável diretamente do navegador, para equipa e clientes, sem depender das lojas. O app nativo para clientes está em desenvolvimento e chegará em breve, já incluído no plano."
         },
         "4": {
-          "q": "Posso usar o meu próprio domínio?",
-          "a": "Sim, disponível no plano Pro. Permite personalização completa da identidade visual."
+          "q": "O app tem custo adicional?",
+          "a": "Não. O app iOS e Android para a equipa já está disponível e incluído no plano. O app para clientes está em desenvolvimento e ficará disponível em breve, também incluído."
         },
         "5": {
-          "q": "Como funcionam os créditos de SMS/WhatsApp?",
-          "a": "Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel. WhatsApp estará disponível em breve após aprovação Meta Business."
+          "q": "Como instalo o app da equipa?",
+          "a": "Pesquisa por \"TimelyOne\" na App Store ou no Google Play e entra com a tua conta. Se preferires, podes também usar a PWA — instalável diretamente do navegador, sem precisar das lojas."
         },
         "6": {
-          "q": "O TimelyOne é compatível com o RGPD?",
-          "a": "Sim. Dados encriptados, servidores compatíveis com normas europeias e possibilidade de exportação/eliminação de dados."
+          "q": "Como funcionam os créditos de SMS?",
+          "a": "O plano inclui um valor mensal em créditos de comunicação. Os lembretes por SMS ficam disponíveis após o período de teste de 14 dias e debitam esse saldo por mensagem enviada; quando termina, recarregas no painel, sem contratos externos nem mensalidades extra. WhatsApp estará disponível em breve, após aprovação Meta Business."
         },
         "7": {
+          "q": "O TimelyOne é compatível com o RGPD?",
+          "a": "Sim. A plataforma foi construída com conformidade RGPD nativa — dados dos seus clientes armazenados em servidores europeus, com encriptação e mecanismos de consentimento e eliminação de dados integrados. Não precisa de configurações extra nem de ferramentas externas."
+        },
+        "8": {
           "q": "É possível migrar dados do meu sistema atual?",
           "a": "Sim. Suportamos importação de clientes, serviços e horários através de ficheiros CSV."
         },
-        "8": {
-          "q": "Quantos profissionais posso adicionar?",
-          "a": "Ilimitados em todos os planos."
-        },
         "9": {
+          "q": "Quantos profissionais posso adicionar?",
+          "a": "Ilimitados."
+        },
+        "10": {
           "q": "Os clientes podem cancelar ou remarcar sozinhos?",
           "a": "Sim. Cada marcação inclui um link seguro para remarcar ou cancelar, reduzindo chamadas e tempo perdido."
         },
-        "10": {
+        "11": {
           "q": "O TimelyOne envia lembretes automáticos?",
           "a": "Sim. Email e SMS — configuráveis conforme antecedência desejada. WhatsApp em breve."
         },
-        "11": {
-          "q": "O sistema suporta várias unidades/filiais?",
-          "a": "Atualmente oferecemos permissões avançadas e relatórios consolidados no Pro. Multiunidade está em roadmap (em breve)."
-        },
         "12": {
+          "q": "O sistema suporta várias unidades/filiais?",
+          "a": "Multiunidade está no nosso roadmap. Hoje, cada unidade funciona com a sua conta TimelyOne, com permissões avançadas de equipa e relatórios completos por unidade."
+        },
+        "13": {
           "q": "A minha equipa pode ter acessos diferentes?",
           "a": "Sim. Perfis de permissão: administrador, gestor e profissional."
         },
-        "13": {
+        "14": {
           "q": "Posso ver relatórios de faturação e desempenho?",
           "a": "Sim. O painel inclui métricas de faturação, ocupação, serviços mais vendidos, desempenho por profissional e muito mais."
         },
-        "14": {
+        "15": {
           "q": "Quanto tempo leva para configurar tudo?",
           "a": "Entre 10 e 20 minutos, dependendo da quantidade de serviços e profissionais."
         }
@@ -1748,15 +1756,15 @@
       "title": "Começar é simples.",
       "1": {
         "title": "Crie a sua conta.",
-        "desc": "Sem cartão, sem compromisso."
+        "desc": "Sem compromisso e sem cobrança nos 14 dias. Em menos de 5 minutos está operacional."
       },
       "2": {
-        "title": "Configure a equipa e serviços.",
-        "desc": "Tudo pronto em minutos."
+        "title": "Configure o seu negócio.",
+        "desc": "Adicione serviços, equipa e horários."
       },
       "3": {
-        "title": "Ative os agendamentos online.",
-        "desc": "Os clientes começam a reservar."
+        "title": "Partilhe o link com os seus clientes.",
+        "desc": "Eles reservam online e você recebe tudo no painel e na app."
       }
     },
     "niches": {
@@ -1764,23 +1772,31 @@
       "subtitle": "Adapta-se ao seu fluxo — seja qual for o setor.",
       "items": {
         "0": {
-          "title": "Salões de Beleza",
-          "desc": "Serviços e durações diferentes"
-        },
-        "1": {
-          "title": "Barbearias",
+          "title": "Barbearia",
           "desc": "Rotação rápida de cadeiras"
         },
-        "2": {
-          "title": "Tatuagem",
-          "desc": "Sessões longas e depósitos"
+        "1": {
+          "title": "Cabelo & Salão",
+          "desc": "Serviços e durações diferentes"
         },
-        "3": {
-          "title": "Estética",
+        "2": {
+          "title": "Clínica de Estética",
           "desc": "Pacotes e salas de tratamento"
         },
+        "3": {
+          "title": "Spa & Bem-estar",
+          "desc": "Sessões e experiências por marcação"
+        },
         "4": {
-          "title": "Freelancers",
+          "title": "Fisioterapia",
+          "desc": "Sessões recorrentes e acompanhamento"
+        },
+        "5": {
+          "title": "Personal Trainer",
+          "desc": "Treinos individuais e horários flexíveis"
+        },
+        "6": {
+          "title": "Profissionais Independentes",
           "desc": "Visão simples, tudo num lugar"
         }
       }
@@ -1792,7 +1808,7 @@
         "A minha equipa deixou de gerir horários no telefone e passou a centralizar tudo no painel.",
         "O painel é rápido, intuitivo e realmente profissional."
       ],
-      "rating": "Avaliação média: ★ 4.9 / 5.0"
+      "rating": "Apoio direto da equipa fundadora — respondemos a qualquer hora."
     },
     "security": {
       "title": "Segurança e privacidade de nível profissional.",
@@ -1805,11 +1821,11 @@
       ]
     },
     "final_cta": {
-      "title": "Crie a sua conta gratuita — leve o seu salão para o próximo nível.",
-      "cta": "Começar agora (14 dias grátis)"
+      "title": "Um plano. Tudo incluído. 14 dias para experimentar sem compromisso.",
+      "cta": "Criar conta grátis"
     },
     "footer": {
-      "pricing": "Planos",
+      "pricing": "Preço",
       "client_area": "Área do Cliente",
       "login": "Entrar",
       "register": "Registar",
@@ -1929,87 +1945,87 @@
       "reports": {
         "title": "Relatórios Avançados",
         "description": "Analise seu negócio com insights detalhados, dados históricos e métricas de crescimento.",
-        "cta": "Ver planos Pro"
+        "cta": "Ver o plano"
       },
       "customer_pwa": {
         "title": "App para Clientes",
         "description": "Ofereça aos seus clientes um aplicativo próprio para agendamentos e notificações.",
-        "cta": "Ver planos Basic"
+        "cta": "Ver o plano"
       },
       "white_label": {
         "title": "White Label",
         "description": "Personalize completamente a marca do sistema com seu logo, cores e domínio próprio.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "native_client": {
         "title": "App Nativo para Clientes",
         "description": "Aplicativo nativo iOS e Android para seus clientes com experiência premium.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "advanced_scheduling": {
         "title": "Agendamento Avançado",
         "description": "Agendamentos recorrentes, listas de espera e regras personalizadas de disponibilidade.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "multi_location": {
         "title": "Múltiplas Unidades",
         "description": "Gerencie múltiplas localizações do seu negócio em uma única conta.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "api_access": {
         "title": "Acesso à API",
         "description": "Integre com seus sistemas via API REST completa com documentação.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "custom_fields": {
         "title": "Campos Personalizados",
         "description": "Adicione campos customizados em fichas de clientes e serviços.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "priority_support": {
         "title": "Suporte Prioritário",
         "description": "Atendimento prioritário via chat, email e telefone com SLA garantido.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "advanced_reports": {
         "title": "Relatórios Avançados",
         "description": "Análise preditiva, retenção de clientes, comparação de períodos e exportação personalizada.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "web_push": {
         "title": "Notificações Push Web",
         "description": "Envie notificações push diretamente no navegador dos seus clientes.",
-        "cta": "Ver planos Basic"
+        "cta": "Ver o plano"
       },
       "automations": {
         "title": "Automações",
         "description": "Automatize lembretes, follow-ups e campanhas de marketing com regras personalizadas.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "team_management": {
         "title": "Gestão de Equipe Avançada",
         "description": "Controle de permissões granulares, relatórios por colaborador e metas de desempenho.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "online_payments": {
         "title": "Pagamentos Online",
         "description": "Receba pagamentos online integrados com Stripe, cartão de crédito e PIX.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "sms_notifications": {
         "title": "Notificações SMS",
         "description": "Envie lembretes e confirmações de agendamento via SMS para seus clientes.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       },
       "whatsapp_integration": {
         "title": "Integração WhatsApp",
         "description": "Envie mensagens automáticas via WhatsApp Business API com templates personalizados.",
-        "cta": "Upgrade para Pro"
+        "cta": "Ver o plano"
       },
       "data_export": {
         "title": "Exportação de Dados",
         "description": "Exporte dados de clientes, agendamentos e relatórios em CSV, Excel ou JSON.",
-        "cta": "Ver planos Standard"
+        "cta": "Ver o plano"
       }
     }
   },

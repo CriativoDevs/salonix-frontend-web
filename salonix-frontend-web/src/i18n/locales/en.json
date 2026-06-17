@@ -621,15 +621,15 @@
       },
       "reports_advanced": {
         "label": "Advanced Insights",
-        "description": "Retention analysis, customer behavior and predictive reports. Requires Pro plan."
+        "description": "Retention analysis, customer behavior and predictive reports. Included in your plan."
       },
       "reports": {
         "label": "Advanced Reports",
-        "description": "Available from the Pro plan. Unlocks detailed metrics and advanced export."
+        "description": "Detailed metrics and advanced export. Included in your plan."
       },
       "native_client": {
         "label": "Native Customer App",
-        "description": "iOS and Android app for your customers. Available on Pro plan."
+        "description": "iOS and Android app for your customers. Coming soon — already included in the plan."
       },
       "sms_notifications": {
         "label": "SMS Notifications",
@@ -637,11 +637,11 @@
       },
       "whatsapp_integration": {
         "label": "WhatsApp Integration",
-        "description": "Automate messages via WhatsApp. Available on Pro plan."
+        "description": "Automate messages via WhatsApp. Coming soon."
       },
       "white_label": {
         "label": "White Label",
-        "description": "Remove TimelyOne branding from customer interfaces. Requires Pro plan."
+        "description": "Remove TimelyOne branding from customer interfaces. Coming soon."
       },
       "advanced_scheduling": {
         "label": "Advanced Scheduling",
@@ -657,15 +657,15 @@
       },
       "multi_location": {
         "label": "Multi-Location",
-        "description": "Manage multiple business locations from one account. Requires Pro plan."
+        "description": "Manage multiple business locations from one account. Coming soon."
       },
       "api_access": {
         "label": "API Access",
-        "description": "Full REST API for custom integrations. Requires Pro plan."
+        "description": "Full REST API for custom integrations. Coming soon."
       },
       "automations": {
         "label": "Automations",
-        "description": "Automated workflows and conditional triggers. Requires Pro plan."
+        "description": "Automated workflows and conditional triggers. Coming soon."
       },
       "online_payments": {
         "label": "Online Payments",
@@ -677,7 +677,7 @@
       },
       "priority_support": {
         "label": "Priority Support",
-        "description": "24/7 priority support with guaranteed response time. Requires Pro plan."
+        "description": "24/7 priority support with guaranteed response time. Coming soon."
       },
       "generic": {
         "description": "Feature available on higher plans."
@@ -704,7 +704,9 @@
     "buffer_time": "Buffer time",
     "notifications": {
       "whatsapp_coming_soon_tooltip": "WhatsApp will be activated after Meta Business approval. Stay tuned!",
-      "whatsapp_waiting_meta": "WhatsApp will be available soon. We are waiting for Meta Business approval."
+      "whatsapp_waiting_meta": "WhatsApp will be available soon. We are waiting for Meta Business approval.",
+      "sms_after_trial": "Available after the trial period",
+      "sms_after_trial_tooltip": "SMS sending becomes available after the 14-day trial period."
     },
     "save": "Save",
     "branding": {
@@ -1417,26 +1419,19 @@
     "per_year": "/year",
     "options": {
       "basic": {
-        "name": "Basic",
+        "name": "TimelyOne",
         "price": "€29",
         "price_annual": "€290",
         "highlights": {
-          "0": "PWA Admin, Staff and Client",
-          "1": "Reports: Overview",
-          "2": "€5 communication credit"
-        }
-      },
-      "pro": {
-        "name": "Pro",
-        "price": "€55",
-        "price_annual": "€550",
-        "badge_coming_soon": "Coming soon",
-        "locked_tooltip": "Available soon after approval on official App Stores (iOS and Android).",
-        "highlights": {
-          "0": "Everything in Basic",
-          "1": "Reports: Advanced Insights",
-          "2": "Native Apps (Admin / Staff) - (Client - soon)",
-          "3": "€15 communication credit"
+          "0": "Smart scheduling with unlimited online bookings",
+          "1": "Unlimited staff and services",
+          "2": "Complete reports with business insights",
+          "3": "Automatic reminders via email, web push and SMS",
+          "4": "€5 monthly communication credit",
+          "5": "White-label: your brand on the client portal (coming soon)",
+          "6": "Installable PWA for staff and clients",
+          "7": "Native iOS and Android app for your team (available now)",
+          "8": "Native app for your clients (coming soon — already included)"
         }
       },
       "founder": {
@@ -1445,19 +1440,26 @@
         "price_annual": "€150",
         "badge": "Limited Offer",
         "highlights": {
-          "0": "Basic Plan features",
-          "1": "Lifetime price guarantee",
-          "2": "Admin and staff PWA",
-          "3": "€2 communication credit"
+          "0": "Smart scheduling with unlimited online bookings",
+          "1": "Unlimited staff and services",
+          "2": "Complete reports with business insights",
+          "3": "Automatic reminders via email, web push and SMS",
+          "4": "€2 monthly communication credit",
+          "5": "White-label: your brand on the client portal (coming soon)",
+          "6": "Installable PWA for staff and clients",
+          "7": "Native iOS and Android app for your team (available now)",
+          "8": "Native app for your clients (coming soon — already included)",
+          "9": "€15/month price locked in forever",
+          "10": "Direct support from the founding team"
         }
       }
     },
     "founder": {
-      "limited_badge": "⚠️ Limited to 500 users",
+      "limited_badge": "Launch offer — limited to 500 accounts",
       "offer_badge": "Limited Offer",
       "annual_savings": "(10 months paid, 2 free) - Lifetime",
-      "warning_title": "Founder Plan: Important Limitations",
-      "warning_message": "The Founder Plan is limited to 500 active users per business. After this limit, you'll need to upgrade to another plan.",
+      "warning_title": "Founder Plan: Launch Offer",
+      "warning_message": "The Founder plan is a launch offer limited to the first 500 accounts. The €15/month price is locked in forever.",
       "warning_note": "💡 This plan was created to support TimelyOne's first 500 customers.",
       "warning_cancel": "Cancel",
       "warning_confirm": "I Understand, Continue"
@@ -1492,13 +1494,13 @@
     "business": {
       "title": "Business Analysis",
       "description": "Track your top-selling services and revenue evolution",
-      "upgrade_required": "Available from the Pro plan. Upgrade to access this section.",
+      "upgrade_required": "This section is not available on your account. Contact support if you need access.",
       "no_data": "No data available for the selected period."
     },
     "advanced": {
       "title": "Advanced Reports",
       "description": "Detailed analytics and advanced metrics",
-      "upgrade_required": "Available from Pro plan onwards. Unlock detailed metrics and advanced export.",
+      "upgrade_required": "This section is not available on your account. Contact support if you need access.",
       "upgrade_button": "Upgrade plan",
       "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
       "data_loaded": "Advanced data loaded successfully"
@@ -1506,7 +1508,7 @@
     "insights": {
       "title": "Advanced Insights",
       "description": "Retention analysis and customer behavior",
-      "upgrade_required": "Available from Pro plan onwards. Unlock retention analysis and deep insights.",
+      "upgrade_required": "This section is not available on your account. Contact support if you need access.",
       "coming_soon": "Coming soon: Retention Reports and Cohort Analysis",
       "new_clients": "New Clients",
       "returning_clients": "Returning Clients",
@@ -1543,25 +1545,24 @@
     },
     "hero": {
       "tag": "Smart Management & Scheduling",
-      "title": "The premium platform for scheduling and management for modern businesses.",
-      "subtitle": "TimelyOne automates schedules, reduces no-shows, improves client experience and professionalizes your operation — all in a fast, elegant dashboard ready for teams of any size.",
+      "title": "Everything your business needs. One plan. No surprises.",
+      "subtitle": "For hairdressers, barbershops, aesthetic clinics, physiotherapists and any business that works by appointment. TimelyOne automates schedules, reduces no-shows and professionalizes your operation — in a single plan, with no tiers or hidden extras.",
       "bullets": [
-        "Reduce no-shows up to 35% with automatic reminders.",
+        "Reduce no-shows with automatic reminders.",
         "24/7 bookings, even outside opening hours.",
-        "Intuitive interface for team and clients.",
-        "Ready to scale: freelancers → franchises."
+        "Native iOS and Android app for your team — available now.",
+        "Native GDPR — your clients' data protected by law."
       ],
       "cta_start": "Start trial (14 days)",
-      "cta_pricing": "See plans and pricing",
+      "cta_pricing": "See the plan and pricing",
       "cta_how_it_works": "How it works →"
     },
     "results": {
-      "title": "Results that speak for themselves.",
+      "title": "The platform in numbers",
       "metrics": [
-        "Clients booking online",
-        "Time lost on calls",
-        "Average revenue per client",
-        "Uptime and reliability"
+        "Appointments made",
+        "Clients managed",
+        "Revenue managed"
       ]
     },
     "usability": {
@@ -1595,7 +1596,7 @@
       "items": [
         "Unified schedule for the whole team",
         "Online bookings for clients",
-        "Automatic sync across branches",
+        "Team in sync on any device — web, PWA and native app",
         "Automatic reminders via email and SMS (WhatsApp soon)",
         "Dashboard with KPIs, daily flow and history",
         "Smart reports: revenue, services, schedules, occupancy"
@@ -1613,96 +1614,103 @@
         },
         "2": {
           "title": "Smart Reminders",
-          "desc": "Email and SMS to reduce no-shows (WhatsApp soon)."
+          "desc": "Email and SMS to reduce no-shows. WhatsApp soon."
         },
         "3": {
-          "title": "PWA for Team and Clients",
-          "desc": "Installable on mobile, no app stores."
+          "title": "Native App + PWA",
+          "desc": "iOS and Android app for your team, available now. Client app coming soon. Installable PWA for team and clients, no app stores."
         },
         "4": {
-          "title": "Real-time Reports",
-          "desc": "Revenue, occupancy and top-selling services."
+          "title": "Complete Reports",
+          "desc": "Revenue, occupancy, client retention and business insights, with export."
         },
         "5": {
-          "title": "Scalable for Franchises",
-          "desc": "Permissions and consolidated reports."
+          "title": "Team Permissions",
+          "desc": "Owner, manager and professional profiles, with separate access."
         },
         "6": {
-          "title": "Custom Domain (Pro)",
-          "desc": "Own brand and URL."
+          "title": "Your brand in the spotlight",
+          "desc": "White-label: your clients' portal with your name and visual identity. Coming soon."
         },
         "7": {
-          "title": "Integrations (Enterprise)",
-          "desc": "Google Calendar, Stripe and more."
+          "title": "GDPR Compliance",
+          "desc": "Data compliant with Portuguese and European law. No extra setup, no legal risk."
         }
       }
     },
     "pricing": {
-      "title": "Clear plans. No hidden fees.",
-      "subtitle": "Choose the plan that grows with your business.",
+      "title": "One plan. Everything included.",
+      "subtitle": "No tiers, no forced upgrades, no hidden fees. Your business grows, the price doesn't.",
       "most_chosen": "Most chosen",
-      "start_trial": "Start 14 days free"
+      "start_trial": "Start 14 days free",
+      "cta_founder": "Claim my Founder spot",
+      "cta_basic": "Start 14 days free",
+      "founder_note": "The Founder plan is a launch offer limited to the first 500 accounts. The €15/month price is locked in forever."
     },
     "faq": {
       "title": "FAQ",
       "items": {
         "0": {
-          "q": "How does the trial period work?",
-          "a": "For 14 days you get full access to TimelyOne, with no limits on bookings or professionals. No card required. At the end, choose a plan or simply stop."
+          "q": "What's included in the plan?",
+          "a": "Everything. Smart scheduling, unlimited online bookings, unlimited staff and services, complete reports, automatic reminders, GDPR compliance, installable PWA and a native app for the team. No tiers, no locked features."
         },
         "1": {
-          "q": "Can I change plans at any time?",
-          "a": "Yes. The change is immediate and you don't lose any data. Upgrades unlock features instantly."
+          "q": "How does the trial period work?",
+          "a": "For 14 days you get full access to TimelyOne — bookings, staff and reports with no limits. You start with a card (secure payment via Stripe), but there is no charge during the 14 days: you're only charged at the end if you don't cancel. SMS sending becomes available after the trial. Cancel any time, no lock-in."
         },
         "2": {
           "q": "Do I need a credit card to start?",
-          "a": "No. Sign up is simple and commitment‑free."
+          "a": "Yes, to start the trial. There is no charge during the 14 days and you can cancel at any time before it ends — you only start paying if you decide to continue."
         },
         "3": {
           "q": "Does TimelyOne work on mobile?",
-          "a": "Yes. We provide a PWA for team and clients, installable on iPhone and Android like a normal app, without app stores."
+          "a": "Yes — in several ways. The team has a native TimelyOne app available on the App Store and Google Play. There's also a PWA installable directly from the browser, for team and clients, without app stores. The native client app is in development and arriving soon, already included in the plan."
         },
         "4": {
-          "q": "Can I use my own domain?",
-          "a": "Yes, available in the Pro plan. Allows full brand customization."
+          "q": "Does the app cost extra?",
+          "a": "No. The iOS and Android app for the team is already available and included in the plan. The client app is in development and will be available soon, also included."
         },
         "5": {
-          "q": "How do SMS/WhatsApp credits work?",
-          "a": "Each plan includes a monthly credit amount. Automatic reminders debit this balance as messages are sent. When it ends, you can top up in the dashboard. WhatsApp will be available soon after Meta Business approval."
+          "q": "How do I install the team app?",
+          "a": "Search for \"TimelyOne\" on the App Store or Google Play and sign in with your account. If you prefer, you can also use the PWA — installable directly from the browser, no app stores needed."
         },
         "6": {
-          "q": "Is TimelyOne GDPR compatible?",
-          "a": "Yes. Encrypted data, servers compliant with European standards, and the ability to export/delete data."
+          "q": "How do SMS credits work?",
+          "a": "The plan includes a monthly amount of communication credit. SMS reminders become available after the 14-day trial and debit this balance per message sent; when it runs out, you top up in the dashboard, with no external contracts or extra monthly fees. WhatsApp will be available soon, after Meta Business approval."
         },
         "7": {
+          "q": "Is TimelyOne GDPR compatible?",
+          "a": "Yes. The platform was built with native GDPR compliance — your clients' data stored on European servers, with encryption and built-in consent and data deletion mechanisms. No extra setup or external tools required."
+        },
+        "8": {
           "q": "Can I migrate data from my current system?",
           "a": "Yes. We support importing clients, services and schedules via CSV files."
         },
-        "8": {
-          "q": "How many professionals can I add?",
-          "a": "Unlimited in all plans."
-        },
         "9": {
+          "q": "How many professionals can I add?",
+          "a": "Unlimited."
+        },
+        "10": {
           "q": "Can clients cancel or reschedule on their own?",
           "a": "Yes. Each booking includes a secure link to reschedule or cancel, reducing calls and wasted time."
         },
-        "10": {
+        "11": {
           "q": "Does TimelyOne send automatic reminders?",
           "a": "Yes. Email and SMS — configurable according to the desired lead time. WhatsApp soon."
         },
-        "11": {
-          "q": "Does the system support multiple units/branches?",
-          "a": "We currently offer advanced permissions and consolidated reports in Pro. Multi-location is on the roadmap (coming soon)."
-        },
         "12": {
+          "q": "Does the system support multiple units/branches?",
+          "a": "Multi-location is on our roadmap. Today, each unit runs with its own TimelyOne account, with advanced team permissions and complete reports per unit."
+        },
+        "13": {
           "q": "Can my team have different access levels?",
           "a": "Yes. Permission profiles: owner, manager and professional."
         },
-        "13": {
+        "14": {
           "q": "Can I see revenue and performance reports?",
           "a": "Yes. The dashboard includes metrics for revenue, occupancy, top‑selling services, performance per professional and more."
         },
-        "14": {
+        "15": {
           "q": "How long does setup take?",
           "a": "Between 10 and 20 minutes, depending on the number of services and professionals."
         }
@@ -1712,15 +1720,15 @@
       "title": "Getting started is simple.",
       "1": {
         "title": "Create your account.",
-        "desc": "No card, no commitment."
+        "desc": "No commitment and no charge during the 14 days. Up and running in under 5 minutes."
       },
       "2": {
-        "title": "Configure team and services.",
-        "desc": "All set in minutes."
+        "title": "Set up your business.",
+        "desc": "Add services, team and schedules."
       },
       "3": {
-        "title": "Enable online bookings.",
-        "desc": "Clients start booking."
+        "title": "Share the link with your clients.",
+        "desc": "They book online and you get everything in the dashboard and the app."
       }
     },
     "niches": {
@@ -1728,23 +1736,31 @@
       "subtitle": "Fits your flow — whatever the segment.",
       "items": {
         "0": {
-          "title": "Beauty Salons",
-          "desc": "Different services and durations"
-        },
-        "1": {
-          "title": "Barbershops",
+          "title": "Barbershop",
           "desc": "Fast chair rotation"
         },
-        "2": {
-          "title": "Tattoo",
-          "desc": "Long sessions and deposits"
+        "1": {
+          "title": "Hair & Salon",
+          "desc": "Different services and durations"
         },
-        "3": {
-          "title": "Aesthetics",
+        "2": {
+          "title": "Aesthetic Clinic",
           "desc": "Packages and treatment rooms"
         },
+        "3": {
+          "title": "Spa & Wellness",
+          "desc": "Sessions and experiences by appointment"
+        },
         "4": {
-          "title": "Freelancers",
+          "title": "Physiotherapy",
+          "desc": "Recurring sessions and follow-up"
+        },
+        "5": {
+          "title": "Personal Trainer",
+          "desc": "One-on-one training and flexible hours"
+        },
+        "6": {
+          "title": "Independent Professionals",
           "desc": "Simple view, everything in one place"
         }
       }
@@ -1756,7 +1772,7 @@
         "My team stopped managing schedules by phone and centralized everything in the dashboard.",
         "The dashboard is fast, intuitive and truly professional."
       ],
-      "rating": "Average rating: ★ 4.9 / 5.0"
+      "rating": "Direct support from the founding team — we reply any time."
     },
     "security": {
       "title": "Professional-grade security and privacy.",
@@ -1769,11 +1785,11 @@
       ]
     },
     "final_cta": {
-      "title": "Create your free account — take your salon to the next level.",
-      "cta": "Start now (14 days free)"
+      "title": "One plan. Everything included. 14 days to try with no commitment.",
+      "cta": "Create free account"
     },
     "footer": {
-      "pricing": "Plans",
+      "pricing": "Pricing",
       "client_area": "Client Area",
       "login": "Sign in",
       "register": "Sign up",
@@ -1893,87 +1909,87 @@
       "reports": {
         "title": "Advanced Reports",
         "description": "Analyze your business with detailed insights, historical data and growth metrics.",
-        "cta": "View Pro plans"
+        "cta": "View the plan"
       },
       "customer_pwa": {
         "title": "Customer App",
         "description": "Offer your customers their own app for bookings and notifications.",
-        "cta": "View Basic plans"
+        "cta": "View the plan"
       },
       "white_label": {
         "title": "White Label",
         "description": "Fully customize the system branding with your logo, colors and custom domain.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "native_client": {
         "title": "Native Customer App",
         "description": "Native iOS and Android app for your customers with premium experience.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "advanced_scheduling": {
         "title": "Advanced Scheduling",
         "description": "Recurring appointments, waiting lists and custom availability rules.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "multi_location": {
         "title": "Multiple Locations",
         "description": "Manage multiple business locations in a single account.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "api_access": {
         "title": "API Access",
         "description": "Integrate with your systems via complete REST API with documentation.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "custom_fields": {
         "title": "Custom Fields",
         "description": "Add custom fields to customer and service records.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "priority_support": {
         "title": "Priority Support",
         "description": "Priority support via chat, email and phone with guaranteed SLA.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "advanced_reports": {
         "title": "Advanced Reports",
         "description": "Predictive analysis, customer retention, period comparison and custom export.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "web_push": {
         "title": "Web Push Notifications",
         "description": "Send push notifications directly to your customers' browsers.",
-        "cta": "View Basic plans"
+        "cta": "View the plan"
       },
       "automations": {
         "title": "Automations",
         "description": "Automate reminders, follow-ups and marketing campaigns with custom rules.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "team_management": {
         "title": "Advanced Team Management",
         "description": "Granular permission control, staff reports and performance goals.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "online_payments": {
         "title": "Online Payments",
         "description": "Receive online payments integrated with Stripe, credit card and PIX.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "sms_notifications": {
         "title": "SMS Notifications",
         "description": "Send appointment reminders and confirmations via SMS to your customers.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       },
       "whatsapp_integration": {
         "title": "WhatsApp Integration",
         "description": "Send automated messages via WhatsApp Business API with custom templates.",
-        "cta": "Upgrade to Pro"
+        "cta": "View the plan"
       },
       "data_export": {
         "title": "Data Export",
         "description": "Export customer, appointment and report data in CSV, Excel or JSON.",
-        "cta": "View Standard plans"
+        "cta": "View the plan"
       }
     }
   },

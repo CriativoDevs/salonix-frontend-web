@@ -60,7 +60,8 @@ describe('upgradeMessages', () => {
 
       expect(message).toBeDefined();
       expect(message.titleKey).toBe('upgrade.features.advanced_reports.title');
-      expect(message.requiredPlan).toBe('Pro');
+      // FEW-PLANS-01 (#320): plano único — features ex-Pro agora gateadas no Founder.
+      expect(message.requiredPlan).toBe('Founder');
     });
 
     it('deve retornar null para feature inexistente', () => {
@@ -74,7 +75,8 @@ describe('upgradeMessages', () => {
       const pwaMsg = getFeatureUpgradeMessage('enableCustomerPwa');
 
       expect(reportsMsg).not.toEqual(pwaMsg);
-      expect(reportsMsg.requiredPlan).toBe('Pro');
+      // FEW-PLANS-01 (#320): plano único — todas as features gateadas no Founder.
+      expect(reportsMsg.requiredPlan).toBe('Founder');
       expect(pwaMsg.requiredPlan).toBe('Founder');
     });
   });
@@ -94,14 +96,20 @@ describe('upgradeMessages', () => {
       expect(standardFeatures.length).toBe(0);
     });
 
-    it('deve retornar features do plano Pro', () => {
-      const proFeatures = getFeaturesByPlan('Pro');
+    it('deve retornar features do plano Founder (plano único)', () => {
+      // FEW-PLANS-01 (#320): com plano único, as features ex-Pro estão no Founder.
+      const founderFeatures = getFeaturesByPlan('Founder');
 
-      expect(Array.isArray(proFeatures)).toBe(true);
-      expect(proFeatures.length).toBeGreaterThan(0);
-      expect(proFeatures).toContain('enableAdvancedReports');
-      expect(proFeatures).toContain('enableWhiteLabel');
-      expect(proFeatures).toContain('enableApiAccess');
+      expect(Array.isArray(founderFeatures)).toBe(true);
+      expect(founderFeatures.length).toBeGreaterThan(0);
+      expect(founderFeatures).toContain('enableAdvancedReports');
+      expect(founderFeatures).toContain('enableWhiteLabel');
+      expect(founderFeatures).toContain('enableApiAccess');
+    });
+
+    it('plano Pro deixou de ter features exclusivas', () => {
+      // FEW-PLANS-01 (#320): Pro descontinuado — bucket vazio.
+      expect(getFeaturesByPlan('Pro')).toEqual([]);
     });
 
     it('deve retornar array vazio para plano inexistente', () => {
@@ -111,16 +119,16 @@ describe('upgradeMessages', () => {
       expect(features.length).toBe(0);
     });
 
-    it('features de um plano não devem aparecer em outro', () => {
-      const basicFeatures = getFeaturesByPlan('Basic');
-      const proFeatures = getFeaturesByPlan('Pro');
+    it('features concentram-se no plano único (Founder)', () => {
+      // FEW-PLANS-01 (#320): sem segmentação por tier — Basic/Standard/Pro vazios.
+      const founderFeatures = getFeaturesByPlan('Founder');
 
-      // Features Pro não devem estar em Basic
-      expect(basicFeatures).not.toContain('enableAdvancedReports');
-      expect(basicFeatures).not.toContain('enableWhiteLabel');
-
-      // Features Basic não devem estar em Pro
-      expect(proFeatures).not.toContain('enableCustomerPwa');
+      expect(founderFeatures).toContain('enableAdvancedReports');
+      expect(founderFeatures).toContain('enableWhiteLabel');
+      expect(founderFeatures).toContain('enableCustomerPwa');
+      expect(getFeaturesByPlan('Basic')).toEqual([]);
+      expect(getFeaturesByPlan('Standard')).toEqual([]);
+      expect(getFeaturesByPlan('Pro')).toEqual([]);
     });
   });
 
@@ -164,30 +172,22 @@ describe('upgradeMessages', () => {
 
   describe('FEATURES_COUNT_BY_PLAN', () => {
     it('deve ter contadores para todos os planos', () => {
+      expect(FEATURES_COUNT_BY_PLAN).toHaveProperty('Founder');
       expect(FEATURES_COUNT_BY_PLAN).toHaveProperty('Basic');
       expect(FEATURES_COUNT_BY_PLAN).toHaveProperty('Standard');
       expect(FEATURES_COUNT_BY_PLAN).toHaveProperty('Pro');
     });
 
-    it('contadores devem ser números positivos', () => {
+    it('contadores devem ser números válidos', () => {
+      // FEW-PLANS-01 (#320): plano único — features concentradas no Founder.
+      expect(FEATURES_COUNT_BY_PLAN.Founder).toBeGreaterThan(0);
       expect(FEATURES_COUNT_BY_PLAN.Basic).toBeGreaterThanOrEqual(0);
       expect(FEATURES_COUNT_BY_PLAN.Standard).toBeGreaterThanOrEqual(0);
-      expect(FEATURES_COUNT_BY_PLAN.Pro).toBeGreaterThan(0);
+      expect(FEATURES_COUNT_BY_PLAN.Pro).toBe(0);
     });
 
-    it('soma de features deve bater com total configurado', () => {
-      const totalFromCounts =
-        FEATURES_COUNT_BY_PLAN.Basic +
-        FEATURES_COUNT_BY_PLAN.Standard +
-        FEATURES_COUNT_BY_PLAN.Pro;
-
-      expect(totalFromCounts).toBe(getFeaturesByPlan('Pro').length);
-      expect(CONFIGURED_FEATURES.length).toBeGreaterThan(totalFromCounts);
-    });
-
-    it('plano Pro deve ter mais features que Basic', () => {
-      // Pro é premium, deve ter mais recursos exclusivos
-      expect(FEATURES_COUNT_BY_PLAN.Pro).toBeGreaterThan(0);
+    it('todas as features configuradas estão no plano único (Founder)', () => {
+      expect(FEATURES_COUNT_BY_PLAN.Founder).toBe(CONFIGURED_FEATURES.length);
     });
   });
 
@@ -216,14 +216,12 @@ describe('upgradeMessages', () => {
       expect(CONFIGURED_FEATURES.length).toBeGreaterThanOrEqual(15);
     });
 
-    it('deve ter features para todos os níveis de plano', () => {
-      const basicFeatures = getFeaturesByPlan('Basic');
-      const standardFeatures = getFeaturesByPlan('Standard');
-      const proFeatures = getFeaturesByPlan('Pro');
-
-      expect(basicFeatures.length).toBeGreaterThanOrEqual(0);
-      expect(standardFeatures.length).toBeGreaterThanOrEqual(0);
-      expect(proFeatures.length).toBeGreaterThan(0);
+    it('concentra as features no plano único (Founder)', () => {
+      // FEW-PLANS-01 (#320): Founder é o plano único; demais buckets vazios.
+      expect(getFeaturesByPlan('Founder').length).toBeGreaterThan(0);
+      expect(getFeaturesByPlan('Basic')).toEqual([]);
+      expect(getFeaturesByPlan('Standard')).toEqual([]);
+      expect(getFeaturesByPlan('Pro')).toEqual([]);
     });
 
     it('deve incluir features críticas do sistema', () => {
