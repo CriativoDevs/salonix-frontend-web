@@ -2319,6 +2319,12 @@ function Settings() {
   );
   const smsAvailable = Boolean(flags?.enableSms);
   const whatsappAvailable = Boolean(flags?.enableWhatsapp);
+  // FEW-PLANS-01 (#320): SMS bloqueado durante o trial; liberado após os 14 dias.
+  // A proteção real é no backend; aqui apenas refletimos no UI.
+  const isTrialing = useMemo(
+    () => billingOverview?.current_subscription?.status === 'trialing',
+    [billingOverview]
+  );
 
   const hasCustomerPwa = useMemo(() => {
     if (Array.isArray(moduleList) && moduleList.includes('pwa_client')) {
@@ -3683,6 +3689,14 @@ function Settings() {
                       {t('common.coming_soon', 'Em breve')}
                     </span>
                   )}
+                  {key === 'sms' && isTrialing && (
+                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
+                      {t(
+                        'settings.notifications.sms_after_trial',
+                        'Disponível após o período de teste'
+                      )}
+                    </span>
+                  )}
                   <button
                     type="button"
                     role="switch"
@@ -3692,14 +3706,14 @@ function Settings() {
                     disabled={
                       notifSaving ||
                       key === 'whatsapp' ||
-                      (key === 'push_mobile' && planTier !== 'pro')
+                      (key === 'sms' && isTrialing)
                     }
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                       rawEnabled ? 'bg-brand-primary' : 'bg-gray-300'
                     } ${
                       notifSaving ||
                       key === 'whatsapp' ||
-                      (key === 'push_mobile' && planTier !== 'pro')
+                      (key === 'sms' && isTrialing)
                         ? 'cursor-not-allowed opacity-60'
                         : 'cursor-pointer'
                     }`}
@@ -3709,7 +3723,12 @@ function Settings() {
                             'settings.notifications.whatsapp_coming_soon_tooltip',
                             'WhatsApp será ativado após aprovação Meta Business. Aguarde novidades!'
                           )
-                        : ''
+                        : key === 'sms' && isTrialing
+                          ? t(
+                              'settings.notifications.sms_after_trial_tooltip',
+                              'O envio de SMS fica disponível após o período de teste de 14 dias.'
+                            )
+                          : ''
                     }
                   >
                     <span
@@ -3718,14 +3737,6 @@ function Settings() {
                       }`}
                     />
                   </button>
-                  {key === 'push_mobile' && planTier !== 'pro' ? (
-                    <span className="text-xs text-brand-surfaceForeground/60">
-                      {t(
-                        'settings.notifications.pro_only',
-                        'Disponível somente no plano Pro'
-                      )}
-                    </span>
-                  ) : null}
                 </div>
               ) : null}
             </div>

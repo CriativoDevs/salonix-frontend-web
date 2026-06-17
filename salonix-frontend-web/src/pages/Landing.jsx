@@ -13,62 +13,65 @@ import {
   Bell,
   Smartphone,
   BarChart3,
-  Building2,
+  Palette,
   Globe,
   Plug,
   Menu,
   X,
-  Lock,
 } from 'lucide-react';
 import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 import LanguageToggle from '../components/ui/LanguageToggle';
-import Tooltip from '../components/ui/Tooltip';
 import { PLAN_OPTIONS } from '../api/billing';
 import Modal from '../components/ui/Modal';
 
 const metrics = [
-  { value: '+52%', label: 'Clientes a reservar online' },
-  { value: '-30%', label: 'Tempo perdido ao telefone' },
-  { value: '+41%', label: 'Receita média por cliente' },
-  { value: '99.98%', label: 'Uptime e fiabilidade' },
+  { value: '+10.042', label: 'Agendamentos realizados' },
+  { value: '+4.010', label: 'Clientes geridos' },
+  { value: '€453k', label: 'Receita gerida' },
 ];
 
 const niches = [
-  { title: 'Salões de Beleza', desc: 'Serviços e durações diferentes' },
-  { title: 'Barbearias', desc: 'Rotação rápida de cadeiras' },
-  { title: 'Tatuagem', desc: 'Sessões longas e depósitos' },
-  { title: 'Estética', desc: 'Pacotes e salas de tratamento' },
-  { title: 'Freelancers', desc: 'Visão simples, tudo num lugar' },
+  { title: 'Barbearia', desc: 'Rotação rápida de cadeiras' },
+  { title: 'Cabelo & Salão', desc: 'Serviços e durações diferentes' },
+  { title: 'Clínica de Estética', desc: 'Pacotes e salas de tratamento' },
+  { title: 'Spa & Bem-estar', desc: 'Sessões e experiências por marcação' },
+  { title: 'Fisioterapia', desc: 'Sessões recorrentes e acompanhamento' },
+  { title: 'Personal Trainer', desc: 'Treinos individuais e horários flexíveis' },
+  { title: 'Profissionais Independentes', desc: 'Visão simples, tudo num lugar' },
 ];
 
 const faqs = [
   {
-    q: 'Como funciona o período trial?',
-    a: 'Durante 14 dias tens acesso total ao TimelyOne, sem limites de agendamentos ou profissionais. Não é necessário cartão. Ao final, escolhes um plano ou simplesmente não continuas.',
+    q: 'O que está incluído no plano?',
+    a: 'Tudo. Agenda inteligente, agendamentos online ilimitados, profissionais e serviços ilimitados, relatórios completos, lembretes automáticos, conformidade RGPD, PWA instalável e app nativo para a equipa. Não há níveis nem funcionalidades bloqueadas.',
   },
   {
-    q: 'Posso mudar de plano a qualquer momento?',
-    a: 'Sim. A alteração é imediata e não perdes nenhum dado. Upgrades desbloqueiam funcionalidades no mesmo instante.',
+    q: 'Como funciona o período trial?',
+    a: 'Durante 14 dias tens acesso total ao TimelyOne — agendamentos, profissionais e relatórios sem limites. Inicias com um cartão (pagamento seguro via Stripe), mas não há qualquer cobrança durante os 14 dias: só és cobrado no fim se não cancelares. O envio de SMS fica disponível depois do período de teste. Cancela quando quiseres, sem fidelização.',
   },
   {
     q: 'Preciso de cartão de crédito para começar?',
-    a: 'Não. O registo é simples e sem compromisso.',
+    a: 'Sim, para iniciar o trial. Não há qualquer cobrança durante os 14 dias e podes cancelar a qualquer momento antes do fim — só passas a pagar se decidires continuar.',
   },
   {
     q: 'O TimelyOne funciona no telemóvel?',
-    a: 'Sim. Disponibilizamos uma PWA para equipa e clientes, instalável em iPhone e Android como uma app normal, sem depender das lojas.',
+    a: 'Sim — e de várias formas. A equipa tem app nativo TimelyOne disponível na App Store e no Google Play. Existe também uma PWA instalável diretamente do navegador, para equipa e clientes, sem depender das lojas. O app nativo para clientes está em desenvolvimento e chegará em breve, já incluído no plano.',
   },
   {
-    q: 'Posso usar o meu próprio domínio?',
-    a: 'Sim, disponível no plano Pro. Permite personalização completa da identidade visual.',
+    q: 'O app tem custo adicional?',
+    a: 'Não. O app iOS e Android para a equipa já está disponível e incluído no plano. O app para clientes está em desenvolvimento e ficará disponível em breve, também incluído.',
   },
   {
-    q: 'Como funcionam os créditos de SMS/WhatsApp?',
-    a: 'Cada plano inclui um valor mensal em créditos. Lembretes automáticos debitam esse saldo conforme o envio. Quando termina, podes recarregar no painel. WhatsApp estará disponível em breve após aprovação Meta Business.',
+    q: 'Como instalo o app da equipa?',
+    a: 'Pesquisa por "TimelyOne" na App Store ou no Google Play e entra com a tua conta. Se preferires, podes também usar a PWA — instalável diretamente do navegador, sem precisar das lojas.',
+  },
+  {
+    q: 'Como funcionam os créditos de SMS?',
+    a: 'O plano inclui um valor mensal em créditos de comunicação. Os lembretes por SMS ficam disponíveis após o período de teste de 14 dias e debitam esse saldo por mensagem enviada; quando termina, recarregas no painel, sem contratos externos nem mensalidades extra. WhatsApp estará disponível em breve, após aprovação Meta Business.',
   },
   {
     q: 'O TimelyOne é compatível com o RGPD?',
-    a: 'Sim. Dados encriptados, servidores compatíveis com normas europeias e possibilidade de exportação/eliminação de dados.',
+    a: 'Sim. A plataforma foi construída com conformidade RGPD nativa — dados dos seus clientes armazenados em servidores europeus, com encriptação e mecanismos de consentimento e eliminação de dados integrados. Não precisa de configurações extra nem de ferramentas externas.',
   },
   {
     q: 'É possível migrar dados do meu sistema atual?',
@@ -76,7 +79,7 @@ const faqs = [
   },
   {
     q: 'Quantos profissionais posso adicionar?',
-    a: 'Ilimitados em todos os planos.',
+    a: 'Ilimitados.',
   },
   {
     q: 'Os clientes podem cancelar ou remarcar sozinhos?',
@@ -88,7 +91,7 @@ const faqs = [
   },
   {
     q: 'O sistema suporta várias unidades/filiais?',
-    a: 'Atualmente oferecemos permissões avançadas e relatórios consolidados no Pro. Multiunidade está em roadmap (em breve).',
+    a: 'Multiunidade está no nosso roadmap. Hoje, cada unidade funciona com a sua conta TimelyOne, com permissões avançadas de equipa e relatórios completos por unidade.',
   },
   {
     q: 'A minha equipa pode ter acessos diferentes?',
@@ -570,7 +573,7 @@ function Landing() {
             >
               {t(
                 'landing.hero.title',
-                'A plataforma premium de agendamento e gestão para negócios modernos.'
+                'Tudo o que o seu negócio precisa. Um plano. Sem surpresas.'
               )}
             </h1>
             <p
@@ -580,14 +583,14 @@ function Landing() {
             >
               {t(
                 'landing.hero.subtitle',
-                'O TimelyOne automatiza horários, reduz faltas, melhora a experiência dos clientes e profissionaliza a operação do seu negócio — tudo num painel rápido, elegante e pronto para equipas de qualquer dimensão.'
+                'Para cabeleireiros, barbearias, clínicas de estética, fisioterapeutas e qualquer negócio que trabalhe por marcação. O TimelyOne automatiza horários, reduz faltas e profissionaliza a sua operação — num único plano, sem níveis nem extras escondidos.'
               )}
             </p>
             <ul className="mt-2 grid max-w-2xl gap-2 text-sm sm:grid-cols-2">
               {[
                 t(
                   'landing.hero.bullets.0',
-                  'Reduza faltas até 35% com lembretes automáticos.'
+                  'Reduza faltas com lembretes automáticos.'
                 ),
                 t(
                   'landing.hero.bullets.1',
@@ -595,11 +598,11 @@ function Landing() {
                 ),
                 t(
                   'landing.hero.bullets.2',
-                  'Interface intuitiva para equipa e clientes.'
+                  'App nativo iOS e Android para a sua equipa — já disponível.'
                 ),
                 t(
                   'landing.hero.bullets.3',
-                  'Pronto para escalar: freelancers → franquias.'
+                  'RGPD nativo — dados dos seus clientes protegidos por lei.'
                 ),
               ].map((b) => (
                 <li
@@ -625,7 +628,7 @@ function Landing() {
                 href="#pricing"
                 className={`text-sm font-medium ${isDarkTheme ? 'text-slate-300 hover:text-slate-200' : 'text-slate-700 hover:text-slate-900'}`}
               >
-                {t('landing.hero.cta_pricing', 'Ver planos e preços')}
+                {t('landing.hero.cta_pricing', 'Ver o plano e preço')}
               </a>
               <Link
                 to="/como-funciona"
@@ -640,9 +643,9 @@ function Landing() {
         <section>
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h2 className="text-3xl font-semibold text-center">
-              {t('landing.results.title', 'Resultados que falam por si.')}
+              {t('landing.results.title', 'A plataforma em números')}
             </h2>
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mt-10 grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
               {metrics.map((m, i) => (
                 <div
                   key={m.label}
@@ -745,7 +748,7 @@ function Landing() {
                   <li>
                     {t(
                       'landing.solution.items.2',
-                      'Sincronização automática entre unidades'
+                      'Equipa sincronizada em qualquer dispositivo — web, PWA e app nativo'
                     )}
                   </li>
                   <li>
@@ -922,11 +925,11 @@ function Landing() {
                   icon: Smartphone,
                   title: t(
                     'landing.features.items.3.title',
-                    'PWA Equipa e Clientes'
+                    'App Nativo + PWA'
                   ),
                   desc: t(
                     'landing.features.items.3.desc',
-                    'Instalável no telemóvel, sem lojas tradicionais.'
+                    'App iOS e Android para a sua equipa, já disponível. App para clientes em breve. PWA instalável para equipa e clientes, sem depender das lojas.'
                   ),
                   link: '/pwa-info',
                 },
@@ -934,22 +937,44 @@ function Landing() {
                   icon: BarChart3,
                   title: t(
                     'landing.features.items.4.title',
-                    'Relatórios em Tempo Real'
+                    'Relatórios Completos'
                   ),
                   desc: t(
                     'landing.features.items.4.desc',
-                    'Faturação, ocupação e serviços mais vendidos.'
+                    'Faturação, ocupação, retenção de clientes e insights do negócio, com exportação.'
                   ),
                 },
                 {
-                  icon: Building2,
+                  icon: Users,
                   title: t(
                     'landing.features.items.5.title',
-                    'Escalável para Franquias'
+                    'Permissões de Equipa'
                   ),
                   desc: t(
                     'landing.features.items.5.desc',
-                    'Permissões e relatórios consolidados.'
+                    'Perfis de administrador, gestor e profissional, com acessos separados.'
+                  ),
+                },
+                {
+                  icon: Palette,
+                  title: t(
+                    'landing.features.items.6.title',
+                    'A sua marca em destaque'
+                  ),
+                  desc: t(
+                    'landing.features.items.6.desc',
+                    'White-label: o portal dos seus clientes com o seu nome e identidade visual. Em breve.'
+                  ),
+                },
+                {
+                  icon: ShieldCheck,
+                  title: t(
+                    'landing.features.items.7.title',
+                    'Conformidade RGPD'
+                  ),
+                  desc: t(
+                    'landing.features.items.7.desc',
+                    'Dados em conformidade com a legislação portuguesa e europeia. Sem configurações extra, sem risco legal.'
                   ),
                 },
               ].map((f) =>
@@ -1002,15 +1027,12 @@ function Landing() {
           <div className="mx-auto max-w-6xl px-4 py-20">
             <div className="text-center">
               <h2 className="text-3xl font-semibold">
-                {t(
-                  'landing.pricing.title',
-                  'Planos claros. Sem taxas escondidas.'
-                )}
+                {t('landing.pricing.title', 'Um plano. Tudo incluído.')}
               </h2>
               <p className="mt-2 text-sm text-slate-300">
                 {t(
                   'landing.pricing.subtitle',
-                  'Escolha o plano que acompanha o crescimento do seu negócio.'
+                  'Sem níveis, sem upgrades forçados, sem taxas escondidas. Cresce o negócio, o preço não.'
                 )}
               </p>
 
@@ -1044,55 +1066,29 @@ function Landing() {
               </div>
             </div>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+            <div className="mt-12 grid gap-6 max-w-md mx-auto">
               {plans.map((plan) => {
                 const isAnnual = billingCycle === 'annual';
                 const showPrice =
                   isAnnual && plan.price_annual
                     ? plan.price_annual
                     : plan.price;
-                const isProBlocked = plan.code === 'pro';
 
                 return (
                   <div
                     key={plan.code}
                     className={`relative flex h-full flex-col rounded-2xl bg-white/5 p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl ${
-                      isProBlocked
-                        ? 'opacity-80 border border-indigo-400/30 ring-1 ring-indigo-400/20'
-                        : plan.code === 'pro'
-                          ? 'border border-indigo-400/50 ring-1 ring-indigo-400/40'
-                          : plan.code === 'founder'
-                            ? 'border border-yellow-500/50 bg-yellow-50/5'
-                            : 'border border-white/10 hover:border-white/40'
+                      plan.code === 'founder'
+                        ? 'border border-yellow-500/50 bg-yellow-50/5'
+                        : 'border border-white/10 hover:border-white/40'
                     }`}
                   >
-                    {/* Coming Soon Badge for Pro */}
-                    {isProBlocked && (
-                      <div className="absolute top-4 right-4 pointer-events-auto z-50">
-                        <Tooltip
-                          tooltip={t(
-                            'plans.options.pro.locked_tooltip',
-                            'Disponível em breve após aprovação nas App Stores oficiais (iOS e Android).'
-                          )}
-                          position="left"
-                        >
-                          <span className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-slate-500 to-slate-600 px-3 py-1.5 text-xs font-bold text-white cursor-help hover:shadow-lg transition-shadow">
-                            <Lock className="h-4 w-4" />
-                            {t(
-                              'plans.options.pro.badge_coming_soon',
-                              'Em breve'
-                            )}
-                          </span>
-                        </Tooltip>
-                      </div>
-                    )}
-
                     <div className="flex-1 space-y-3">
                       {plan.code === 'founder' && (
                         <div className="mb-2 inline-block rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">
                           {t(
                             'plans.founder.limited_badge',
-                            '⚠️ Limitado a 500 usuários'
+                            'Oferta de lançamento — limitada a 500 contas'
                           )}
                         </div>
                       )}
@@ -1144,27 +1140,35 @@ function Landing() {
                       </ul>
                     </div>
                     {plan.code === 'founder' ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedPlan(plan);
-                          setShowFounderWarning(true);
-                        }}
-                        className="mt-6 font-medium text-indigo-300 hover:text-indigo-200 text-left"
-                      >
-                        {t(
-                          'landing.pricing.start_trial',
-                          'Iniciar 14 dias grátis'
-                        )}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPlan(plan);
+                            setShowFounderWarning(true);
+                          }}
+                          className="mt-6 font-medium text-indigo-300 hover:text-indigo-200 text-left"
+                        >
+                          {t(
+                            'landing.pricing.cta_founder',
+                            'Garantir a minha vaga Founder'
+                          )}
+                        </button>
+                        <p className="mt-3 text-xs text-slate-400">
+                          {t(
+                            'landing.pricing.founder_note',
+                            'O plano Founder é uma oferta de lançamento limitada às primeiras 500 contas. O preço de €15/mês fica garantido para sempre.'
+                          )}
+                        </p>
+                      </>
                     ) : (
                       <Link
                         to={`/register${isAnnual && plan.price_annual ? '?interval=annual' : ''}`}
                         className="mt-6 font-medium text-indigo-300 hover:text-indigo-200"
                       >
                         {t(
-                          'landing.pricing.start_trial',
-                          'Iniciar 14 dias grátis'
+                          'landing.pricing.cta_basic',
+                          'Começar 14 dias grátis'
                         )}
                       </Link>
                     )}
@@ -1187,17 +1191,17 @@ function Landing() {
                 {
                   n: 1,
                   title: 'Crie a sua conta.',
-                  desc: 'Sem cartão, sem compromisso.',
+                  desc: 'Sem compromisso e sem cobrança nos 14 dias. Em menos de 5 minutos está operacional.',
                 },
                 {
                   n: 2,
-                  title: 'Configure a equipa e serviços.',
-                  desc: 'Tudo pronto em minutos.',
+                  title: 'Configure o seu negócio.',
+                  desc: 'Adicione serviços, equipa e horários.',
                 },
                 {
                   n: 3,
-                  title: 'Ative os agendamentos online.',
-                  desc: 'Os clientes começam a reservar.',
+                  title: 'Partilhe o link com os seus clientes.',
+                  desc: 'Eles reservam online e você recebe tudo no painel e na app.',
                 },
               ].map((step) => (
                 <div
@@ -1238,7 +1242,7 @@ function Landing() {
                 'Adapta-se ao seu fluxo — seja qual for o setor.'
               )}
             </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {niches.map((n, i) => (
                 <div
                   key={n.title}
@@ -1415,7 +1419,7 @@ function Landing() {
             <h2 className="text-3xl font-semibold">
               {t(
                 'landing.final_cta.title',
-                'Crie a sua conta gratuita — leve o seu salão para o próximo nível.'
+                'Um plano. Tudo incluído. 14 dias para experimentar sem compromisso.'
               )}
             </h2>
             <Link
@@ -1426,7 +1430,7 @@ function Landing() {
                   : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500'
               }`}
             >
-              {t('landing.final_cta.cta', 'Começar agora (14 dias grátis)')}
+              {t('landing.final_cta.cta', 'Criar conta grátis')}
             </Link>
           </div>
         </section>
@@ -1453,7 +1457,7 @@ function Landing() {
           </p>
           <div className="flex gap-4">
             <a href="#pricing" className="transition hover:opacity-80">
-              {t('landing.footer.pricing', 'Planos')}
+              {t('landing.footer.pricing', 'Preço')}
             </a>
             <Link
               to="/client/enter"
@@ -1501,13 +1505,13 @@ function Landing() {
                 <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
                   {t(
                     'plans.founder.warning_title',
-                    'Plano Founder: Limitações Importantes'
+                    'Plano Founder: Oferta de Lançamento'
                   )}
                 </h3>
                 <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
                   {t(
                     'plans.founder.warning_message',
-                    'O Plano Founder é limitado a 500 usuários ativos por salão. Após esse limite, será necessário fazer upgrade para outro plano.'
+                    'O plano Founder é uma oferta de lançamento limitada às primeiras 500 contas. O preço de €15/mês fica garantido para sempre.'
                   )}
                 </p>
                 <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">

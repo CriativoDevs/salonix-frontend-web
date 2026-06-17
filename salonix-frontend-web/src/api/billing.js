@@ -1,16 +1,23 @@
 import client from './client';
 
+// FEW-PLANS-01 (#320): plano único — o Pro foi descontinuado (BE-PLANS-01/#481).
+// O UI mostra Founder enquanto houver vagas; caso contrário, o plano completo (code basic).
 export const PLAN_OPTIONS = [
   {
     code: 'basic',
-    name: 'Basic',
+    name: 'TimelyOne',
     price: '€29',
     price_annual: '€290',
     highlights: [
-      'PWA para Admin e Clientes',
-      'Relatórios Básicos e Visão Geral',
-      'Notificações por Email e Web Push',
-      '€5 de crédito para comunicações',
+      'Agenda inteligente com agendamentos online ilimitados',
+      'Profissionais e serviços ilimitados',
+      'Relatórios completos com insights do negócio',
+      'Lembretes automáticos por email, web push e SMS',
+      '€5 de crédito mensal para comunicações',
+      'White-label: a sua marca no portal dos clientes (em breve)',
+      'PWA instalável para equipa e clientes',
+      'App nativo iOS e Android para a sua equipa (já disponível)',
+      'App nativo para os seus clientes (em breve — já incluído no plano)',
     ],
   },
   {
@@ -19,22 +26,17 @@ export const PLAN_OPTIONS = [
     price: '€15',
     price_annual: '€150',
     highlights: [
-      'Funcionalidades do Plano Basic',
-      'Preço Vitalício Garantido',
-      'PWA para Admin e Clientes',
-      '€2 de crédito para comunicações',
-    ],
-  },
-  {
-    code: 'pro',
-    name: 'Pro',
-    price: '€55',
-    price_annual: '€550',
-    highlights: [
-      'Tudo do Basic',
-      'Relatórios Avançados e Insights',
-      'Apps Nativos (Admin / Staff) - (Cliente - em breve)',
-      '€15 de crédito para comunicações',
+      'Agenda inteligente com agendamentos online ilimitados',
+      'Profissionais e serviços ilimitados',
+      'Relatórios completos com insights do negócio',
+      'Lembretes automáticos por email, web push e SMS',
+      '€2 de crédito mensal para comunicações',
+      'White-label: a sua marca no portal dos clientes (em breve)',
+      'PWA instalável para equipa e clientes',
+      'App nativo iOS e Android para a sua equipa (já disponível)',
+      'App nativo para os seus clientes (em breve — já incluído no plano)',
+      'Preço de €15/mês garantido para sempre',
+      'Apoio direto da equipa fundadora',
     ],
   },
 ];

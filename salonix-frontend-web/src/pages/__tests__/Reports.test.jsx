@@ -232,7 +232,7 @@ describe('Reports page', () => {
 
     expect(
       screen.getByText(
-        'Disponível a partir do plano Pro. Faça upgrade para acessar esta seção.'
+        'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
       )
     ).toBeInTheDocument();
 
@@ -251,7 +251,7 @@ describe('Reports page', () => {
 
     expect(
       screen.getByText(
-        'Disponível a partir do plano Pro. Desbloqueie análises de retenção e insights profundos.'
+        'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
       )
     ).toBeInTheDocument();
 

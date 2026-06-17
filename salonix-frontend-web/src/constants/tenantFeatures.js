@@ -23,13 +23,13 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Análise do Negócio e Insights Avançados - Pro
   enableBusinessReports: {
     labelKey: 'settings.features.reports_business.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.reports_business.description',
   },
 
   enableAdvancedReports: {
     labelKey: 'settings.features.reports_advanced.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.reports_advanced.description',
   },
 
@@ -47,7 +47,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // App Nativo para Clientes - Pro (ROADMAP)
   enableNativeClientApp: {
     labelKey: 'settings.features.native_client.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.native_client.description',
     comingSoon: true,
   },
@@ -84,7 +84,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // White Label - Pro (ROADMAP)
   enableWhiteLabel: {
     labelKey: 'settings.features.white_label.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.white_label.description',
     comingSoon: true,
   },
@@ -96,7 +96,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Agendamento Avançado - Pro (ROADMAP)
   enableAdvancedScheduling: {
     labelKey: 'settings.features.advanced_scheduling.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.advanced_scheduling.description',
     comingSoon: true,
   },
@@ -112,7 +112,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Campos Personalizados - Pro (ROADMAP)
   enableCustomFields: {
     labelKey: 'settings.features.custom_fields.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.custom_fields.description',
     comingSoon: true,
   },
@@ -124,7 +124,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Multi-localização - Pro (ROADMAP)
   enableMultiLocation: {
     labelKey: 'settings.features.multi_location.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.multi_location.description',
     comingSoon: true,
   },
@@ -132,7 +132,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Acesso à API - Pro (ROADMAP)
   enableApiAccess: {
     labelKey: 'settings.features.api_access.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.api_access.description',
     comingSoon: true,
   },
@@ -140,7 +140,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Automações - Pro (ROADMAP)
   enableAutomations: {
     labelKey: 'settings.features.automations.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.automations.description',
     comingSoon: true,
   },
@@ -152,7 +152,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Pagamentos Online - Pro (ROADMAP)
   enableOnlinePayments: {
     labelKey: 'settings.features.online_payments.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.online_payments.description',
     comingSoon: true,
   },
@@ -160,7 +160,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Exportação de Dados - Pro (ROADMAP Parcial)
   enableDataExport: {
     labelKey: 'settings.features.data_export.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.data_export.description',
     comingSoon: true,
   },
@@ -168,7 +168,7 @@ export const TENANT_FEATURE_REQUIREMENTS = {
   // Suporte Prioritário - Pro (ROADMAP)
   enablePrioritySupport: {
     labelKey: 'settings.features.priority_support.label',
-    requiredPlan: 'Pro',
+    requiredPlan: 'Founder',
     descriptionKey: 'settings.features.priority_support.description',
     comingSoon: true,
   },

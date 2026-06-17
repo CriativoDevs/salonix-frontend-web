@@ -1,8 +1,6 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import Tooltip from '../components/ui/Tooltip';
-import { Lock } from 'lucide-react';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
 import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
@@ -135,38 +133,18 @@ function RegisterCheckout() {
             const isAnnual = billingCycle === 'annual';
             const showPrice =
               isAnnual && p.price_annual ? p.price_annual : p.price;
-            const isProBlocked = p.code === 'pro';
 
             return (
               <button
                 key={p.code}
                 type="button"
-                disabled={isProBlocked}
                 className={`relative rounded border p-4 text-left transition hover:shadow ${
-                  isProBlocked
-                    ? 'opacity-80 border-gray-400'
-                    : selected === p.code
-                      ? 'border-brand-primary ring-2 ring-brand-primary/40'
-                      : 'border-brand-border'
+                  selected === p.code
+                    ? 'border-brand-primary ring-2 ring-brand-primary/40'
+                    : 'border-brand-border'
                 }`}
-                onClick={() => !isProBlocked && setSelected(p.code)}
+                onClick={() => setSelected(p.code)}
               >
-                {isProBlocked && (
-                  <div className="absolute top-2 right-2 pointer-events-auto z-50">
-                    <Tooltip
-                      tooltip={t(
-                        'plans.options.pro.locked_tooltip',
-                        'Disponível em breve após aprovação nas App Stores oficiais (iOS e Android).'
-                      )}
-                      position="left"
-                    >
-                      <span className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-gray-500 to-gray-600 px-2 py-1 text-[10px] font-bold text-white cursor-help hover:shadow-md transition-shadow">
-                        <Lock className="h-3 w-3" />
-                        {t('plans.options.pro.badge_coming_soon', 'Em breve')}
-                      </span>
-                    </Tooltip>
-                  </div>
-                )}
                 <div className="text-lg font-semibold text-brand-surfaceForeground">
                   {t(`plans.options.${p.code}.name`, p.name)}
                 </div>

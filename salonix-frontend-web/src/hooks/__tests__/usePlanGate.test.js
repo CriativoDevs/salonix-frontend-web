@@ -13,9 +13,10 @@ describe('usePlanGate', () => {
     expect(result.current.allowed).toBe(true);
   });
 
-  it('bloqueia quando plano atual é inferior ao requerido', () => {
+  it('permite acesso a features ex-Pro no plano único', () => {
+    // FEW-PLANS-01 (#320): tiers nivelados — Basic já não é "inferior" a Pro.
     const { result } = renderHook(() => usePlanGate({ requiredTier: 'pro' }));
-    expect(result.current.allowed).toBe(false);
+    expect(result.current.allowed).toBe(true);
     expect(result.current.requiredTier).toBe('pro');
     expect(result.current.currentTier).toBe('basic');
   });

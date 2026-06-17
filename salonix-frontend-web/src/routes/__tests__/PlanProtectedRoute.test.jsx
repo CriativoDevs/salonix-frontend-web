@@ -17,7 +17,9 @@ jest.mock('../../hooks/useTenant', () => ({
 }));
 
 describe('PlanProtectedRoute', () => {
-  it('redireciona para /plans quando o plano é insuficiente', async () => {
+  it('permite acesso a features ex-Pro no plano único', async () => {
+    // FEW-PLANS-01 (#320): plano único — o Basic acede às features ex-Pro
+    // (ex.: relatórios avançados) sem redirecionamento para /plans.
     render(
       <MemoryRouter initialEntries={['/reports']}>
         <Routes>
@@ -37,7 +39,8 @@ describe('PlanProtectedRoute', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Plans')).toBeInTheDocument();
+      expect(screen.getByText('Reports')).toBeInTheDocument();
     });
+    expect(screen.queryByText('Plans')).not.toBeInTheDocument();
   });
 });
