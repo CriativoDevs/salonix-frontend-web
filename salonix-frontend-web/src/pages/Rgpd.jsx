@@ -110,7 +110,7 @@ export default function Rgpd() {
       <footer
         className={`mt-12 border-t py-8 text-center text-sm ${isDarkTheme ? 'border-slate-800 text-slate-400 bg-slate-950/50' : 'border-slate-200 text-slate-500 bg-slate-100'}`}
       >
-        <p>&copy; {currentYear} Criativo Devs. All rights reserved.</p>
+        <p>&copy; {currentYear} TimelyOne. All rights reserved.</p>
       </footer>
     </div>
   );

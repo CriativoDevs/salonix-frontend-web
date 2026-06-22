@@ -936,6 +936,15 @@
       "owner_unknown": "Name not available",
       "owner_email_unknown": "Email not available"
     },
+    "data": {
+      "title": "My data (GDPR)",
+      "subtitle": "Export a copy of your salon's data (customers, appointments, team) as a JSON file. Right of access and portability (GDPR, Art. 15 and 20).",
+      "export_cta": "Export my data",
+      "exporting": "Preparing export...",
+      "export_success": "The download has started. Check your downloads folder.",
+      "export_error": "Could not export the data.",
+      "privacy_link": "View privacy policy"
+    },
     "danger": {
       "title": "Danger Zone",
       "subtitle": "Irreversible actions related to your account",
@@ -1396,7 +1405,13 @@
       "current_title": "Current theme: {{label}}"
     },
     "how_it_works": "How it works",
-    "roadmap": "Roadmap"
+    "roadmap": "Roadmap",
+    "install_app": "Install the app"
+  },
+  "install_app": {
+    "back": "Back to dashboard",
+    "title": "Install the TimelyOne app",
+    "subtitle": "Manage your business from your phone: appointments, customers and team in the palm of your hand. Download the app for iOS or Android."
   },
   "plans": {
     "title": "Plans",
@@ -1794,8 +1809,13 @@
       "login": "Sign in",
       "register": "Sign up",
       "ops_login": "OPS Login",
-      "copyright": "© {{year}} Criativo Devs. All rights reserved."
+      "get_app": "Install the TimelyOne app",
+      "copyright": "© {{year}} TimelyOne. All rights reserved."
     }
+  },
+  "store_badges": {
+    "ios_alt": "Download on the App Store",
+    "android_alt": "Get it on Google Play"
   },
   "pagination": {
     "summary": "Showing",

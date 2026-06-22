@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, Smartphone, Zap, Wifi, Download } from 'lucide-react';
+import BrandLockup from '../components/BrandLockup';
 
 export default function PwaInfo() {
   const { t } = useTranslation();
@@ -59,9 +60,7 @@ export default function PwaInfo() {
             <ChevronLeft className="h-4 w-4" />
             {t('pwa_info.back_home', 'Voltar para Início')}
           </Link>
-          <span className={`font-bold text-xl tracking-tight ${isDarkTheme ? 'text-indigo-400' : 'text-indigo-600'}`}>
-            TimelyOne
-          </span>
+          <BrandLockup isDark={isDarkTheme} className="h-7 w-auto" />
         </div>
       </header>
 
@@ -121,7 +120,7 @@ export default function PwaInfo() {
       </main>
 
       <footer className={`mt-12 border-t py-8 text-center text-sm ${isDarkTheme ? 'border-slate-800 text-slate-400 bg-slate-950/50' : 'border-slate-200 text-slate-500 bg-slate-100'}`}>
-        <p>&copy; {currentYear} Criativo Devs. All rights reserved.</p>
+        <p>&copy; {currentYear} TimelyOne. All rights reserved.</p>
       </footer>
     </div>
   );

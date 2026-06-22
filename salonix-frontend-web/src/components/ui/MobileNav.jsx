@@ -14,6 +14,7 @@ import {
   LogOutIcon,
   LockIcon,
   BookOpenIcon,
+  SmartphoneIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
@@ -144,6 +145,12 @@ function MobileNav() {
         to: '/como-funciona',
         icon: BookOpenIcon,
         label: t('nav.how_it_works', 'Como funciona'),
+        featureKey: null,
+      },
+      {
+        to: '/app',
+        icon: SmartphoneIcon,
+        label: t('nav.install_app', 'Instala a app'),
         featureKey: null,
       },
       {

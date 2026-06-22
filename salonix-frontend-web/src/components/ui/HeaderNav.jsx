@@ -8,6 +8,7 @@ import {
   LogOutIcon,
   LockIcon,
   BookOpenIcon,
+  SmartphoneIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
@@ -125,6 +126,13 @@ export default function HeaderNav() {
         to: '/como-funciona',
         label: t('nav.how_it_works', 'Como funciona'),
         icon: BookOpenIcon,
+        roles: ['owner', 'manager', 'collaborator'],
+        featureKey: null,
+      },
+      {
+        to: '/app',
+        label: t('nav.install_app', 'Instala a app'),
+        icon: SmartphoneIcon,
         roles: ['owner', 'manager', 'collaborator'],
         featureKey: null,
       },

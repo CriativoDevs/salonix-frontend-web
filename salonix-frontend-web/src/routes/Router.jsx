@@ -10,6 +10,7 @@ import PwaInfo from '../pages/PwaInfo';
 import CmsPage from '../pages/CmsPage';
 import CmsPageDetail from '../pages/CmsPageDetail';
 import Roadmap from '../pages/Roadmap';
+import InstallApp from '../pages/InstallApp';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
@@ -103,6 +104,14 @@ function Router() {
       <Route path="/como-funciona" element={<CmsPage />} />
       <Route path="/como-funciona/:slug" element={<CmsPageDetail />} />
       <Route path="/roadmap" element={<Roadmap />} />
+      <Route
+        path="/app"
+        element={
+          <PrivateRoute>
+            <InstallApp />
+          </PrivateRoute>
+        }
+      />
       <Route
         path="/login"
         element={
