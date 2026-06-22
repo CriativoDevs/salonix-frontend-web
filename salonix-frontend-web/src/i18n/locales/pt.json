@@ -936,6 +936,15 @@
       "owner_unknown": "Nome não disponível",
       "owner_email_unknown": "Email não disponível"
     },
+    "data": {
+      "title": "Os meus dados (RGPD)",
+      "subtitle": "Exporte uma cópia dos dados do seu salão (clientes, agendamentos, equipa) num ficheiro JSON. Direito de acesso e portabilidade (RGPD, Art. 15.º e 20.º).",
+      "export_cta": "Exportar os meus dados",
+      "exporting": "A preparar a exportação...",
+      "export_success": "A descarga foi iniciada. Verifique a pasta de transferências.",
+      "export_error": "Não foi possível exportar os dados.",
+      "privacy_link": "Ver política de privacidade"
+    },
     "danger": {
       "title": "Zona de Perigo",
       "subtitle": "Ações irreversíveis relacionadas à sua conta",
@@ -1396,7 +1405,13 @@
     "customers": "Clientes",
     "team": "Equipa",
     "go_to_dashboard": "Ir para o dashboard",
-    "roadmap": "Roadmap"
+    "roadmap": "Roadmap",
+    "install_app": "Instala a app"
+  },
+  "install_app": {
+    "back": "Voltar ao painel",
+    "title": "Instala a app TimelyOne",
+    "subtitle": "Gere o teu negócio a partir do telemóvel: agendamentos, clientes e equipa na palma da mão. Descarrega a app para iOS ou Android."
   },
   "plans": {
     "title": "Planos",
@@ -1830,8 +1845,13 @@
       "login": "Entrar",
       "register": "Registar",
       "ops_login": "Login OPS",
-      "copyright": "© {{year}} Criativo Devs. Todos os direitos reservados."
+      "get_app": "Instala a app TimelyOne",
+      "copyright": "© {{year}} TimelyOne. Todos os direitos reservados."
     }
+  },
+  "store_badges": {
+    "ios_alt": "Transferir na App Store",
+    "android_alt": "Disponível no Google Play"
   },
   "pagination": {
     "summary": "Mostrando",

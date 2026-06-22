@@ -23,6 +23,8 @@ import SimpleThemeToggle from '../components/ui/SimpleThemeToggle';
 import LanguageToggle from '../components/ui/LanguageToggle';
 import { PLAN_OPTIONS } from '../api/billing';
 import Modal from '../components/ui/Modal';
+import StoreBadges from '../components/StoreBadges';
+import BrandLockup from '../components/BrandLockup';
 
 const metrics = [
   { value: '+10.042', label: 'Agendamentos realizados' },
@@ -341,22 +343,8 @@ function Landing() {
         }`}
       >
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <Link
-            to="/"
-            className={`flex items-center gap-2 text-lg font-semibold transition-colors duration-300 ${
-              isDarkTheme ? 'text-slate-100' : 'text-slate-900'
-            }`}
-          >
-            <span
-              className={`rounded-full px-2 py-1 text-xs font-bold uppercase tracking-widest transition-colors duration-300 ${
-                isDarkTheme
-                  ? 'bg-slate-100 text-slate-900'
-                  : 'bg-slate-900 text-white'
-              }`}
-            >
-              Criativo Devs
-            </span>
-            <span>TimelyOne</span>
+          <Link to="/" className="flex items-center" aria-label="TimelyOne">
+            <BrandLockup isDark={isDarkTheme} className="h-8 w-auto sm:h-9" />
           </Link>
 
           <div className="hidden sm:flex items-center gap-4 text-sm">
@@ -1444,6 +1432,18 @@ function Landing() {
         }`}
       >
         <div
+          className={`mx-auto flex max-w-6xl flex-col items-center gap-3 border-b px-4 py-6 transition-colors duration-300 ${
+            isDarkTheme
+              ? 'border-slate-700 text-slate-300'
+              : 'border-slate-200 text-slate-600'
+          }`}
+        >
+          <p className="text-sm font-medium">
+            {t('landing.footer.get_app', 'Instala a app TimelyOne')}
+          </p>
+          <StoreBadges />
+        </div>
+        <div
           className={`mx-auto flex max-w-6xl flex-col justify-between gap-4 px-4 py-6 text-sm md:flex-row transition-colors duration-300 ${
             isDarkTheme ? 'text-slate-400' : 'text-slate-500'
           }`}
@@ -1451,7 +1451,7 @@ function Landing() {
           <p>
             {t(
               'landing.footer.copyright',
-              '© {{year}} Criativo Devs. Todos os direitos reservados.',
+              '© {{year}} TimelyOne. Todos os direitos reservados.',
               { year: new Date().getFullYear() }
             )}
           </p>

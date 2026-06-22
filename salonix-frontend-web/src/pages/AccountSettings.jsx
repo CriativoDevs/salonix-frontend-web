@@ -11,7 +11,8 @@ import { resolvePlanName } from '../utils/tenantPlan';
 import Modal from '../components/ui/Modal';
 import FormInput from '../components/ui/FormInput';
 import FormButton from '../components/ui/FormButton';
-import { cancelTenantAccount } from '../api/tenant';
+import { cancelTenantAccount, exportTenantData } from '../api/tenant';
+import { downloadBlob } from '../api/reports';
 import { parseApiError } from '../utils/apiError';
 
 export default function AccountSettings() {
@@ -28,6 +29,9 @@ export default function AccountSettings() {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [cancelError, setCancelError] = useState(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState(null);
+  const [exportDone, setExportDone] = useState(false);
 
   const planName = useMemo(() => {
     const byOverview = billingOverview?.current_subscription?.plan_name;
@@ -57,6 +61,40 @@ export default function AccountSettings() {
     confirmText.trim().toUpperCase() !== expectedWord.toUpperCase();
   const passwordMissing = password.trim() === '';
   const canConfirm = !confirmMismatch && !passwordMissing && !submitting;
+
+  const handleExportData = async () => {
+    if (exporting) return;
+    setExporting(true);
+    setExportError(null);
+    setExportDone(false);
+
+    try {
+      const response = await exportTenantData();
+      const blob = response?.data;
+      const cd = String(response?.headers?.['content-disposition'] || '');
+      let filename = 'timelyone-data-export.json';
+      const m =
+        cd.match(/filename\*=UTF-8''([^;\n\r]+)/i) ||
+        cd.match(/filename="?([^";\n\r]+)"?/i);
+      if (m && m[1]) {
+        try {
+          filename = decodeURIComponent(m[1]);
+        } catch {
+          filename = m[1];
+        }
+      }
+      downloadBlob(blob, filename);
+      setExportDone(true);
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t('account.data.export_error', 'Não foi possível exportar os dados.')
+      );
+      setExportError(parsed);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleConfirmCancel = async () => {
     if (!canConfirm) return;
@@ -159,6 +197,51 @@ export default function AccountSettings() {
                   </p>
                 </div>
               </div>
+            </Card>
+          </div>
+
+          <div>
+            <Card className="p-4">
+              <h2 className="text-lg font-medium">
+                {t('account.data.title', 'Os meus dados (RGPD)')}
+              </h2>
+              <p className="mt-1 text-sm text-secondary">
+                {t(
+                  'account.data.subtitle',
+                  'Exporte uma cópia dos dados do seu salão (clientes, agendamentos, equipa) num ficheiro JSON. Direito de acesso e portabilidade (RGPD, Art. 15.º e 20.º).'
+                )}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <FormButton
+                  variant="link"
+                  size="sm"
+                  onClick={handleExportData}
+                  disabled={exporting}
+                >
+                  {exporting
+                    ? t('account.data.exporting', 'A preparar a exportação...')
+                    : t('account.data.export_cta', 'Exportar os meus dados')}
+                </FormButton>
+                <Link to="/rgpd" className="btn-link text-sm">
+                  {t(
+                    'account.data.privacy_link',
+                    'Ver política de privacidade'
+                  )}
+                </Link>
+              </div>
+              {exportDone && (
+                <p className="mt-3 text-sm text-green-600 dark:text-green-400">
+                  {t(
+                    'account.data.export_success',
+                    'A descarga foi iniciada. Verifique a pasta de transferências.'
+                  )}
+                </p>
+              )}
+              {exportError && (
+                <p className="mt-3 text-sm text-red-600">
+                  {exportError.message || String(exportError)}
+                </p>
+              )}
             </Card>
           </div>
 

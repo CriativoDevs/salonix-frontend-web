@@ -271,9 +271,9 @@ export async function fetchExportJobStatus(jobId, slug) {
 }
 
 /**
- * Utilitário para download de arquivo CSV
+ * Utilitário genérico para download de um Blob (CSV, JSON, etc.).
  */
-export function downloadCSV(blob, filename) {
+export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -282,4 +282,11 @@ export function downloadCSV(blob, filename) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Utilitário para download de arquivo CSV (mantido por compatibilidade).
+ */
+export function downloadCSV(blob, filename) {
+  return downloadBlob(blob, filename);
 }

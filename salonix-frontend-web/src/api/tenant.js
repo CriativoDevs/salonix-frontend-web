@@ -157,4 +157,16 @@ export async function cancelTenantAccount({
   return data;
 }
 
+/**
+ * Exporta todos os dados pessoais do tenant (RGPD Art. 15/20).
+ * Download síncrono de um ficheiro JSON. Owner-only no backend (403 caso contrário)
+ * e rate-limited (429). Retorna a resposta axios completa (data=blob + headers).
+ */
+export async function exportTenantData() {
+  const response = await client.get('tenants/data-export/', {
+    responseType: 'blob',
+  });
+  return response;
+}
+
 export { TENANT_ENDPOINT };
