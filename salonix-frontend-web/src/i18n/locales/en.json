@@ -418,6 +418,42 @@
       "missing_fields": "Provide form client and per-item service/professional.",
       "precheck_failed": "Some items are invalid. Fix the highlighted errors below.",
       "partial_failed": "Some items failed. Adjust below and try again."
+    },
+    "import_export": {
+      "trigger": "Import/Export",
+      "import": "Import bookings",
+      "export": "Export bookings",
+      "exporting": "Exporting..."
+    },
+    "import": {
+      "title": "Import bookings",
+      "description": "Import upcoming bookings from a CSV file. The file is validated before saving.",
+      "success": "Bookings imported successfully!",
+      "fields": {
+        "file": "CSV file"
+      },
+      "actions": {
+        "download_template": "Download CSV template",
+        "preview": "Preview",
+        "previewing": "Validating...",
+        "confirm": "Confirm import",
+        "confirming": "Importing...",
+        "import_another": "Import another file"
+      },
+      "summary": {
+        "title": "Preview summary",
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "skipped": "Skipped: {{count}}",
+        "row_error": "Line {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Could not process the file.",
+        "template": "Could not download the template."
+      }
+    },
+    "export": {
+      "error": "Could not export bookings."
     }
   },
   "profile": {

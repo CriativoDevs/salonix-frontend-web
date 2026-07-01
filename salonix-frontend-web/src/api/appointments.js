@@ -128,3 +128,47 @@ export async function updateAppointment(id, payload, { slug } = {}) {
 export async function cancelAppointment(id, { slug } = {}) {
   return updateAppointment(id, { status: 'cancelled' }, { slug });
 }
+
+// Importação de agendamentos futuros via CSV (dry_run=true para pré-visualizar sem gravar)
+export async function importAppointmentsCSV(file, { dryRun = false, slug } = {}) {
+  const headers = { 'Content-Type': 'multipart/form-data' };
+  const params = { dry_run: dryRun ? 'true' : 'false' };
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await client.post('import/appointments/', formData, { headers, params });
+  return data;
+}
+
+export async function fetchAppointmentsImportTemplate({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('import/templates/appointments.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}
+
+export async function exportAppointmentsCSV({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('salon/appointments/export/', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}

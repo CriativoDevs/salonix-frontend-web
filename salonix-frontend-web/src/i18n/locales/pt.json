@@ -419,6 +419,42 @@
       "missing_fields": "Informe cliente no formulário e serviço/profissional por item.",
       "precheck_failed": "Alguns itens estão inválidos. Corrija os erros destacados abaixo.",
       "partial_failed": "Alguns itens falharam. Ajuste abaixo e tente novamente."
+    },
+    "import_export": {
+      "trigger": "Importar/Exportar",
+      "import": "Importar agendamentos",
+      "export": "Exportar agendamentos",
+      "exporting": "A exportar..."
+    },
+    "import": {
+      "title": "Importar agendamentos",
+      "description": "Importe agendamentos futuros a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
+      "success": "Agendamentos importados com sucesso!",
+      "fields": {
+        "file": "Ficheiro CSV"
+      },
+      "actions": {
+        "download_template": "Baixar modelo CSV",
+        "preview": "Pré-visualizar",
+        "previewing": "A validar...",
+        "confirm": "Confirmar importação",
+        "confirming": "A importar...",
+        "import_another": "Importar outro ficheiro"
+      },
+      "summary": {
+        "title": "Resumo da pré-visualização",
+        "created": "Criados: {{count}}",
+        "updated": "Atualizados: {{count}}",
+        "skipped": "Ignorados: {{count}}",
+        "row_error": "Linha {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Não foi possível processar o ficheiro.",
+        "template": "Não foi possível baixar o modelo."
+      }
+    },
+    "export": {
+      "error": "Não foi possível exportar os agendamentos."
     }
   },
   "profile": {

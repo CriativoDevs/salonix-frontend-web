@@ -16,6 +16,7 @@ import {
   Plus,
   Info,
   Settings,
+  Upload,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FullPageLayout from '../layouts/FullPageLayout';
@@ -29,17 +30,22 @@ import {
   updateAppointment,
   createAppointmentsSeries,
   createAppointmentsMixedBulk,
+  importAppointmentsCSV,
+  fetchAppointmentsImportTemplate,
+  exportAppointmentsCSV,
 } from '../api/appointments';
 import { fetchCustomers } from '../api/customers';
 import { fetchServices } from '../api/services';
 import { fetchProfessionals } from '../api/professionals';
 import { fetchSlots, fetchSlotDetail } from '../api/slots';
 import { fetchTenantBusinessHours } from '../api/tenant';
+import { downloadBlob } from '../api/reports';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
 import AppointmentModal from '../components/appointments/AppointmentModal';
+import ImportAppointmentsModal from '../components/appointments/ImportAppointmentsModal';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
 
@@ -314,6 +320,8 @@ function Bookings() {
 
   const [viewMode, setViewMode] = useState('calendar');
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [exportingAppointments, setExportingAppointments] = useState(false);
   const [hasConfiguredBusinessHours, setHasConfiguredBusinessHours] =
     useState(null);
   const [businessHoursChecked, setBusinessHoursChecked] = useState(false);
@@ -782,6 +790,67 @@ function Bookings() {
   const handleAppointmentCreated = () => {
     setOffset(0);
     setFilters((prev) => ({ ...prev }));
+  };
+
+  const handleImportAppointments = async (file, { dryRun }) => {
+    try {
+      const data = await importAppointmentsCSV(file, { dryRun, slug });
+      return { success: true, summary: data?.summary };
+    } catch (err) {
+      return {
+        success: false,
+        error: parseApiError(
+          err,
+          t(
+            'bookings.import.errors.generic',
+            'Não foi possível processar o ficheiro.'
+          )
+        ),
+      };
+    }
+  };
+
+  const handleAppointmentsImported = () => {
+    setOffset(0);
+    setFilters((prev) => ({ ...prev }));
+  };
+
+  const handleDownloadAppointmentsTemplate = async () => {
+    try {
+      const blob = await fetchAppointmentsImportTemplate({ slug });
+      downloadBlob(blob, 'modelo-agendamentos.csv');
+    } catch (err) {
+      setError(
+        parseApiError(
+          err,
+          t(
+            'bookings.import.errors.template',
+            'Não foi possível baixar o modelo.'
+          )
+        )
+      );
+    }
+  };
+
+  const handleExportAppointments = async () => {
+    if (exportingAppointments) return;
+    setExportingAppointments(true);
+    try {
+      const blob = await exportAppointmentsCSV({ slug });
+      downloadBlob(blob, `agendamentos-${slug || 'salao'}.csv`);
+    } catch (err) {
+      setError(
+        parseApiError(
+          err,
+          t(
+            'bookings.export.error',
+            'Não foi possível exportar os agendamentos.'
+          )
+        )
+      );
+    } finally {
+      setExportingAppointments(false);
+    }
   };
 
   const openEdit = (appointment) => {
@@ -1790,6 +1859,36 @@ function Bookings() {
             >
               {t('bookings.form.multi_series_short', 'Multi/Série')}
             </button>
+
+            <Dropdown
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light sm:flex-none"
+                >
+                  <Upload className="h-4 w-4" />
+                  {t('bookings.import_export.trigger', 'Importar/Exportar')}
+                </button>
+              }
+              items={[
+                {
+                  label: t(
+                    'bookings.import_export.import',
+                    'Importar agendamentos'
+                  ),
+                  onClick: () => setIsImportModalOpen(true),
+                },
+                {
+                  label: exportingAppointments
+                    ? t('bookings.import_export.exporting', 'A exportar...')
+                    : t(
+                        'bookings.import_export.export',
+                        'Exportar agendamentos'
+                      ),
+                  onClick: handleExportAppointments,
+                },
+              ]}
+            />
           </div>
 
           {hasActiveFilters ? (
@@ -2011,6 +2110,14 @@ function Bookings() {
           slug={slug}
           hasConfiguredBusinessHours={hasConfiguredBusinessHours}
           businessHoursChecked={businessHoursChecked}
+        />
+
+        <ImportAppointmentsModal
+          open={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          onSubmit={handleImportAppointments}
+          onDownloadTemplate={handleDownloadAppointmentsTemplate}
+          onImported={handleAppointmentsImported}
         />
 
         {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
