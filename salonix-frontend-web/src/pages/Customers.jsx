@@ -1,19 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Filter, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Upload } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import CustomerForm from '../components/CustomerForm';
 import Card from '../components/ui/Card';
 import PageHeader from '../components/ui/PageHeader';
+import Dropdown from '../components/ui/Dropdown';
 import CustomerEditorModal from '../components/customers/CustomerEditorModal';
 import CustomerPhotoPreviewModal from '../components/customers/CustomerPhotoPreviewModal';
+import ImportCustomersModal from '../components/customers/ImportCustomersModal';
 import {
   fetchCustomers,
   createCustomer,
   updateCustomer,
   deleteCustomer,
   resendCustomerInvite,
+  importCustomersCSV,
+  fetchCustomersImportTemplate,
+  exportCustomersCSV,
 } from '../api/customers';
+import { downloadBlob } from '../api/reports';
 import { useTenant } from '../hooks/useTenant';
 import useCreditGate from '../hooks/useCreditGate';
 import { parseApiError } from '../utils/apiError';
@@ -159,6 +165,9 @@ function Customers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [exportingCustomers, setExportingCustomers] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
   const [createBusy, setCreateBusy] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [inviteBusyId, setInviteBusyId] = useState(null);
@@ -281,7 +290,48 @@ function Customers() {
     return () => {
       cancelled = true;
     };
-  }, [slug, t, closeInviteTooltip, limit, offset, orderingFromSort]);
+  }, [slug, t, closeInviteTooltip, limit, offset, orderingFromSort, refreshToken]);
+
+  const handleImportCustomers = async (file, { dryRun }) => {
+    try {
+      const data = await importCustomersCSV(file, { dryRun, slug });
+      return { success: true, summary: data?.summary };
+    } catch (err) {
+      return {
+        success: false,
+        error: parseApiError(
+          err,
+          t('customers.import.errors.generic', 'Não foi possível processar o ficheiro.')
+        ),
+      };
+    }
+  };
+
+  const handleDownloadCustomersTemplate = async () => {
+    try {
+      const blob = await fetchCustomersImportTemplate({ slug });
+      downloadBlob(blob, 'modelo-clientes.csv');
+    } catch (err) {
+      setError(
+        parseApiError(err, t('customers.import.errors.template', 'Não foi possível baixar o modelo.'))
+      );
+    }
+  };
+
+  const handleExportCustomers = async () => {
+    if (exportingCustomers) return;
+    setExportingCustomers(true);
+    try {
+      const blob = await exportCustomersCSV({ slug });
+      downloadBlob(blob, `clientes-${slug || 'salao'}.csv`);
+    } catch (err) {
+      setError(
+        parseApiError(err, t('customers.export.error', 'Não foi possível exportar os clientes.'))
+      );
+    } finally {
+      setExportingCustomers(false);
+    }
+  };
 
   const sortedCustomers = useMemo(
     () => sortCustomers(customers, sortOption),
@@ -600,6 +650,30 @@ function Customers() {
                 <ChevronDown className="h-4 w-4" />
               )}
             </button>
+
+            <Dropdown
+              trigger={
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                >
+                  <Upload className="h-4 w-4" />
+                  {t('customers.import_export.trigger', 'Importar/Exportar')}
+                </button>
+              }
+              items={[
+                {
+                  label: t('customers.import_export.import', 'Importar clientes'),
+                  onClick: () => setIsImportModalOpen(true),
+                },
+                {
+                  label: exportingCustomers
+                    ? t('customers.import_export.exporting', 'A exportar...')
+                    : t('customers.import_export.export', 'Exportar clientes'),
+                  onClick: handleExportCustomers,
+                },
+              ]}
+            />
 
             <button
               type="button"
@@ -1180,6 +1254,16 @@ function Customers() {
           setCreditsModalOpen(true);
         }}
         action={blockAction}
+      />
+      <ImportCustomersModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSubmit={handleImportCustomers}
+        onDownloadTemplate={handleDownloadCustomersTemplate}
+        onImported={() => {
+          setOffset(0);
+          setRefreshToken((prev) => prev + 1);
+        }}
       />
     </FullPageLayout>
   );

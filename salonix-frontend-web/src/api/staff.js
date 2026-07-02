@@ -153,3 +153,33 @@ export async function acceptStaffInvite(payload) {
     requestId: extractRequestId(response.headers),
   };
 }
+
+export async function importStaffCSV(file, { dryRun = false, slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  headers['Content-Type'] = 'multipart/form-data';
+  params.dry_run = dryRun ? 'true' : 'false';
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await client.post('import/staff/', formData, { headers, params });
+  return data;
+}
+
+export async function fetchStaffImportTemplate({ slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  const { data } = await client.get('import/templates/staff.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}
+
+export async function exportStaffCSV({ slug } = {}) {
+  const { headers, params } = buildTenantParams(slug);
+  const { data } = await client.get('export/staff.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}

@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Filter, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Upload } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import ServiceForm from '../components/ServiceForm';
 import Card from '../components/ui/Card';
 import PageHeader from '../components/ui/PageHeader';
 import EmptyState from '../components/ui/EmptyState';
+import Dropdown from '../components/ui/Dropdown';
+import ImportServicesModal from '../components/services/ImportServicesModal';
 import {
   fetchServices,
   createService,
   updateService,
   deleteService,
+  importServicesCSV,
+  fetchServicesImportTemplate,
+  exportServicesCSV,
 } from '../api/services';
+import { downloadBlob } from '../api/reports';
 import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
 import PaginationControls from '../components/ui/PaginationControls';
@@ -23,6 +29,49 @@ function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [exportingServices, setExportingServices] = useState(false);
+
+  const handleImportServices = async (file, { dryRun }) => {
+    try {
+      const data = await importServicesCSV(file, { dryRun, slug });
+      return { success: true, summary: data?.summary };
+    } catch (err) {
+      return {
+        success: false,
+        error: parseApiError(
+          err,
+          t('services.import.errors.generic', 'Não foi possível processar o ficheiro.')
+        ),
+      };
+    }
+  };
+
+  const handleDownloadServicesTemplate = async () => {
+    try {
+      const blob = await fetchServicesImportTemplate({ slug });
+      downloadBlob(blob, 'modelo-servicos.csv');
+    } catch (err) {
+      setError(
+        parseApiError(err, t('services.import.errors.template', 'Não foi possível baixar o modelo.'))
+      );
+    }
+  };
+
+  const handleExportServices = async () => {
+    if (exportingServices) return;
+    setExportingServices(true);
+    try {
+      const blob = await exportServicesCSV({ slug });
+      downloadBlob(blob, `servicos-${slug || 'salao'}.csv`);
+    } catch (err) {
+      setError(
+        parseApiError(err, t('services.export.error', 'Não foi possível exportar os serviços.'))
+      );
+    } finally {
+      setExportingServices(false);
+    }
+  };
   const [createBusy, setCreateBusy] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editingForm, setEditingForm] = useState({
@@ -216,6 +265,30 @@ function Services() {
               <ChevronDown className="h-4 w-4" />
             )}
           </button>
+
+          <Dropdown
+            trigger={
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+              >
+                <Upload className="h-4 w-4" />
+                {t('services.import_export.trigger', 'Importar/Exportar')}
+              </button>
+            }
+            items={[
+              {
+                label: t('services.import_export.import', 'Importar serviços'),
+                onClick: () => setIsImportModalOpen(true),
+              },
+              {
+                label: exportingServices
+                  ? t('services.import_export.exporting', 'A exportar...')
+                  : t('services.import_export.export', 'Exportar serviços'),
+                onClick: handleExportServices,
+              },
+            ]}
+          />
 
           <button
             type="button"
@@ -499,6 +572,17 @@ function Services() {
           />
         ) : null}
       </div>
+
+      <ImportServicesModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSubmit={handleImportServices}
+        onDownloadTemplate={handleDownloadServicesTemplate}
+        onImported={() => {
+          setOffset(0);
+          loadServices();
+        }}
+      />
     </FullPageLayout>
   );
 }

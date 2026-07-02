@@ -148,3 +148,46 @@ export async function resendCustomerInvite(id, { slug } = {}) {
   );
   return data;
 }
+
+export async function importCustomersCSV(file, { dryRun = false, slug } = {}) {
+  const headers = { 'Content-Type': 'multipart/form-data' };
+  const params = { dry_run: dryRun ? 'true' : 'false' };
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await client.post('import/customers/', formData, { headers, params });
+  return data;
+}
+
+export async function fetchCustomersImportTemplate({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('import/templates/customers.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}
+
+export async function exportCustomersCSV({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('export/customers.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}

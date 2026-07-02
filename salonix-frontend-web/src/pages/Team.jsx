@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Filter, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, Plus, Upload } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import EmptyState from '../components/ui/EmptyState';
@@ -16,6 +16,10 @@ import {
 } from '../api/professionals';
 import InviteStaffModal from '../components/team/InviteStaffModal';
 import ManageStaffModal from '../components/team/ManageStaffModal';
+import Dropdown from '../components/ui/Dropdown';
+import ImportStaffModal from '../components/team/ImportStaffModal';
+import { importStaffCSV, fetchStaffImportTemplate, exportStaffCSV } from '../api/staff';
+import { downloadBlob } from '../api/reports';
 import { parseApiError } from '../utils/apiError';
 import { ROLE_BADGE_STYLES, TEAM_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
@@ -215,6 +219,50 @@ function Team() {
   const [staffError, setStaffError] = useState(null);
   const [forbidden, setForbidden] = useState(false);
   const [requestId, setRequestId] = useState(null);
+
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [exportingStaff, setExportingStaff] = useState(false);
+
+  const handleImportStaff = async (file, { dryRun }) => {
+    try {
+      const data = await importStaffCSV(file, { dryRun, slug });
+      return { success: true, summary: data?.summary };
+    } catch (err) {
+      return {
+        success: false,
+        error: parseApiError(
+          err,
+          t('team.import.errors.generic', 'Não foi possível processar o ficheiro.')
+        ),
+      };
+    }
+  };
+
+  const handleDownloadStaffTemplate = async () => {
+    try {
+      const blob = await fetchStaffImportTemplate({ slug });
+      downloadBlob(blob, 'modelo-staff.csv');
+    } catch (err) {
+      setStaffError(
+        parseApiError(err, t('team.import.errors.template', 'Não foi possível baixar o modelo.'))
+      );
+    }
+  };
+
+  const handleExportStaff = async () => {
+    if (exportingStaff) return;
+    setExportingStaff(true);
+    try {
+      const blob = await exportStaffCSV({ slug });
+      downloadBlob(blob, `staff-${slug || 'salao'}.csv`);
+    } catch (err) {
+      setStaffError(
+        parseApiError(err, t('team.export.error', 'Não foi possível exportar o staff.'))
+      );
+    } finally {
+      setExportingStaff(false);
+    }
+  };
 
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -982,6 +1030,32 @@ function Team() {
                 </button>
               ) : null}
 
+              {canManageAll ? (
+                <Dropdown
+                  trigger={
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {t('team.import_export.trigger', 'Importar/Exportar')}
+                    </button>
+                  }
+                  items={[
+                    {
+                      label: t('team.import_export.import', 'Importar staff'),
+                      onClick: () => setIsImportModalOpen(true),
+                    },
+                    {
+                      label: exportingStaff
+                        ? t('team.import_export.exporting', 'A exportar...')
+                        : t('team.import_export.export', 'Exportar staff'),
+                      onClick: handleExportStaff,
+                    },
+                  ]}
+                />
+              ) : null}
+
               <button
                 type="button"
                 onClick={() => setFiltersPanelOpen((current) => !current)}
@@ -1295,6 +1369,16 @@ function Team() {
         canManageProfessional={canManageProfessional}
         staffOptions={activeStaffOptions}
         selectableStaffOptions={selectableStaffOptions}
+      />
+      <ImportStaffModal
+        open={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSubmit={handleImportStaff}
+        onDownloadTemplate={handleDownloadStaffTemplate}
+        onImported={() => {
+          setOffset(0);
+          refetchStaff();
+        }}
       />
     </FullPageLayout>
   );
