@@ -40,12 +40,18 @@ import { fetchProfessionals } from '../api/professionals';
 import { fetchSlots, fetchSlotDetail } from '../api/slots';
 import { fetchTenantBusinessHours } from '../api/tenant';
 import { downloadBlob } from '../api/reports';
+import {
+  getBusinessHoursRangeMinutes,
+  minutesSinceMidnight,
+} from '../utils/calendarGrid';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
 import AppointmentModal from '../components/appointments/AppointmentModal';
 import ImportAppointmentsModal from '../components/appointments/ImportAppointmentsModal';
+import HourGrid from '../components/appointments/calendar/HourGrid';
+import MonthGrid from '../components/appointments/calendar/MonthGrid';
 
 const STATUS_OPTIONS = ['scheduled', 'completed', 'paid', 'cancelled'];
 
@@ -164,6 +170,24 @@ function startOfCalendarWeek(value) {
   const day = date.getDay();
   const diffToMonday = day === 0 ? -6 : 1 - day;
   return addCalendarDays(date, diffToMonday);
+}
+
+function startOfCalendarMonth(value) {
+  const date = startOfCalendarDay(value);
+  date.setDate(1);
+  return date;
+}
+
+function addCalendarMonths(value, months) {
+  const date = startOfCalendarDay(value);
+  date.setMonth(date.getMonth() + months);
+  return date;
+}
+
+function buildMonthGridDays(monthCursor) {
+  const monthStart = startOfCalendarMonth(monthCursor);
+  const gridStart = startOfCalendarWeek(monthStart);
+  return Array.from({ length: 42 }, (_, index) => addCalendarDays(gridStart, index));
 }
 
 function formatDateParam(value) {
@@ -318,13 +342,17 @@ function Bookings() {
   const [loadingList, setLoadingList] = useState(false);
   const [lookupLoading, setLookupLoading] = useState(false);
 
-  const [viewMode, setViewMode] = useState('calendar');
+  const [viewMode, setViewMode] = useState('week');
+  const [calendarMonthCursor, setCalendarMonthCursor] = useState(() =>
+    startOfCalendarMonth(new Date())
+  );
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [exportingAppointments, setExportingAppointments] = useState(false);
   const [hasConfiguredBusinessHours, setHasConfiguredBusinessHours] =
     useState(null);
   const [businessHoursChecked, setBusinessHoursChecked] = useState(false);
+  const [businessHours, setBusinessHours] = useState([]);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [calendarCursor, setCalendarCursor] = useState(() =>
     startOfCalendarDay(new Date())
@@ -365,6 +393,26 @@ function Bookings() {
   const calendarRangeEnd = useMemo(
     () => formatDateParam(addCalendarDays(calendarWeekStart, 6)),
     [calendarWeekStart]
+  );
+
+  const monthGridDays = useMemo(
+    () => buildMonthGridDays(calendarMonthCursor),
+    [calendarMonthCursor]
+  );
+
+  const monthRangeStart = useMemo(
+    () => formatDateParam(monthGridDays[0]),
+    [monthGridDays]
+  );
+
+  const monthRangeEnd = useMemo(
+    () => formatDateParam(monthGridDays[monthGridDays.length - 1]),
+    [monthGridDays]
+  );
+
+  const calendarDayKey = useMemo(
+    () => formatDateParam(calendarCursor),
+    [calendarCursor]
   );
 
   const [formData, setFormData] = useState(INITIAL_FORM);
@@ -561,6 +609,7 @@ function Bookings() {
     if (!slug) {
       setHasConfiguredBusinessHours(null);
       setBusinessHoursChecked(false);
+      setBusinessHours([]);
       return Promise.resolve();
     }
 
@@ -570,9 +619,11 @@ function Bookings() {
         const list = Array.isArray(data) ? data : [];
         const hasActiveDays = list.some((item) => Boolean(item?.is_active));
         setHasConfiguredBusinessHours(hasActiveDays);
+        setBusinessHours(list);
       })
       .catch(() => {
         setHasConfiguredBusinessHours(null);
+        setBusinessHours([]);
       })
       .finally(() => {
         setBusinessHoursChecked(true);
@@ -641,25 +692,43 @@ function Bookings() {
     setLoadingList(true);
     setError(null);
 
-    const params =
-      viewMode === 'calendar'
-        ? {
-            limit: 300,
-            offset: 0,
-            ordering: '-created_at',
-            date_from: calendarRangeStart,
-            date_to: calendarRangeEnd,
-          }
-        : {
-            limit,
-            offset,
-            ordering: '-created_at',
-          };
+    const isGridView =
+      viewMode === 'day' || viewMode === 'week' || viewMode === 'month';
+
+    let params;
+    if (viewMode === 'day') {
+      params = {
+        limit: 300,
+        offset: 0,
+        ordering: '-created_at',
+        date_from: calendarDayKey,
+        date_to: calendarDayKey,
+      };
+    } else if (viewMode === 'week') {
+      params = {
+        limit: 300,
+        offset: 0,
+        ordering: '-created_at',
+        date_from: calendarRangeStart,
+        date_to: calendarRangeEnd,
+      };
+    } else if (viewMode === 'month') {
+      params = {
+        limit: 300,
+        offset: 0,
+        ordering: '-created_at',
+        date_from: monthRangeStart,
+        date_to: monthRangeEnd,
+      };
+    } else {
+      params = { limit, offset, ordering: '-created_at' };
+    }
+
     if (filters.status) params.status = filters.status;
-    if (viewMode !== 'calendar' && filters.dateFrom) {
+    if (!isGridView && filters.dateFrom) {
       params.date_from = filters.dateFrom;
     }
-    if (viewMode !== 'calendar' && filters.dateTo) {
+    if (!isGridView && filters.dateTo) {
       params.date_to = filters.dateTo;
     }
     if (filters.customerId) params.customer_id = filters.customerId;
@@ -766,8 +835,11 @@ function Bookings() {
     limit,
     offset,
     viewMode,
+    calendarDayKey,
     calendarRangeStart,
     calendarRangeEnd,
+    monthRangeStart,
+    monthRangeEnd,
     lookupLoading,
     serviceMap,
     professionalMap,
@@ -1029,18 +1101,21 @@ function Bookings() {
     setOffset(0);
   }, []);
 
-  const openCalendarView = useCallback(() => {
-    if (viewMode === 'calendar') return;
+  const openCalendarView = useCallback(
+    (nextViewMode) => {
+      if (viewMode === nextViewMode) return;
 
-    const firstAppointmentDate = parseSlotDate(appointments[0]?.slotStart);
-    if (firstAppointmentDate) {
-      const normalizedDate = startOfCalendarDay(firstAppointmentDate);
-      setCalendarCursor(normalizedDate);
-      setCalendarSelectedDate(formatDateParam(normalizedDate));
-    }
+      const firstAppointmentDate = parseSlotDate(appointments[0]?.slotStart);
+      if (firstAppointmentDate) {
+        const normalizedDate = startOfCalendarDay(firstAppointmentDate);
+        setCalendarCursor(normalizedDate);
+        setCalendarSelectedDate(formatDateParam(normalizedDate));
+      }
 
-    setViewMode('calendar');
-  }, [appointments, viewMode]);
+      setViewMode(nextViewMode);
+    },
+    [appointments, viewMode]
+  );
 
   const jumpToNextUpcomingAppointment = useCallback(async () => {
     try {
@@ -1190,15 +1265,17 @@ function Bookings() {
   };
 
   const calendarAppointmentsByDay = useMemo(() => {
-    const grouped = new Map(
-      calendarWeekDays.map((day) => [formatDateParam(day), []])
-    );
+    const seedDays = viewMode === 'month' ? monthGridDays : calendarWeekDays;
+    const grouped = new Map(seedDays.map((day) => [formatDateParam(day), []]));
 
     appointments.forEach((appointment) => {
       const date = parseSlotDate(appointment.slotStart);
       if (!date) return;
       const key = formatDateParam(date);
-      if (!grouped.has(key)) return;
+      if (!grouped.has(key)) {
+        grouped.set(key, [appointment]);
+        return;
+      }
       grouped.get(key).push(appointment);
     });
 
@@ -1211,7 +1288,7 @@ function Bookings() {
     });
 
     return grouped;
-  }, [appointments, calendarWeekDays]);
+  }, [appointments, calendarWeekDays, monthGridDays, viewMode]);
 
   const selectedCalendarItems = useMemo(
     () => calendarAppointmentsByDay.get(calendarSelectedDate) || [],
@@ -1255,6 +1332,102 @@ function Bookings() {
     },
     [currentLanguage]
   );
+
+  const gridHoursRange = useMemo(
+    () => getBusinessHoursRangeMinutes(businessHours),
+    [businessHours]
+  );
+
+  const toGridEvent = useCallback((appointment) => {
+    const start = parseSlotDate(appointment.slotStart);
+    const end = parseSlotDate(appointment.slotEnd) || start;
+    if (!start) return null;
+    return {
+      id: appointment.id,
+      startMinutes: minutesSinceMidnight(start),
+      endMinutes: Math.max(
+        minutesSinceMidnight(end),
+        minutesSinceMidnight(start) + 1
+      ),
+      raw: appointment,
+    };
+  }, []);
+
+  const weekGridColumns = useMemo(
+    () =>
+      calendarWeekDays.map((day) => {
+        const dayKey = formatDateParam(day);
+        const items = calendarAppointmentsByDay.get(dayKey) || [];
+        return {
+          key: dayKey,
+          label: formatCalendarDayHeading(day),
+          events: items.map(toGridEvent).filter(Boolean),
+        };
+      }),
+    [calendarWeekDays, calendarAppointmentsByDay, toGridEvent, formatCalendarDayHeading]
+  );
+
+  const dayGridColumns = useMemo(() => {
+    const items = calendarAppointmentsByDay.get(calendarDayKey) || [];
+    const byProfessional = new Map();
+    items.forEach((appointment) => {
+      const key = appointment.professionalId ?? 'unassigned';
+      if (!byProfessional.has(key)) {
+        byProfessional.set(key, {
+          key: String(key),
+          label:
+            appointment.professionalName ||
+            t('bookings.calendar.unassigned', 'Sem profissional'),
+          events: [],
+        });
+      }
+      byProfessional.get(key).events.push(appointment);
+    });
+    return Array.from(byProfessional.values()).map((column) => ({
+      ...column,
+      events: column.events.map(toGridEvent).filter(Boolean),
+    }));
+  }, [calendarAppointmentsByDay, calendarDayKey, toGridEvent, t]);
+
+  const monthGridDaysWithDots = useMemo(() => {
+    const todayKey = formatDateParam(new Date());
+    return monthGridDays.map((day) => {
+      const dayKey = formatDateParam(day);
+      const items = calendarAppointmentsByDay.get(dayKey) || [];
+      const seen = new Set();
+      const dots = [];
+      items.forEach((appointment) => {
+        if (!appointment.professionalId || seen.has(appointment.professionalId)) {
+          return;
+        }
+        seen.add(appointment.professionalId);
+        dots.push({
+          id: appointment.professionalId,
+          className: getProfessionalColor(appointment.professionalId).dot,
+        });
+      });
+      return {
+        key: dayKey,
+        dayNumber: day.getDate(),
+        inCurrentMonth: day.getMonth() === calendarMonthCursor.getMonth(),
+        isToday: dayKey === todayKey,
+        dots,
+      };
+    });
+  }, [monthGridDays, calendarAppointmentsByDay, calendarMonthCursor]);
+
+  const monthLabel = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(currentLanguage === 'pt' ? 'pt-PT' : 'en-IE', {
+        month: 'long',
+        year: 'numeric',
+      })
+        .format(calendarMonthCursor)
+        .replace(/^\w/, (c) => c.toUpperCase());
+    } catch {
+      return formatDateParam(calendarMonthCursor);
+    }
+  }, [calendarMonthCursor, currentLanguage]);
 
   const summaryStats = useMemo(() => {
     const today = new Date();
@@ -1817,11 +1990,25 @@ function Bookings() {
             </button>
             <button
               type="button"
-              onClick={openCalendarView}
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'calendar' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
+              onClick={() => openCalendarView('day')}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'day' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
+            >
+              {t('bookings.views.day', 'Dia')}
+            </button>
+            <button
+              type="button"
+              onClick={() => openCalendarView('week')}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'week' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
             >
               <CalendarDays className="h-4 w-4" />
-              {t('bookings.views.calendar', 'Calendário')}
+              {t('bookings.views.week', 'Semana')}
+            </button>
+            <button
+              type="button"
+              onClick={() => openCalendarView('month')}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition ${viewMode === 'month' ? 'bg-brand-primary text-brand-primaryForeground' : 'text-brand-surfaceForeground/70 hover:bg-brand-light/60 hover:text-brand-surfaceForeground'}`}
+            >
+              {t('bookings.views.month', 'Mês')}
             </button>
           </div>
 
@@ -2135,7 +2322,7 @@ function Bookings() {
                 'Nenhum agendamento encontrado.'
               )}
             />
-          ) : viewMode === 'calendar' ? (
+          ) : viewMode === 'week' ? (
             <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
@@ -2153,15 +2340,10 @@ function Bookings() {
                     })}
                   </p>
                 </div>
-
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={() =>
-                      setCalendarCursor((current) =>
-                        addCalendarDays(current, -7)
-                      )
-                    }
+                    onClick={() => setCalendarCursor((c) => addCalendarDays(c, -7))}
                     className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -2169,20 +2351,14 @@ function Bookings() {
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      setCalendarCursor(startOfCalendarDay(new Date()))
-                    }
+                    onClick={() => setCalendarCursor(startOfCalendarDay(new Date()))}
                     className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
                   >
                     {t('bookings.calendar.today', 'Hoje')}
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      setCalendarCursor((current) =>
-                        addCalendarDays(current, 7)
-                      )
-                    }
+                    onClick={() => setCalendarCursor((c) => addCalendarDays(c, 7))}
                     className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
                   >
                     {t('bookings.calendar.next_week', 'Próxima semana')}
@@ -2213,9 +2389,7 @@ function Bookings() {
                           key={prof.id}
                           className="inline-flex items-center gap-1.5 rounded-full border border-brand-border bg-brand-surface px-3 py-1 text-xs font-medium text-brand-surfaceForeground/70"
                         >
-                          <span
-                            className={`h-2 w-2 shrink-0 rounded-full ${color.dot}`}
-                          />
+                          <span className={`h-2 w-2 shrink-0 rounded-full ${color.dot}`} />
                           {prof.name}
                         </span>
                       );
@@ -2224,190 +2398,208 @@ function Bookings() {
                 );
               })()}
 
-              <div className="mt-5 flex gap-2 overflow-x-auto pb-1 md:hidden">
-                {calendarWeekDays.map((day) => {
-                  const dayKey = formatDateParam(day);
-                  const dayItems = calendarAppointmentsByDay.get(dayKey) || [];
-                  const active = calendarSelectedDate === dayKey;
+              {(() => {
+                const renderWeekEvent = (event) => {
+                  const appointment = event.raw;
+                  const color = getProfessionalColor(appointment.professionalId);
+                  const isCancelled = appointment.status === 'cancelled';
                   return (
-                    <button
-                      key={dayKey}
-                      type="button"
-                      onClick={() => setCalendarSelectedDate(dayKey)}
-                      className={`flex min-w-[92px] shrink-0 flex-col rounded-2xl border px-3 py-3 text-left transition ${active ? 'border-brand-primary/30 bg-brand-primary/10 text-brand-primary' : 'border-brand-border bg-brand-light/20 text-brand-surfaceForeground/75 hover:bg-brand-light/40'}`}
+                    <span
+                      className={`flex h-full w-full flex-col justify-center gap-0 rounded-md px-1.5 py-0.5 leading-none text-white ${isCancelled ? 'opacity-60 line-through' : color.dot}`}
                     >
-                      <span className="text-xs font-semibold uppercase tracking-[0.16em]">
-                        {formatCalendarDayHeading(day)}
+                      <span className="block truncate font-mono text-[9px] leading-tight opacity-90">
+                        {formatTimeRange(appointment.slotStart, appointment.slotEnd)}
                       </span>
-                      <span className="mt-2 text-lg font-semibold leading-none">
-                        {dayItems.length}
+                      <span className="block truncate text-[11px] font-semibold leading-tight">
+                        {appointment.customerName ||
+                          appointment.clientName ||
+                          t('bookings.client_placeholder', 'Cliente')}
                       </span>
-                    </button>
+                    </span>
                   );
-                })}
-              </div>
+                };
 
-              <div className="mt-5 hidden gap-3 md:grid md:grid-cols-7">
-                {calendarWeekDays.map((day) => {
-                  const dayKey = formatDateParam(day);
-                  const dayItems = calendarAppointmentsByDay.get(dayKey) || [];
-                  return (
-                    <div
-                      key={dayKey}
-                      className="flex min-h-[320px] flex-col rounded-2xl border border-brand-border bg-brand-light/15 p-3"
-                    >
-                      <div className="border-b border-brand-border/70 pb-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/50">
-                          {formatCalendarDayHeading(day)}
-                        </p>
-                        <p className="mt-2 text-sm text-brand-surfaceForeground/65">
-                          {t('bookings.calendar.day_count', {
-                            defaultValue: '{{count}} agendamentos',
-                            count: dayItems.length,
-                          })}
-                        </p>
+                return (
+                  <>
+                    <div className="mt-5 hidden md:block">
+                      <HourGrid
+                        rangeStartMinutes={gridHoursRange.startMinutes}
+                        rangeEndMinutes={gridHoursRange.endMinutes}
+                        columns={weekGridColumns}
+                        onEventClick={openEdit}
+                        renderEvent={renderWeekEvent}
+                      />
+                    </div>
+
+                    <div className="mt-5 md:hidden">
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {calendarWeekDays.map((day) => {
+                          const dayKey = formatDateParam(day);
+                          const active = calendarSelectedDate === dayKey;
+                          return (
+                            <button
+                              key={dayKey}
+                              type="button"
+                              onClick={() => setCalendarSelectedDate(dayKey)}
+                              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold ${active ? 'border-brand-primary bg-brand-primary/10 text-brand-primary' : 'border-brand-border text-brand-surfaceForeground/70'}`}
+                            >
+                              {formatCalendarDayHeading(day)}
+                            </button>
+                          );
+                        })}
                       </div>
-
-                      <div className="mt-3 flex flex-1 flex-col gap-2">
-                        {dayItems.length === 0 ? (
-                          <div className="flex flex-1 items-center justify-center rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-4 text-center text-xs text-brand-surfaceForeground/55">
-                            {t(
-                              'bookings.calendar.empty_day',
-                              'Sem agendamentos neste dia.'
-                            )}
-                          </div>
-                        ) : (
-                          dayItems.map((appointment) => {
-                            const isCancelled =
-                              appointment.status === 'cancelled';
-                            const color = getProfessionalColor(
-                              appointment.professionalId
-                            );
-                            return (
-                              <button
-                                key={appointment.id}
-                                type="button"
-                                onClick={() => openEdit(appointment)}
-                                className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition hover:brightness-95 ${isCancelled ? 'border-brand-border/50 bg-brand-light/30 opacity-60' : `${color.border} ${color.bg}`}`}
-                              >
-                                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
-                                  {formatTimeRange(
-                                    appointment.slotStart,
-                                    appointment.slotEnd
-                                  )}
-                                </div>
-                                <div
-                                  className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}
-                                >
-                                  {appointment.customerName ||
-                                    appointment.clientName ||
-                                    t('bookings.client_placeholder', 'Cliente')}
-                                </div>
-                                {appointment.serviceName ? (
-                                  <div className="mt-0.5 text-[11px] leading-snug text-brand-surfaceForeground/60 truncate">
-                                    {appointment.serviceName}
-                                  </div>
-                                ) : null}
-                                <div className="mt-1 flex items-center gap-1">
-                                  <span
-                                    className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`}
-                                  />
-                                  <span className="text-[11px] leading-snug text-brand-surfaceForeground/58 truncate">
-                                    {appointment.professionalName}
-                                  </span>
-                                </div>
-                              </button>
-                            );
-                          })
-                        )}
+                      <div className="mt-3">
+                        <HourGrid
+                          rangeStartMinutes={gridHoursRange.startMinutes}
+                          rangeEndMinutes={gridHoursRange.endMinutes}
+                          columns={weekGridColumns.filter(
+                            (c) => c.key === calendarSelectedDate
+                          )}
+                          onEventClick={openEdit}
+                          renderEvent={renderWeekEvent}
+                        />
                       </div>
                     </div>
-                  );
-                })}
+                  </>
+                );
+              })()}
+            </Card>
+          ) : viewMode === 'day' ? (
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                    {formatCalendarDayHeading(calendarCursor)}
+                  </h2>
+                  <p className="mt-1 text-sm text-brand-surfaceForeground/70">
+                    {t('bookings.calendar.day_count', {
+                      defaultValue: '{{count}} agendamentos',
+                      count: appointments.length,
+                    })}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarCursor((c) => addCalendarDays(c, -1))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarCursor(startOfCalendarDay(new Date()))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+                  >
+                    {t('bookings.calendar.today', 'Hoje')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarCursor((c) => addCalendarDays(c, 1))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-4 md:hidden">
-                <div className="rounded-2xl border border-brand-border bg-brand-light/15 p-3">
-                  <div className="border-b border-brand-border/70 pb-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/50">
-                      {formatCalendarDayHeading(
-                        calendarWeekDays.find(
-                          (day) => formatDateParam(day) === calendarSelectedDate
-                        ) || calendarWeekDays[0]
-                      )}
-                    </p>
-                    <p className="mt-2 text-sm text-brand-surfaceForeground/65">
-                      {t('bookings.calendar.day_count', {
-                        defaultValue: '{{count}} agendamentos',
-                        count: selectedCalendarItems.length,
-                      })}
-                    </p>
+              <div className="mt-5">
+                {dayGridColumns.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-6 text-center text-sm text-brand-surfaceForeground/55">
+                    {t('bookings.calendar.empty_day', 'Sem agendamentos neste dia.')}
                   </div>
+                ) : (
+                  <HourGrid
+                    rangeStartMinutes={gridHoursRange.startMinutes}
+                    rangeEndMinutes={gridHoursRange.endMinutes}
+                    columns={dayGridColumns}
+                    onEventClick={openEdit}
+                    renderEvent={(event) => {
+                      const appointment = event.raw;
+                      const color = getProfessionalColor(appointment.professionalId);
+                      const isCancelled = appointment.status === 'cancelled';
+                      return (
+                        <span
+                          className={`flex h-full w-full flex-col justify-center gap-0 rounded-md px-1.5 py-0.5 leading-none text-white ${isCancelled ? 'opacity-60 line-through' : color.dot}`}
+                        >
+                          <span className="block truncate font-mono text-[9px] leading-tight opacity-90">
+                            {formatTimeRange(appointment.slotStart, appointment.slotEnd)}
+                          </span>
+                          <span className="block truncate text-[11px] font-semibold leading-tight">
+                            {appointment.serviceName}
+                          </span>
+                        </span>
+                      );
+                    }}
+                  />
+                )}
+              </div>
+            </Card>
+          ) : viewMode === 'month' ? (
+            <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <h2 className="text-xl font-semibold text-brand-surfaceForeground">
+                  {monthLabel}
+                </h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCalendarMonthCursor((c) => addCalendarMonths(c, -1))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarMonthCursor(startOfCalendarMonth(new Date()))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+                  >
+                    {t('bookings.calendar.today', 'Hoje')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCalendarMonthCursor((c) => addCalendarMonths(c, 1))}
+                    className="inline-flex items-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
 
-                  <div className="mt-3 flex flex-col gap-2">
-                    {selectedCalendarItems.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-5 text-center text-sm text-brand-surfaceForeground/55">
-                        {t(
-                          'bookings.calendar.empty_day',
-                          'Sem agendamentos neste dia.'
-                        )}
-                      </div>
-                    ) : (
-                      selectedCalendarItems.map((appointment) => {
-                        const isCancelled = appointment.status === 'cancelled';
-                        const color = getProfessionalColor(
-                          appointment.professionalId
-                        );
-                        return (
+              <div className="mt-5">
+                <MonthGrid
+                  days={monthGridDaysWithDots}
+                  onSelectDay={(dayKey) => {
+                    setCalendarSelectedDate(dayKey);
+                    setCalendarCursor(startOfCalendarDay(new Date(dayKey)));
+                    setViewMode('day');
+                  }}
+                />
+                <div className="mt-4 md:hidden">
+                  {selectedCalendarItems.length === 0 ? (
+                    <p className="rounded-2xl border border-dashed border-brand-border bg-brand-surface/60 p-4 text-center text-sm text-brand-surfaceForeground/55">
+                      {t('bookings.calendar.empty_day', 'Sem agendamentos neste dia.')}
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {selectedCalendarItems.map((appointment) => (
+                        <li key={appointment.id}>
                           <button
-                            key={appointment.id}
                             type="button"
                             onClick={() => openEdit(appointment)}
-                            className={`w-full rounded-2xl border p-3 text-left shadow-sm transition hover:brightness-95 ${isCancelled ? 'border-brand-border/50 bg-brand-light/30 opacity-60' : `${color.border} ${color.bg}`}`}
+                            className="w-full rounded-xl border border-brand-border bg-brand-surface p-3 text-left text-sm shadow-sm"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1">
-                                <div className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-surfaceForeground/60">
-                                  {formatTimeRange(
-                                    appointment.slotStart,
-                                    appointment.slotEnd
-                                  )}
-                                </div>
-                                <div
-                                  className={`mt-2 text-sm font-semibold leading-snug text-brand-surfaceForeground ${isCancelled ? 'line-through' : ''}`}
-                                >
-                                  {appointment.customerName ||
-                                    appointment.clientName ||
-                                    t('bookings.client_placeholder', 'Cliente')}
-                                </div>
-                                {appointment.serviceName ? (
-                                  <div className="mt-0.5 text-xs leading-snug text-brand-surfaceForeground/60 truncate">
-                                    {appointment.serviceName}
-                                  </div>
-                                ) : null}
-                                <div className="mt-1 flex items-center gap-1">
-                                  <span
-                                    className={`h-2 w-2 shrink-0 rounded-full ${isCancelled ? 'bg-brand-surfaceForeground/30' : color.dot}`}
-                                  />
-                                  <span className="text-xs leading-snug text-brand-surfaceForeground/58 truncate">
-                                    {appointment.professionalName}
-                                  </span>
-                                </div>
-                              </div>
-                              <span
-                                className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase ${APPOINTMENT_STATUS_STYLES[appointment.status] || 'border-brand-border bg-brand-light text-brand-surfaceForeground/80'}`}
-                              >
-                                {t(
-                                  `bookings.statuses.${appointment.status}`,
-                                  appointment.status
-                                )}
-                              </span>
-                            </div>
+                            <span className="font-mono text-xs text-brand-surfaceForeground/60">
+                              {formatTimeRange(appointment.slotStart, appointment.slotEnd)}
+                            </span>
+                            <span className="mt-1 block font-semibold text-brand-surfaceForeground">
+                              {appointment.customerName || appointment.clientName}
+                            </span>
                           </button>
-                        );
-                      })
-                    )}
-                  </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </Card>

@@ -164,7 +164,39 @@
       "name_required": "O nome do serviço é obrigatório.",
       "price_invalid": "Informe um preço válido.",
       "duration_invalid": "Informe uma duração válida."
-    }
+    },
+    "import_export": {
+      "trigger": "Importar/Exportar",
+      "import": "Importar serviços",
+      "export": "Exportar serviços",
+      "exporting": "A exportar..."
+    },
+    "import": {
+      "title": "Importar serviços",
+      "description": "Importe serviços a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
+      "success": "Serviços importados com sucesso!",
+      "fields": { "file": "Ficheiro CSV" },
+      "actions": {
+        "download_template": "Baixar modelo CSV",
+        "preview": "Pré-visualizar",
+        "previewing": "A validar...",
+        "confirm": "Confirmar importação",
+        "confirming": "A importar...",
+        "import_another": "Importar outro ficheiro"
+      },
+      "summary": {
+        "title": "Resumo da pré-visualização",
+        "created": "Criados: {{count}}",
+        "updated": "Atualizados: {{count}}",
+        "skipped": "Ignorados: {{count}}",
+        "row_error": "Linha {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Não foi possível processar o ficheiro.",
+        "template": "Não foi possível baixar o modelo."
+      }
+    },
+    "export": { "error": "Não foi possível exportar os serviços." }
   },
   "professionals": {
     "title": "Profissionais",
@@ -343,9 +375,12 @@
     },
     "views": {
       "agenda": "Agenda",
-      "calendar": "Calendário"
+      "day": "Dia",
+      "week": "Semana",
+      "month": "Mês"
     },
     "calendar": {
+      "unassigned": "Sem profissional",
       "title": "Calendário semanal",
       "description": "{{count}} agendamentos entre {{range}}.",
       "week_label": "Semana visível",
@@ -925,6 +960,36 @@
       "new_balance": "Novo saldo",
       "purchase_amount": "+ {{amount}}",
       "buy": "Comprar"
+    },
+    "bulk": {
+      "title": "Importar/Exportar tudo",
+      "description": "Exporte ou importe clientes, serviços, staff e agendamentos de uma vez, num único ficheiro .zip.",
+      "success": "Dados importados com sucesso!",
+      "fields": { "file": "Ficheiro ZIP" },
+      "actions": {
+        "download_template": "Baixar modelo ZIP",
+        "downloading_template": "A preparar...",
+        "export_all": "Exportar tudo (.zip)",
+        "exporting": "A exportar...",
+        "preview": "Pré-visualizar",
+        "previewing": "A validar...",
+        "confirm": "Confirmar importação",
+        "confirming": "A importar...",
+        "import_another": "Importar outro ficheiro"
+      },
+      "summary": {
+        "created": "Criados: {{count}}",
+        "updated": "Atualizados: {{count}}",
+        "row_error": "Linha {{line}}: {{error}}"
+      },
+      "errors": {
+        "export": "Não foi possível exportar os dados.",
+        "template": "Não foi possível baixar o modelo.",
+        "zip_read": "Não foi possível ler o ficheiro .zip.",
+        "zip_empty": "O ficheiro .zip não contém nenhum CSV reconhecido.",
+        "preview": "Não foi possível validar o ficheiro .zip.",
+        "confirm": "Não foi possível importar os dados."
+      }
     }
   },
   "rgpd": {
@@ -1014,6 +1079,42 @@
     "title": "Clientes",
     "subtitle": "Cadastre clientes para vincular diretamente nos agendamentos e acompanhar contatos.",
     "confirm_delete": "Remover este cliente?",
+    "import_export": {
+      "trigger": "Importar/Exportar",
+      "import": "Importar clientes",
+      "export": "Exportar clientes",
+      "exporting": "A exportar..."
+    },
+    "import": {
+      "title": "Importar clientes",
+      "description": "Importe clientes a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
+      "success": "Clientes importados com sucesso!",
+      "fields": {
+        "file": "Ficheiro CSV"
+      },
+      "actions": {
+        "download_template": "Baixar modelo CSV",
+        "preview": "Pré-visualizar",
+        "previewing": "A validar...",
+        "confirm": "Confirmar importação",
+        "confirming": "A importar...",
+        "import_another": "Importar outro ficheiro"
+      },
+      "summary": {
+        "title": "Resumo da pré-visualização",
+        "created": "Criados: {{count}}",
+        "updated": "Atualizados: {{count}}",
+        "skipped": "Ignorados: {{count}}",
+        "row_error": "Linha {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Não foi possível processar o ficheiro.",
+        "template": "Não foi possível baixar o modelo."
+      }
+    },
+    "export": {
+      "error": "Não foi possível exportar os clientes."
+    },
     "form": {
       "title": "Adicionar cliente",
       "description": "Cadastre dados de contato e uma foto clara para identificar rapidamente quem e quem.",
@@ -1374,7 +1475,39 @@
         "saving": "Salvando...",
         "save_role": "Salvar papel"
       }
-    }
+    },
+    "import_export": {
+      "trigger": "Importar/Exportar",
+      "import": "Importar staff",
+      "export": "Exportar staff",
+      "exporting": "A exportar..."
+    },
+    "import": {
+      "title": "Importar staff",
+      "description": "Importe membros da equipa a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
+      "success": "Staff importado com sucesso!",
+      "fields": { "file": "Ficheiro CSV" },
+      "actions": {
+        "download_template": "Baixar modelo CSV",
+        "preview": "Pré-visualizar",
+        "previewing": "A validar...",
+        "confirm": "Confirmar importação",
+        "confirming": "A importar...",
+        "import_another": "Importar outro ficheiro"
+      },
+      "summary": {
+        "title": "Resumo da pré-visualização",
+        "created": "Criados: {{count}}",
+        "updated": "Atualizados: {{count}}",
+        "skipped": "Ignorados: {{count}}",
+        "row_error": "Linha {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Não foi possível processar o ficheiro.",
+        "template": "Não foi possível baixar o modelo."
+      }
+    },
+    "export": { "error": "Não foi possível exportar o staff." }
   },
   "invite_accept": {
     "title": "Ativar acesso ao painel",

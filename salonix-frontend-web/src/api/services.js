@@ -92,3 +92,46 @@ export async function deleteService(id) {
   const { status } = await client.delete(`services/${id}/`);
   return status === 204;
 }
+
+export async function importServicesCSV(file, { dryRun = false, slug } = {}) {
+  const headers = { 'Content-Type': 'multipart/form-data' };
+  const params = { dry_run: dryRun ? 'true' : 'false' };
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await client.post('import/services/', formData, { headers, params });
+  return data;
+}
+
+export async function fetchServicesImportTemplate({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('import/templates/services.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}
+
+export async function exportServicesCSV({ slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.get('export/services.csv', {
+    headers,
+    params,
+    responseType: 'blob',
+  });
+  return data;
+}

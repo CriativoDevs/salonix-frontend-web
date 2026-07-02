@@ -163,7 +163,39 @@
       "name_required": "Service name is required.",
       "price_invalid": "Enter a valid price.",
       "duration_invalid": "Enter a valid duration."
-    }
+    },
+    "import_export": {
+      "trigger": "Import/Export",
+      "import": "Import services",
+      "export": "Export services",
+      "exporting": "Exporting..."
+    },
+    "import": {
+      "title": "Import services",
+      "description": "Import services from a CSV file. The file is validated before saving.",
+      "success": "Services imported successfully!",
+      "fields": { "file": "CSV file" },
+      "actions": {
+        "download_template": "Download CSV template",
+        "preview": "Preview",
+        "previewing": "Validating...",
+        "confirm": "Confirm import",
+        "confirming": "Importing...",
+        "import_another": "Import another file"
+      },
+      "summary": {
+        "title": "Preview summary",
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "skipped": "Skipped: {{count}}",
+        "row_error": "Line {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Could not process the file.",
+        "template": "Could not download the template."
+      }
+    },
+    "export": { "error": "Could not export services." }
   },
   "professionals": {
     "title": "professionals",
@@ -342,9 +374,12 @@
     },
     "views": {
       "agenda": "Agenda",
-      "calendar": "Calendar"
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
     },
     "calendar": {
+      "unassigned": "Unassigned",
       "title": "Weekly calendar",
       "description": "{{count}} bookings between {{range}}.",
       "week_label": "Visible week",
@@ -925,6 +960,36 @@
         "value": "Value",
         "request_id": "Request ID"
       }
+    },
+    "bulk": {
+      "title": "Import/Export all",
+      "description": "Export or import customers, services, staff and appointments all at once, in a single .zip file.",
+      "success": "Data imported successfully!",
+      "fields": { "file": "ZIP file" },
+      "actions": {
+        "download_template": "Download ZIP template",
+        "downloading_template": "Preparing...",
+        "export_all": "Export all (.zip)",
+        "exporting": "Exporting...",
+        "preview": "Preview",
+        "previewing": "Validating...",
+        "confirm": "Confirm import",
+        "confirming": "Importing...",
+        "import_another": "Import another file"
+      },
+      "summary": {
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "row_error": "Line {{line}}: {{error}}"
+      },
+      "errors": {
+        "export": "Could not export the data.",
+        "template": "Could not download the template.",
+        "zip_read": "Could not read the .zip file.",
+        "zip_empty": "The .zip file does not contain any recognized CSV.",
+        "preview": "Could not validate the .zip file.",
+        "confirm": "Could not import the data."
+      }
     }
   },
   "rgpd": {
@@ -1014,6 +1079,42 @@
     "title": "Customers",
     "subtitle": "Register customers to link them directly in bookings and track contacts.",
     "confirm_delete": "Remove this customer?",
+    "import_export": {
+      "trigger": "Import/Export",
+      "import": "Import customers",
+      "export": "Export customers",
+      "exporting": "Exporting..."
+    },
+    "import": {
+      "title": "Import customers",
+      "description": "Import customers from a CSV file. The file is validated before saving.",
+      "success": "Customers imported successfully!",
+      "fields": {
+        "file": "CSV file"
+      },
+      "actions": {
+        "download_template": "Download CSV template",
+        "preview": "Preview",
+        "previewing": "Validating...",
+        "confirm": "Confirm import",
+        "confirming": "Importing...",
+        "import_another": "Import another file"
+      },
+      "summary": {
+        "title": "Preview summary",
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "skipped": "Skipped: {{count}}",
+        "row_error": "Line {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Could not process the file.",
+        "template": "Could not download the template."
+      }
+    },
+    "export": {
+      "error": "Could not export customers."
+    },
     "form": {
       "title": "Add customer",
       "description": "Enter contact details and a clear photo to quickly identify each person.",
@@ -1374,7 +1475,39 @@
         "saving": "Saving...",
         "save_role": "Save role"
       }
-    }
+    },
+    "import_export": {
+      "trigger": "Import/Export",
+      "import": "Import staff",
+      "export": "Export staff",
+      "exporting": "Exporting..."
+    },
+    "import": {
+      "title": "Import staff",
+      "description": "Import team members from a CSV file. The file is validated before saving.",
+      "success": "Staff imported successfully!",
+      "fields": { "file": "CSV file" },
+      "actions": {
+        "download_template": "Download CSV template",
+        "preview": "Preview",
+        "previewing": "Validating...",
+        "confirm": "Confirm import",
+        "confirming": "Importing...",
+        "import_another": "Import another file"
+      },
+      "summary": {
+        "title": "Preview summary",
+        "created": "Created: {{count}}",
+        "updated": "Updated: {{count}}",
+        "skipped": "Skipped: {{count}}",
+        "row_error": "Line {{line}}: {{error}}"
+      },
+      "errors": {
+        "generic": "Could not process the file.",
+        "template": "Could not download the template."
+      }
+    },
+    "export": { "error": "Could not export staff." }
   },
   "invite_accept": {
     "title": "Activate dashboard access",
