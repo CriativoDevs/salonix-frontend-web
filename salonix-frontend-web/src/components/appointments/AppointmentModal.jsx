@@ -4,16 +4,25 @@ import { ChevronDown } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Dropdown from '../ui/Dropdown';
 import { createAppointment } from '../../api/appointments';
+import { fetchSlots } from '../../api/slots';
 import { parseApiError } from '../../utils/apiError';
 
 const INITIAL_FORM = {
   customerId: '',
   serviceId: '',
   professionalId: '',
-  startTime: '',
-  endTime: '',
+  slotId: '',
   notes: '',
 };
+
+function formatSlotOption(slot) {
+  if (!slot) return '';
+  const start = new Date(slot.start_time);
+  const end = new Date(slot.end_time);
+  const dateLabel = start.toLocaleDateString();
+  const timeLabel = `${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  return `${dateLabel}, ${timeLabel}`;
+}
 
 function formatServiceOption(service) {
   if (!service) return '';
@@ -51,6 +60,8 @@ function AppointmentModal({
   const [fieldErrors, setFieldErrors] = useState({});
   const [globalError, setGlobalError] = useState(null);
   const [, setSuccess] = useState(false);
+  const [slots, setSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -58,10 +69,37 @@ function AppointmentModal({
     setFieldErrors({});
     setGlobalError(null);
     setSuccess(false);
+    setSlots([]);
   }, [open]);
 
+  useEffect(() => {
+    if (!open || !form.professionalId) {
+      setSlots([]);
+      return;
+    }
+    let cancelled = false;
+    setSlotsLoading(true);
+    fetchSlots({ professionalId: form.professionalId, slug })
+      .then((data) => {
+        if (!cancelled) setSlots(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setSlots([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSlotsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, form.professionalId, slug]);
+
   const setField = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'professionalId') next.slotId = '';
+      return next;
+    });
     setFieldErrors((prev) => {
       if (!prev[field]) return prev;
       const next = { ...prev };
@@ -76,11 +114,7 @@ function AppointmentModal({
     if (!form.customerId) errors.customerId = t('bookings.form.customer_required', 'Selecione um cliente.');
     if (!form.serviceId) errors.serviceId = t('bookings.form.service_required', 'Selecione um serviço.');
     if (!form.professionalId) errors.professionalId = t('bookings.form.professional_required', 'Selecione um profissional.');
-    if (!form.startTime) errors.startTime = t('bookings.form.start_time_required', 'Informe o horário de início.');
-    if (!form.endTime) errors.endTime = t('bookings.form.end_time_required', 'Informe o horário de término.');
-    if (form.startTime && form.endTime && form.endTime <= form.startTime) {
-      errors.endTime = t('bookings.form.end_before_start', 'O término deve ser após o início.');
-    }
+    if (!form.slotId) errors.slotId = t('bookings.form.slot_required', 'Selecione um horário.');
     return errors;
   };
 
@@ -96,8 +130,7 @@ function AppointmentModal({
       customer: Number.parseInt(form.customerId, 10),
       service: Number.parseInt(form.serviceId, 10),
       professional: Number.parseInt(form.professionalId, 10),
-      start_time: form.startTime,
-      end_time: form.endTime,
+      slot: Number.parseInt(form.slotId, 10),
     };
     if (form.notes.trim()) payload.notes = form.notes.trim();
 
@@ -130,9 +163,15 @@ function AppointmentModal({
     onClick: () => setField('professionalId', String(p.id)),
   }));
 
+  const slotItems = slots.map((s) => ({
+    label: formatSlotOption(s),
+    onClick: () => setField('slotId', String(s.id)),
+  }));
+
   const selectedCustomer = customers.find((c) => String(c.id) === form.customerId);
   const selectedService = services.find((s) => String(s.id) === form.serviceId);
   const selectedProfessional = professionals.find((p) => String(p.id) === form.professionalId);
+  const selectedSlot = slots.find((s) => String(s.id) === form.slotId);
 
   const inputBase =
     'mt-1 w-full rounded border px-3 py-2 text-sm bg-[var(--bg-primary)] text-[var(--text-primary)] border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:opacity-50';
@@ -245,44 +284,33 @@ function AppointmentModal({
             )}
           </div>
 
-          {/* Início */}
-          <div>
-            <label
-              htmlFor="appt-modal-start"
-              className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60"
-            >
-              {t('bookings.form.start_time', 'Início')} <span aria-hidden="true" className="text-red-500">*</span>
+          {/* Horário */}
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+              {t('bookings.form.slot', 'Horário')} <span aria-hidden="true" className="text-red-500">*</span>
             </label>
-            <input
-              id="appt-modal-start"
-              type="datetime-local"
-              className={inputBase}
-              value={form.startTime}
-              onChange={(e) => setField('startTime', e.target.value)}
+            <Dropdown
+              trigger={dropdownTrigger(
+                selectedSlot
+                  ? formatSlotOption(selectedSlot)
+                  : t('bookings.form.select_slot', 'Selecione um horário'),
+                !form.professionalId || slotsLoading
+              )}
+              items={slotItems}
+              searchable
+              searchPlaceholder={t('common.search', 'Pesquisar...')}
+              className="w-full"
             />
-            {fieldErrors.startTime && (
-              <p role="alert" className="mt-1 text-xs text-red-500">{fieldErrors.startTime}</p>
+            {fieldErrors.slotId && (
+              <p role="alert" className="mt-1 text-xs text-red-500">{fieldErrors.slotId}</p>
             )}
-          </div>
-
-          {/* Término */}
-          <div>
-            <label
-              htmlFor="appt-modal-end"
-              className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60"
-            >
-              {t('bookings.form.end_time', 'Término')} <span aria-hidden="true" className="text-red-500">*</span>
-            </label>
-            <input
-              id="appt-modal-end"
-              type="datetime-local"
-              className={inputBase}
-              value={form.endTime}
-              min={form.startTime || undefined}
-              onChange={(e) => setField('endTime', e.target.value)}
-            />
-            {fieldErrors.endTime && (
-              <p role="alert" className="mt-1 text-xs text-red-500">{fieldErrors.endTime}</p>
+            {form.professionalId && !slotsLoading && slots.length === 0 && (
+              <p className="mt-1 text-xs text-brand-surfaceForeground/60">
+                {t(
+                  'bookings.form.empty_slots',
+                  'Sem horários disponíveis para este profissional. Abra horários em "Horários" primeiro.'
+                )}
+              </p>
             )}
           </div>
 

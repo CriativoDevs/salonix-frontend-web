@@ -197,6 +197,13 @@ function SlotBulkModal({
       const d = todayStr();
       setDateFrom(d);
       setDateTo(d);
+      // Garante que o dia da semana de hoje fica selecionado, mesmo que o
+      // preset de horário de funcionamento não o inclua — quem clica em
+      // "Hoje" está a pedir explicitamente horários para hoje.
+      const todayWeekday = new Date().getDay();
+      setWeekdays((prev) =>
+        prev.includes(todayWeekday) ? prev : [...prev, todayWeekday]
+      );
     } else if (type === 'week') {
       const { from, to } = weekRangeStr();
       setDateFrom(from);

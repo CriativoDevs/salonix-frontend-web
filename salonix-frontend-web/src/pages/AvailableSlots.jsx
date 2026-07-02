@@ -129,7 +129,13 @@ function AvailableSlots() {
     fetchProfessionals(slug)
       .then((data) => {
         if (cancelled) return;
-        setProfessionals(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        setProfessionals(list);
+        // Seleciona o primeiro profissional automaticamente para evitar que a
+        // página fique vazia à espera de uma ação manual nos filtros.
+        setSelectedProfessional((prev) =>
+          prev || (list[0] ? String(list[0].id) : '')
+        );
       })
       .catch(
         (e) => !cancelled && setError(parseApiError(e, t('common.load_error')))
