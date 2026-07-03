@@ -4,6 +4,24 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fetchCmsPages } from '../api/cms';
 
+// O backend ordena por published_at/created_at, não pela sequência numerada
+// nos títulos ("1. ...", "2. ..."), por isso reordenamos aqui. Páginas sem
+// número no título ficam no fim, na ordem em que chegaram da API.
+function sortPagesByTitleNumber(pages) {
+  const withIndex = pages.map((page, index) => ({ page, index }));
+  withIndex.sort((a, b) => {
+    const numA = parseInt(a.page.title?.match(/^(\d+)\./)?.[1], 10);
+    const numB = parseInt(b.page.title?.match(/^(\d+)\./)?.[1], 10);
+    const hasA = !Number.isNaN(numA);
+    const hasB = !Number.isNaN(numB);
+    if (hasA && hasB) return numA - numB;
+    if (hasA) return -1;
+    if (hasB) return 1;
+    return a.index - b.index;
+  });
+  return withIndex.map(({ page }) => page);
+}
+
 export default function CmsPage() {
   const { t } = useTranslation();
   const [pages, setPages] = useState([]);
@@ -31,7 +49,7 @@ export default function CmsPage() {
   useEffect(() => {
     document.title = t('cms.list.page_title', 'Como funciona | TimelyOne');
     fetchCmsPages()
-      .then(setPages)
+      .then((data) => setPages(sortPagesByTitleNumber(data)))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
     return () => { document.title = 'TimelyOne'; };
