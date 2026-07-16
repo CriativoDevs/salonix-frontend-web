@@ -31,6 +31,7 @@ import Setup from '../pages/Setup';
 import Plans from '../pages/Plans';
 import BillingSuccess from '../pages/BillingSuccess';
 import ClientEnter from '../pages/ClientEnter';
+import ClientSelfRegister from '../pages/ClientSelfRegister';
 import ClientLogin from '../pages/ClientLogin';
 import ClientSetPassword from '../pages/ClientSetPassword';
 import ClientAccess from '../pages/ClientAccess';
@@ -146,6 +147,7 @@ function Router() {
       />
       <Route path="/staff/accept" element={<StaffInviteAccept />} />
       <Route path="/client/enter" element={<ClientEnter />} />
+      <Route path="/join/:tenantSlug" element={<ClientSelfRegister />} />
       <Route path="/client/login" element={<ClientLogin />} />
       <Route path="/client/set-password" element={<ClientSetPassword />} />
       <Route path="/client/access" element={<ClientAccess />} />

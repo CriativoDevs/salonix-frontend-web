@@ -31,7 +31,12 @@
     "salon_name": "Business name",
     "phone_number": "Business phone",
     "captcha": {
-      "not_robot": "I am not a robot"
+      "not_robot": "I am not a robot",
+      "image_alt": "Captcha",
+      "label": "Type the text from the image (captcha)",
+      "refresh": "Refresh",
+      "load_error": "Could not load the captcha.",
+      "retry": "Try again"
     },
     "name": "Full name",
     "email": "Email",
@@ -1085,6 +1090,13 @@
       "export": "Export customers",
       "exporting": "Exporting..."
     },
+    "registration_link": {
+      "copy": "Copy registration link",
+      "copied": "Link copied!",
+      "copy_error": "Could not copy the link.",
+      "qr": "Generate QR Code",
+      "qr_title": "Registration QR Code"
+    },
     "import": {
       "title": "Import customers",
       "description": "Import customers from a CSV file. The file is validated before saving.",
@@ -2087,6 +2099,24 @@
       "session_required": "Session not found. Access via email link."
     },
     "success": "Password set successfully! Redirecting..."
+  },
+  "join": {
+    "loading": "Loading…",
+    "tenant_not_found": "Invalid link or salon not found.",
+    "subtitle": "Sign up to access your client area",
+    "form": {
+      "name": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "submit": "Sign up",
+      "submitting": "Signing up…"
+    },
+    "success_title": "Registration complete!",
+    "success_message": "Check your email to set your password.",
+    "errors": {
+      "rate_limited": "Too many attempts. Please wait a few minutes and try again.",
+      "generic": "Something went wrong. Please try again."
+    }
   },
   "upgrade": {
     "locked_feature": "Locked feature",
