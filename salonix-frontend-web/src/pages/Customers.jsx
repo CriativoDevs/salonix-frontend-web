@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Filter, Plus, Upload } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Filter,
+  Link2,
+  Plus,
+  QrCode,
+  Upload,
+} from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import CustomerForm from '../components/CustomerForm';
 import Card from '../components/ui/Card';
 import PageHeader from '../components/ui/PageHeader';
 import Dropdown from '../components/ui/Dropdown';
+import Modal from '../components/ui/Modal';
+import ToastContainer from '../components/ui/ToastContainer';
 import CustomerEditorModal from '../components/customers/CustomerEditorModal';
 import CustomerPhotoPreviewModal from '../components/customers/CustomerPhotoPreviewModal';
 import ImportCustomersModal from '../components/customers/ImportCustomersModal';
@@ -34,6 +45,7 @@ import PaginationControls from '../components/ui/PaginationControls';
 import CreditBlockModal from '../components/credits/CreditBlockModal';
 import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
 import { resolveTenantAssetUrl } from '../utils/tenant';
+import useToast from '../hooks/useToast';
 
 const SORT_RECENT = 'recent';
 const SORT_NAME = 'name';
@@ -161,6 +173,27 @@ function Customers() {
   const [blockModalOpen, setBlockModalOpen] = useState(false);
   const [blockAction, setBlockAction] = useState(null);
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const { toasts, showSuccess, showError, hideToast } = useToast();
+
+  const registrationLink = `${window.location.origin}/join/${slug}`;
+
+  const handleCopyRegistrationLink = async () => {
+    try {
+      if (!navigator.clipboard) {
+        throw new Error('Clipboard API unavailable');
+      }
+      await navigator.clipboard.writeText(registrationLink);
+      showSuccess(t('customers.registration_link.copied', 'Link copiado!'));
+    } catch {
+      showError(
+        t(
+          'customers.registration_link.copy_error',
+          'Não foi possível copiar o link.'
+        )
+      );
+    }
+  };
 
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -674,6 +707,24 @@ function Customers() {
                 },
               ]}
             />
+
+            <button
+              type="button"
+              onClick={handleCopyRegistrationLink}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+            >
+              <Link2 className="h-4 w-4" />
+              {t('customers.registration_link.copy', 'Copiar link de registo')}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setQrModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+            >
+              <QrCode className="h-4 w-4" />
+              {t('customers.registration_link.qr', 'Gerar QR Code')}
+            </button>
 
             <button
               type="button"
@@ -1265,6 +1316,19 @@ function Customers() {
           setRefreshToken((prev) => prev + 1);
         }}
       />
+      <Modal
+        open={qrModalOpen}
+        onClose={() => setQrModalOpen(false)}
+        title={t('customers.registration_link.qr_title', 'QR Code de registo')}
+      >
+        <div className="flex flex-col items-center gap-4 p-4">
+          <QRCodeSVG value={registrationLink} size={220} />
+          <p className="text-xs text-center text-brand-surfaceForeground/60 break-all">
+            {registrationLink}
+          </p>
+        </div>
+      </Modal>
+      <ToastContainer toasts={toasts} onClose={hideToast} />
     </FullPageLayout>
   );
 }

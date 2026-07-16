@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router-dom';
 import PlanOnboarding from '../PlanOnboarding';
 import * as billingApi from '../../api/billing';
 import * as safeRedirectUtils from '../../utils/safeRedirect';
-import * as usersApi from '../../api/users';
 
 jest.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
@@ -20,7 +19,17 @@ jest.mock('../../hooks/useTenant', () => ({
 }));
 
 jest.mock('../../hooks/useBillingOverview', () => {
-  const state = { overview: null, loading: false, refresh: jest.fn() };
+  const state = {
+    overview: {
+      available_plans: [
+        { plan_code: 'basic', is_available: true, is_current: false, can_upgrade: true },
+        { plan_code: 'standard', is_available: true, is_current: false, can_upgrade: true },
+        { plan_code: 'pro', is_available: true, is_current: false, can_upgrade: true },
+      ],
+    },
+    loading: false,
+    refresh: jest.fn(),
+  };
   return () => state;
 });
 
@@ -32,12 +41,6 @@ jest.mock('../../api/billing', () => ({
   ],
   createCheckoutSession: jest.fn(async () => ({
     url: '/checkout/mock?plan=standard',
-  })),
-}));
-
-jest.mock('../../api/users', () => ({
-  checkFounderAvailability: jest.fn(async () => ({
-    available: false,
   })),
 }));
 
@@ -67,7 +70,6 @@ describe('PlanOnboarding', () => {
     safeRedirectUtils.safeRedirect.mockReset();
     safeRedirectUtils.isRedirectValidationError.mockReset();
     safeRedirectUtils.isRedirectValidationError.mockReturnValue(false);
-    usersApi.checkFounderAvailability.mockResolvedValue({ available: false });
     billingApi.createCheckoutSession.mockResolvedValue({
       url: 'https://checkout.stripe.com/pay/cs_test_123',
     });

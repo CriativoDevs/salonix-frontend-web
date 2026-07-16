@@ -27,7 +27,12 @@
   },
   "auth": {
     "captcha": {
-      "not_robot": "Eu não sou um robô"
+      "not_robot": "Eu não sou um robô",
+      "image_alt": "Captcha",
+      "label": "Digite o texto da imagem (captcha)",
+      "refresh": "Atualizar",
+      "load_error": "Não foi possível carregar o captcha.",
+      "retry": "Tentar novamente"
     },
     "register_title": "Crie sua conta",
     "username": "Nome de usuário",
@@ -1085,6 +1090,13 @@
       "export": "Exportar clientes",
       "exporting": "A exportar..."
     },
+    "registration_link": {
+      "copy": "Copiar link de registo",
+      "copied": "Link copiado!",
+      "copy_error": "Não foi possível copiar o link.",
+      "qr": "Gerar QR Code",
+      "qr_title": "QR Code de registo"
+    },
     "import": {
       "title": "Importar clientes",
       "description": "Importe clientes a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
@@ -2123,6 +2135,24 @@
       "session_required": "Sessão não encontrada. Acesse via link de email."
     },
     "success": "Senha definida com sucesso! Redirecionando..."
+  },
+  "join": {
+    "loading": "A carregar…",
+    "tenant_not_found": "Link inválido ou salão não encontrado.",
+    "subtitle": "Registe-se para aceder à sua área de cliente",
+    "form": {
+      "name": "Nome completo",
+      "email": "E-mail",
+      "phone": "Telefone",
+      "submit": "Registar",
+      "submitting": "A registar…"
+    },
+    "success_title": "Cadastro realizado!",
+    "success_message": "Verifique o seu email para definir a senha.",
+    "errors": {
+      "rate_limited": "Muitas tentativas. Aguarde uns minutos e tente novamente.",
+      "generic": "Ocorreu um erro. Tente novamente."
+    }
   },
   "upgrade": {
     "locked_feature": "Feature bloqueada",

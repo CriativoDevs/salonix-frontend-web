@@ -1,35 +1,24 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
-import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
+import useBillingOverview from '../hooks/useBillingOverview';
+import { mergePlanAvailability } from '../utils/planAvailability';
 
 function RegisterCheckout() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const { slug } = useTenant();
+  const { overview } = useBillingOverview({ pollIntervalMs: 3000 });
   const [searchParams] = useSearchParams();
-  const [plans, setPlans] = useState(() =>
-    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  const plans = useMemo(
+    () => mergePlanAvailability(PLAN_OPTIONS, overview?.available_plans),
+    [overview?.available_plans]
   );
-
-  useEffect(() => {
-    checkFounderAvailability()
-      .then(({ available }) => {
-        if (available) {
-          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
-        } else {
-          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
-        }
-      })
-      .catch(() => {
-        setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
-      });
-  }, []);
 
   const [selected, setSelected] = useState('basic');
   const [billingCycle, setBillingCycle] = useState(
@@ -79,6 +68,8 @@ function RegisterCheckout() {
       setLoading(false);
     }
   }, [selected, slug, billingCycle, t]);
+
+  const selectedPlan = plans.find((p) => p.code === selected);
 
   return (
     <div className="min-h-screen theme-bg-primary theme-text-primary flex items-center justify-center px-4">
@@ -183,7 +174,7 @@ function RegisterCheckout() {
         <div className="mt-6 text-center">
           <button
             type="button"
-            disabled={loading || !isAuthenticated}
+            disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >

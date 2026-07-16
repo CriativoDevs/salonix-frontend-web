@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
@@ -7,13 +7,13 @@ import {
   createCheckoutSession,
   createBillingPortalSession,
 } from '../api/billing';
-import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 import useBillingOverview from '../hooks/useBillingOverview';
 import Modal from '../components/ui/Modal';
+import { mergePlanAvailability } from '../utils/planAvailability';
 
 function Plans() {
   const { t } = useTranslation();
@@ -29,12 +29,12 @@ function Plans() {
   const [managing, setManaging] = useState(false);
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [founderAvailable, setFounderAvailable] = useState(false);
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [showFounderWarning, setShowFounderWarning] = useState(false);
 
-  const [plans, setPlans] = useState(() =>
-    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  const plans = useMemo(
+    () => mergePlanAvailability(PLAN_OPTIONS, overview?.available_plans),
+    [overview?.available_plans]
   );
 
   useEffect(() => {
@@ -44,32 +44,6 @@ function Plans() {
       setBillingCycle('annual');
     }
   }, [overview?.current_subscription?.interval]);
-
-  useEffect(() => {
-    checkFounderAvailability()
-      .then(({ available }) => {
-        console.log('[Plans] Founder availability check:', { available });
-        setFounderAvailable(available);
-      })
-      .catch((err) => {
-        console.error('[Plans] Founder availability error:', err);
-        setFounderAvailable(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    // Backend já valida elegibilidade (ex-Founders recebem remaining_count: 0)
-    // Confiar apenas em founderAvailable que reflete a resposta personalizada do backend
-    if (founderAvailable) {
-      // Founder disponível: Mostra Founder, Esconde Basic
-      console.log('[Plans] Showing Founder plan (available)');
-      setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
-    } else {
-      // Founder não disponível: Esconde Founder, Mostra Basic
-      console.log('[Plans] Hiding Founder plan (not available)');
-      setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
-    }
-  }, [founderAvailable]);
 
   useEffect(() => {
     if (
@@ -172,6 +146,8 @@ function Plans() {
   const onContinue = useCallback(() => {
     setConfirmOpen(true);
   }, []);
+
+  const selectedPlan = plans.find((p) => p.code === selected);
 
   const onManage = useCallback(async () => {
     setManaging(true);
@@ -366,7 +342,7 @@ function Plans() {
         <div className="mt-6">
           <button
             type="button"
-            disabled={loading || !isAuthenticated}
+            disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -414,7 +390,7 @@ function Plans() {
             </button>
             <button
               type="button"
-              disabled={loading || !isAuthenticated}
+              disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
               onClick={confirmCheckout}
               className="text-brand-primary underline underline-offset-4 hover:text-brand-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >

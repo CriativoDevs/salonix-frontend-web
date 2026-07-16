@@ -1,14 +1,14 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import { PLAN_OPTIONS, createCheckoutSession } from '../api/billing';
-import { checkFounderAvailability } from '../api/users';
 import { parseApiError } from '../utils/apiError';
 import { isRedirectValidationError, safeRedirect } from '../utils/safeRedirect';
 import { useAuth } from '../hooks/useAuth';
 import { useTenant } from '../hooks/useTenant';
 import useBillingOverview from '../hooks/useBillingOverview';
 import Modal from '../components/ui/Modal';
+import { mergePlanAvailability } from '../utils/planAvailability';
 
 export default function PlanOnboarding() {
   const { t } = useTranslation();
@@ -26,23 +26,10 @@ export default function PlanOnboarding() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [showFounderWarning, setShowFounderWarning] = useState(false);
 
-  const [plans, setPlans] = useState(() =>
-    PLAN_OPTIONS.filter((p) => p.code !== 'founder')
+  const plans = useMemo(
+    () => mergePlanAvailability(PLAN_OPTIONS, overview?.available_plans),
+    [overview?.available_plans]
   );
-
-  useEffect(() => {
-    checkFounderAvailability()
-      .then(({ available }) => {
-        if (available) {
-          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'basic'));
-        } else {
-          setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
-        }
-      })
-      .catch(() => {
-        setPlans(PLAN_OPTIONS.filter((p) => p.code !== 'founder'));
-      });
-  }, []);
 
   useEffect(() => {
     if (overview) {
@@ -143,6 +130,8 @@ export default function PlanOnboarding() {
   const onContinue = useCallback(() => {
     setConfirmOpen(true);
   }, []);
+
+  const selectedPlan = plans.find((p) => p.code === selected);
 
   return (
     <AuthLayout>
@@ -278,7 +267,7 @@ export default function PlanOnboarding() {
         <div className="pt-2">
           <button
             type="button"
-            disabled={loading || !isAuthenticated}
+            disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -309,7 +298,7 @@ export default function PlanOnboarding() {
             </button>
             <button
               type="button"
-              disabled={loading || !isAuthenticated}
+              disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
               onClick={confirmCheckout}
               className="text-brand-primary underline underline-offset-4 hover:text-brand-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
