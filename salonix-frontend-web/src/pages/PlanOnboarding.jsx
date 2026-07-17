@@ -13,23 +13,23 @@ import { mergePlanAvailability } from '../utils/planAvailability';
 export default function PlanOnboarding() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { plan, slug, refetch } = useTenant();
+  const { slug, refetch } = useTenant();
   const {
     overview,
     loading: overviewLoading,
     refresh: refreshOverview,
   } = useBillingOverview({ pollIntervalMs: 3000 });
-  const [selected, setSelected] = useState('basic');
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [showFounderWarning, setShowFounderWarning] = useState(false);
 
   const plans = useMemo(
     () => mergePlanAvailability(PLAN_OPTIONS, overview?.available_plans),
     [overview?.available_plans]
   );
+
+  const plan = plans[0];
 
   useEffect(() => {
     if (overview) {
@@ -41,17 +41,6 @@ export default function PlanOnboarding() {
       });
     }
   }, [overview]);
-
-  useEffect(() => {
-    const fromOverview = (
-      overview?.current_subscription?.plan_code || ''
-    ).toLowerCase();
-    const tier = (plan?.tier || plan?.code || '').toLowerCase();
-    const candidate = fromOverview || tier;
-    if (candidate && ['basic', 'pro'].includes(candidate)) {
-      setSelected(candidate);
-    }
-  }, [overview?.current_subscription?.plan_code, plan?.tier, plan?.code]);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -84,12 +73,12 @@ export default function PlanOnboarding() {
       try {
         localStorage.setItem(
           'onboarding.plan.selection',
-          JSON.stringify({ plan: selected, startedAt: Date.now() })
+          JSON.stringify({ plan: plan?.code, startedAt: Date.now() })
         );
       } catch {
         /* noop */
       }
-      const { url } = await createCheckoutSession(selected, {
+      const { url } = await createCheckoutSession(plan?.code, {
         slug,
         interval: billingCycle,
       });
@@ -125,13 +114,11 @@ export default function PlanOnboarding() {
     } finally {
       setLoading(false);
     }
-  }, [selected, slug, t, billingCycle]);
+  }, [plan?.code, slug, t, billingCycle]);
 
   const onContinue = useCallback(() => {
     setConfirmOpen(true);
   }, []);
-
-  const selectedPlan = plans.find((p) => p.code === selected);
 
   return (
     <AuthLayout>
@@ -189,85 +176,52 @@ export default function PlanOnboarding() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {plans.map((p) => {
-            const isAnnual = billingCycle === 'annual';
-            const showPrice =
-              isAnnual && p.price_annual ? p.price_annual : p.price;
-            return (
-              <button
-                key={p.code}
-                type="button"
-                className={`relative rounded border p-4 text-left transition hover:shadow ${
-                  selected === p.code
-                    ? 'border-brand-primary ring-2 ring-brand-primary/40'
-                    : p.code === 'founder'
-                      ? 'border-yellow-500/50 bg-yellow-50/50 dark:bg-yellow-900/10'
-                      : 'border-gray-200 dark:border-gray-700'
-                }`}
-                onClick={() => {
-                  if (p.code === 'founder') {
-                    setShowFounderWarning(true);
-                  } else {
-                    setSelected(p.code);
-                  }
-                }}
-              >
-                {p.code === 'founder' && (
-                  <div className="mb-2 inline-block rounded-full bg-amber-500 px-2 py-1 text-xs font-bold text-white">
-                    {t(
-                      'plans.founder.limited_badge',
-                      'Oferta de lançamento — limitada a 500 contas'
-                    )}
+        {plan && (
+          <div className="grid gap-3">
+            {(() => {
+              const isAnnual = billingCycle === 'annual';
+              const showPrice =
+                isAnnual && plan.price_annual ? plan.price_annual : plan.price;
+              return (
+                <div className="relative rounded border border-brand-primary p-4 text-left ring-2 ring-brand-primary/40">
+                  <div className="text-base font-semibold flex items-center gap-2">
+                    {t(`plans.options.${plan.code}.name`, plan.name)}
                   </div>
-                )}
-                <div className="text-base font-semibold flex items-center gap-2">
-                  {t(`plans.options.${p.code}.name`, p.name)}
-                  {p.code === 'founder' && (
-                    <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-bold text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                      {t(`plans.options.${p.code}.badge`, 'Oferta Limitada')}
+                  <div className="mt-1 text-sm text-gray-600 flex items-baseline gap-1">
+                    <span>
+                      {t(
+                        `plans.options.${plan.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
+                        showPrice
+                      )}
                     </span>
+                    <span className="text-xs text-gray-400">
+                      {isAnnual ? t('plans.per_year') : t('plans.per_month')}
+                    </span>
+                  </div>
+                  {isAnnual && plan.price_annual && (
+                    <p className="mt-1 text-[10px] font-bold text-emerald-600">
+                      {t('plans.savings', 'Poupe 2 meses')}
+                    </p>
                   )}
+                  {Array.isArray(plan.highlights) && plan.highlights.length ? (
+                    <ul className="mt-2 list-disc pl-4 text-xs text-gray-500">
+                      {plan.highlights.slice(0, 3).map((h, idx) => (
+                        <li key={idx}>
+                          {t(`plans.options.${plan.code}.highlights.${idx}`, h)}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
-                <div className="mt-1 text-sm text-gray-600 flex items-baseline gap-1">
-                  <span>
-                    {t(
-                      `plans.options.${p.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
-                      showPrice
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {isAnnual ? t('plans.per_year') : t('plans.per_month')}
-                  </span>
-                </div>
-                {isAnnual && p.price_annual && (
-                  <p className="mt-1 text-[10px] font-bold text-emerald-600">
-                    {p.code === 'founder'
-                      ? t(
-                          'plans.founder.annual_savings',
-                          '(10 meses pagos, 2 grátis) - Vitalício'
-                        )
-                      : t('plans.savings', 'Poupe 2 meses')}
-                  </p>
-                )}
-                {Array.isArray(p.highlights) && p.highlights.length ? (
-                  <ul className="mt-2 list-disc pl-4 text-xs text-gray-500">
-                    {p.highlights.slice(0, 3).map((h, idx) => (
-                      <li key={idx}>
-                        {t(`plans.options.${p.code}.highlights.${idx}`, h)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+              );
+            })()}
+          </div>
+        )}
 
         <div className="pt-2">
           <button
             type="button"
-            disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
+            disabled={loading || !isAuthenticated || !plan?.is_available}
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -298,7 +252,7 @@ export default function PlanOnboarding() {
             </button>
             <button
               type="button"
-              disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
+              disabled={loading || !isAuthenticated || !plan?.is_available}
               onClick={confirmCheckout}
               className="text-brand-primary underline underline-offset-4 hover:text-brand-primary/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -315,7 +269,7 @@ export default function PlanOnboarding() {
               {t('plans.summary.plan', 'Plano selecionado')}
             </p>
             <p className="text-sm text-brand-surfaceForeground/70">
-              {t(`plans.options.${selected}.name`, selected)}
+              {t(`plans.options.${plan?.code}.name`, plan?.name)}
             </p>
           </div>
           <div className="rounded border border-brand-border bg-brand-light p-4">
@@ -324,12 +278,13 @@ export default function PlanOnboarding() {
             </p>
             <p className="text-sm text-brand-surfaceForeground/70">
               {(() => {
-                const p = plans.find((pl) => pl.code === selected) || {};
                 const isAnnual = billingCycle === 'annual';
                 const showPrice =
-                  isAnnual && p.price_annual ? p.price_annual : p.price;
+                  isAnnual && plan?.price_annual
+                    ? plan.price_annual
+                    : plan?.price;
                 return t(
-                  `plans.options.${selected}.price_${isAnnual ? 'annual' : 'monthly'}`,
+                  `plans.options.${plan?.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
                   showPrice
                 );
               })()}
@@ -337,72 +292,6 @@ export default function PlanOnboarding() {
           </div>
         </div>
       </Modal>
-
-      {/* Modal de Warning do Plano Founder */}
-      {showFounderWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
-            <div className="mb-4 flex items-start gap-3">
-              <div className="flex-shrink-0 rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                <svg
-                  className="h-6 w-6 text-amber-600 dark:text-amber-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                  {t(
-                    'plans.founder.warning_title',
-                    'Plano Founder: Oferta de Lançamento'
-                  )}
-                </h3>
-                <p className="mb-4 text-sm text-gray-700 dark:text-gray-300">
-                  {t(
-                    'plans.founder.warning_message',
-                    'O plano Founder é uma oferta de lançamento limitada às primeiras 500 contas. O preço de €15/mês fica garantido para sempre.'
-                  )}
-                </p>
-                <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-                    {t(
-                      'plans.founder.warning_note',
-                      '💡 Este plano foi criado para apoiar os primeiros 500 clientes da TimelyOne.'
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                className="flex-1 text-center text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-gray-200"
-                onClick={() => setShowFounderWarning(false)}
-              >
-                {t('plans.founder.warning_cancel', 'Cancelar')}
-              </button>
-              <button
-                type="button"
-                className="flex-1 text-center text-sm font-medium text-brand-primary hover:text-brand-primary/80 hover:underline dark:text-brand-primary-light"
-                onClick={() => {
-                  setSelected('founder');
-                  setShowFounderWarning(false);
-                }}
-              >
-                {t('plans.founder.warning_confirm', 'Entendi, Continuar')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </AuthLayout>
   );
 }

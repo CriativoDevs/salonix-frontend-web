@@ -20,7 +20,7 @@ function RegisterCheckout() {
     [overview?.available_plans]
   );
 
-  const [selected, setSelected] = useState('basic');
+  const plan = plans[0];
   const [billingCycle, setBillingCycle] = useState(
     searchParams.get('interval') === 'annual' ? 'annual' : 'monthly'
   );
@@ -31,7 +31,7 @@ function RegisterCheckout() {
     setLoading(true);
     setError(null);
     try {
-      const { url } = await createCheckoutSession(selected, {
+      const { url } = await createCheckoutSession(plan?.code, {
         slug,
         interval: billingCycle,
       });
@@ -67,9 +67,7 @@ function RegisterCheckout() {
     } finally {
       setLoading(false);
     }
-  }, [selected, slug, billingCycle, t]);
-
-  const selectedPlan = plans.find((p) => p.code === selected);
+  }, [plan?.code, slug, billingCycle, t]);
 
   return (
     <div className="min-h-screen theme-bg-primary theme-text-primary flex items-center justify-center px-4">
@@ -119,62 +117,55 @@ function RegisterCheckout() {
           </div>
         )}
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {plans.map((p) => {
-            const isAnnual = billingCycle === 'annual';
-            const showPrice =
-              isAnnual && p.price_annual ? p.price_annual : p.price;
+        {plan && (
+          <div className="mt-6">
+            {(() => {
+              const isAnnual = billingCycle === 'annual';
+              const showPrice =
+                isAnnual && plan.price_annual ? plan.price_annual : plan.price;
 
-            return (
-              <button
-                key={p.code}
-                type="button"
-                className={`relative rounded border p-4 text-left transition hover:shadow ${
-                  selected === p.code
-                    ? 'border-brand-primary ring-2 ring-brand-primary/40'
-                    : 'border-brand-border'
-                }`}
-                onClick={() => setSelected(p.code)}
-              >
-                <div className="text-lg font-semibold text-brand-surfaceForeground">
-                  {t(`plans.options.${p.code}.name`, p.name)}
+              return (
+                <div className="relative rounded border border-brand-primary p-4 text-left ring-2 ring-brand-primary/40">
+                  <div className="text-lg font-semibold text-brand-surfaceForeground">
+                    {t(`plans.options.${plan.code}.name`, plan.name)}
+                  </div>
+                  <div className="mt-1 flex items-baseline gap-1">
+                    <span className="text-xl font-bold text-brand-surfaceForeground">
+                      {t(
+                        `plans.options.${plan.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
+                        showPrice
+                      )}
+                    </span>
+                    <span className="text-xs text-brand-surfaceForeground/60">
+                      {isAnnual ? t('plans.per_year') : t('plans.per_month')}
+                    </span>
+                  </div>
+
+                  {isAnnual && plan.price_annual && (
+                    <p className="mt-1 text-[10px] font-bold text-emerald-600">
+                      Poupe 2 meses
+                    </p>
+                  )}
+
+                  {Array.isArray(plan.highlights) && plan.highlights.length ? (
+                    <ul className="mt-3 list-disc pl-4 text-xs text-brand-surfaceForeground/60">
+                      {plan.highlights.slice(0, 4).map((h, idx) => (
+                        <li key={idx}>
+                          {t(`plans.options.${plan.code}.highlights.${idx}`, h)}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-xl font-bold text-brand-surfaceForeground">
-                    {t(
-                      `plans.options.${p.code}.price_${isAnnual ? 'annual' : 'monthly'}`,
-                      showPrice
-                    )}
-                  </span>
-                  <span className="text-xs text-brand-surfaceForeground/60">
-                    {isAnnual ? t('plans.per_year') : t('plans.per_month')}
-                  </span>
-                </div>
-
-                {isAnnual && p.price_annual && (
-                  <p className="mt-1 text-[10px] font-bold text-emerald-600">
-                    Poupe 2 meses
-                  </p>
-                )}
-
-                {Array.isArray(p.highlights) && p.highlights.length ? (
-                  <ul className="mt-3 list-disc pl-4 text-xs text-brand-surfaceForeground/60">
-                    {p.highlights.slice(0, 4).map((h, idx) => (
-                      <li key={idx}>
-                        {t(`plans.options.${p.code}.highlights.${idx}`, h)}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
+              );
+            })()}
+          </div>
+        )}
 
         <div className="mt-6 text-center">
           <button
             type="button"
-            disabled={loading || !isAuthenticated || !selectedPlan?.is_available}
+            disabled={loading || !isAuthenticated || !plan?.is_available}
             onClick={onContinue}
             className="text-brand-primary underline hover:text-brand-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
