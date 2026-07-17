@@ -149,4 +149,23 @@ describe('PlanOnboarding', () => {
       )
     ).toBeInTheDocument();
   });
+
+  it('renders the plan area as a static, non-interactive card with no founder-warning trigger left', async () => {
+    render(
+      <MemoryRouter>
+        <PlanOnboarding />
+      </MemoryRouter>
+    );
+
+    const planName = await screen.findByText('TimelyOne');
+    // The plan card must not be a clickable element anymore.
+    expect(planName.closest('button')).toBeNull();
+
+    // The Founder warning modal (and its trigger) must be entirely gone —
+    // clicking the plan area used to open it, but there is nothing left to click.
+    expect(
+      screen.queryByText(/Plano Founder: Oferta de Lançamento/i)
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Entendi, Continuar/i)).not.toBeInTheDocument();
+  });
 });

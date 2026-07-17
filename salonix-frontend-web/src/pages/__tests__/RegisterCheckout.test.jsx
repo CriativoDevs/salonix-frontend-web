@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import RegisterCheckout from '../RegisterCheckout';
+import { createCheckoutSession } from '../../api/billing';
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key, fallback) => fallback || key }),
@@ -62,5 +63,58 @@ describe('RegisterCheckout', () => {
 
     const continueBtn = await screen.findByText(/Continuar para checkout/i);
     expect(continueBtn.closest('button')).not.toBeDisabled();
+  });
+
+  it('renders the single plan returned by the backend as a static, non-clickable card', async () => {
+    mockOverview = {
+      available_plans: [
+        { plan_code: 'founder', is_available: true, is_current: false, can_upgrade: true },
+      ],
+    };
+
+    render(
+      <MemoryRouter>
+        <RegisterCheckout />
+      </MemoryRouter>
+    );
+
+    const planName = await screen.findByText('Founder');
+    // The plan card must not be a clickable element anymore.
+    expect(planName.closest('button')).toBeNull();
+
+    // Only the plan the backend returned is shown — the other PLAN_OPTIONS entry
+    // (basic) that mergePlanAvailability filtered out must not be rendered.
+    expect(screen.queryByText('TimelyOne')).not.toBeInTheDocument();
+  });
+
+  it('keeps checking out the only available plan even if the plan card area is clicked', async () => {
+    createCheckoutSession.mockClear();
+    createCheckoutSession.mockResolvedValue({ url: 'https://checkout.example/session' });
+
+    mockOverview = {
+      available_plans: [
+        { plan_code: 'founder', is_available: true, is_current: false, can_upgrade: true },
+      ],
+    };
+
+    render(
+      <MemoryRouter>
+        <RegisterCheckout />
+      </MemoryRouter>
+    );
+
+    const planName = await screen.findByText('Founder');
+    // Clicking the plan card must not throw/change anything since there is no
+    // plan-switching UI left; the checkout call still targets 'founder'.
+    planName.click();
+
+    const continueBtn = await screen.findByText(/Continuar para checkout/i);
+    await act(async () => {
+      continueBtn.click();
+    });
+    expect(createCheckoutSession).toHaveBeenCalledWith(
+      'founder',
+      expect.objectContaining({ slug: 'aurora' })
+    );
   });
 });
