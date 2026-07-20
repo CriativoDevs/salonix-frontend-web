@@ -17,8 +17,9 @@ describe('fetchCaptchaChallenge', () => {
     // the X-Requested-With: XMLHttpRequest header (which axios never sends),
     // always 404ing in real usage. Use our own endpoint instead, which
     // returns the same {key, image_url} shape and validates against the
-    // same CaptchaStore.
-    expect(client.get).toHaveBeenCalledWith('captcha/new/');
+    // same CaptchaStore. It's mounted under 'users/' (users/urls.py is
+    // included at 'api/users/' in the root urls.py), not 'captcha/'.
+    expect(client.get).toHaveBeenCalledWith('users/captcha/new/');
     expect(result).toEqual({
       key: 'abc123',
       image_url: '/api/captcha/image/abc123/',
