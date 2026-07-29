@@ -7,7 +7,10 @@ export async function fetchBillingOverview({ slug } = {}) {
     headers['X-Tenant-Slug'] = slug;
     params.tenant = slug;
   }
-  const { data } = await client.get('payments/stripe/overview/', { headers, params });
+  const { data } = await client.get('payments/stripe/overview/', {
+    headers,
+    params,
+  });
   return data;
 }
 
@@ -24,7 +27,21 @@ export async function updateSubscriptionAction({ action, slug }) {
   return data;
 }
 
+export async function updateAutoRenewal({ autoRenewal, slug }) {
+  const headers = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+  }
+  const { data } = await client.patch(
+    'payments/stripe/settings/',
+    { auto_renewal: autoRenewal },
+    { headers }
+  );
+  return data;
+}
+
 export default {
   fetchBillingOverview,
   updateSubscriptionAction,
+  updateAutoRenewal,
 };
