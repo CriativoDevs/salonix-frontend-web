@@ -880,7 +880,9 @@
       "title": "Automatic Credit Top-up",
       "description": "When the communication credit included in your plan runs out before month's end, automatically buy more credit (charged to your card) so SMS/WhatsApp sending isn't interrupted.",
       "cancelled": "Automatic credit top-up cancelled successfully.",
-      "reactivated": "Automatic credit top-up reactivated successfully."
+      "reactivated": "Automatic credit top-up reactivated successfully.",
+      "package_label": "Package to auto-purchase",
+      "package_required": "Choose a credit package before enabling."
     },
     "auto_renewal_status": "Automatic credit top-up",
     "channels": {

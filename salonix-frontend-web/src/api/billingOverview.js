@@ -27,16 +27,18 @@ export async function updateSubscriptionAction({ action, slug }) {
   return data;
 }
 
-export async function updateAutoRenewal({ autoRenewal, slug }) {
+export async function updateAutoRenewal({ autoRenewal, autoRenewalPriceId, slug }) {
   const headers = {};
   if (slug) {
     headers['X-Tenant-Slug'] = slug;
   }
-  const { data } = await client.patch(
-    'payments/stripe/settings/',
-    { auto_renewal: autoRenewal },
-    { headers }
-  );
+  const payload = { auto_renewal: autoRenewal };
+  if (autoRenewalPriceId) {
+    payload.auto_renewal_price_id = autoRenewalPriceId;
+  }
+  const { data } = await client.patch('payments/stripe/settings/', payload, {
+    headers,
+  });
   return data;
 }
 

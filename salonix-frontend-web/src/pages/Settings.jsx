@@ -12,6 +12,8 @@ import RoleProtectedRoute from '../routes/RoleProtectedRoute';
 import useCreditBalance from '../hooks/useCreditBalance';
 import { updateTenantNotifications } from '../api/tenantNotifications';
 
+import { toast } from 'react-toastify';
+import billingOverviewApi from '../api/billingOverview';
 import useBillingOverview from '../hooks/useBillingOverview';
 import FeatureGate from '../components/security/FeatureGate';
 import PlanGate from '../components/security/PlanGate';
@@ -39,6 +41,7 @@ import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
 import CreditBlockModal from '../components/credits/CreditBlockModal';
 import CreditSettings from '../components/settings/CreditSettings';
 import useCreditGate from '../hooks/useCreditGate';
+import useCreditPurchase from '../hooks/useCreditPurchase';
 // Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
@@ -294,6 +297,7 @@ function Settings() {
 
   const {
     tenant,
+    tenantSlug,
     plan,
     modules,
     channels,
@@ -581,11 +585,65 @@ function Settings() {
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
 
   const [notifSaving, setNotifSaving] = useState(false);
+  const [autoRenewalSaving, setAutoRenewalSaving] = useState(false);
+  const { packages: creditPackages } = useCreditPurchase();
+  const [autoRenewalPackagePriceId, setAutoRenewalPackagePriceId] =
+    useState('');
 
-  // #338: handleAutoRenewalToggle removido junto com o toggle (ver Card
-  // escondido mais abaixo). billingOverviewApi.updateAutoRenewal ja existe
-  // pronta em src/api/billingOverview.js para quando o BE implementar a
-  // auto-compra e o toggle voltar a ser exibido.
+  useEffect(() => {
+    if (!autoRenewalPackagePriceId && creditPackages.length > 0) {
+      setAutoRenewalPackagePriceId(creditPackages[0].price_id);
+    }
+  }, [creditPackages, autoRenewalPackagePriceId]);
+
+  const handleAutoRenewalToggle = async () => {
+    if (!billingOverview || autoRenewalSaving) return;
+
+    const currentStatus = billingOverview.has_auto_renewal;
+
+    if (!currentStatus && !autoRenewalPackagePriceId) {
+      toast.error(
+        t(
+          'settings.auto_renewal.package_required',
+          'Escolha um pacote de crédito antes de ativar.'
+        )
+      );
+      return;
+    }
+
+    setAutoRenewalSaving(true);
+
+    try {
+      await billingOverviewApi.updateAutoRenewal({
+        autoRenewal: !currentStatus,
+        autoRenewalPriceId: currentStatus
+          ? undefined
+          : autoRenewalPackagePriceId,
+        slug: tenantSlug,
+      });
+      toast.success(
+        t(
+          currentStatus
+            ? 'settings.auto_renewal.cancelled'
+            : 'settings.auto_renewal.reactivated',
+          currentStatus
+            ? 'Renovação automática cancelada com sucesso.'
+            : 'Renovação automática reativada com sucesso.'
+        )
+      );
+      await refreshOverview();
+    } catch (error) {
+      console.error('Failed to toggle auto renewal:', error);
+      toast.error(
+        t(
+          'settings.auto_renewal.error',
+          'Erro ao atualizar renovação automática.'
+        )
+      );
+    } finally {
+      setAutoRenewalSaving(false);
+    }
+  };
 
   const { checkCredits } = useCreditGate();
   const [blockModalOpen, setBlockModalOpen] = useState(false);
@@ -991,9 +1049,23 @@ function Settings() {
           <p className="text-sm text-brand-surfaceForeground/80">
             {planName || t('settings.plan_unknown', 'Plano não identificado')}
           </p>
-          {/* #338: escondido ate a auto-compra de credito ser implementada no BE.
-              billingOverview.has_auto_renewal ja reflete comm_auto_renew corretamente,
-              mas nao ha logica de compra automatica real ainda. */}
+          {billingOverview &&
+          typeof billingOverview.has_auto_renewal === 'boolean' ? (
+            <p className="mt-1 text-xs text-brand-surfaceForeground/70">
+              {t('settings.auto_renewal_status', 'Renovação automática')}:{' '}
+              <span
+                className={
+                  billingOverview.has_auto_renewal
+                    ? 'font-medium text-green-600'
+                    : 'font-medium text-red-600'
+                }
+              >
+                {billingOverview.has_auto_renewal
+                  ? t('common.active', 'Ativa')
+                  : t('common.cancelled', 'Cancelada')}
+              </span>
+            </p>
+          ) : null}
           {tenantLoading ? (
             <p className="mt-1 text-xs text-brand-surfaceForeground/60">
               {t('common.loading_data', 'Carregando dados do plano...')}
@@ -1771,10 +1843,87 @@ function Settings() {
           </p>
         ) : null}
 
-        {/* #338: toggle de Renovacao Automatica de Credito escondido ate a
-            auto-compra real ser implementada no BE (comm_auto_renew hoje so
-            liga um booleano, nenhuma logica de compra o consome). Issue
-            permanece aberta; retomar a exibicao aqui quando o BE estiver pronto. */}
+        {/* Renovação Automática */}
+        <Card className="rounded-lg border border-brand-border bg-brand-surface/70 px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-brand-surfaceForeground">
+                {t('settings.auto_renewal.title', 'Renovação Automática')}
+              </p>
+              <p className="mt-1 text-sm text-brand-surfaceForeground/80">
+                {t(
+                  'settings.auto_renewal.description',
+                  'Gerencie a renovação automática do seu plano de assinatura.'
+                )}
+              </p>
+              {!billingOverview?.has_auto_renewal &&
+              creditPackages.length > 0 ? (
+                <label className="mt-3 block text-xs text-brand-surfaceForeground/70">
+                  {t(
+                    'settings.auto_renewal.package_label',
+                    'Pacote a comprar automaticamente'
+                  )}
+                  <select
+                    className="mt-1 block w-full rounded-md border border-brand-border bg-brand-surface px-2 py-1 text-sm text-brand-surfaceForeground"
+                    value={autoRenewalPackagePriceId}
+                    onChange={(e) =>
+                      setAutoRenewalPackagePriceId(e.target.value)
+                    }
+                    disabled={autoRenewalSaving}
+                  >
+                    {creditPackages.map((pkg) => (
+                      <option key={pkg.price_id} value={pkg.price_id}>
+                        {pkg.description || `€${pkg.price_eur}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              {autoRenewalSaving ? (
+                <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                  {t('common.saving', 'Salvando...')}
+                </p>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className={`text-sm font-medium ${
+                  billingOverview?.has_auto_renewal
+                    ? 'text-emerald-600'
+                    : 'text-brand-surfaceForeground/60'
+                }`}
+              >
+                {billingOverview?.has_auto_renewal
+                  ? t('common.active', 'Ativa')
+                  : t('common.inactive', 'Inativa')}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={billingOverview?.has_auto_renewal}
+                onClick={handleAutoRenewalToggle}
+                disabled={autoRenewalSaving || !billingOverview}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  billingOverview?.has_auto_renewal
+                    ? 'bg-brand-primary'
+                    : 'bg-gray-300'
+                } ${
+                  autoRenewalSaving || !billingOverview
+                    ? 'cursor-not-allowed opacity-60'
+                    : 'cursor-pointer'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    billingOverview?.has_auto_renewal
+                      ? 'translate-x-5'
+                      : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </Card>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {channelCards.map(({ key, label, enabled, rawEnabled }) => (

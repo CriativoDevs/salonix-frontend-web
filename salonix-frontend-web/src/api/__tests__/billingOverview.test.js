@@ -44,4 +44,20 @@ describe('billingOverview api - updateAutoRenewal', () => {
       { headers: {} }
     );
   });
+
+  it('inclui auto_renewal_price_id no payload quando fornecido', async () => {
+    client.patch.mockResolvedValueOnce({ data: { auto_renewal: true } });
+
+    await updateAutoRenewal({
+      autoRenewal: true,
+      autoRenewalPriceId: 'price_credits_10',
+      slug: 'aurora',
+    });
+
+    expect(client.patch).toHaveBeenCalledWith(
+      'payments/stripe/settings/',
+      { auto_renewal: true, auto_renewal_price_id: 'price_credits_10' },
+      { headers: { 'X-Tenant-Slug': 'aurora' } }
+    );
+  });
 });

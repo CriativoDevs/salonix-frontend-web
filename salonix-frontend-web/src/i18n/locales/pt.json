@@ -938,7 +938,9 @@
       "title": "Renovação Automática de Crédito",
       "description": "Quando o crédito de comunicação incluído no seu plano acabar antes do fim do mês, compre automaticamente mais crédito (cobrado no seu cartão) para não interromper os envios de SMS/WhatsApp.",
       "cancelled": "Renovação automática de crédito cancelada com sucesso.",
-      "reactivated": "Renovação automática de crédito reativada com sucesso."
+      "reactivated": "Renovação automática de crédito reativada com sucesso.",
+      "package_label": "Pacote a comprar automaticamente",
+      "package_required": "Escolha um pacote de crédito antes de ativar."
     },
     "auto_renewal_status": "Renovação automática de crédito",
     "channels": {
