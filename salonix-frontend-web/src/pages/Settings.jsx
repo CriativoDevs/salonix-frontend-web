@@ -41,6 +41,7 @@ import CreditPurchaseModal from '../components/credits/CreditPurchaseModal';
 import CreditBlockModal from '../components/credits/CreditBlockModal';
 import CreditSettings from '../components/settings/CreditSettings';
 import useCreditGate from '../hooks/useCreditGate';
+import useCreditPurchase from '../hooks/useCreditPurchase';
 // Checkout de créditos via sessão hospedada da Stripe (sem Elements)
 
 const TAB_ITEMS = [
@@ -585,17 +586,39 @@ function Settings() {
 
   const [notifSaving, setNotifSaving] = useState(false);
   const [autoRenewalSaving, setAutoRenewalSaving] = useState(false);
+  const { packages: creditPackages } = useCreditPurchase();
+  const [autoRenewalPackagePriceId, setAutoRenewalPackagePriceId] =
+    useState('');
+
+  useEffect(() => {
+    if (!autoRenewalPackagePriceId && creditPackages.length > 0) {
+      setAutoRenewalPackagePriceId(creditPackages[0].price_id);
+    }
+  }, [creditPackages, autoRenewalPackagePriceId]);
 
   const handleAutoRenewalToggle = async () => {
     if (!billingOverview || autoRenewalSaving) return;
 
     const currentStatus = billingOverview.has_auto_renewal;
-    const action = currentStatus ? 'cancel' : 'reactivate';
+
+    if (!currentStatus && !autoRenewalPackagePriceId) {
+      toast.error(
+        t(
+          'settings.auto_renewal.package_required',
+          'Escolha um pacote de crédito antes de ativar.'
+        )
+      );
+      return;
+    }
+
     setAutoRenewalSaving(true);
 
     try {
-      await billingOverviewApi.updateSubscriptionAction({
-        action,
+      await billingOverviewApi.updateAutoRenewal({
+        autoRenewal: !currentStatus,
+        autoRenewalPriceId: currentStatus
+          ? undefined
+          : autoRenewalPackagePriceId,
         slug: tenantSlug,
       });
       toast.success(
@@ -1833,6 +1856,29 @@ function Settings() {
                   'Gerencie a renovação automática do seu plano de assinatura.'
                 )}
               </p>
+              {!billingOverview?.has_auto_renewal &&
+              creditPackages.length > 0 ? (
+                <label className="mt-3 block text-xs text-brand-surfaceForeground/70">
+                  {t(
+                    'settings.auto_renewal.package_label',
+                    'Pacote a comprar automaticamente'
+                  )}
+                  <select
+                    className="mt-1 block w-full rounded-md border border-brand-border bg-brand-surface px-2 py-1 text-sm text-brand-surfaceForeground"
+                    value={autoRenewalPackagePriceId}
+                    onChange={(e) =>
+                      setAutoRenewalPackagePriceId(e.target.value)
+                    }
+                    disabled={autoRenewalSaving}
+                  >
+                    {creditPackages.map((pkg) => (
+                      <option key={pkg.price_id} value={pkg.price_id}>
+                        {pkg.description || `€${pkg.price_eur}`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
               {autoRenewalSaving ? (
                 <p className="mt-2 text-xs text-brand-surfaceForeground/60">
                   {t('common.saving', 'Salvando...')}

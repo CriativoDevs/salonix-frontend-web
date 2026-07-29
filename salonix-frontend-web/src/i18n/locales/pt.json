@@ -935,12 +935,14 @@
       "auto_invite_toggle_label": "Alternar convites automáticos"
     },
     "auto_renewal": {
-      "title": "Renovação Automática",
-      "description": "Gerencie a renovação automática do seu plano de assinatura.",
-      "cancelled": "Renovação automática cancelada com sucesso.",
-      "reactivated": "Renovação automática reativada com sucesso."
+      "title": "Renovação Automática de Crédito",
+      "description": "Quando o crédito de comunicação incluído no seu plano acabar antes do fim do mês, compre automaticamente mais crédito (cobrado no seu cartão) para não interromper os envios de SMS/WhatsApp.",
+      "cancelled": "Renovação automática de crédito cancelada com sucesso.",
+      "reactivated": "Renovação automática de crédito reativada com sucesso.",
+      "package_label": "Pacote a comprar automaticamente",
+      "package_required": "Escolha um pacote de crédito antes de ativar."
     },
-    "auto_renewal_status": "Renovação automática",
+    "auto_renewal_status": "Renovação automática de crédito",
     "channels": {
       "email": "Email",
       "sms": "SMS",
