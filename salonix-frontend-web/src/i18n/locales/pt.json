@@ -203,6 +203,67 @@
     },
     "export": { "error": "Não foi possível exportar os serviços." }
   },
+  "inventory": {
+    "title": "Estoque",
+    "subtitle": "Controle os itens usados no dia a dia do negócio e acompanhe quando é hora de repor.",
+    "confirm_delete": "Remover este item de estoque?",
+    "list": {
+      "title": "Itens de estoque",
+      "subtitle": "Acompanhe nomes, unidades e quantidades atuais de cada item.",
+      "quantity": "Quantidade",
+      "minimum": "Mínimo",
+      "low_stock": "Estoque baixo",
+      "empty_title": "Nenhum item cadastrado",
+      "empty_description": "Adicione o primeiro item para começar a controlar o seu estoque."
+    },
+    "actions": {
+      "movement": "Movimentar"
+    },
+    "form": {
+      "add": "Adicionar item",
+      "name": "Nome do item",
+      "name_placeholder": "Ex.: Shampoo profissional 1L",
+      "unit": "Unidade",
+      "unit_placeholder": "Ex.: un, ml, kg",
+      "quantity": "Quantidade atual",
+      "initial_quantity": "Quantidade inicial",
+      "minimum_quantity": "Estoque mínimo",
+      "minimum_quantity_placeholder": "Opcional",
+      "minimum_quantity_hint": "Quando a quantidade ficar igual ou abaixo do estoque mínimo, o item aparece nos alertas."
+    },
+    "editor": {
+      "create_title": "Adicionar item de estoque",
+      "edit_title": "Editar item de estoque",
+      "description": "Cadastre o item e defina um estoque mínimo para receber alertas quando estiver acabando."
+    },
+    "errors": {
+      "name_required": "Informe o nome do item.",
+      "unit_required": "Informe a unidade do item.",
+      "quantity_invalid": "Informe uma quantidade válida.",
+      "minimum_invalid": "Informe um estoque mínimo válido.",
+      "delete_failed": "Não foi possível remover o item."
+    },
+    "movements": {
+      "title": "Registrar movimentação",
+      "description": "Registre uma entrada ou saída para {{name}}.",
+      "type": "Tipo de movimentação",
+      "type_in": "Entrada",
+      "type_out": "Saída",
+      "quantity": "Quantidade",
+      "notes": "Notas (opcional)",
+      "submit": "Registrar movimentação",
+      "saving": "Registrando...",
+      "errors": {
+        "quantity_invalid": "Informe uma quantidade maior que zero.",
+        "generic": "Não foi possível registrar a movimentação.",
+        "negative_balance": "Estoque insuficiente para essa saída."
+      }
+    },
+    "alerts": {
+      "title": "Itens com estoque baixo",
+      "description": "Estes itens estão na quantidade mínima ou abaixo dela. Considere repor em breve."
+    }
+  },
   "professionals": {
     "title": "Profissionais",
     "name": "Nome",
@@ -1586,6 +1647,7 @@
     "how_it_works": "Como funciona",
     "plans": "Planos",
     "customers": "Clientes",
+    "inventory": "Estoque",
     "team": "Equipa",
     "go_to_dashboard": "Ir para o dashboard",
     "roadmap": "Roadmap",

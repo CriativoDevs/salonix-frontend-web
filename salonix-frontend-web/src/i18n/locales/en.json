@@ -202,6 +202,67 @@
     },
     "export": { "error": "Could not export services." }
   },
+  "inventory": {
+    "title": "Inventory",
+    "subtitle": "Track the items used in the day-to-day of the business and know when it's time to restock.",
+    "confirm_delete": "Remove this inventory item?",
+    "list": {
+      "title": "Inventory items",
+      "subtitle": "Track names, units and current quantities for each item.",
+      "quantity": "Quantity",
+      "minimum": "Minimum",
+      "low_stock": "Low stock",
+      "empty_title": "No items yet",
+      "empty_description": "Add your first item to start tracking your inventory."
+    },
+    "actions": {
+      "movement": "Record movement"
+    },
+    "form": {
+      "add": "Add item",
+      "name": "Item name",
+      "name_placeholder": "E.g.: Professional shampoo 1L",
+      "unit": "Unit",
+      "unit_placeholder": "E.g.: unit, ml, kg",
+      "quantity": "Current quantity",
+      "initial_quantity": "Initial quantity",
+      "minimum_quantity": "Minimum stock",
+      "minimum_quantity_placeholder": "Optional",
+      "minimum_quantity_hint": "When the quantity reaches this minimum or below, the item shows up in alerts."
+    },
+    "editor": {
+      "create_title": "Add inventory item",
+      "edit_title": "Edit inventory item",
+      "description": "Register the item and set a minimum stock level to get alerted when it's running low."
+    },
+    "errors": {
+      "name_required": "Enter the item name.",
+      "unit_required": "Enter the item unit.",
+      "quantity_invalid": "Enter a valid quantity.",
+      "minimum_invalid": "Enter a valid minimum stock.",
+      "delete_failed": "Could not remove the item."
+    },
+    "movements": {
+      "title": "Record movement",
+      "description": "Record a stock-in or stock-out for {{name}}.",
+      "type": "Movement type",
+      "type_in": "Stock in",
+      "type_out": "Stock out",
+      "quantity": "Quantity",
+      "notes": "Notes (optional)",
+      "submit": "Record movement",
+      "saving": "Recording...",
+      "errors": {
+        "quantity_invalid": "Enter a quantity greater than zero.",
+        "generic": "Could not record the movement.",
+        "negative_balance": "Not enough stock for that stock-out."
+      }
+    },
+    "alerts": {
+      "title": "Low stock items",
+      "description": "These items are at or below their minimum stock level. Consider restocking soon."
+    }
+  },
   "professionals": {
     "title": "professionals",
     "name": "Name",
@@ -1576,6 +1637,7 @@
     "logout": "Logout",
     "plans": "Plans",
     "customers": "Customers",
+    "inventory": "Inventory",
     "team": "Team",
     "go_to_dashboard": "Go to dashboard",
     "theme": {
