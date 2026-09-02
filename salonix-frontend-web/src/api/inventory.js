@@ -72,3 +72,33 @@ export async function deleteInventoryItem(id, { slug } = {}) {
   });
   return status === 204;
 }
+
+export async function createStockMovement(payload, { slug } = {}) {
+  const { headers, params } = buildHeadersAndParams({ slug });
+  const body = {
+    item: payload?.item,
+    movement_type: payload?.movement_type,
+    quantity:
+      payload?.quantity != null && payload?.quantity !== ''
+        ? Number(payload.quantity)
+        : 0,
+    notes: payload?.notes ? String(payload.notes).trim() : '',
+  };
+  const { data } = await client.post('inventory/movements/', body, {
+    headers,
+    params,
+  });
+  return data;
+}
+
+export async function fetchStockMovements({ slug, params } = {}) {
+  const { headers, params: searchParams } = buildHeadersAndParams({
+    slug,
+    params,
+  });
+  const { data } = await client.get('inventory/movements/', {
+    headers,
+    params: searchParams,
+  });
+  return Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];
+}

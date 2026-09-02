@@ -241,6 +241,22 @@
       "quantity_invalid": "Enter a valid quantity.",
       "minimum_invalid": "Enter a valid minimum stock.",
       "delete_failed": "Could not remove the item."
+    },
+    "movements": {
+      "title": "Record movement",
+      "description": "Record a stock-in or stock-out for {{name}}.",
+      "type": "Movement type",
+      "type_in": "Stock in",
+      "type_out": "Stock out",
+      "quantity": "Quantity",
+      "notes": "Notes (optional)",
+      "submit": "Record movement",
+      "saving": "Recording...",
+      "errors": {
+        "quantity_invalid": "Enter a quantity greater than zero.",
+        "generic": "Could not record the movement.",
+        "negative_balance": "Not enough stock for that stock-out."
+      }
     }
   },
   "professionals": {

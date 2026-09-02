@@ -6,11 +6,13 @@ import Card from '../components/ui/Card';
 import PageHeader from '../components/ui/PageHeader';
 import EmptyState from '../components/ui/EmptyState';
 import InventoryItemModal from '../components/inventory/InventoryItemModal';
+import StockMovementModal from '../components/inventory/StockMovementModal';
 import {
   fetchInventoryItems,
   createInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
+  createStockMovement,
 } from '../api/inventory';
 import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
@@ -48,6 +50,10 @@ function Inventory() {
   const [itemError, setItemError] = useState(null);
 
   const [busyId, setBusyId] = useState(null);
+
+  const [movementItem, setMovementItem] = useState(null);
+  const [movementBusy, setMovementBusy] = useState(false);
+  const [movementError, setMovementError] = useState(null);
 
   const loadItems = useCallback(() => {
     let cancelled = false;
@@ -143,6 +149,47 @@ function Inventory() {
     }
   };
 
+  const openMovementModal = (item) => {
+    setMovementItem(item);
+    setMovementError(null);
+  };
+
+  const closeMovementModal = () => {
+    setMovementItem(null);
+    setMovementError(null);
+  };
+
+  const handleSubmitMovement = async (payload) => {
+    setMovementBusy(true);
+    try {
+      await createStockMovement(payload, { slug });
+      const delta =
+        payload.movement_type === 'in'
+          ? Number(payload.quantity)
+          : -Number(payload.quantity);
+      setItems((prev) =>
+        prev.map((entry) =>
+          entry.id === payload.item
+            ? { ...entry, quantity: Number(entry.quantity) + delta }
+            : entry
+        )
+      );
+      closeMovementModal();
+    } catch (err) {
+      setMovementError(
+        parseApiError(
+          err,
+          t(
+            'inventory.movements.errors.generic',
+            'Não foi possível registrar a movimentação.'
+          )
+        )
+      );
+    } finally {
+      setMovementBusy(false);
+    }
+  };
+
   return (
     <FullPageLayout>
       <div className="space-y-6">
@@ -233,6 +280,9 @@ function Inventory() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 lg:justify-end">
+                        <ActionButton onClick={() => openMovementModal(item)}>
+                          {t('inventory.actions.movement', 'Movimentar')}
+                        </ActionButton>
                         <ActionButton
                           tone="primary"
                           onClick={() => openEditModal(item)}
@@ -263,6 +313,15 @@ function Inventory() {
         error={itemError}
         onClose={closeItemModal}
         onSubmit={handleSubmitItem}
+      />
+
+      <StockMovementModal
+        open={Boolean(movementItem)}
+        item={movementItem}
+        busy={movementBusy}
+        error={movementError}
+        onClose={closeMovementModal}
+        onSubmit={handleSubmitMovement}
       />
     </FullPageLayout>
   );

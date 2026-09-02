@@ -242,6 +242,22 @@
       "quantity_invalid": "Informe uma quantidade válida.",
       "minimum_invalid": "Informe um estoque mínimo válido.",
       "delete_failed": "Não foi possível remover o item."
+    },
+    "movements": {
+      "title": "Registrar movimentação",
+      "description": "Registre uma entrada ou saída para {{name}}.",
+      "type": "Tipo de movimentação",
+      "type_in": "Entrada",
+      "type_out": "Saída",
+      "quantity": "Quantidade",
+      "notes": "Notas (opcional)",
+      "submit": "Registrar movimentação",
+      "saving": "Registrando...",
+      "errors": {
+        "quantity_invalid": "Informe uma quantidade maior que zero.",
+        "generic": "Não foi possível registrar a movimentação.",
+        "negative_balance": "Estoque insuficiente para essa saída."
+      }
     }
   },
   "professionals": {
