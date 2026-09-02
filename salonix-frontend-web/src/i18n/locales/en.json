@@ -257,6 +257,10 @@
         "generic": "Could not record the movement.",
         "negative_balance": "Not enough stock for that stock-out."
       }
+    },
+    "alerts": {
+      "title": "Low stock items",
+      "description": "These items are at or below their minimum stock level. Consider restocking soon."
     }
   },
   "professionals": {

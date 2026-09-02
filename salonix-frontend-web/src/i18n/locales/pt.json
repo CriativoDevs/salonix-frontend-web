@@ -258,6 +258,10 @@
         "generic": "Não foi possível registrar a movimentação.",
         "negative_balance": "Estoque insuficiente para essa saída."
       }
+    },
+    "alerts": {
+      "title": "Itens com estoque baixo",
+      "description": "Estes itens estão na quantidade mínima ou abaixo dela. Considere repor em breve."
     }
   },
   "professionals": {

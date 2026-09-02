@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { AlertTriangle, Plus } from 'lucide-react';
 import FullPageLayout from '../layouts/FullPageLayout';
 import Card from '../components/ui/Card';
 import PageHeader from '../components/ui/PageHeader';
@@ -12,6 +12,7 @@ import {
   createInventoryItem,
   updateInventoryItem,
   deleteInventoryItem,
+  fetchInventoryAlerts,
   createStockMovement,
 } from '../api/inventory';
 import { parseApiError } from '../utils/apiError';
@@ -43,6 +44,9 @@ function Inventory() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [alerts, setAlerts] = useState([]);
+  const [alertsLoading, setAlertsLoading] = useState(true);
 
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -78,10 +82,39 @@ function Inventory() {
     };
   }, [slug, t]);
 
+  const loadAlerts = useCallback(() => {
+    let cancelled = false;
+    setAlertsLoading(true);
+    fetchInventoryAlerts({ slug })
+      .then((data) => {
+        if (cancelled) return;
+        setAlerts(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAlerts([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAlertsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
   useEffect(() => {
-    const cleanup = loadItems();
-    return cleanup;
-  }, [loadItems]);
+    const cleanupItems = loadItems();
+    const cleanupAlerts = loadAlerts();
+    return () => {
+      cleanupItems?.();
+      cleanupAlerts?.();
+    };
+  }, [loadItems, loadAlerts]);
+
+  const alertIds = useMemo(
+    () => new Set(alerts.map((alert) => alert.id)),
+    [alerts]
+  );
 
   const openCreateModal = () => {
     setEditingItem(null);
@@ -116,6 +149,7 @@ function Inventory() {
         setItems((prev) => [created, ...prev]);
       }
       closeItemModal();
+      loadAlerts();
     } catch (err) {
       setItemError(
         parseApiError(err, t('common.save_error', 'Falha ao salvar.'))
@@ -137,6 +171,7 @@ function Inventory() {
       setBusyId(item.id);
       await deleteInventoryItem(item.id, { slug });
       setItems((prev) => prev.filter((entry) => entry.id !== item.id));
+      loadAlerts();
     } catch (err) {
       setError(
         parseApiError(
@@ -175,6 +210,7 @@ function Inventory() {
         )
       );
       closeMovementModal();
+      loadAlerts();
     } catch (err) {
       setMovementError(
         parseApiError(
@@ -211,6 +247,38 @@ function Inventory() {
             {t('inventory.form.add', 'Adicionar item')}
           </button>
         </div>
+
+        {!alertsLoading && alerts.length > 0 ? (
+          <Card className="rounded-2xl border border-amber-400/40 bg-amber-50 p-5 shadow-sm ring-1 ring-amber-400/30">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-semibold text-amber-800">
+                  {t('inventory.alerts.title', 'Itens com estoque baixo')}
+                </h2>
+                <p className="mt-1 text-xs text-amber-700/80">
+                  {t(
+                    'inventory.alerts.description',
+                    'Estes itens estão na quantidade mínima ou abaixo dela. Considere repor em breve.'
+                  )}
+                </p>
+                <ul className="mt-3 flex flex-wrap gap-2">
+                  {alerts.map((alert) => (
+                    <li
+                      key={alert.id}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800"
+                    >
+                      {alert.name}
+                      <span className="text-amber-700/70">
+                        ({alert.quantity} {alert.unit})
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Card>
+        ) : null}
 
         <Card className="rounded-2xl border border-brand-border bg-brand-surface/95 p-5 shadow-sm ring-1 ring-brand-border/70 sm:p-6">
           <div className="border-b border-brand-border pb-4">
@@ -255,16 +323,29 @@ function Inventory() {
             <div className="mt-5 grid gap-3">
               {items.map((item) => {
                 const disabled = busyId === item.id;
+                const isAlert = alertIds.has(item.id);
                 return (
                   <Card
                     key={item.id}
-                    className="rounded-2xl border border-brand-border bg-brand-surface/80 p-4 shadow-sm ring-1 ring-brand-border/60"
+                    className={`rounded-2xl border p-4 shadow-sm ring-1 ${
+                      isAlert
+                        ? 'border-amber-400/40 bg-amber-50/60 ring-amber-400/30'
+                        : 'border-brand-border bg-brand-surface/80 ring-brand-border/60'
+                    }`}
                   >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div className="min-w-0 space-y-2">
-                        <h3 className="text-base font-semibold text-brand-surfaceForeground">
-                          {item.name}
-                        </h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-base font-semibold text-brand-surfaceForeground">
+                            {item.name}
+                          </h3>
+                          {isAlert ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                              <AlertTriangle className="h-3 w-3" />
+                              {t('inventory.list.low_stock', 'Estoque baixo')}
+                            </span>
+                          ) : null}
+                        </div>
                         <div className="flex flex-wrap gap-2 text-xs text-brand-surfaceForeground/70">
                           <span className="rounded-full border border-brand-border bg-brand-light/40 px-2 py-1">
                             {t('inventory.list.quantity', 'Quantidade')}:{' '}

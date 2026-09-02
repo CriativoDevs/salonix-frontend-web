@@ -73,6 +73,12 @@ export async function deleteInventoryItem(id, { slug } = {}) {
   return status === 204;
 }
 
+export async function fetchInventoryAlerts({ slug } = {}) {
+  const { headers, params } = buildHeadersAndParams({ slug });
+  const { data } = await client.get('inventory/alerts/', { headers, params });
+  return Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];
+}
+
 export async function createStockMovement(payload, { slug } = {}) {
   const { headers, params } = buildHeadersAndParams({ slug });
   const body = {
