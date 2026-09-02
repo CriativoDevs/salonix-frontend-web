@@ -15,6 +15,7 @@ import {
   LockIcon,
   BookOpenIcon,
   SmartphoneIcon,
+  PackageIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
@@ -105,6 +106,13 @@ function MobileNav() {
         icon: UsersIcon,
         label: t('nav.customers', 'Clientes'),
         featureKey: null, // Clientes disponível para todos
+      },
+      {
+        to: '/inventory',
+        icon: PackageIcon,
+        label: t('nav.inventory', 'Estoque'),
+        roles: ['owner', 'manager'],
+        featureKey: null,
       },
       {
         to: '/team',

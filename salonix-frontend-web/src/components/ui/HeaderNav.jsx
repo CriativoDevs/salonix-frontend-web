@@ -80,6 +80,11 @@ export default function HeaderNav() {
       },
       { to: '/customers', label: t('nav.customers', 'Clientes') },
       {
+        to: '/inventory',
+        label: t('nav.inventory', 'Estoque'),
+        roles: ['owner', 'manager'],
+      },
+      {
         to: '/team',
         label: t('nav.team', 'Equipe'),
         roles: ['owner', 'manager'],
