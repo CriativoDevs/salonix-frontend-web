@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../../utils/format';
 import {
@@ -11,10 +11,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import TableLoadingSpinner from '../ui/TableLoadingSpinner';
+import PaginationControls from '../ui/PaginationControls';
 
 export default function RevenueChart({ data, loading, interval = 'day' }) {
   const { t } = useTranslation();
   const [view, setView] = useState('chart'); // 'chart' | 'table'
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
 
   // Usar a estrutura correta dos dados: data.revenue.series
   const revenueData = useMemo(() => {
@@ -25,6 +28,45 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
   const filteredData = useMemo(() => {
     return revenueData;
   }, [revenueData]);
+
+  // Reinicia a paginação sempre que os dados mudarem (novo período/filtro)
+  useEffect(() => {
+    setOffset(0);
+  }, [filteredData]);
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '—';
+    switch (interval) {
+      case 'day':
+        return date.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+        });
+      case 'week':
+        return `Sem ${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+      case 'month':
+        return date.toLocaleDateString('pt-BR', {
+          month: 'short',
+          year: 'numeric',
+        });
+      default:
+        return date.toLocaleDateString('pt-BR');
+    }
+  };
+
+  // Hook sempre executado (mesmo com dados vazios) para respeitar as regras
+  // dos hooks — evita chamar useMemo condicionalmente após early returns.
+  const chartData = useMemo(
+    () =>
+      filteredData.map((item) => ({
+        label: formatDate(item.period_start),
+        revenue: item.revenue || 0,
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filteredData, interval]
+  );
 
   if (loading) {
     return (
@@ -67,28 +109,6 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
     );
   }
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '—';
-    switch (interval) {
-      case 'day':
-        return date.toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-        });
-      case 'week':
-        return `Sem ${date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
-      case 'month':
-        return date.toLocaleDateString('pt-BR', {
-          month: 'short',
-          year: 'numeric',
-        });
-      default:
-        return date.toLocaleDateString('pt-BR');
-    }
-  };
-
   // Calcular estatísticas
   const totalRevenue = filteredData.reduce(
     (sum, item) => sum + (item.revenue || 0),
@@ -98,15 +118,9 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
     filteredData.length > 0 ? totalRevenue / filteredData.length : 0;
   const maxRevenue = Math.max(...filteredData.map((item) => item.revenue || 0));
 
-  const chartData = useMemo(
-    () =>
-      filteredData.map((item) => ({
-        label: formatDate(item.period_start),
-        revenue: item.revenue || 0,
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filteredData, interval]
-  );
+  const totalCount = filteredData.length;
+  const startIndex = offset;
+  const currentPageData = filteredData.slice(offset, offset + limit);
 
   return (
     <div className="space-y-6">
@@ -239,8 +253,8 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
               </tr>
             </thead>
             <tbody className="bg-brand-surface divide-y divide-brand-border">
-              {filteredData.map((item, index) => (
-                <tr key={index} className="hover:bg-brand-light/20">
+              {currentPageData.map((item, index) => (
+                <tr key={startIndex + index} className="hover:bg-brand-light/20">
                   <td className="whitespace-nowrap px-4 py-4 text-sm font-medium text-brand-surfaceForeground sm:px-6">
                     {formatDate(item.period_start)}
                   </td>
@@ -261,6 +275,27 @@ export default function RevenueChart({ data, loading, interval = 'day' }) {
               ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {totalCount > 0 && (
+            <div className="border-t border-brand-border bg-brand-light/10 px-4 py-3 sm:px-6">
+              <PaginationControls
+                totalCount={totalCount}
+                limit={limit}
+                offset={offset}
+                onChangeLimit={(nextLimit) => {
+                  setLimit(nextLimit);
+                  setOffset(0);
+                }}
+                onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+                onNext={() =>
+                  setOffset((prev) =>
+                    prev + limit < totalCount ? prev + limit : prev
+                  )
+                }
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -119,9 +119,13 @@ describe('useReportsData', () => {
     await waitFor(() => {
       expect(fetchTopServices).toHaveBeenCalledWith({
         slug: 'business-forbidden-salon',
+        limit: 500,
+        offset: 0,
       });
       expect(fetchRevenue).toHaveBeenCalledWith({
         slug: 'business-forbidden-salon',
+        limit: 500,
+        offset: 0,
       });
     });
 
@@ -130,6 +134,84 @@ describe('useReportsData', () => {
     });
     expect(result.current.error).toBeNull();
     expect(result.current.data.businessReports).toEqual({});
+  });
+
+  it('mantém os dados de top-services quando revenue falha (falha parcial não derruba tudo)', async () => {
+    fetchTopServices.mockResolvedValueOnce([
+      { service_id: 1, service_name: 'Coloração', qty: 12, revenue: 900 },
+    ]);
+    fetchRevenue.mockRejectedValueOnce({ response: { status: 500 } });
+
+    const filters = { from: '2026-08-01', to: '2026-08-31', interval: 'day', limit: 25 };
+    const { result } = renderHook(() =>
+      useReportsData({
+        slug: 'business-partial-fail',
+        type: 'business',
+        filters,
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    // Regressão: antes da correção, uma falha isolada em /reports/revenue/
+    // descartava também o resultado bem-sucedido de /reports/top-services/
+    // (via `throw hasError` incondicional), fazendo o card "Serviços Mais
+    // Populares" aparecer vazio mesmo com dados reais disponíveis.
+    expect(result.current.data.businessReports.top_services).toEqual([
+      { service_id: 1, service_name: 'Coloração', qty: 12, revenue: 900 },
+    ]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.forbidden).toBe(false);
+  });
+
+  it('mantém os dados de revenue quando top-services falha (falha parcial não derruba tudo)', async () => {
+    fetchTopServices.mockRejectedValueOnce({ response: { status: 500 } });
+    fetchRevenue.mockResolvedValueOnce({
+      interval: 'day',
+      series: [{ period_start: '2026-08-01', revenue: 500 }],
+    });
+
+    const filters = { from: '2026-08-01', to: '2026-08-31', interval: 'day', limit: 25 };
+    const { result } = renderHook(() =>
+      useReportsData({
+        slug: 'business-partial-fail-2',
+        type: 'business',
+        filters,
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.data.businessReports.revenue).toEqual({
+      interval: 'day',
+      series: [{ period_start: '2026-08-01', revenue: 500 }],
+    });
+    expect(result.current.error).toBeNull();
+  });
+
+  it('propaga erro bloqueante quando top-services e revenue falham juntos', async () => {
+    fetchTopServices.mockRejectedValueOnce({ response: { status: 500 } });
+    fetchRevenue.mockRejectedValueOnce({ response: { status: 500 } });
+
+    const filters = { from: '2026-08-01', to: '2026-08-31' };
+    const { result } = renderHook(() =>
+      useReportsData({
+        slug: 'business-total-fail',
+        type: 'business',
+        filters,
+      })
+    );
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.data.businessReports).toEqual({});
+    expect(result.current.error).not.toBeNull();
   });
 
   it('carrega insights com retenção e período', async () => {

@@ -67,7 +67,13 @@ jest.mock('../../components/reports/BasicReportsMetrics', () => ({
 
 jest.mock('../../components/reports/DateFilters', () => ({
   __esModule: true,
-  default: () => <div>date-filters</div>,
+  default: ({ fromDate, toDate }) => (
+    <div>
+      date-filters
+      <span data-testid="date-filters-from">{fromDate}</span>
+      <span data-testid="date-filters-to">{toDate}</span>
+    </div>
+  ),
 }));
 
 jest.mock('../../components/reports/ExportButton', () => ({
@@ -92,7 +98,26 @@ jest.mock('../../components/reports/RevenueChart', () => ({
 
 jest.mock('../../components/reports/AdvancedFilters', () => ({
   __esModule: true,
-  default: () => <div>advanced-filters</div>,
+  default: ({
+    interval,
+    professionalId,
+    onProfessionalChange,
+    serviceId,
+    onServiceChange,
+  }) => (
+    <div>
+      advanced-filters
+      <span data-testid="af-interval">{interval}</span>
+      <span data-testid="af-professional">{professionalId}</span>
+      <span data-testid="af-service">{serviceId}</span>
+      <button type="button" onClick={() => onProfessionalChange('7')}>
+        set-professional
+      </button>
+      <button type="button" onClick={() => onServiceChange('9')}>
+        set-service
+      </button>
+    </div>
+  ),
 }));
 
 jest.mock('../../components/ui/ToastContainer', () => ({
@@ -109,6 +134,10 @@ jest.mock('../../api/reports', () => ({
   exportTopServicesReport: jest.fn(),
   exportRevenueReport: jest.fn(),
   downloadCSV: jest.fn(),
+}));
+
+jest.mock('../../api/services', () => ({
+  fetchServices: jest.fn(() => Promise.resolve([])),
 }));
 
 jest.mock('react-i18next', () => ({
@@ -257,5 +286,145 @@ describe('Reports page', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Atualizar plano' }));
     expect(mockNavigate).toHaveBeenCalledWith('/plans');
+  });
+
+  it('usa o mês corrente (dia 1 até hoje) como período padrão, já refletido nos campos de data', () => {
+    const formatDateForInput = (date) => new Date(date).toISOString().split('T')[0];
+    const now = new Date();
+    const expectedFrom = formatDateForInput(
+      new Date(now.getFullYear(), now.getMonth(), 1)
+    );
+    const expectedTo = formatDateForInput(now);
+
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('date-filters-from')).toHaveTextContent(
+      expectedFrom
+    );
+    expect(screen.getByTestId('date-filters-to')).toHaveTextContent(
+      expectedTo
+    );
+
+    // O mesmo período deve ter sido usado na chamada inicial ao hook de dados
+    const basicCall = useReportsData.mock.calls
+      .map(([args]) => args)
+      .find((args) => args.type === 'basic');
+    expect(basicCall.filters).toEqual({ from: expectedFrom, to: expectedTo });
+  });
+
+  it('propaga interval, profissional e serviço para o fetch da Análise de Negócio', () => {
+    useReportsData.mockImplementation(({ type }) => {
+      if (type === 'business') {
+        return {
+          data: {
+            businessReports: {
+              top_services: [],
+              revenue: { series: [] },
+            },
+          },
+          loading: false,
+          error: null,
+          forbidden: false,
+          refetch: jest.fn(),
+        };
+      }
+      return {
+        data: { basicReports: null },
+        loading: false,
+        error: null,
+        forbidden: false,
+        refetch: jest.fn(),
+      };
+    });
+
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Análise de Negócio' }));
+
+    expect(screen.getByTestId('af-interval')).toHaveTextContent('day');
+
+    fireEvent.click(screen.getByText('set-professional'));
+    fireEvent.click(screen.getByText('set-service'));
+
+    const lastBusinessCall = useReportsData.mock.calls
+      .map(([args]) => args)
+      .filter((args) => args.type === 'business')
+      .pop();
+
+    expect(lastBusinessCall.filters).toEqual(
+      expect.objectContaining({
+        interval: 'day',
+        professional_id: '7',
+        service_id: '9',
+      })
+    );
+    expect(lastBusinessCall.filters).not.toHaveProperty('limit');
+  });
+
+  it('propaga apenas professional_id (sem service_id) para o fetch de Insights/Retenção', () => {
+    useStaff.mockReturnValue({
+      staff: [
+        { id: 7, first_name: 'Ana', last_name: 'Silva', email: 'ana@example.com' },
+      ],
+      error: null,
+      forbidden: false,
+    });
+    useReportsData.mockImplementation(({ type }) => {
+      if (type === 'insights') {
+        return {
+          data: {
+            insightsReports: {
+              retention: {
+                new_clients: { qty: 1, revenue: 10 },
+                returning_clients: { qty: 1, revenue: 10 },
+              },
+              period: { start: '2026-04-01', end: '2026-04-28' },
+            },
+          },
+          loading: false,
+          error: null,
+          forbidden: false,
+          refetch: jest.fn(),
+        };
+      }
+      return {
+        data: { basicReports: null },
+        loading: false,
+        error: null,
+        forbidden: false,
+        refetch: jest.fn(),
+      };
+    });
+
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Insights Avançados' }));
+
+    const professionalSelect = screen.getByLabelText('Profissional');
+    fireEvent.change(professionalSelect, { target: { value: '7' } });
+
+    const lastInsightsCall = useReportsData.mock.calls
+      .map(([args]) => args)
+      .filter((args) => args.type === 'insights')
+      .pop();
+
+    expect(lastInsightsCall.filters).toEqual(
+      expect.objectContaining({ professional_id: '7' })
+    );
+    expect(lastInsightsCall.filters).not.toHaveProperty('service_id');
+    expect(lastInsightsCall.filters).not.toHaveProperty('interval');
+    expect(lastInsightsCall.filters).not.toHaveProperty('limit');
   });
 });
