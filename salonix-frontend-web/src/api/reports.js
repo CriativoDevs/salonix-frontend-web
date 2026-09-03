@@ -57,7 +57,8 @@ export async function fetchAdvancedReports(params = {}) {
  * Disponível apenas para planos Pro
  */
 export async function fetchTopServices(params = {}) {
-  const { from, to, limit, offset, slug } = params;
+  const { from, to, limit, offset, professional_id, service_id, slug } =
+    params;
   const headers = {};
   const queryParams = {};
 
@@ -70,6 +71,8 @@ export async function fetchTopServices(params = {}) {
   if (to) queryParams.to = to;
   if (limit) queryParams.limit = limit;
   if (offset) queryParams.offset = offset;
+  if (professional_id) queryParams.professional_id = professional_id;
+  if (service_id) queryParams.service_id = service_id;
 
   const { data } = await client.get('reports/top-services/', {
     headers,
@@ -110,7 +113,7 @@ export async function fetchRevenue(params = {}) {
  * Disponível apenas para planos Pro
  */
 export async function fetchRetention(params = {}) {
-  const { from, to, slug } = params;
+  const { from, to, professional_id, slug } = params;
   const headers = {};
   const queryParams = {};
 
@@ -121,6 +124,7 @@ export async function fetchRetention(params = {}) {
 
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
+  if (professional_id) queryParams.professional_id = professional_id;
 
   const { data } = await client.get('reports/retention/', {
     headers,
@@ -183,7 +187,7 @@ export async function exportOverviewReport(params = {}) {
  * Exporta relatório de top services em CSV
  */
 export async function exportTopServicesReport(params = {}) {
-  const { from, to, limit, slug } = params;
+  const { from, to, limit, professional_id, service_id, slug } = params;
   const headers = {};
   const queryParams = {};
 
@@ -195,6 +199,8 @@ export async function exportTopServicesReport(params = {}) {
   if (from) queryParams.from = from;
   if (to) queryParams.to = to;
   if (limit) queryParams.limit = limit;
+  if (professional_id) queryParams.professional_id = professional_id;
+  if (service_id) queryParams.service_id = service_id;
 
   const response = await client.get('reports/top-services/export/', {
     headers,

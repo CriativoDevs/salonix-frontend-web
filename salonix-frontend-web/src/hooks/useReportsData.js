@@ -19,6 +19,13 @@ const INITIAL_DATA = {
 const cache = new Map();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
+// "Itens por Página" no filtro é o tamanho de página da TABELA (client-side),
+// não deve limitar quantos registos são buscados da API — senão a tabela só
+// vê o próprio itemsPerPage e a paginação client-side nunca tem uma 2ª página.
+// Busca sempre o máximo permitido pelo backend (REPORTS_PAGINATION.MAX_LIMIT)
+// e deixa TopServices/RevenueChart paginarem localmente sobre o conjunto completo.
+const REPORTS_FETCH_MAX_LIMIT = 500;
+
 function getCacheKey(slug, type, filters) {
   return `${slug}-${type}-${JSON.stringify(filters || {})}`;
 }
@@ -111,44 +118,63 @@ export function useReportsData({ slug, type, filters } = {}) {
       } else if (type === 'business') {
         // Business Analysis (Pro): Top Services + Revenue
         const [topServicesResult, revenueResult] = await Promise.allSettled([
-          fetchTopServices({ slug, ...memoizedFilters }),
-          fetchRevenue({ slug, ...memoizedFilters }),
+          fetchTopServices({ slug, ...memoizedFilters, limit: REPORTS_FETCH_MAX_LIMIT, offset: 0 }),
+          fetchRevenue({ slug, ...memoizedFilters, limit: REPORTS_FETCH_MAX_LIMIT, offset: 0 }),
         ]);
 
         if (!mountedRef.current) return;
 
-        let hasError = null;
         let hasForbidden = false;
+        let partialError = null;
         const businessData = {};
 
         if (topServicesResult.status === 'fulfilled') {
           businessData.top_services = topServicesResult.value;
+        } else if (topServicesResult.reason?.response?.status === 403) {
+          hasForbidden = true;
         } else {
-          if (topServicesResult.reason?.response?.status === 403)
-            hasForbidden = true;
-          else hasError = topServicesResult.reason;
+          partialError = topServicesResult.reason;
+          console.error(
+            '[useReportsData] endpoint=reports/top-services/ failed',
+            partialError
+          );
         }
 
         if (revenueResult.status === 'fulfilled') {
           // Revenue retorna { interval: "...", series: [...] }
           // Mapeamos para a estrutura esperada pelo componente
           businessData.revenue = revenueResult.value;
+        } else if (revenueResult.reason?.response?.status === 403) {
+          hasForbidden = true;
         } else {
-          if (revenueResult.reason?.response?.status === 403)
-            hasForbidden = true;
-          else if (!hasError) hasError = revenueResult.reason;
+          if (!partialError) partialError = revenueResult.reason;
+          console.error(
+            '[useReportsData] endpoint=reports/revenue/ failed',
+            revenueResult.reason
+          );
         }
 
-        if (hasError) throw hasError;
+        // Uma falha parcial (só um dos dois endpoints) não deve derrubar os
+        // dados que já carregaram com sucesso — ex.: Top Services respondeu
+        // normalmente mas Revenue falhou (ou vice-versa). Só tratamos como
+        // erro "bloqueante" (que esconde todo o conteúdo da aba) quando
+        // NENHUM dos dois teve sucesso.
+        const hasAnySuccess =
+          'top_services' in businessData || 'revenue' in businessData;
+        const finalError =
+          !hasAnySuccess && partialError
+            ? parseApiError(partialError, 'Falha ao carregar os relatórios.')
+            : null;
 
         const newData = { ...INITIAL_DATA, businessReports: businessData };
         setData(newData);
         setForbidden(hasForbidden);
+        setError(finalError);
 
         // Cache do resultado
         setCachedData(cacheKey, {
           data: newData,
-          error: null,
+          error: finalError,
           forbidden: hasForbidden,
         });
       } else if (type === 'insights') {

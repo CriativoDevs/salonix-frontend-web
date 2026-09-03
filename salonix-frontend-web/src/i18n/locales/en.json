@@ -1763,7 +1763,41 @@
       "upgrade_required": "This section is not available on your account. Contact support if you need access.",
       "upgrade_button": "Upgrade plan",
       "coming_soon": "Coming soon: Advanced analytics, comparisons and detailed insights",
-      "data_loaded": "Advanced data loaded successfully"
+      "data_loaded": "Advanced data loaded successfully",
+      "intervals": {
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly"
+      },
+      "filters": {
+        "title": "Advanced Filters",
+        "interval": "Time Interval",
+        "professional": "Professional",
+        "service": "Service",
+        "all_professionals": "All professionals",
+        "all_services": "All services",
+        "help": "Adjust the filters to customize the data view"
+      },
+      "no_services": "No services found for the selected period",
+      "no_revenue": "No revenue data found for the selected period",
+      "top_services": {
+        "title": "Most Popular Services",
+        "description": "Services ranked by number of appointments",
+        "service": "Service",
+        "appointments": "Appointments",
+        "revenue": "Revenue",
+        "avg_price": "Average Price"
+      },
+      "revenue": {
+        "title": "Revenue Evolution",
+        "period": "Period",
+        "revenue": "Revenue",
+        "appointments": "Appointments",
+        "avg_ticket": "Average Ticket",
+        "total": "Total Revenue",
+        "average": "Average per Period",
+        "peak": "Peak Revenue"
+      }
     },
     "insights": {
       "title": "Advanced Insights",
@@ -1774,7 +1808,12 @@
       "returning_clients": "Returning Clients",
       "clients_count": "Count",
       "revenue_generated": "Revenue generated",
-      "period_label": "Data from {{start}} to {{end}}"
+      "period_label": "Data from {{start}} to {{end}}",
+      "filters": {
+        "title": "Filters",
+        "professional": "Professional",
+        "all_professionals": "All professionals"
+      }
     },
     "access_denied": {
       "title": "Restricted access",

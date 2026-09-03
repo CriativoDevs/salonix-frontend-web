@@ -22,11 +22,29 @@ import { useStaff } from '../hooks/useStaff';
 import { useReportsData } from '../hooks/useReportsData';
 import useToast from '../hooks/useToast';
 import { useDebounce } from '../hooks/useDebounce';
+import { fetchServices } from '../api/services';
 import {
   exportTopServicesReport,
   exportRevenueReport,
   downloadCSV,
 } from '../api/reports';
+
+function resolveStaffName(member) {
+  if (!member) return '';
+  const nameParts = [member.first_name, member.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  if (nameParts) return nameParts;
+  return member.email || member.username || '';
+}
+
+function formatServiceLabel(service) {
+  if (!service) return '';
+  const parts = [service.name].filter(Boolean);
+  if (service.duration_minutes) parts.push(`${service.duration_minutes} min`);
+  return parts.join(' • ');
+}
 
 export default function Reports() {
   const { t, i18n } = useTranslation();
@@ -46,20 +64,21 @@ export default function Reports() {
     return d.toISOString().split('T')[0];
   };
 
-  // Definir data padrão (últimos 30 dias)
+  // Definir data padrão (mês corrente: do dia 1 até hoje)
   const getDefaultFromDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() - 30);
-    return formatDateForInput(date);
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return formatDateForInput(firstDayOfMonth);
   };
 
   const getDefaultToDate = () => {
     return formatDateForInput(new Date());
   };
 
-  // Estados para filtros de data - inicializar com valores vazios para permitir seleção do usuário
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  // Estados para filtros de data - inicializar já com o período padrão (mês corrente)
+  // para que os campos de data reflitam o filtro realmente aplicado
+  const [fromDate, setFromDate] = useState(getDefaultFromDate());
+  const [toDate, setToDate] = useState(getDefaultToDate());
   const [appliedFilters, setAppliedFilters] = useState({
     from: getDefaultFromDate(),
     to: getDefaultToDate(),
@@ -69,9 +88,40 @@ export default function Reports() {
   const debouncedFromDate = useDebounce(fromDate, 800);
   const debouncedToDate = useDebounce(toDate, 800);
 
-  // Estados para filtros avançados
+  // Estados para filtros avançados (Análise de Negócio)
   const [advancedInterval, setAdvancedInterval] = useState('day');
-  const [advancedLimit, setAdvancedLimit] = useState(25);
+  const [businessProfessionalId, setBusinessProfessionalId] = useState('');
+  const [businessServiceId, setBusinessServiceId] = useState('');
+
+  // Estado para filtro de profissional (Insights Avançados / Retenção)
+  const [insightsProfessionalId, setInsightsProfessionalId] = useState('');
+
+  // Lista de serviços para o filtro "Serviço" (Análise de Negócio)
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    if (!slug) {
+      setServices([]);
+      return undefined;
+    }
+    let cancelled = false;
+    fetchServices(slug)
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.results)
+            ? data.results
+            : [];
+        setServices(list);
+      })
+      .catch(() => {
+        if (!cancelled) setServices([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
 
   // Auto-aplicar filtros quando os valores debounced mudarem
   useEffect(() => {
@@ -143,6 +193,57 @@ export default function Reports() {
     return 'basic';
   }, [activeTab]);
 
+  // Opções do filtro "Profissional" (Top Serviços / Retenção) — construídas a
+  // partir do useStaff já usado para checagem de papel do usuário.
+  const professionalOptions = useMemo(() => {
+    if (!Array.isArray(staff)) return [];
+    return staff
+      .filter((member) => member?.id != null)
+      .map((member) => ({
+        value: String(member.id),
+        label: resolveStaffName(member) || `#${member.id}`,
+      }));
+  }, [staff]);
+
+  // Opções do filtro "Serviço" (Top Serviços)
+  const serviceOptions = useMemo(() => {
+    if (!Array.isArray(services)) return [];
+    return services
+      .filter((service) => service?.id != null)
+      .map((service) => ({
+        value: String(service.id),
+        label: formatServiceLabel(service) || `#${service.id}`,
+      }));
+  }, [services]);
+
+  // Filtros efetivamente enviados ao useReportsData: os filtros avançados
+  // (intervalo/limite/profissional/serviço) só se aplicam ao endpoint que os
+  // suporta em cada aba — overview/revenue/basic não têm essas colunas ainda.
+  const reportsFilters = useMemo(() => {
+    if (reportType === 'business') {
+      return {
+        ...appliedFilters,
+        interval: advancedInterval,
+        professional_id: businessProfessionalId || undefined,
+        service_id: businessServiceId || undefined,
+      };
+    }
+    if (reportType === 'insights') {
+      return {
+        ...appliedFilters,
+        professional_id: insightsProfessionalId || undefined,
+      };
+    }
+    return appliedFilters;
+  }, [
+    reportType,
+    appliedFilters,
+    advancedInterval,
+    businessProfessionalId,
+    businessServiceId,
+    insightsProfessionalId,
+  ]);
+
   const {
     data: reportsData,
     loading: reportsLoading,
@@ -152,7 +253,7 @@ export default function Reports() {
   } = useReportsData({
     slug,
     type: reportType,
-    filters: appliedFilters,
+    filters: reportsFilters,
   });
 
   // Toast notifications based on data loading state
@@ -180,7 +281,8 @@ export default function Reports() {
       const blob = await exportTopServicesReport({
         slug,
         ...appliedFilters,
-        limit: advancedLimit,
+        professional_id: businessProfessionalId || undefined,
+        service_id: businessServiceId || undefined,
       });
       const filename = `top_services_${slug}_${appliedFilters.from}_${appliedFilters.to}.csv`;
       downloadCSV(blob, filename);
@@ -688,13 +790,21 @@ export default function Reports() {
                     <div className="space-y-8">
                       {reportsData?.businessReports ? (
                         <>
-                          {/* Advanced Filters for Revenue */}
+                          {/* Advanced Filters for Revenue + Top Services */}
+                          {/* Nota: Profissional/Serviço filtram apenas os
+                              Serviços Mais Populares abaixo — a Evolução da
+                              Receita ainda não suporta esses filtros no
+                              backend. */}
                           <AdvancedFilters
                             interval={advancedInterval}
                             onIntervalChange={setAdvancedInterval}
-                            limit={advancedLimit}
-                            onLimitChange={setAdvancedLimit}
                             loading={reportsLoading}
+                            professionalOptions={professionalOptions}
+                            professionalId={businessProfessionalId}
+                            onProfessionalChange={setBusinessProfessionalId}
+                            serviceOptions={serviceOptions}
+                            serviceId={businessServiceId}
+                            onServiceChange={setBusinessServiceId}
                           />
 
                           {/* Top Services */}
@@ -741,7 +851,6 @@ export default function Reports() {
                                   reportsData.businessReports.top_services,
                               }}
                               loading={reportsLoading}
-                              limit={advancedLimit}
                             />
                           </Card>
 
@@ -892,6 +1001,45 @@ export default function Reports() {
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      {/* Filtro de profissional — aplica-se apenas à Retenção */}
+                      <div className="bg-brand-light/20 rounded-lg p-4 space-y-2">
+                        <h4 className="text-sm font-medium text-brand-surfaceForeground">
+                          {t('reports.insights.filters.title', 'Filtros')}
+                        </h4>
+                        <div className="max-w-xs">
+                          <label
+                            htmlFor="insights-filters-professional"
+                            className="block text-sm font-medium text-brand-surfaceForeground/70 mb-2"
+                          >
+                            {t(
+                              'reports.insights.filters.professional',
+                              'Profissional'
+                            )}
+                          </label>
+                          <select
+                            id="insights-filters-professional"
+                            value={insightsProfessionalId}
+                            onChange={(e) =>
+                              setInsightsProfessionalId(e.target.value)
+                            }
+                            disabled={reportsLoading}
+                            className="w-full px-3 py-2 border border-brand-border rounded-md bg-brand-surface text-brand-surfaceForeground focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent disabled:opacity-50"
+                          >
+                            <option value="">
+                              {t(
+                                'reports.insights.filters.all_professionals',
+                                'Todos os profissionais'
+                              )}
+                            </option>
+                            {professionalOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
                       {/* RetentionMetrics handles both data and empty states */}
                       <RetentionMetrics data={retention} />
                     </div>

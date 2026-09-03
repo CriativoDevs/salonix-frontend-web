@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import TableLoadingSpinner from '../ui/TableLoadingSpinner';
+import PaginationControls from '../ui/PaginationControls';
 import { formatCurrency } from '../../utils/format';
 
 const RANK_STYLES = [
@@ -16,9 +17,10 @@ function SortIcon({ dir }) {
   return <span className="ml-1">{dir === 'asc' ? '↑' : '↓'}</span>;
 }
 
-export default function TopServices({ data, loading, limit = 25 }) {
+export default function TopServices({ data, loading }) {
   const { t } = useTranslation();
-  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [offset, setOffset] = useState(0);
   const [sortKey, setSortKey] = useState('revenue');
   const [sortDir, setSortDir] = useState('desc');
 
@@ -85,7 +87,7 @@ export default function TopServices({ data, loading, limit = 25 }) {
       setSortKey(key);
       setSortDir('desc');
     }
-    setCurrentPage(1);
+    setOffset(0);
   };
 
   const rawServices = data.top_services || [];
@@ -109,11 +111,9 @@ export default function TopServices({ data, loading, limit = 25 }) {
     [sortedServices]
   );
 
-  const itemsPerPage = limit;
-  const totalPages = Math.ceil(sortedServices.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentServices = sortedServices.slice(startIndex, endIndex);
+  const totalCount = sortedServices.length;
+  const startIndex = offset;
+  const currentServices = sortedServices.slice(offset, offset + limit);
 
   return (
     <div className="space-y-4">
@@ -208,41 +208,20 @@ export default function TopServices({ data, loading, limit = 25 }) {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-brand-surfaceForeground/60">
-            {t(
-              'reports.advanced.pagination.showing',
-              'Mostrando {{start}} a {{end}} de {{total}} serviços',
-              {
-                start: startIndex + 1,
-                end: Math.min(endIndex, sortedServices.length),
-                total: sortedServices.length,
-              }
-            )}
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 text-sm border border-brand-border rounded-md text-brand-surfaceForeground hover:bg-brand-light/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('reports.advanced.pagination.previous', 'Anterior')}
-            </button>
-            <span className="px-3 py-1 text-sm text-brand-surfaceForeground">
-              {currentPage} / {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm border border-brand-border rounded-md text-brand-surfaceForeground hover:bg-brand-light/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t('reports.advanced.pagination.next', 'Próximo')}
-            </button>
-          </div>
-        </div>
+      {totalCount > 0 && (
+        <PaginationControls
+          totalCount={totalCount}
+          limit={limit}
+          offset={offset}
+          onChangeLimit={(nextLimit) => {
+            setLimit(nextLimit);
+            setOffset(0);
+          }}
+          onPrev={() => setOffset((prev) => Math.max(0, prev - limit))}
+          onNext={() =>
+            setOffset((prev) => (prev + limit < totalCount ? prev + limit : prev))
+          }
+        />
       )}
     </div>
   );
