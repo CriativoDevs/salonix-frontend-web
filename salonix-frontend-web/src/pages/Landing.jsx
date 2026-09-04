@@ -415,14 +415,6 @@ function Landing() {
                     {t('landing.nav.client_area', 'Área do Cliente')}
                   </Link>
                   <Link
-                    to="/como-funciona"
-                    onClick={() => setDesktopMenuOpen(false)}
-                    className="block px-4 py-3 font-medium hover:opacity-80"
-                    role="menuitem"
-                  >
-                    {t('landing.nav.how_it_works', 'Como funciona')}
-                  </Link>
-                  <Link
                     to="/roadmap"
                     onClick={() => setDesktopMenuOpen(false)}
                     className="block px-4 py-3 font-medium hover:opacity-80"
@@ -499,14 +491,6 @@ function Landing() {
                   role="menuitem"
                 >
                   {t('landing.nav.client_area', 'Área do Cliente')}
-                </Link>
-                <Link
-                  to="/como-funciona"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 font-medium hover:opacity-80"
-                  role="menuitem"
-                >
-                  {t('landing.nav.how_it_works', 'Como funciona')}
                 </Link>
                 <Link
                   to="/roadmap"
@@ -618,12 +602,6 @@ function Landing() {
               >
                 {t('landing.hero.cta_pricing', 'Ver o plano e preço')}
               </a>
-              <Link
-                to="/como-funciona"
-                className={`text-sm font-medium ${isDarkTheme ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-500'}`}
-              >
-                {t('landing.hero.cta_how_it_works', 'Como funciona →')}
-              </Link>
             </div>
           </div>
         </section>

@@ -1839,7 +1839,6 @@
       "open_menu": "Abrir menu",
       "menu": "Menu",
       "install_pwa": "Instalar App",
-      "how_it_works": "Como funciona",
       "roadmap": "Roadmap"
     },
     "hero": {
@@ -1853,8 +1852,7 @@
         "RGPD nativo — dados dos seus clientes protegidos por lei."
       ],
       "cta_start": "Começar período trial (14 dias)",
-      "cta_pricing": "Ver o plano e preço",
-      "cta_how_it_works": "Como funciona →"
+      "cta_pricing": "Ver o plano e preço"
     },
     "results": {
       "title": "A plataforma em números",
