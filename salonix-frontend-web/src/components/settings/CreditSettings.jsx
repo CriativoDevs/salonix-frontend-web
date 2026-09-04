@@ -265,7 +265,7 @@ export default function CreditSettings() {
 
       <div className="flex justify-center pt-4">
         <a
-          href="mailto:support@salonix.com?subject=Dúvida sobre Créditos"
+          href="mailto:support@timelyone.today?subject=Dúvida sobre Créditos"
           className="flex items-center gap-2 text-sm text-brand-primary hover:underline"
         >
           <HelpCircle className="w-4 h-4" />
