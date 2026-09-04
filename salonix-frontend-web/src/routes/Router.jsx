@@ -103,8 +103,22 @@ function Router() {
       />
       <Route path="/rgpd" element={<Rgpd />} />
       <Route path="/pwa-info" element={<PwaInfo />} />
-      <Route path="/como-funciona" element={<CmsPage />} />
-      <Route path="/como-funciona/:slug" element={<CmsPageDetail />} />
+      <Route
+        path="/como-funciona"
+        element={
+          <PrivateRoute>
+            <CmsPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/como-funciona/:slug"
+        element={
+          <PrivateRoute>
+            <CmsPageDetail />
+          </PrivateRoute>
+        }
+      />
       <Route path="/roadmap" element={<Roadmap />} />
       <Route
         path="/app"

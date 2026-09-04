@@ -1839,7 +1839,6 @@
       "open_menu": "Open menu",
       "menu": "Menu",
       "install_pwa": "Install App",
-      "how_it_works": "How it works",
       "roadmap": "Roadmap"
     },
     "hero": {
@@ -1853,8 +1852,7 @@
         "Native GDPR — your clients' data protected by law."
       ],
       "cta_start": "Start trial (14 days)",
-      "cta_pricing": "See the plan and pricing",
-      "cta_how_it_works": "How it works →"
+      "cta_pricing": "See the plan and pricing"
     },
     "results": {
       "title": "The platform in numbers",
