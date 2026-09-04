@@ -1426,13 +1426,21 @@ function Landing() {
             isDarkTheme ? 'text-slate-400' : 'text-slate-500'
           }`}
         >
-          <p>
-            {t(
-              'landing.footer.copyright',
-              '© {{year}} TimelyOne. Todos os direitos reservados.',
-              { year: new Date().getFullYear() }
-            )}
-          </p>
+          <div className="flex flex-col gap-1">
+            <p>
+              {t(
+                'landing.footer.copyright',
+                '© {{year}} TimelyOne. Todos os direitos reservados.',
+                { year: new Date().getFullYear() }
+              )}
+            </p>
+            <a
+              href="mailto:timelyone@timelyone.today"
+              className="transition hover:opacity-80"
+            >
+              {t('landing.footer.contact_email', 'timelyone@timelyone.today')}
+            </a>
+          </div>
           <div className="flex gap-4">
             <a href="#pricing" className="transition hover:opacity-80">
               {t('landing.footer.pricing', 'Preço')}

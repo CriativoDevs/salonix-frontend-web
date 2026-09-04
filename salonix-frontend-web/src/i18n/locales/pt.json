@@ -2092,7 +2092,8 @@
       "register": "Registar",
       "ops_login": "Login OPS",
       "get_app": "Instala a app TimelyOne",
-      "copyright": "© {{year}} TimelyOne. Todos os direitos reservados."
+      "copyright": "© {{year}} TimelyOne. Todos os direitos reservados.",
+      "contact_email": "timelyone@timelyone.today"
     }
   },
   "store_badges": {
