@@ -16,6 +16,7 @@ import {
   BookOpenIcon,
   SmartphoneIcon,
   PackageIcon,
+  MailIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
@@ -127,6 +128,13 @@ function MobileNav() {
         label: t('nav.reports', 'Relatórios'),
         roles: ['owner'], // Relatórios apenas para owner
         featureKey: 'enableBasicReports', // Verifica acesso a relatórios
+      },
+      {
+        to: '/marketing',
+        icon: MailIcon,
+        label: t('nav.marketing', 'Marketing'),
+        roles: ['owner', 'manager'],
+        featureKey: null,
       },
       {
         to: '/feedback',

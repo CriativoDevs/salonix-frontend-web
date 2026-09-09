@@ -9,6 +9,7 @@ import {
   LockIcon,
   BookOpenIcon,
   SmartphoneIcon,
+  MailIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
@@ -112,6 +113,13 @@ export default function HeaderNav() {
         icon: BarChart3Icon,
         roles: ['owner'],
         featureKey: 'enableBasicReports', // Verifica acesso a relatórios
+      },
+      {
+        to: '/marketing',
+        label: t('nav.marketing', 'Marketing'),
+        icon: MailIcon,
+        roles: ['owner', 'manager'],
+        featureKey: null,
       },
       {
         to: '/plans',

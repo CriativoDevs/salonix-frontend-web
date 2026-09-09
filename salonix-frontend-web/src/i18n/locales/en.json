@@ -572,6 +572,7 @@
   },
   "common": {
     "select": "Select",
+    "optional": "optional",
     "back": "Back",
     "finish": "Finish",
     "filter": "Filter",
@@ -1331,6 +1332,69 @@
       }
     }
   },
+  "marketing": {
+    "title": "Email marketing",
+    "subtitle": "Compose and send email campaigns to your customers who consented to receive communications.",
+    "form": {
+      "title": "New campaign",
+      "subtitle": "The email is sent to all eligible customers — segmenting recipients isn't supported yet.",
+      "subject_label": "Subject",
+      "subject_placeholder": "E.g.: This month's news and promotions",
+      "body_label": "Email content",
+      "body_placeholder": "Write the message your customers will receive...",
+      "reply_to_label": "Reply-to",
+      "reply_to_placeholder": "contact@mybusiness.com",
+      "reply_to_help": "The email is always sent from the platform; if you fill this in, customer replies go to this address.",
+      "recipients_note": "Recipients: all eligible customers (who consented to receive communications). Segmenting recipients isn't supported yet.",
+      "submit": "Review and send campaign",
+      "errors": {
+        "subject_required": "Write the email subject.",
+        "subject_too_long": "Subject is too long.",
+        "body_required": "Write the email content.",
+        "body_too_long": "Content is too long.",
+        "reply_to_invalid": "Enter a valid email address.",
+        "send_failed": "Could not send the campaign."
+      }
+    },
+    "confirm": {
+      "title": "Confirm campaign send",
+      "description": "Are you sure you want to send this campaign to all eligible customers? This action cannot be undone.",
+      "recipients_note": "This will be sent to all eligible customers who consented to receive communications.",
+      "submit": "Yes, send campaign"
+    },
+    "result": {
+      "title": "Send result",
+      "summary": "The campaign \"{{subject}}\" was processed. See the result below."
+    },
+    "breakdown": {
+      "free_sent": "Sent (free quota)",
+      "credit_sent": "Sent via credit",
+      "credit_charged": "Credits charged",
+      "blocked_credit": "Blocked (insufficient credit)",
+      "skipped_no_consent": "Skipped (no consent)",
+      "eligible": "Eligible customers"
+    },
+    "history": {
+      "title": "Campaign history",
+      "subtitle": "Review campaigns already sent and the outcome of each send.",
+      "total_sent": "Sent",
+      "created_by": "Created by",
+      "empty_title": "No campaigns sent yet",
+      "empty_description": "Once you send your first email campaign, it will show up here."
+    },
+    "status": {
+      "completed": "Completed",
+      "sent": "Sent",
+      "processing": "Processing",
+      "pending": "Pending",
+      "failed": "Failed",
+      "error": "Error",
+      "unknown": "Unknown"
+    },
+    "toast": {
+      "sent": "Campaign sent successfully."
+    }
+  },
   "team": {
     "title": "Team",
     "subtitle": "Invite collaborators, track pending invites and organize the roles each person plays in your business.",
@@ -1651,7 +1715,8 @@
     },
     "how_it_works": "How it works",
     "roadmap": "Roadmap",
-    "install_app": "Install the app"
+    "install_app": "Install the app",
+    "marketing": "Marketing"
   },
   "install_app": {
     "back": "Back to dashboard",

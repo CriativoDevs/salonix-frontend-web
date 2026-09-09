@@ -600,7 +600,8 @@
     "loading_data": "Carregando dados do plano...",
     "delete_error": "Falha ao excluir.",
     "refresh": "Atualizar",
-    "select": "Selecione"
+    "select": "Selecione",
+    "optional": "opcional"
   },
   "feedback": {
     "title": "Feedback",
@@ -1331,6 +1332,69 @@
       }
     }
   },
+  "marketing": {
+    "title": "Marketing por email",
+    "subtitle": "Componha e envie campanhas de email para os seus clientes com consentimento para receber comunicações.",
+    "form": {
+      "title": "Nova campanha",
+      "subtitle": "O email é enviado a todos os clientes elegíveis — não é possível escolher um grupo específico no momento.",
+      "subject_label": "Assunto",
+      "subject_placeholder": "Ex.: Novidades e promoções deste mês",
+      "body_label": "Conteúdo do email",
+      "body_placeholder": "Escreva a mensagem que os seus clientes vão receber...",
+      "reply_to_label": "Responder para",
+      "reply_to_placeholder": "contato@meunegocio.com",
+      "reply_to_help": "O email é sempre enviado pela plataforma; se preencher este campo, as respostas dos clientes vão para este endereço.",
+      "recipients_note": "Destinatários: todos os clientes elegíveis (com consentimento para receber comunicações). Ainda não é possível segmentar destinatários.",
+      "submit": "Rever e enviar campanha",
+      "errors": {
+        "subject_required": "Escreva o assunto do email.",
+        "subject_too_long": "Assunto muito longo.",
+        "body_required": "Escreva o conteúdo do email.",
+        "body_too_long": "Conteúdo muito longo.",
+        "reply_to_invalid": "Informe um email válido.",
+        "send_failed": "Não foi possível enviar a campanha."
+      }
+    },
+    "confirm": {
+      "title": "Confirmar envio da campanha",
+      "description": "Tem certeza que quer enviar esta campanha para todos os clientes elegíveis? Esta ação não pode ser desfeita.",
+      "recipients_note": "Será enviado a todos os clientes elegíveis com consentimento para receber comunicações.",
+      "submit": "Sim, enviar campanha"
+    },
+    "result": {
+      "title": "Resultado do envio",
+      "summary": "A campanha \"{{subject}}\" foi processada. Confira o resultado abaixo."
+    },
+    "breakdown": {
+      "free_sent": "Enviados (cota grátis)",
+      "credit_sent": "Enviados via crédito",
+      "credit_charged": "Créditos consumidos",
+      "blocked_credit": "Bloqueados por falta de crédito",
+      "skipped_no_consent": "Pulados (sem consentimento)",
+      "eligible": "Clientes elegíveis"
+    },
+    "history": {
+      "title": "Histórico de campanhas",
+      "subtitle": "Consulte as campanhas já enviadas e o resultado de cada envio.",
+      "total_sent": "Enviados",
+      "created_by": "Criada por",
+      "empty_title": "Nenhuma campanha enviada",
+      "empty_description": "Quando enviar a primeira campanha de email, ela aparece aqui."
+    },
+    "status": {
+      "completed": "Concluída",
+      "sent": "Enviada",
+      "processing": "A processar",
+      "pending": "Pendente",
+      "failed": "Falhou",
+      "error": "Erro",
+      "unknown": "Desconhecido"
+    },
+    "toast": {
+      "sent": "Campanha enviada com sucesso."
+    }
+  },
   "team": {
     "title": "Equipe",
     "subtitle": "Convide colaboradores, acompanhe convites pendentes e organize os papéis que cada pessoa desempenha no seu negócio.",
@@ -1651,7 +1715,8 @@
     "team": "Equipa",
     "go_to_dashboard": "Ir para o dashboard",
     "roadmap": "Roadmap",
-    "install_app": "Instala a app"
+    "install_app": "Instala a app",
+    "marketing": "Marketing"
   },
   "install_app": {
     "back": "Voltar ao painel",
