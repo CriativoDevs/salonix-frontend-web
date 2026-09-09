@@ -22,6 +22,7 @@ import Bookings from '../pages/Bookings';
 import Agenda from '../pages/Agenda';
 
 import Customers from '../pages/Customers';
+import Marketing from '../pages/Marketing';
 import Inventory from '../pages/Inventory';
 import Team from '../pages/Team';
 import Reports from '../pages/Reports';
@@ -243,6 +244,17 @@ function Router() {
           <PrivateRoute>
             <RoleProtectedRoute allowedRoles={['owner', 'manager']}>
               <Inventory />
+            </RoleProtectedRoute>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/marketing"
+        element={
+          <PrivateRoute>
+            <RoleProtectedRoute allowedRoles={['owner', 'manager']}>
+              <Marketing />
             </RoleProtectedRoute>
           </PrivateRoute>
         }
