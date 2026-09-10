@@ -162,8 +162,19 @@ export function TenantProvider({ children }) {
       if (!slugChanged) {
         skipNextLoadRef.current = false;
       }
+
+      // O payload de bootstrap (login/refresh de token) usa um serializer
+      // abreviado do tenant que não inclui vários campos só presentes no
+      // GET completo de /users/tenant/meta/ (ex.: `profile`, usado pelo
+      // card "Email de Contato" em Definições > Geral). Marcar o slug como
+      // "já carregado" acima evita um fetch duplicado no efeito de
+      // montagem, mas sem este fetch de acompanhamento essa data completa
+      // nunca chegava a ser buscada até alguma ação da UI disparar um
+      // refetch explícito por acaso (ex.: o toggle de PWA Cliente). Por
+      // isso completamos sempre com um fetch silencioso em segundo plano.
+      loadTenant(merged.slug, { silent: true });
     },
-    [slug]
+    [slug, loadTenant]
   );
 
   const updateSlug = useCallback(
