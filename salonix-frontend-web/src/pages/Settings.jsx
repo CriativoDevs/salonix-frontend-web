@@ -340,6 +340,17 @@ function Settings() {
   );
   const [autoInviteSaving, setAutoInviteSaving] = useState(false);
   const [pwaClientEnabled, setPwaClientEnabled] = useState(false);
+  // FIX-PWA-CLIENT-TOGGLE: depois de um toggle manual bem-sucedido, o valor
+  // confirmado pelo PATCH (`resp.pwa_client_enabled`) é a única fonte de
+  // verdade real. O GET /users/tenant/meta/ devolve `feature_flags.modules
+  // .pwa_client_enabled` calculado por `can_use_pwa_client()`, que no
+  // backend é `pwa_client_enabled OR plano in [basic, pro, founder]` -- ou
+  // seja, para qualquer tenant Basic/Founder (praticamente todos hoje) esse
+  // valor é sempre `true`, independentemente do toggle real. Sem esta
+  // trava, os useEffects abaixo reescreviam `pwaClientEnabled` de volta para
+  // `true` assim que `refreshTenantData()` recarregava o tenant, mesmo
+  // depois de desativar com sucesso. Ver to_see.md para o gap de backend.
+  const pwaClientManualOverrideRef = useRef(false);
   const [pwaClientSaving, setPwaClientSaving] = useState(false);
   const [pwaClientError, setPwaClientError] = useState(null);
   const [pwaClientSuccess, setPwaClientSuccess] = useState('');
@@ -379,13 +390,11 @@ function Settings() {
     setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
   }, [tenant?.auto_invite_enabled]);
 
+  // Reseta a trava manual quando trocamos de tenant, para que os dados
+  // recém-carregados desse tenant voltem a ser a fonte de verdade.
   useEffect(() => {
-    const initial = Boolean(
-      (tenant && tenant.pwa_client_enabled) ??
-        (flags && flags.enableCustomerPwa)
-    );
-    setPwaClientEnabled(initial);
-  }, [tenant, flags]);
+    pwaClientManualOverrideRef.current = false;
+  }, [tenant?.slug]);
 
   useEffect(() => {
     if (brandingFile) {
@@ -497,7 +506,20 @@ function Settings() {
     });
   }, [plan, planTier, modules, flags, featureFlagsRaw]);
 
+  // Única fonte de verdade para o estado (não-salvo) do toggle "PWA Cliente"
+  // a partir dos dados do tenant. Fica desativada enquanto uma troca manual
+  // recente ainda não teve o tenant recarregado (ver pwaClientManualOverrideRef
+  // acima e handlePwaClientToggle) para não sobrescrever o valor confirmado
+  // pelo PATCH com o valor (potencialmente desatualizado/sempre-true para
+  // planos Basic/Founder) devolvido pelo GET de metadados do tenant.
   useEffect(() => {
+    if (pwaClientManualOverrideRef.current) return;
+
+    if (tenant && typeof tenant.pwa_client_enabled === 'boolean') {
+      setPwaClientEnabled(tenant.pwa_client_enabled);
+      return;
+    }
+
     const modulesFlags = featureFlagsRaw?.modules;
     let rawEnabled;
     if (
@@ -511,7 +533,7 @@ function Settings() {
     const listed =
       Array.isArray(moduleList) && moduleList.includes('pwa_client');
     setPwaClientEnabled(Boolean(rawEnabled || listed));
-  }, [featureFlagsRaw?.modules, flags?.enableCustomerPwa, moduleList]);
+  }, [tenant, featureFlagsRaw?.modules, flags?.enableCustomerPwa, moduleList]);
 
   const channelCards = useMemo(
     () =>
@@ -882,14 +904,24 @@ function Settings() {
   const handlePwaClientToggle = useCallback(async () => {
     if (pwaClientSaving || tenantLoading) return;
     const nextValue = !pwaClientEnabled;
+    // A partir daqui, este componente passa a confiar apenas no valor
+    // confirmado pelo backend (resp.pwa_client_enabled), não nos dados
+    // derivados do tenant recarregado por refreshTenantData() — ver
+    // pwaClientManualOverrideRef.
+    pwaClientManualOverrideRef.current = true;
     setPwaClientEnabled(nextValue);
     setPwaClientSaving(true);
     setPwaClientError(null);
     setPwaClientSuccess('');
     try {
       const resp = await updateTenantModules({ pwaClientEnabled: nextValue });
-      await refreshTenantData();
       const ok = Boolean(resp?.pwa_client_enabled);
+      // refreshTenantData() ainda é necessário para atualizar o resto da
+      // página (ex.: cartões de "Informações Gerais", moduleList), mas o
+      // valor do toggle em si já foi confirmado diretamente pelo PATCH acima
+      // e não deve ser sobrescrito pelo GET de metadados que vem a seguir.
+      setPwaClientEnabled(ok);
+      await refreshTenantData();
       setPwaClientSuccess(
         ok
           ? t('settings.pwa_client.success_enabled', 'PWA Cliente habilitado.')
@@ -907,6 +939,7 @@ function Settings() {
         )
       );
       setPwaClientError(parsed);
+      pwaClientManualOverrideRef.current = false;
       setPwaClientEnabled(!nextValue);
     } finally {
       setPwaClientSaving(false);

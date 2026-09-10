@@ -14,6 +14,22 @@ export default function usePlanGate(options = {}) {
   const explicitFlagEnabled = useMemo(() => {
     if (!featureKey) return undefined;
 
+    const raw = featureFlagsRaw || {};
+    const modules = raw.modules || {};
+
+    // enableCustomerPwa: `flags.enableCustomerPwa` (objeto simplificado)
+    // carrega o TOGGLE bruto (`pwa_client_enabled`), usado noutros pontos
+    // (ex.: Settings.jsx, Customers.jsx) para saber se o módulo está
+    // LIGADO. O gate de PLANO precisa do entitlement (`can_use_pwa_client`),
+    // que é semanticamente diferente — por isso é checado antes do objeto
+    // simplificado, e não como fallback dele. Ver BE-BUG-01 (#537).
+    if (
+      featureKey === 'enableCustomerPwa' &&
+      Object.prototype.hasOwnProperty.call(modules, 'can_use_pwa_client')
+    ) {
+      return Boolean(modules.can_use_pwa_client);
+    }
+
     // 1. Tentar ler do objeto simplificado 'flags'
     const local =
       flags && typeof flags === 'object' ? flags[featureKey] : undefined;
@@ -21,23 +37,14 @@ export default function usePlanGate(options = {}) {
 
     // 2. Tentar ler do objeto raw aninhado (modules, notifications, etc.)
     // Lógica espelhada do FeatureGate.jsx
-    const raw = featureFlagsRaw || {};
     if (featureKey === 'enableReports') {
-      const modules = raw.modules || {};
       if (Object.prototype.hasOwnProperty.call(modules, 'reports_enabled')) {
         return Boolean(modules.reports_enabled);
       }
     }
     if (featureKey === 'enableAdminPwa') {
-      const modules = raw.modules || {};
       if (Object.prototype.hasOwnProperty.call(modules, 'pwa_admin_enabled')) {
         return Boolean(modules.pwa_admin_enabled);
-      }
-    }
-    if (featureKey === 'enableCustomerPwa') {
-      const modules = raw.modules || {};
-      if (Object.prototype.hasOwnProperty.call(modules, 'pwa_client_enabled')) {
-        return Boolean(modules.pwa_client_enabled);
       }
     }
 
