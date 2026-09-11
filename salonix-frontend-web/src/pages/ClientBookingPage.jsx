@@ -137,19 +137,19 @@ export default function ClientBookingPage() {
           className="inline-flex items-center text-brand-primary underline font-medium transition hover:text-brand-accent"
         >
           <ChevronLeftIcon className="w-4 h-4 mr-2" />
-          {t('Voltar')}
+          {t('client_booking.back', 'Voltar')}
         </NavLink>
       </div>
-      <PageHeader title={t('Novo agendamento')} />
+      <PageHeader title={t('client_booking.title', 'Novo agendamento')} />
       {loading ? (
         <p className="text-sm text-brand-surfaceForeground/60">
-          {t('Carregando…')}
+          {t('client_booking.loading', 'Carregando…')}
         </p>
       ) : (
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('Serviço')}
+              {t('client_booking.service', 'Serviço')}
             </label>
             <select
               value={serviceId}
@@ -168,7 +168,7 @@ export default function ClientBookingPage() {
                   color: 'var(--text-primary)',
                 }}
               >
-                {t('Selecione')}
+                {t('client_booking.select_placeholder', 'Selecione')}
               </option>
               {services.map((svc) => (
                 <option
@@ -187,7 +187,7 @@ export default function ClientBookingPage() {
 
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('Profissional')}
+              {t('client_booking.professional', 'Profissional')}
             </label>
             <select
               value={professionalId}
@@ -207,7 +207,7 @@ export default function ClientBookingPage() {
                   color: 'var(--text-primary)',
                 }}
               >
-                {t('Selecione')}
+                {t('client_booking.select_placeholder', 'Selecione')}
               </option>
               {professionals.map((p) => (
                 <option
@@ -226,7 +226,7 @@ export default function ClientBookingPage() {
 
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('Horário')}
+              {t('client_booking.time_slot', 'Horário')}
             </label>
             <select
               value={slotId}
@@ -246,7 +246,7 @@ export default function ClientBookingPage() {
                   color: 'var(--text-primary)',
                 }}
               >
-                {t('Selecione')}
+                {t('client_booking.select_placeholder', 'Selecione')}
               </option>
               {slots.map((s) => (
                 <option
@@ -265,7 +265,7 @@ export default function ClientBookingPage() {
 
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
-              {t('Observações')}
+              {t('client_booking.notes', 'Observações')}
             </label>
             <textarea
               value={notes}
@@ -286,13 +286,15 @@ export default function ClientBookingPage() {
               type="submit"
               disabled={!canSubmit || submitting}
             >
-              {submitting ? t('Agendando…') : t('Agendar')}
+              {submitting
+                ? t('client_booking.submitting', 'Agendando…')
+                : t('client_booking.submit', 'Agendar')}
             </FormButton>
             {error && (
               <p className="text-sm text-red-600" role="alert">
                 {error?.response?.data?.detail ||
                   error?.message ||
-                  t('Não foi possível agendar.')}
+                  t('client_booking.errors.generic', 'Não foi possível agendar.')}
               </p>
             )}
           </div>

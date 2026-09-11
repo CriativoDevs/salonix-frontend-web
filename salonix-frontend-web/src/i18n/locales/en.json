@@ -2232,6 +2232,86 @@
       "too_many_attempts": "Too many attempts. Please wait a few minutes."
     }
   },
+  "client_profile": {
+    "title": "Client Profile",
+    "loading": "Loading…",
+    "name": "Name",
+    "email": "Email",
+    "email_readonly": "Email is your login and can't be changed here. Contact the business if you need help.",
+    "phone": "Phone",
+    "marketing_opt_in": "Receive marketing communications",
+    "photo": "Profile photo",
+    "photo_alt": "Profile photo",
+    "photo_empty": "No photo",
+    "photo_add": "Add photo",
+    "photo_change": "Change photo",
+    "photo_uploading": "Uploading…",
+    "photo_requirements": "PNG, JPEG or WebP up to 2MB, between 50x50 and 2000x2000 pixels.",
+    "saving": "Saving…",
+    "save": "Save",
+    "saved": "Saved",
+    "success": "Profile saved successfully.",
+    "errors": {
+      "load_failed": "Failed to load profile.",
+      "save_failed": "Failed to save profile.",
+      "photo_too_large": "The image must be at most 2MB.",
+      "photo_failed": "Failed to upload the photo. Check the format and dimensions."
+    }
+  },
+  "client_booking": {
+    "back": "Back",
+    "title": "New booking",
+    "loading": "Loading…",
+    "service": "Service",
+    "professional": "Professional",
+    "time_slot": "Time slot",
+    "notes": "Notes",
+    "select_placeholder": "Select",
+    "submit": "Book",
+    "submitting": "Booking…",
+    "errors": {
+      "generic": "Could not book the appointment."
+    }
+  },
+  "client_appointments": {
+    "title": "Appointments",
+    "new_booking": "New booking",
+    "loading": "Loading…",
+    "upcoming": "Upcoming",
+    "no_upcoming": "No upcoming appointments.",
+    "history": "History",
+    "no_history": "No history available.",
+    "load_more": "Load more",
+    "errors": {
+      "load_failed": "Failed to load appointments.",
+      "cancel_failed": "Could not cancel."
+    },
+    "card": {
+      "default_service": "Service",
+      "default_professional": "Professional",
+      "appointment_label": "Appointment: {{service}} with {{professional}} • {{date}}",
+      "history_label": "History: {{service}} with {{professional}} • {{date}}",
+      "add_to_calendar": "Add to calendar",
+      "add_to_calendar_aria": "Add to calendar: {{service}} with {{professional}} on {{date}}",
+      "add_to_calendar_title_shortcut": "Add to calendar (shortcut: A)",
+      "cancel": "Cancel",
+      "cancel_aria": "Cancel: {{service}} with {{professional}} on {{date}}",
+      "cancel_title": "Cancel appointment",
+      "cancel_title_shortcut": "Cancel appointment (shortcut: C)",
+      "shortcut_hint_both": "Tip: A opens calendar; C cancels.",
+      "shortcut_hint_calendar_only": "Tip: A opens calendar."
+    }
+  },
+  "client_access": {
+    "title": "Client Access",
+    "processing": "Processing…",
+    "success": "Session created successfully.",
+    "close": "Close",
+    "errors": {
+      "generic": "There was an error accepting the link.",
+      "missing_token": "Missing token."
+    }
+  },
   "client_enter": {
     "already_have_password": "Already have a password? Sign in",
     "submit": "Send access link",
@@ -2257,13 +2337,15 @@
     "confirm_password": "Confirm Password",
     "confirm_password_placeholder": "Type password again",
     "submit": "Set Password",
+    "submitting": "Setting…",
     "errors": {
       "password_required": "Password is required",
       "password_too_short": "Password must be at least 6 characters",
       "confirm_password_required": "Password confirmation is required",
       "passwords_mismatch": "Passwords do not match",
       "session_expired": "Your session has expired. Request a new access link.",
-      "session_required": "Session not found. Access via email link."
+      "session_required": "Session not found. Access via email link.",
+      "generic": "Error setting password. Please try again."
     },
     "success": "Password set successfully! Redirecting..."
   },
@@ -2275,6 +2357,7 @@
       "name": "Full name",
       "email": "Email",
       "phone": "Phone",
+      "phone_description": "Optional",
       "submit": "Sign up",
       "submitting": "Signing up…"
     },

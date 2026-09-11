@@ -137,9 +137,11 @@ export default function ClientSelfRegister() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
             />
             <FormInput
               label={t('join.form.phone', 'Telefone')}
+              description={t('join.form.phone_description', 'Opcional')}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
@@ -149,7 +151,7 @@ export default function ClientSelfRegister() {
               variant="primary"
               size="lg"
               className="w-full"
-              disabled={loading || !name}
+              disabled={loading || !name || !email}
               loading={loading}
             >
               {loading

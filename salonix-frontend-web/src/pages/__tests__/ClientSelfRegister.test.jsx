@@ -194,6 +194,24 @@ describe('ClientSelfRegister', () => {
     expect(screen.queryByText(/link inválido/i)).not.toBeInTheDocument();
   });
 
+  it('keeps the submit button disabled when only phone is filled in', async () => {
+    tenantApi.fetchPublicTenant.mockResolvedValue({ name: 'Salão Teste' });
+
+    renderAtSlug('salao-teste');
+    await screen.findByText('Salão Teste');
+
+    fireEvent.change(screen.getByLabelText(/nome/i), {
+      target: { value: 'João Costa' },
+    });
+    fireEvent.change(screen.getByLabelText(/telefone/i), {
+      target: { value: '+351912345678' },
+    });
+    fireEvent.click(screen.getByTestId('mock-captcha'));
+
+    expect(screen.getByRole('button', { name: /registar/i })).toBeDisabled();
+    expect(selfRegisterApi.registerClientPublic).not.toHaveBeenCalled();
+  });
+
   it('shows the first field-level validation error when there is no top-level detail', async () => {
     tenantApi.fetchPublicTenant.mockResolvedValue({ name: 'Salão Teste' });
     selfRegisterApi.registerClientPublic.mockRejectedValue({

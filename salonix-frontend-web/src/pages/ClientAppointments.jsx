@@ -38,10 +38,15 @@ function parseSlotDate(raw) {
 }
 
 function AppointmentCard({ item, onCancel }) {
+  const { t } = useTranslation();
   const start = item?.slot?.start_time;
   const end = item?.slot?.end_time;
-  const serviceName = item?.service?.name || 'Serviço';
-  const professionalName = item?.professional?.name || 'Profissional';
+  const serviceName =
+    item?.service?.name ||
+    t('client_appointments.card.default_service', 'Serviço');
+  const professionalName =
+    item?.professional?.name ||
+    t('client_appointments.card.default_professional', 'Profissional');
   const canCancel = item?.status === 'scheduled';
 
   // Usar token fornecido pela API para gerar URL do ICS público
@@ -68,7 +73,11 @@ function AppointmentCard({ item, onCancel }) {
     ? `${dtStart?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${dtEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : null;
 
-  const label = `Agendamento: ${serviceName} com ${professionalName} • ${dateLabel}`;
+  const label = t(
+    'client_appointments.card.appointment_label',
+    'Agendamento: {{service}} com {{professional}} • {{date}}',
+    { service: serviceName, professional: professionalName, date: dateLabel }
+  );
 
   const handleKeyDown = (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
@@ -82,6 +91,17 @@ function AppointmentCard({ item, onCancel }) {
       onCancel(item);
     }
   };
+
+  const addToCalendarLabel = t(
+    'client_appointments.card.add_to_calendar_aria',
+    'Adicionar ao calendário: {{service}} com {{professional}} em {{date}}',
+    { service: serviceName, professional: professionalName, date: dateLabel }
+  );
+  const cancelLabel = t(
+    'client_appointments.card.cancel_aria',
+    'Cancelar: {{service}} com {{professional}} em {{date}}',
+    { service: serviceName, professional: professionalName, date: dateLabel }
+  );
 
   return (
     <div
@@ -113,30 +133,42 @@ function AppointmentCard({ item, onCancel }) {
           onClick={handleDownloadICS}
           rel="noreferrer"
           className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary cursor-pointer"
-          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
-          title="Adicionar ao calendário (atalho: A)"
+          aria-label={addToCalendarLabel}
+          title={t(
+            'client_appointments.card.add_to_calendar_title_shortcut',
+            'Adicionar ao calendário (atalho: A)'
+          )}
           data-action="calendar"
         >
-          Adicionar ao calendário
+          {t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
         </a>
         {canCancel && (
           <FormButton
             type="button"
             variant="link"
             onClick={() => onCancel(item)}
-            aria-label={`Cancelar: ${serviceName} com ${professionalName} em ${dateLabel}`}
+            aria-label={cancelLabel}
             aria-keyshortcuts="C"
             className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary"
-            title="Cancelar agendamento (atalho: C)"
+            title={t(
+              'client_appointments.card.cancel_title_shortcut',
+              'Cancelar agendamento (atalho: C)'
+            )}
           >
-            Cancelar
+            {t('client_appointments.card.cancel', 'Cancelar')}
           </FormButton>
         )}
       </div>
 
       {/* Dica de atalhos (desktop) */}
       <div className="mt-2 text-xs text-brand-surfaceForeground/60 hidden sm:block">
-        Dica: A abre calendário; C cancela.
+        {t(
+          'client_appointments.card.shortcut_hint_both',
+          'Dica: A abre calendário; C cancela.'
+        )}
       </div>
 
       {/* Ações (mobile) */}
@@ -146,22 +178,31 @@ function AppointmentCard({ item, onCancel }) {
           onClick={handleDownloadICS}
           rel="noreferrer"
           className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
-          title="Adicionar ao calendário"
+          aria-label={addToCalendarLabel}
+          title={t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
           data-action="calendar"
         >
-          Adicionar ao calendário
+          {t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
         </a>
         {canCancel && (
           <FormButton
             type="button"
             variant="link"
             onClick={() => onCancel(item)}
-            aria-label={`Cancelar: ${serviceName} com ${professionalName} em ${dateLabel}`}
+            aria-label={cancelLabel}
             className="rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground"
-            title="Cancelar agendamento"
+            title={t(
+              'client_appointments.card.cancel_title',
+              'Cancelar agendamento'
+            )}
           >
-            Cancelar
+            {t('client_appointments.card.cancel', 'Cancelar')}
           </FormButton>
         )}
       </div>
@@ -170,10 +211,15 @@ function AppointmentCard({ item, onCancel }) {
 }
 
 function HistoryCard({ item }) {
+  const { t } = useTranslation();
   const start = item?.slot?.start_time;
   const end = item?.slot?.end_time;
-  const serviceName = item?.service?.name || 'Serviço';
-  const professionalName = item?.professional?.name || 'Profissional';
+  const serviceName =
+    item?.service?.name ||
+    t('client_appointments.card.default_service', 'Serviço');
+  const professionalName =
+    item?.professional?.name ||
+    t('client_appointments.card.default_professional', 'Profissional');
 
   // Usar token fornecido pela API para gerar URL do ICS público
   const icsToken = item?.ics_token || '';
@@ -199,7 +245,11 @@ function HistoryCard({ item }) {
     ? `${dtStart?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${dtEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : null;
 
-  const label = `Histórico: ${serviceName} com ${professionalName} • ${dateLabel}`;
+  const label = t(
+    'client_appointments.card.history_label',
+    'Histórico: {{service}} com {{professional}} • {{date}}',
+    { service: serviceName, professional: professionalName, date: dateLabel }
+  );
 
   const handleKeyDown = (e) => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
@@ -210,6 +260,12 @@ function HistoryCard({ item }) {
       if (link) link.click();
     }
   };
+
+  const addToCalendarLabel = t(
+    'client_appointments.card.add_to_calendar_aria',
+    'Adicionar ao calendário: {{service}} com {{professional}} em {{date}}',
+    { service: serviceName, professional: professionalName, date: dateLabel }
+  );
 
   return (
     <div
@@ -236,7 +292,7 @@ function HistoryCard({ item }) {
             className={getAppointmentStatusBadge(item?.status)}
             style={{ display: 'inline-block', marginTop: '6px' }}
           >
-            {item?.status}
+            {t(`bookings.statuses.${item?.status}`, item?.status)}
           </div>
         </div>
       </div>
@@ -246,15 +302,24 @@ function HistoryCard({ item }) {
           onClick={handleDownloadICS}
           rel="noreferrer"
           className="text-brand-primary hover:text-brand-accent underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary cursor-pointer"
-          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
-          title="Adicionar ao calendário (atalho: A)"
+          aria-label={addToCalendarLabel}
+          title={t(
+            'client_appointments.card.add_to_calendar_title_shortcut',
+            'Adicionar ao calendário (atalho: A)'
+          )}
           data-action="calendar"
         >
-          Adicionar ao calendário
+          {t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
         </a>
       </div>
       <div className="mt-2 text-xs text-brand-surfaceForeground/60 hidden sm:block">
-        Dica: A abre calendário.
+        {t(
+          'client_appointments.card.shortcut_hint_calendar_only',
+          'Dica: A abre calendário.'
+        )}
       </div>
       <div className="mt-3 flex sm:hidden flex-col gap-2 items-center">
         <a
@@ -262,11 +327,17 @@ function HistoryCard({ item }) {
           onClick={handleDownloadICS}
           rel="noreferrer"
           className="self-center rounded-lg border border-brand-border px-3 py-2 text-sm text-brand-surfaceForeground transition hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-          aria-label={`Adicionar ao calendário: ${serviceName} com ${professionalName} em ${dateLabel}`}
-          title="Adicionar ao calendário"
+          aria-label={addToCalendarLabel}
+          title={t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
           data-action="calendar"
         >
-          Adicionar ao calendário
+          {t(
+            'client_appointments.card.add_to_calendar',
+            'Adicionar ao calendário'
+          )}
         </a>
       </div>
     </div>
@@ -275,8 +346,13 @@ function HistoryCard({ item }) {
 
 export default function ClientAppointments() {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('upcoming');
   const [upcoming, setUpcoming] = useState([]);
   const [history, setHistory] = useState([]);
+  const [upcomingHasMore, setUpcomingHasMore] = useState(false);
+  const [historyHasMore, setHistoryHasMore] = useState(false);
+  const [loadingMoreUpcoming, setLoadingMoreUpcoming] = useState(false);
+  const [loadingMoreHistory, setLoadingMoreHistory] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -292,12 +368,19 @@ export default function ClientAppointments() {
           fetchClientHistory(),
         ]);
         if (!cancelled) {
-          setUpcoming(u);
-          setHistory(h);
+          setUpcoming(u.results);
+          setHistory(h.results);
+          setUpcomingHasMore(u.hasMore);
+          setHistoryHasMore(h.hasMore);
         }
       } catch {
         if (!cancelled)
-          setError({ message: t('Falha ao carregar agendamentos.') });
+          setError({
+            message: t(
+              'client_appointments.errors.load_failed',
+              'Falha ao carregar agendamentos.'
+            ),
+          });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -315,57 +398,196 @@ export default function ClientAppointments() {
       setUpcoming((prev) => prev.filter((x) => x.id !== item.id));
       setHistory((prev) => [{ ...item, status: 'cancelled' }, ...prev]);
     } catch {
-      setActionError({ message: t('Não foi possível cancelar.') });
+      setActionError({
+        message: t(
+          'client_appointments.errors.cancel_failed',
+          'Não foi possível cancelar.'
+        ),
+      });
+    }
+  };
+
+  const onLoadMoreUpcoming = async () => {
+    setLoadingMoreUpcoming(true);
+    setError(null);
+    try {
+      const { results, hasMore } = await fetchClientUpcoming({
+        offset: upcoming.length,
+      });
+      setUpcoming((prev) => [...prev, ...results]);
+      setUpcomingHasMore(hasMore);
+    } catch {
+      setError({
+        message: t(
+          'client_appointments.errors.load_failed',
+          'Falha ao carregar agendamentos.'
+        ),
+      });
+    } finally {
+      setLoadingMoreUpcoming(false);
+    }
+  };
+
+  const onLoadMoreHistory = async () => {
+    setLoadingMoreHistory(true);
+    setError(null);
+    try {
+      const { results, hasMore } = await fetchClientHistory({
+        offset: history.length,
+      });
+      setHistory((prev) => [...prev, ...results]);
+      setHistoryHasMore(hasMore);
+    } catch {
+      setError({
+        message: t(
+          'client_appointments.errors.load_failed',
+          'Falha ao carregar agendamentos.'
+        ),
+      });
+    } finally {
+      setLoadingMoreHistory(false);
     }
   };
 
   return (
     <ClientLayout>
-      <PageHeader title={t('Agendamentos')} />
+      <PageHeader title={t('client_appointments.title', 'Agendamentos')} />
       <div className="mt-4 flex items-center justify-end">
         <NavLink
           to="/client/agendar"
           className="text-brand-primary underline font-medium transition hover:text-brand-accent"
         >
-          {t('Novo agendamento')}
+          {t('client_appointments.new_booking', 'Novo agendamento')}
         </NavLink>
       </div>
       {loading ? (
-        <p className="text-sm text-gray-500">{t('Carregando…')}</p>
+        <p className="text-sm text-gray-500">
+          {t('client_appointments.loading', 'Carregando…')}
+        </p>
       ) : (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 pb-24">
-          <div>
-            <h2 className="font-semibold mb-2">{t('Próximos')}</h2>
-            {upcoming.length === 0 ? (
-              <p className="text-sm text-gray-500">
-                {t('Nenhum agendamento futuro.')}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {upcoming.map((item) => (
-                  <AppointmentCard
-                    key={item.id}
-                    item={item}
-                    onCancel={onCancel}
-                  />
-                ))}
-              </div>
-            )}
+        <div className="mt-6 pb-24">
+          <div className="border-b border-brand-border">
+            <nav className="-mb-px flex space-x-6" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                id="tab-upcoming"
+                aria-selected={activeTab === 'upcoming'}
+                aria-controls="panel-upcoming"
+                onClick={() => setActiveTab('upcoming')}
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium transition ${
+                  activeTab === 'upcoming'
+                    ? 'border-brand-primary text-brand-primary'
+                    : 'border-transparent text-brand-surfaceForeground/70 hover:text-brand-surfaceForeground hover:border-brand-surfaceForeground/30'
+                }`}
+              >
+                {t('client_appointments.upcoming', 'Próximos')}
+                {upcoming.length > 0 && (
+                  <span className="ml-1.5 text-xs text-brand-surfaceForeground/50">
+                    ({upcoming.length}
+                    {upcomingHasMore ? '+' : ''})
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="tab-history"
+                aria-selected={activeTab === 'history'}
+                aria-controls="panel-history"
+                onClick={() => setActiveTab('history')}
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium transition ${
+                  activeTab === 'history'
+                    ? 'border-brand-primary text-brand-primary'
+                    : 'border-transparent text-brand-surfaceForeground/70 hover:text-brand-surfaceForeground hover:border-brand-surfaceForeground/30'
+                }`}
+              >
+                {t('client_appointments.history', 'Histórico')}
+                {history.length > 0 && (
+                  <span className="ml-1.5 text-xs text-brand-surfaceForeground/50">
+                    ({history.length}
+                    {historyHasMore ? '+' : ''})
+                  </span>
+                )}
+              </button>
+            </nav>
           </div>
-          <div>
-            <h2 className="font-semibold mb-2">{t('Histórico')}</h2>
-            {history.length === 0 ? (
-              <p className="text-sm text-gray-500">
-                {t('Nenhum histórico disponível.')}
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {history.map((item) => (
-                  <HistoryCard key={item.id} item={item} />
-                ))}
-              </div>
-            )}
-          </div>
+
+          {activeTab === 'upcoming' && (
+            <div
+              id="panel-upcoming"
+              role="tabpanel"
+              aria-labelledby="tab-upcoming"
+              className="mt-4"
+            >
+              {upcoming.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  {t(
+                    'client_appointments.no_upcoming',
+                    'Nenhum agendamento futuro.'
+                  )}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {upcoming.map((item) => (
+                    <AppointmentCard
+                      key={item.id}
+                      item={item}
+                      onCancel={onCancel}
+                    />
+                  ))}
+                  {upcomingHasMore && (
+                    <FormButton
+                      type="button"
+                      variant="link"
+                      onClick={onLoadMoreUpcoming}
+                      disabled={loadingMoreUpcoming}
+                    >
+                      {loadingMoreUpcoming
+                        ? t('client_appointments.loading', 'Carregando…')
+                        : t('client_appointments.load_more', 'Carregar mais')}
+                    </FormButton>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'history' && (
+            <div
+              id="panel-history"
+              role="tabpanel"
+              aria-labelledby="tab-history"
+              className="mt-4"
+            >
+              {history.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  {t(
+                    'client_appointments.no_history',
+                    'Nenhum histórico disponível.'
+                  )}
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {history.map((item) => (
+                    <HistoryCard key={item.id} item={item} />
+                  ))}
+                  {historyHasMore && (
+                    <FormButton
+                      type="button"
+                      variant="link"
+                      onClick={onLoadMoreHistory}
+                      disabled={loadingMoreHistory}
+                    >
+                      {loadingMoreHistory
+                        ? t('client_appointments.loading', 'Carregando…')
+                        : t('client_appointments.load_more', 'Carregar mais')}
+                    </FormButton>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
       {error && (

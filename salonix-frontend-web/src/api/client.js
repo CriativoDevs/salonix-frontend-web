@@ -67,7 +67,10 @@ client.interceptors.request.use((config) => {
     config.url?.includes('public/') ||
     config.url?.includes('users/tenant/meta/') ||
     config.url?.includes('users/password/reset/') ||
-    config.url?.includes('users/password/reset/confirm/');
+    config.url?.includes('users/password/reset/confirm/') ||
+    config.url?.includes('users/captcha/new/') ||
+    config.url?.includes('clients/login/') ||
+    config.url?.includes('clients/access-accept/');
 
   if (!isPublicEndpoint) {
     // Prioridade: cliente > owner/staff (áreas separadas)

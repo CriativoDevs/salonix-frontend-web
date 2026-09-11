@@ -24,9 +24,9 @@ export default function ClientDashboard() {
       setLoading(true);
       setError(null);
       try {
-        const u = await fetchClientUpcoming();
+        const { results } = await fetchClientUpcoming({ limit: 1 });
         if (!cancelled) {
-          setUpcoming(u);
+          setUpcoming(results);
         }
       } catch {
         if (!cancelled)
@@ -50,8 +50,8 @@ export default function ClientDashboard() {
     if (!next) return;
     try {
       await cancelClientAppointment(next.id);
-      const u = await fetchClientUpcoming();
-      setUpcoming(u);
+      const { results } = await fetchClientUpcoming({ limit: 1 });
+      setUpcoming(results);
     } catch {
       setError({
         message: t(

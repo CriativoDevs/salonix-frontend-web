@@ -16,6 +16,7 @@ export default function FormInput({
     'w-full rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm',
     'text-brand-surfaceForeground placeholder-brand-surfaceForeground/50',
     'focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent',
+    'disabled:opacity-60 disabled:cursor-not-allowed',
     error ? 'border-rose-400' : 'border-brand-border',
     inputClassName,
   ]

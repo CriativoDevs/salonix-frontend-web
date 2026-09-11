@@ -22,8 +22,7 @@ import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
 import BrandLogo from './BrandLogo';
-import ThemeToggle from './ThemeToggle';
-import LanguageToggle from './LanguageToggle';
+import PreferencesMenu from './PreferencesMenu';
 
 // Componente auxiliar para links móveis com verificação de bloqueio
 function MobileNavLinkWithLock({
@@ -270,8 +269,7 @@ function MobileNav() {
               />
             </Link>
             <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <LanguageToggle />
+              <PreferencesMenu />
 
               {/* Logout button for mobile - apenas para manager e collaborator */}
               {currentUserRole && currentUserRole !== 'owner' && (

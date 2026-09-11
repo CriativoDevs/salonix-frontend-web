@@ -15,8 +15,7 @@ import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
 import DropdownMenu from './DropdownMenu';
-import ThemeToggle from './ThemeToggle';
-import LanguageToggle from './LanguageToggle';
+import PreferencesMenu from './PreferencesMenu';
 import { useAuth } from '../../hooks/useAuth';
 import { useTenant } from '../../hooks/useTenant';
 import i18n from '../../i18n';
@@ -239,8 +238,7 @@ export default function HeaderNav() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageToggle />
+            <PreferencesMenu />
 
             {/* Logout button - visible apenas para manager e collaborator (owner usa Settings) */}
             {currentUserRole && currentUserRole !== 'owner' && (
