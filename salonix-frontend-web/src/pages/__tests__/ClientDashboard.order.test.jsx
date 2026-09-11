@@ -22,14 +22,17 @@ jest.mock('react-simple-pull-to-refresh', () => ({ children }) => (
 ));
 
 jest.mock('../../api/clientMe', () => ({
-  fetchClientUpcoming: jest.fn().mockResolvedValue([
-    {
-      id: 1,
-      service: { name: 'Corte Feminino' },
-      professional: { name: 'Alice' },
-      slot: { start_time: '2025-12-04T10:00:00Z' },
-    },
-  ]),
+  fetchClientUpcoming: jest.fn().mockResolvedValue({
+    results: [
+      {
+        id: 1,
+        service: { name: 'Corte Feminino' },
+        professional: { name: 'Alice' },
+        slot: { start_time: '2025-12-04T10:00:00Z' },
+      },
+    ],
+    hasMore: false,
+  }),
   cancelClientAppointment: jest.fn(),
 }));
 

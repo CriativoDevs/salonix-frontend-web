@@ -3,8 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BrandLogo from './BrandLogo';
 import Container from './Container';
-import ThemeToggle from './ThemeToggle';
-import LanguageToggle from './LanguageToggle';
+import PreferencesMenu from './PreferencesMenu';
 import { useTenant } from '../../hooks/useTenant';
 import { resolveTenantAssetUrl } from '../../utils/tenant';
 import i18n from '../../i18n';
@@ -87,8 +86,7 @@ export default function ClientHeaderNav() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageToggle />
+            <PreferencesMenu />
           </div>
         </div>
       </Container>

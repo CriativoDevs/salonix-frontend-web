@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HomeIcon, CalendarIcon, UserIcon } from 'lucide-react';
-import ThemeToggle from './ThemeToggle';
+import PreferencesMenu from './PreferencesMenu';
 
 export default function ClientMobileNav() {
   const { t } = useTranslation();
@@ -47,7 +47,7 @@ export default function ClientMobileNav() {
         );
       })}
       <div className="flex items-center gap-2">
-        <ThemeToggle />
+        <PreferencesMenu />
       </div>
     </nav>
   );

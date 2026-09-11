@@ -59,7 +59,7 @@ export default function ClientAccess() {
       } catch (err) {
         const detail =
           err?.response?.data?.detail ||
-          t('Ocorreu um erro ao aceitar o link.');
+          t('client_access.errors.generic', 'Ocorreu um erro ao aceitar o link.');
         setError({ message: detail });
       } finally {
         setLoading(false);
@@ -67,7 +67,9 @@ export default function ClientAccess() {
     };
     if (token) run();
     else {
-      setError({ message: t('Token ausente.') });
+      setError({
+        message: t('client_access.errors.missing_token', 'Token ausente.'),
+      });
       setLoading(false);
     }
   }, [params, t, navigate]);
@@ -75,13 +77,17 @@ export default function ClientAccess() {
   return (
     <AuthLayout>
       <div className="space-y-4 text-center">
-        <h1 className="text-xl font-semibold">{t('Acesso do Cliente')}</h1>
-        {loading && <p>{t('Processando…')}</p>}
+        <h1 className="text-xl font-semibold">
+          {t('client_access.title', 'Acesso do Cliente')}
+        </h1>
+        {loading && <p>{t('client_access.processing', 'Processando…')}</p>}
         {!loading && result && (
           <div className="space-y-2">
-            <p className="text-green-700">{t('Sessão criada com sucesso.')}</p>
+            <p className="text-green-700">
+              {t('client_access.success', 'Sessão criada com sucesso.')}
+            </p>
             <FormButton type="button" onClick={() => window.close()}>
-              {t('Fechar')}
+              {t('client_access.close', 'Fechar')}
             </FormButton>
           </div>
         )}

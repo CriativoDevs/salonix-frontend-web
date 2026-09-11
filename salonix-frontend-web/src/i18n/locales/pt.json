@@ -2232,6 +2232,86 @@
       "too_many_attempts": "Muitas tentativas. Aguarde alguns minutos."
     }
   },
+  "client_profile": {
+    "title": "Perfil do Cliente",
+    "loading": "Carregando…",
+    "name": "Nome",
+    "email": "E-mail",
+    "email_readonly": "O e-mail é o seu login e não pode ser alterado por aqui. Contacte o estabelecimento se precisar de ajuda.",
+    "phone": "Telefone",
+    "marketing_opt_in": "Receber comunicações de marketing",
+    "photo": "Foto de perfil",
+    "photo_alt": "Foto de perfil",
+    "photo_empty": "Sem foto",
+    "photo_add": "Adicionar foto",
+    "photo_change": "Alterar foto",
+    "photo_uploading": "A enviar…",
+    "photo_requirements": "PNG, JPEG ou WebP até 2MB, entre 50x50 e 2000x2000 pixels.",
+    "saving": "Salvando…",
+    "save": "Salvar",
+    "saved": "Salvo",
+    "success": "Perfil salvo com sucesso.",
+    "errors": {
+      "load_failed": "Falha ao carregar perfil.",
+      "save_failed": "Falha ao salvar perfil.",
+      "photo_too_large": "A imagem deve ter no máximo 2MB.",
+      "photo_failed": "Falha ao enviar a foto. Verifique o formato e as dimensões."
+    }
+  },
+  "client_booking": {
+    "back": "Voltar",
+    "title": "Novo agendamento",
+    "loading": "Carregando…",
+    "service": "Serviço",
+    "professional": "Profissional",
+    "time_slot": "Horário",
+    "notes": "Observações",
+    "select_placeholder": "Selecione",
+    "submit": "Agendar",
+    "submitting": "Agendando…",
+    "errors": {
+      "generic": "Não foi possível agendar."
+    }
+  },
+  "client_appointments": {
+    "title": "Agendamentos",
+    "new_booking": "Novo agendamento",
+    "loading": "Carregando…",
+    "upcoming": "Próximos",
+    "no_upcoming": "Nenhum agendamento futuro.",
+    "history": "Histórico",
+    "no_history": "Nenhum histórico disponível.",
+    "load_more": "Carregar mais",
+    "errors": {
+      "load_failed": "Falha ao carregar agendamentos.",
+      "cancel_failed": "Não foi possível cancelar."
+    },
+    "card": {
+      "default_service": "Serviço",
+      "default_professional": "Profissional",
+      "appointment_label": "Agendamento: {{service}} com {{professional}} • {{date}}",
+      "history_label": "Histórico: {{service}} com {{professional}} • {{date}}",
+      "add_to_calendar": "Adicionar ao calendário",
+      "add_to_calendar_aria": "Adicionar ao calendário: {{service}} com {{professional}} em {{date}}",
+      "add_to_calendar_title_shortcut": "Adicionar ao calendário (atalho: A)",
+      "cancel": "Cancelar",
+      "cancel_aria": "Cancelar: {{service}} com {{professional}} em {{date}}",
+      "cancel_title": "Cancelar agendamento",
+      "cancel_title_shortcut": "Cancelar agendamento (atalho: C)",
+      "shortcut_hint_both": "Dica: A abre calendário; C cancela.",
+      "shortcut_hint_calendar_only": "Dica: A abre calendário."
+    }
+  },
+  "client_access": {
+    "title": "Acesso do Cliente",
+    "processing": "Processando…",
+    "success": "Sessão criada com sucesso.",
+    "close": "Fechar",
+    "errors": {
+      "generic": "Ocorreu um erro ao aceitar o link.",
+      "missing_token": "Token ausente."
+    }
+  },
   "client_enter": {
     "already_have_password": "Já tem senha? Faça login",
     "submit": "Enviar link de acesso",
@@ -2257,13 +2337,15 @@
     "confirm_password": "Confirme a Senha",
     "confirm_password_placeholder": "Digite a senha novamente",
     "submit": "Definir Senha",
+    "submitting": "Definindo...",
     "errors": {
       "password_required": "Senha é obrigatória",
       "password_too_short": "Senha deve ter no mínimo 6 caracteres",
       "confirm_password_required": "Confirmação de senha é obrigatória",
       "passwords_mismatch": "As senhas não coincidem",
       "session_expired": "Sua sessão expirou. Solicite um novo link de acesso.",
-      "session_required": "Sessão não encontrada. Acesse via link de email."
+      "session_required": "Sessão não encontrada. Acesse via link de email.",
+      "generic": "Erro ao definir senha. Tente novamente."
     },
     "success": "Senha definida com sucesso! Redirecionando..."
   },
@@ -2275,6 +2357,7 @@
       "name": "Nome completo",
       "email": "E-mail",
       "phone": "Telefone",
+      "phone_description": "Opcional",
       "submit": "Registar",
       "submitting": "A registar…"
     },

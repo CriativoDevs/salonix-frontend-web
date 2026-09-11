@@ -9,14 +9,12 @@ jest.mock('../../api/clientMe', () => ({
     name: 'Alice',
     email: 'alice@example.com',
     phone_number: '+351911111111',
-    notes: '',
     marketing_opt_in: false,
   }),
   updateClientProfile: jest.fn().mockResolvedValue({
     name: 'Alice',
     email: 'alice@example.com',
     phone_number: '+351911111111',
-    notes: '',
     marketing_opt_in: false,
   }),
 }));

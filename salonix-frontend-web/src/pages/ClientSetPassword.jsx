@@ -75,7 +75,7 @@ export default function ClientSetPassword() {
       } else if (errorMessage.toLowerCase().includes('senha')) {
         setApiError(errorMessage);
       } else {
-        setApiError('Erro ao definir senha. Tente novamente.');
+        setApiError(t('client_set_password.errors.generic'));
       }
     } finally {
       setLoading(false);
@@ -83,15 +83,18 @@ export default function ClientSetPassword() {
   };
 
   return (
-    <AuthLayout
-      title={t('client_set_password.title')}
-      subtitle={t('client_set_password.subtitle')}
-    >
+    <AuthLayout>
       <form
         onSubmit={handleSubmit}
         className="space-y-4"
         data-testid="set-password-form"
       >
+        <h1 className="text-xl font-semibold text-center">
+          {t('client_set_password.title')}
+        </h1>
+        <p className="text-sm text-center text-brand-surfaceForeground/70">
+          {t('client_set_password.subtitle')}
+        </p>
         <FormInput
           label={t('client_set_password.password')}
           type="password"
@@ -123,7 +126,9 @@ export default function ClientSetPassword() {
           disabled={loading}
           className="w-full text-brand-primary hover:text-brand-primary/80 font-medium underline text-center py-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? t('Definindo...') : t('client_set_password.submit')}
+          {loading
+            ? t('client_set_password.submitting')
+            : t('client_set_password.submit')}
         </button>
       </form>
     </AuthLayout>
