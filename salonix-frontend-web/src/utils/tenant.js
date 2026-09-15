@@ -109,6 +109,10 @@ export const DEFAULT_TENANT_META = {
     bufferTime: 15,
   },
   onboarding_state: 'completed',
+  // BE-TRIAL-01/02: fonte de trial independente do Stripe, exposta no
+  // bootstrap do tenant (TenantSelfServiceSerializer). Default seguro
+  // (não bloqueia) enquanto o bootstrap real não chega.
+  is_trial_expired: false,
 };
 
 export function sanitizeTenantSlug(value) {

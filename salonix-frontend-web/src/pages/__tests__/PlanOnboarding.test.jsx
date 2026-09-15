@@ -6,12 +6,15 @@ import PlanOnboarding from '../PlanOnboarding';
 import * as billingApi from '../../api/billing';
 import * as safeRedirectUtils from '../../utils/safeRedirect';
 
+const mockLogout = jest.fn();
+
 jest.mock('../../hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => ({ isAuthenticated: true, logout: mockLogout }),
 }));
 
 jest.mock('../../hooks/useTenant', () => ({
   useTenant: () => ({
+    tenant: { is_trial_expired: true },
     plan: { tier: 'basic', name: 'Basic' },
     slug: 'aurora',
     refetch: jest.fn(),
@@ -167,5 +170,30 @@ describe('PlanOnboarding', () => {
       screen.queryByText(/Plano Founder: Oferta de Lançamento/i)
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/Entendi, Continuar/i)).not.toBeInTheDocument();
+  });
+
+  it('FEW-TRIAL-03: mostra aviso de trial expirado com base em tenant.is_trial_expired', async () => {
+    render(
+      <MemoryRouter>
+        <PlanOnboarding />
+      </MemoryRouter>
+    );
+
+    expect(
+      await screen.findByText(/já foi utilizado/i)
+    ).toBeInTheDocument();
+  });
+
+  it('FEW-TRIAL-02: botão Sair chama logout, sem prender o usuário na tela', async () => {
+    render(
+      <MemoryRouter>
+        <PlanOnboarding />
+      </MemoryRouter>
+    );
+
+    const logoutBtn = await screen.findByText('Sair');
+    fireEvent.click(logoutBtn);
+
+    expect(mockLogout).toHaveBeenCalled();
   });
 });

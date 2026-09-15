@@ -42,7 +42,6 @@ import ClientDashboard from '../pages/ClientDashboard';
 import ClientProfile from '../pages/ClientProfile';
 import ClientAppointments from '../pages/ClientAppointments';
 import ClientBookingPage from '../pages/ClientBookingPage';
-import RegisterCheckout from '../pages/RegisterCheckout';
 import PlanOnboarding from '../pages/PlanOnboarding';
 import { OpsAuthProvider } from '../contexts/OpsAuthContext';
 import OpsLogin from '../pages/ops/Login';
@@ -197,15 +196,6 @@ function Router() {
           <ClientPrivateRoute>
             <ClientBookingPage />
           </ClientPrivateRoute>
-        }
-      />
-
-      <Route
-        path="/register/checkout"
-        element={
-          <PrivateRoute>
-            <RegisterCheckout />
-          </PrivateRoute>
         }
       />
 

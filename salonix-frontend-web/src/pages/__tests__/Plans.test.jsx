@@ -15,8 +15,10 @@ jest.mock('../../hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
 }));
 
+let mockTenant = {};
 jest.mock('../../hooks/useTenant', () => ({
   useTenant: () => ({
+    tenant: mockTenant,
     plan: { tier: 'basic', name: 'Basic' },
     slug: 'aurora',
     refetch: jest.fn(),
@@ -42,6 +44,7 @@ jest.mock('../../api/billing', () => ({
 describe('Plans', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockTenant = {};
   });
 
   it('disables the checkout button when the selected plan is not available', async () => {
@@ -94,5 +97,44 @@ describe('Plans', () => {
 
     await screen.findByText('TimelyOne');
     expect(screen.queryByText('Founder')).not.toBeInTheDocument();
+  });
+
+  it('FEW-TRIAL-03: shows the trial-exhausted warning from tenant.is_trial_expired, not overview.trial_exhausted', async () => {
+    mockTenant = { is_trial_expired: true };
+    mockOverview = {
+      // Deliberadamente sem trial_exhausted/trial_eligible: a fonte agora
+      // é tenant.is_trial_expired (bootstrap), não mais o overview.
+      available_plans: [
+        { plan_code: 'basic', is_available: true, is_current: false, can_upgrade: true },
+      ],
+    };
+
+    render(
+      <MemoryRouter>
+        <Plans />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/já foi utilizado/i)).toBeInTheDocument();
+  });
+
+  it('FEW-TRIAL-03: does not show the trial-exhausted warning when tenant.is_trial_expired is false', async () => {
+    mockTenant = { is_trial_expired: false };
+    mockOverview = {
+      trial_exhausted: true,
+      trial_eligible: false,
+      available_plans: [
+        { plan_code: 'basic', is_available: true, is_current: false, can_upgrade: true },
+      ],
+    };
+
+    render(
+      <MemoryRouter>
+        <Plans />
+      </MemoryRouter>
+    );
+
+    await screen.findByText('TimelyOne');
+    expect(screen.queryByText(/já foi utilizado/i)).not.toBeInTheDocument();
   });
 });
