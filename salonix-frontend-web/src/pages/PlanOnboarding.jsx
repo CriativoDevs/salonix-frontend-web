@@ -12,13 +12,11 @@ import { mergePlanAvailability } from '../utils/planAvailability';
 
 export default function PlanOnboarding() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  const { slug, refetch } = useTenant();
-  const {
-    overview,
-    loading: overviewLoading,
-    refresh: refreshOverview,
-  } = useBillingOverview({ pollIntervalMs: 3000 });
+  const { isAuthenticated, logout } = useAuth();
+  const { slug, tenant, refetch } = useTenant();
+  const { overview, refresh: refreshOverview } = useBillingOverview({
+    pollIntervalMs: 3000,
+  });
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,17 +28,6 @@ export default function PlanOnboarding() {
   );
 
   const plan = plans[0];
-
-  useEffect(() => {
-    if (overview) {
-      console.log('[PlanOnboarding] Debug Overview:', {
-        trial_exhausted: overview.trial_exhausted,
-        trial_eligible: overview.trial_eligible,
-        trial_days: overview.trial_days,
-        current_subscription: overview.current_subscription,
-      });
-    }
-  }, [overview]);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -124,15 +111,21 @@ export default function PlanOnboarding() {
     <AuthLayout>
       <div className="space-y-4">
         <h1 className="text-xl font-semibold text-brand-surfaceForeground">
-          {t('plans.title', 'Planos')}
+          {t('plans.trial_expired_title', 'Seu período de teste terminou')}
         </h1>
         <p className="text-sm text-brand-surfaceForeground/70">
-          {t('plans.subtitle', 'Escolha o plano para iniciar seu painel')}
+          {t(
+            'plans.trial_expired_subtitle',
+            'Escolha como continuar para recuperar o acesso ao seu painel.'
+          )}
         </p>
 
-        {!overviewLoading &&
-        overview &&
-        (overview.trial_exhausted || overview.trial_eligible === false) ? (
+        {/* FEW-TRIAL-03: is_trial_expired vem do bootstrap do tenant
+            (Tenant.is_trial_expired(), BE-TRIAL-01) -- fonte de verdade
+            independente do Stripe. overview.trial_exhausted/trial_eligible
+            (Subscription-based) ficava sempre desatualizado sem checkout
+            no registo. */}
+        {tenant?.is_trial_expired ? (
           <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
             {t(
               'plans.trial_exhausted',
@@ -228,6 +221,16 @@ export default function PlanOnboarding() {
             {loading
               ? t('common.processing', 'Aguarde…')
               : t('plans.continue_checkout', 'Continuar para checkout')}
+          </button>
+        </div>
+
+        <div className="pt-1 text-center">
+          <button
+            type="button"
+            onClick={logout}
+            className="text-xs text-brand-surfaceForeground/50 underline hover:text-brand-surfaceForeground/80"
+          >
+            {t('plans.trial_expired_logout', 'Sair')}
           </button>
         </div>
       </div>

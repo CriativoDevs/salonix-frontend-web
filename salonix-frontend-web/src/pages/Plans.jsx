@@ -18,7 +18,7 @@ import { mergePlanAvailability } from '../utils/planAvailability';
 function Plans() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { plan, slug, refetch } = useTenant();
+  const { tenant, plan, slug, refetch } = useTenant();
   const {
     overview,
     loading: overviewLoading,
@@ -45,18 +45,6 @@ function Plans() {
     }
   }, [overview?.current_subscription?.interval]);
 
-  useEffect(() => {
-    if (
-      overview &&
-      (overview.trial_exhausted || overview.trial_eligible === false)
-    ) {
-      console.warn('[Plans] Trial warning shown:', {
-        trial_exhausted: overview.trial_exhausted,
-        trial_eligible: overview.trial_eligible,
-        trial_days: overview.trial_days,
-      });
-    }
-  }, [overview]);
 
   useEffect(() => {
     const fromOverview = (
@@ -210,10 +198,12 @@ function Plans() {
             )}
           </div>
         )}
-        {!overviewLoading &&
-        overview &&
-        !overview.current_subscription &&
-        (overview.trial_exhausted || overview.trial_eligible === false) ? (
+        {/* FEW-TRIAL-03: is_trial_expired vem do bootstrap do tenant
+            (Tenant.is_trial_expired(), BE-TRIAL-01) -- fonte de verdade
+            independente do Stripe. overview.trial_exhausted/trial_eligible
+            (Subscription-based) ficava sempre desatualizado sem checkout
+            no registo. */}
+        {!overview?.current_subscription && tenant?.is_trial_expired ? (
           <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
             {t(
               'plans.trial_exhausted',

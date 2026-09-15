@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AuthLayout from '../layouts/AuthLayout';
 import FormInput from '../components/ui/FormInput';
@@ -11,14 +11,12 @@ import { useTenant } from '../hooks/useTenant';
 import { useAuth } from '../hooks/useAuth';
 import { trace } from '../utils/debug';
 import { clearPostAuthRedirect } from '../utils/navigation';
-import { getEnvFlag } from '../utils/env';
 import { getCaptchaTokenForRequest } from '../utils/captchaPolicy';
 import CaptchaGate from '../components/security/CaptchaGate';
 
 function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { applyTenantBootstrap } = useTenant();
   const { login } = useAuth();
   const [form, setForm] = useState({
@@ -85,21 +83,16 @@ function Register() {
       if (response?.tenant?.slug) {
         applyTenantBootstrap(response.tenant);
       }
-      const enablePlans = getEnvFlag('VITE_PLAN_WIZARD_AFTER_LOGIN');
       try {
         trace('register:auto-login:start');
         await login({ email: cleanForm.email, password: cleanForm.password });
 
-        // Redirecionamento explícito, sem depender do PublicRoute consumir o agendamento.
-        // Isso evita race conditions e falhas de sessionStorage.
-        const target = enablePlans ? '/register/checkout' : '/dashboard';
-        const interval = searchParams.get('interval');
-        const targetWithParams = interval
-          ? `${target}?interval=${interval}`
-          : target;
-
-        trace('register:auto-login:success', targetWithParams);
-        navigate(targetWithParams, { replace: true });
+        // FEW-TRIAL-01: sem checkout no registo -- acesso imediato ao
+        // dashboard. O trial de 14 dias corre na plataforma
+        // (Tenant.is_trial_expired(), BE-TRIAL-01); o pagamento só é pedido
+        // se/quando o trial expirar (tela de bloqueio via OnboardingGuard).
+        trace('register:auto-login:success', '/dashboard');
+        navigate('/dashboard', { replace: true });
       } catch {
         // Se auto-login falhar por qualquer motivo, segue fluxo antigo
         trace('register:auto-login:fail');

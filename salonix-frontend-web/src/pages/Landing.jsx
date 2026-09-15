@@ -49,11 +49,11 @@ const faqs = [
   },
   {
     q: 'Como funciona o período trial?',
-    a: 'Durante 14 dias tens acesso total ao TimelyOne — agendamentos, profissionais e relatórios sem limites. Inicias com um cartão (pagamento seguro via Stripe), mas não há qualquer cobrança durante os 14 dias: só és cobrado no fim se não cancelares. O envio de SMS fica disponível depois do período de teste. Cancela quando quiseres, sem fidelização.',
+    a: 'Cria a tua conta e tens acesso total e imediato ao TimelyOne por 14 dias — agendamentos, profissionais e relatórios sem limites, sem cartão de crédito. O envio de SMS fica disponível depois do período de teste. Só é pedido pagamento se quiseres continuar a usar após os 14 dias; até lá, não há qualquer cobrança.',
   },
   {
     q: 'Preciso de cartão de crédito para começar?',
-    a: 'Sim, para iniciar o trial. Não há qualquer cobrança durante os 14 dias e podes cancelar a qualquer momento antes do fim — só passas a pagar se decidires continuar.',
+    a: 'Não. Crias a tua conta e usas o TimelyOne de imediato, sem cartão. Só pedimos os dados de pagamento se decidires continuar depois dos 14 dias de teste.',
   },
   {
     q: 'O TimelyOne funciona no telemóvel?',
@@ -1157,7 +1157,7 @@ function Landing() {
                 {
                   n: 1,
                   title: 'Crie a sua conta.',
-                  desc: 'Sem compromisso e sem cobrança nos 14 dias. Em menos de 5 minutos está operacional.',
+                  desc: 'Sem cartão, sem compromisso e sem cobrança nos 14 dias. Em menos de 5 minutos está operacional.',
                 },
                 {
                   n: 2,

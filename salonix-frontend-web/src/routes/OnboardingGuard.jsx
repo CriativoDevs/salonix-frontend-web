@@ -31,6 +31,12 @@ export default function OnboardingGuard({ children }) {
       requiredRoute = ONBOARDING_ROUTES.setup;
       break;
     case 'billing_pending':
+      // FEW-TRIAL-02: com o checkout removido do registo (BE-TRIAL-01/02),
+      // este estado só ocorre quando o trial de 14 dias já expirou de
+      // verdade (Tenant.is_trial_expired()) -- nunca mais "acabou de se
+      // registar". /onboarding/plan (PlanOnboarding.jsx) passa a servir
+      // como a tela de bloqueio pós-trial: o redirect forçado abaixo já
+      // impede acesso a qualquer outra rota até o pagamento.
       requiredRoute = ONBOARDING_ROUTES.plans;
       break;
     case 'completed':
@@ -45,12 +51,7 @@ export default function OnboardingGuard({ children }) {
     // ou se a rota atual for uma sub-rota permitida do fluxo (ex: /plans/checkout)
     const isAllowedSubRoute = location.pathname.startsWith(requiredRoute);
 
-    // Permitir /register/checkout se estivermos em billing_pending (fluxo alternativo de wizard)
-    const isRegisterCheckout =
-      location.pathname === '/register/checkout' &&
-      onboardingState === 'billing_pending';
-
-    if (!isAllowedSubRoute && !isRegisterCheckout) {
+    if (!isAllowedSubRoute) {
       console.log(
         `[OnboardingGuard] Redirecting from ${location.pathname} to ${requiredRoute} (state: ${onboardingState})`
       );
