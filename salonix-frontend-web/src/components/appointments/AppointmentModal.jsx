@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Dropdown from '../ui/Dropdown';
+import WhatsAppButton from './WhatsAppButton';
 import { createAppointment } from '../../api/appointments';
 import { fetchSlots } from '../../api/slots';
 import { parseApiError } from '../../utils/apiError';
+import { useTenant } from '../../hooks/useTenant';
 
 const INITIAL_FORM = {
   customerId: '',
@@ -55,11 +57,12 @@ function AppointmentModal({
   slug,
 }) {
   const { t } = useTranslation();
+  const { tenant } = useTenant();
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [globalError, setGlobalError] = useState(null);
-  const [, setSuccess] = useState(false);
+  const [createdAppointment, setCreatedAppointment] = useState(null);
   const [slots, setSlots] = useState([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
@@ -68,7 +71,7 @@ function AppointmentModal({
     setForm(INITIAL_FORM);
     setFieldErrors({});
     setGlobalError(null);
-    setSuccess(false);
+    setCreatedAppointment(null);
     setSlots([]);
   }, [open]);
 
@@ -138,9 +141,15 @@ function AppointmentModal({
       setSubmitting(true);
       setGlobalError(null);
       await createAppointment(payload, { slug });
-      setSuccess(true);
+      setCreatedAppointment({
+        customerName: selectedCustomer?.name || '',
+        customerPhone: selectedCustomer?.phone_number || '',
+        serviceName: selectedService?.name || '',
+        professionalName: selectedProfessional?.name || '',
+        slotStart: selectedSlot?.start_time || null,
+        salonName: tenant?.name || '',
+      });
       onCreated?.();
-      onClose?.();
     } catch (err) {
       setGlobalError(parseApiError(err, t('common.save_error', 'Falha ao salvar.')));
     } finally {
@@ -186,6 +195,49 @@ function AppointmentModal({
       <ChevronDown size={16} className="shrink-0 text-brand-surfaceForeground/70" />
     </button>
   );
+
+  if (createdAppointment) {
+    return (
+      <Modal
+        open={open}
+        onClose={onClose}
+        title={t('bookings.create.success_title', 'Agendamento criado!')}
+        description={t(
+          'bookings.create.success_description',
+          'O agendamento foi criado com sucesso.'
+        )}
+        size="lg"
+        footer={
+          <div className="flex flex-wrap gap-2 justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center justify-center rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+            >
+              {t('common.close', 'Fechar')}
+            </button>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-start gap-3">
+          <p className="text-sm text-brand-surfaceForeground/80">
+            {t(
+              'bookings.create.success_whatsapp_hint',
+              'Quer avisar o cliente já?'
+            )}
+          </p>
+          <WhatsAppButton
+            appointment={createdAppointment}
+            eventType="confirmation"
+            label={t(
+              'bookings.actions.whatsapp_confirmation_send',
+              'Enviar confirmação via WhatsApp'
+            )}
+          />
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal

@@ -379,7 +379,10 @@
       "no_contact": "No contact info",
       "title": "Actions",
       "manage": "Manage",
-      "save": "Save changes"
+      "save": "Save changes",
+      "whatsapp_confirmation": "Send confirmation",
+      "whatsapp_reminder": "Send reminder",
+      "whatsapp_confirmation_send": "Send confirmation via WhatsApp"
     },
     "title": "Bookings",
     "empty_title": "No bookings found",
@@ -404,7 +407,10 @@
       "title": "Create appointment",
       "show": "New booking",
       "hide": "Close new booking",
-      "description": "Fill the agenda in natural order: client, service, professional and time slot."
+      "description": "Fill the agenda in natural order: client, service, professional and time slot.",
+      "success_title": "Appointment created!",
+      "success_description": "The appointment was created successfully.",
+      "success_whatsapp_hint": "Want to let the client know now?"
     },
     "form": {
       "select_service": "Select a service",

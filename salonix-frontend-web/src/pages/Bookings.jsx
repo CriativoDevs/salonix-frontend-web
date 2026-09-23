@@ -49,6 +49,7 @@ import { parseApiError } from '../utils/apiError';
 import { APPOINTMENT_STATUS_STYLES } from '../utils/badgeStyles';
 import PaginationControls from '../components/ui/PaginationControls';
 import AppointmentModal from '../components/appointments/AppointmentModal';
+import WhatsAppButton from '../components/appointments/WhatsAppButton';
 import ImportAppointmentsModal from '../components/appointments/ImportAppointmentsModal';
 import HourGrid from '../components/appointments/calendar/HourGrid';
 import MonthGrid from '../components/appointments/calendar/MonthGrid';
@@ -329,7 +330,7 @@ function sortCustomers(list) {
 
 function Bookings() {
   const { t, i18n } = useTranslation();
-  const { slug } = useTenant();
+  const { slug, tenant } = useTenant();
   const currentLanguage = i18n?.language || 'pt';
 
   const [services, setServices] = useState([]);
@@ -3593,6 +3594,14 @@ function Bookings() {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div className="mt-3 flex flex-wrap gap-2">
+              <WhatsAppButton
+                appointment={{ ...selectedAppointment, salonName: tenant?.name }}
+                eventType="reminder"
+                label={t('bookings.actions.whatsapp_reminder', 'Enviar lembrete')}
+              />
             </div>
 
             <dl className="mt-4 space-y-3 text-sm">
