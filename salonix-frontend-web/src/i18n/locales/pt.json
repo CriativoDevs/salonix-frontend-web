@@ -380,7 +380,10 @@
       "no_contact": "Sem contato",
       "title": "Ações",
       "manage": "Gerir",
-      "save": "Salvar alterações"
+      "save": "Salvar alterações",
+      "whatsapp_confirmation": "Enviar confirmação",
+      "whatsapp_reminder": "Enviar lembrete",
+      "whatsapp_confirmation_send": "Enviar confirmação via WhatsApp"
     },
     "title": "Agendamentos",
     "empty_title": "Nenhum agendamento encontrado",
@@ -405,7 +408,10 @@
       "title": "Criar novo agendamento",
       "show": "Novo agendamento",
       "hide": "Fechar novo agendamento",
-      "description": "Preencha a agenda em ordem natural: cliente, serviço, profissional e horário."
+      "description": "Preencha a agenda em ordem natural: cliente, serviço, profissional e horário.",
+      "success_title": "Agendamento criado!",
+      "success_description": "O agendamento foi criado com sucesso.",
+      "success_whatsapp_hint": "Quer avisar o cliente já?"
     },
     "form": {
       "select_service": "Selecione um serviço",
