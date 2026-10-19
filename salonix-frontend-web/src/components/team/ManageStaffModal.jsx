@@ -350,13 +350,22 @@ function ManageStaffModal({
 
   const handleProfessionalEdit = () => {
     setProfessionalEditing(true);
+    // Ao criar (sem currentProfessional) o Professional do próprio owner,
+    // pré-marca todos os serviços do tenant: é o cenário típico de owner
+    // solo e evita que o profissional fique "vazio" (sem serviço
+    // vinculado), o que o tornaria invisível em telas que filtram por
+    // serviço (ex.: lista de agendamento).
+    const defaultServiceIds =
+      !currentProfessional && isOwnerMember
+        ? services.map((service) => Number(service.id))
+        : (currentProfessional?.service_ids || []).map(Number);
     setProfessionalForm({
       id: currentProfessional?.id || null,
       name: currentProfessional?.name || '',
       bio: currentProfessional?.bio || '',
       staffMemberId: currentProfessional?.staff_member || member?.id || '',
       role: member?.role || 'collaborator',
-      serviceIds: (currentProfessional?.service_ids || []).map(Number),
+      serviceIds: defaultServiceIds,
     });
     setBirthday(member?.birthday || '');
     setPhotoFile(null);

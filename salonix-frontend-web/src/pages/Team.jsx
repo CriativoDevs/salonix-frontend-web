@@ -14,6 +14,7 @@ import {
   createProfessional,
   updateProfessional,
 } from '../api/professionals';
+import { fetchServices } from '../api/services';
 import InviteStaffModal from '../components/team/InviteStaffModal';
 import ManageStaffModal from '../components/team/ManageStaffModal';
 import Dropdown from '../components/ui/Dropdown';
@@ -275,6 +276,9 @@ function Team() {
   const [professionalsError, setProfessionalsError] = useState(null);
   const [professionalsLoading, setProfessionalsLoading] = useState(false);
   const professionalsMountedRef = useRef(true);
+  const [services, setServices] = useState([]);
+  const [becomingProfessional, setBecomingProfessional] = useState(false);
+  const [becomeProfessionalError, setBecomeProfessionalError] = useState(null);
 
   // paginação e ordenação (server-side)
   const [limit, setLimit] = useState(10);
@@ -813,6 +817,27 @@ function Team() {
     refetchProfessionals();
   }, [refetchProfessionals]);
 
+  // Carrega os serviços do tenant para pré-selecionar todos ao criar o
+  // Professional do próprio owner via atalho "Tornar-me profissional".
+  useEffect(() => {
+    if (!slug) {
+      setServices([]);
+      return;
+    }
+    let cancelled = false;
+    fetchServices(slug)
+      .then((data) => {
+        if (cancelled) return;
+        setServices(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setServices([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
   const createProfessionalEntry = useCallback(
     async ({ name, specialty, phone, staffMemberId, serviceIds }) => {
       try {
@@ -836,6 +861,64 @@ function Team() {
     },
     [slug, refetchProfessionals, refetchStaff, t]
   );
+
+  // FEW-PROF-01: owner de conta criada antes do BE-PROF-01 não nasceu com
+  // um Professional vinculado. Em vez de obrigar o owner a passar por
+  // "Gerenciar" -> "Criar Profissional" manualmente, oferecemos aqui um
+  // atalho de 1 clique que já cria o Professional com todos os serviços
+  // do tenant vinculados (evita o profissional ficar "vazio" e, por isso,
+  // invisível nas telas que filtram por serviço, ex.: Agendamentos).
+  const ownerHasNoProfessional = useMemo(() => {
+    if (currentUserRole !== 'owner' || !currentStaffMember) {
+      return false;
+    }
+    return !professionals.some(
+      (professional) =>
+        Number(professional?.staff_member) === Number(currentStaffMember.id)
+    );
+  }, [currentUserRole, currentStaffMember, professionals]);
+
+  const handleBecomeProfessional = useCallback(async () => {
+    if (!currentStaffMember || becomingProfessional) return;
+
+    setBecomingProfessional(true);
+    setBecomeProfessionalError(null);
+
+    const ownerName =
+      [currentStaffMember.first_name, currentStaffMember.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      currentStaffMember.email ||
+      currentStaffMember.username ||
+      t('team.become_professional.default_name', 'Profissional');
+
+    const serviceIds = services.map((service) => service.id);
+
+    const result = await createProfessionalEntry({
+      name: ownerName,
+      staffMemberId: currentStaffMember.id,
+      serviceIds,
+    });
+
+    if (!result?.success) {
+      setBecomeProfessionalError(
+        result?.error ||
+          t(
+            'team.become_professional.error',
+            'Não foi possível concluir. Tente novamente.'
+          )
+      );
+    }
+
+    setBecomingProfessional(false);
+  }, [
+    currentStaffMember,
+    becomingProfessional,
+    services,
+    createProfessionalEntry,
+    t,
+  ]);
 
   const updateProfessionalEntry = useCallback(
     async (id, payload) => {
@@ -1006,6 +1089,41 @@ function Team() {
                   </p>
                 )}
               </div>
+              {ownerHasNoProfessional ? (
+                <div className="flex flex-col items-start gap-2 sm:items-end">
+                  <button
+                    type="button"
+                    onClick={handleBecomeProfessional}
+                    disabled={becomingProfessional}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {becomingProfessional
+                      ? t(
+                          'team.become_professional.loading',
+                          'Criando perfil profissional...'
+                        )
+                      : t(
+                          'team.become_professional.cta',
+                          'Tornar-me profissional'
+                        )}
+                  </button>
+                  <p className="max-w-xs text-xs text-brand-surfaceForeground/60 sm:text-right">
+                    {t(
+                      'team.become_professional.description',
+                      'Crie seu perfil profissional com todos os serviços já vinculados, sem precisar abrir o modal de gestão.'
+                    )}
+                  </p>
+                  {becomeProfessionalError ? (
+                    <p className="max-w-xs text-xs text-rose-600 sm:text-right">
+                      {becomeProfessionalError.message ||
+                        t(
+                          'team.become_professional.error',
+                          'Não foi possível concluir. Tente novamente.'
+                        )}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </div>
 

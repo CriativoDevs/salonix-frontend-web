@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { TextEncoder, TextDecoder } from 'util';
 import Team from '../Team';
@@ -66,6 +66,10 @@ jest.mock('../../api/professionals', () => ({
   deleteProfessional: jest.fn(() => Promise.resolve(true)),
 }));
 
+jest.mock('../../api/services', () => ({
+  fetchServices: jest.fn(() => Promise.resolve([])),
+}));
+
 jest.mock('../../api/staff', () => ({
   fetchStaffMembers: jest.fn(() =>
     Promise.resolve({
@@ -126,5 +130,92 @@ describe('Team page', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Filtros' })).toBeInTheDocument();
     expect(screen.queryByLabelText('Busca')).not.toBeInTheDocument();
+  });
+
+  it('shows "Tornar-me profissional" shortcut for owner without a Professional', async () => {
+    useAuth.mockReturnValue({ user: { email: 'owner@example.com' } });
+    fetchStaffMembers.mockResolvedValue({
+      staff: [
+        {
+          id: 7,
+          email: 'owner@example.com',
+          role: 'owner',
+          status: 'active',
+          first_name: 'Olivia',
+          last_name: 'Owner',
+        },
+      ],
+      requestId: null,
+    });
+    // Nenhum professional vinculado ao owner (cenário de conta antiga,
+    // criada antes do BE-PROF-01).
+    fetchProfessionalsWithMeta.mockResolvedValue({
+      results: [],
+      meta: { totalCount: 0 },
+    });
+
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <Team />
+        </MemoryRouter>
+      </ThemeProvider>
+    );
+
+    expect(
+      await screen.findByRole('button', { name: 'Tornar-me profissional' })
+    ).toBeInTheDocument();
+  });
+
+  it('calls createProfessional with all tenant services when owner clicks the shortcut', async () => {
+    const { createProfessional } = await import('../../api/professionals');
+    const { fetchServices } = await import('../../api/services');
+    fetchServices.mockResolvedValue([
+      { id: 1, name: 'Corte' },
+      { id: 2, name: 'Barba' },
+    ]);
+    createProfessional.mockResolvedValue({ id: 50, name: 'Olivia Owner' });
+
+    useAuth.mockReturnValue({ user: { email: 'owner@example.com' } });
+    fetchStaffMembers.mockResolvedValue({
+      staff: [
+        {
+          id: 7,
+          email: 'owner@example.com',
+          role: 'owner',
+          status: 'active',
+          first_name: 'Olivia',
+          last_name: 'Owner',
+        },
+      ],
+      requestId: null,
+    });
+    fetchProfessionalsWithMeta.mockResolvedValue({
+      results: [],
+      meta: { totalCount: 0 },
+    });
+
+    render(
+      <ThemeProvider>
+        <MemoryRouter>
+          <Team />
+        </MemoryRouter>
+      </ThemeProvider>
+    );
+
+    const button = await screen.findByRole('button', {
+      name: 'Tornar-me profissional',
+    });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(createProfessional).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'Olivia Owner',
+          staffMemberId: 7,
+          serviceIds: [1, 2],
+        })
+      );
+    });
   });
 });
