@@ -405,4 +405,87 @@ describe('ManageStaffModal', () => {
     ).toBeInTheDocument();
     expect(onProfessionalUpdate).not.toHaveBeenCalled();
   });
+
+  it('pre-selects all tenant services when owner creates their own professional', async () => {
+    const { fetchServices } = await import('../../../api/services');
+    fetchServices.mockResolvedValueOnce([
+      { id: 1, name: 'Corte' },
+      { id: 2, name: 'Barba' },
+    ]);
+
+    const ownerMember = { ...baseMember, id: 5, role: 'owner' };
+    const onProfessionalCreate = jest
+      .fn()
+      .mockResolvedValue({ success: true, professional: { id: 99 } });
+
+    render(
+      <ManageStaffModal
+        open
+        member={ownerMember}
+        onClose={jest.fn()}
+        onUpdate={jest.fn()}
+        professionals={[]}
+        onProfessionalCreate={onProfessionalCreate}
+        canManageProfessional={() => true}
+        currentUserRole="owner"
+      />
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Criar Profissional' })
+    );
+
+    const corteCheckbox = await screen.findByRole('checkbox', {
+      name: /Corte/,
+    });
+    const barbaCheckbox = screen.getByRole('checkbox', { name: /Barba/ });
+    expect(corteCheckbox).toBeChecked();
+    expect(barbaCheckbox).toBeChecked();
+
+    fireEvent.change(screen.getByLabelText('Nome do profissional'), {
+      target: { value: 'Owner Solo' },
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salvar profissional' })
+    );
+
+    await waitFor(() => {
+      expect(onProfessionalCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ serviceIds: [1, 2] })
+      );
+    });
+  });
+
+  it('does not pre-select services when a non-owner collaborator creates their professional', async () => {
+    const { fetchServices } = await import('../../../api/services');
+    fetchServices.mockResolvedValueOnce([
+      { id: 1, name: 'Corte' },
+      { id: 2, name: 'Barba' },
+    ]);
+
+    render(
+      <ManageStaffModal
+        open
+        member={baseMember}
+        onClose={jest.fn()}
+        onUpdate={jest.fn()}
+        professionals={[]}
+        onProfessionalCreate={jest.fn()}
+        canManageProfessional={() => true}
+        currentUserRole="owner"
+      />
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Criar Profissional' })
+    );
+
+    const corteCheckbox = await screen.findByRole('checkbox', {
+      name: /Corte/,
+    });
+    const barbaCheckbox = screen.getByRole('checkbox', { name: /Barba/ });
+    expect(corteCheckbox).not.toBeChecked();
+    expect(barbaCheckbox).not.toBeChecked();
+  });
 });
