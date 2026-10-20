@@ -340,7 +340,9 @@
       "date_active": "Date: {{date}}",
       "order_active": "Ordering: oldest first",
       "clear_professional": "Clear professional",
-      "select_professional": "Select professional"
+      "select_professional": "Select professional",
+      "status": "Status",
+      "status_all": "All"
     },
     "list": {
       "title": "Registered slots",

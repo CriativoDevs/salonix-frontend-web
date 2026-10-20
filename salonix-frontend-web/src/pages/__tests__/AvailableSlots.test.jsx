@@ -188,4 +188,30 @@ describe('AvailableSlots page', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText('Reservado')).toBeInTheDocument();
   });
+
+  it('filtra por status ao selecionar no painel de filtros', async () => {
+    mockSlots([AVAILABLE_SLOT]);
+    render(<AvailableSlots />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/09:00 - 10:00/)).toBeInTheDocument()
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /^Filtros$/i }));
+
+    const statusSelect = screen
+      .getAllByRole('combobox')
+      .find((el) =>
+        Array.from(el.options).some((opt) => opt.value === 'blocked')
+      );
+    fireEvent.change(statusSelect, { target: { value: 'blocked' } });
+
+    await waitFor(() =>
+      expect(fetchSlotsWithMeta).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          params: expect.objectContaining({ status: 'blocked' }),
+        })
+      )
+    );
+  });
 });

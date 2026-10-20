@@ -59,6 +59,7 @@ function AvailableSlots() {
   const [offset, setOffset] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [sortOption, setSortOption] = useState('-start_time');
+  const [statusFilter, setStatusFilter] = useState('');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
@@ -241,7 +242,12 @@ function AvailableSlots() {
     fetchSlotsWithMeta({
       professionalId: selectedProfessional,
       slug,
-      params: { limit, offset, ordering: sortOption },
+      params: {
+        limit,
+        offset,
+        ordering: sortOption,
+        ...(statusFilter ? { status: statusFilter } : {}),
+      },
     })
       .then((payload) => {
         if (cancelled) return;
@@ -264,7 +270,16 @@ function AvailableSlots() {
     return () => {
       cancelled = true;
     };
-  }, [selectedProfessional, slug, t, limit, offset, sortOption, refreshKey]);
+  }, [
+    selectedProfessional,
+    slug,
+    t,
+    limit,
+    offset,
+    sortOption,
+    statusFilter,
+    refreshKey,
+  ]);
 
   const pad2 = (value) => String(value).padStart(2, '0');
 
@@ -544,7 +559,7 @@ function AvailableSlots() {
                 </p>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-4">
                 <div className="form-light">
                   <Label className="mb-2 block">
                     {t('slots.professional', 'Profissional')}
@@ -572,6 +587,34 @@ function AvailableSlots() {
                     className="w-full"
                     align="left"
                   />
+                </div>
+
+                <div className="form-light">
+                  <Label className="mb-2 block">
+                    {t('slots.filters.status', 'Status')}
+                  </Label>
+                  <select
+                    value={statusFilter}
+                    onChange={(event) => {
+                      setStatusFilter(event.target.value);
+                      setOffset(0);
+                    }}
+                    className="w-full"
+                    style={inputStyle}
+                  >
+                    <option value="">
+                      {t('slots.filters.status_all', 'Todos')}
+                    </option>
+                    <option value="available">
+                      {t('slots.status.available', 'Disponível')}
+                    </option>
+                    <option value="blocked">
+                      {t('slots.status.blocked', 'Bloqueado')}
+                    </option>
+                    <option value="booked">
+                      {t('slots.status.booked', 'Reservado')}
+                    </option>
+                  </select>
                 </div>
 
                 <div className="form-light">

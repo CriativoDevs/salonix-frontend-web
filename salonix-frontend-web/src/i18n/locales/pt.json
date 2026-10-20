@@ -341,7 +341,9 @@
       "date_active": "Data: {{date}}",
       "order_active": "Ordenação: mais antigos",
       "clear_professional": "Limpar profissional",
-      "select_professional": "Selecionar profissional"
+      "select_professional": "Selecionar profissional",
+      "status": "Status",
+      "status_all": "Todos"
     },
     "list": {
       "title": "Horários cadastrados",
