@@ -304,11 +304,32 @@
       "today": "Today"
     },
     "create": {
-      "show": "Create slot",
+      "show": "New slot",
       "hide": "Close creation",
       "title": "Create new slot",
       "description": "Define the date and time range for the selected professional. After creation, the list refreshes automatically."
     },
+    "form": {
+      "professional": "Professional",
+      "date": "Date",
+      "errors": {
+        "professional_required": "Select a professional.",
+        "date_required": "Select a date.",
+        "range_invalid": "The end time must be after the start time."
+      }
+    },
+    "status": {
+      "available": "Available",
+      "blocked": "Blocked",
+      "booked": "Booked"
+    },
+    "block": "Block",
+    "unblock": "Unblock",
+    "confirm_block": "Confirm blocking this slot?",
+    "confirm_unblock": "Confirm unblocking?",
+    "block_reason_prompt": "Reason for blocking (optional):",
+    "block_error": "Failed to block slot.",
+    "unblock_error": "Failed to unblock slot.",
     "filters": {
       "show": "Filters",
       "hide": "Close filters",

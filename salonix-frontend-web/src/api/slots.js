@@ -33,7 +33,10 @@ export async function fetchSlots({ professionalId, slug, params } = {}) {
 
 export async function fetchSlotsWithMeta({ professionalId, slug, params } = {}) {
   const headers = {};
-  const searchParams = { ordering: '-start_time', is_available: true };
+  // Sem is_available fixo: telas de gestão (ex. AvailableSlots.jsx) precisam
+  // ver horários bloqueados/reservados, não só disponíveis. Quem precisar
+  // filtrar só disponíveis (ex. Agenda.jsx) passa is_available via params.
+  const searchParams = { ordering: '-start_time' };
   const p = params || {};
   if (typeof p.limit === 'number') {
     searchParams.limit = p.limit;
@@ -88,6 +91,38 @@ export async function deleteSlot(id, { slug } = {}) {
   }
   const { status } = await client.delete(`slots/${id}/`, { headers, params });
   return status === 204;
+}
+
+export async function blockSlot(id, { reason, slug } = {}) {
+  const payload = {};
+  if (typeof reason === 'string' && reason.trim() !== '') {
+    payload.reason = reason.trim();
+  }
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post(`slots/${id}/block/`, payload, {
+    headers,
+    params,
+  });
+  return data;
+}
+
+export async function unblockSlot(id, { slug } = {}) {
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post(`slots/${id}/unblock/`, {}, {
+    headers,
+    params,
+  });
+  return data;
 }
 
 export async function fetchSlotDetail(id, { slug } = {}) {

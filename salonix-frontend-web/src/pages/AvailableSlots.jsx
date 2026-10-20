@@ -7,8 +7,11 @@ import {
   Clock3,
   Filter,
   Info,
+  Lock,
+  Plus,
   Settings,
   Trash2,
+  Unlock,
   Zap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -19,8 +22,14 @@ import Dropdown from '../components/ui/Dropdown';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import SlotBulkModal from '../components/slots/SlotBulkModal';
+import SlotFormModal from '../components/slots/SlotFormModal';
 import { fetchProfessionals } from '../api/professionals';
-import { fetchSlotsWithMeta, deleteSlot } from '../api/slots';
+import {
+  fetchSlotsWithMeta,
+  deleteSlot,
+  blockSlot,
+  unblockSlot,
+} from '../api/slots';
 import { fetchTenantBusinessHours } from '../api/tenant';
 import { useTenant } from '../hooks/useTenant';
 import { parseApiError } from '../utils/apiError';
@@ -51,6 +60,7 @@ function AvailableSlots() {
   const [totalCount, setTotalCount] = useState(0);
   const [sortOption, setSortOption] = useState('-start_time');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [businessHoursPreset, setBusinessHoursPreset] = useState(null);
@@ -362,6 +372,55 @@ function AvailableSlots() {
     }
   };
 
+  const handleBlockToggle = async (slot) => {
+    const message = `${formatDateOnly(slot.start_time)} - ${formatTimeRangeOnly(slot.start_time, slot.end_time)}`;
+    const isBlocked = slot.status === 'blocked';
+    let reason;
+    if (isBlocked) {
+      if (
+        !window.confirm(
+          t('slots.confirm_unblock', 'Confirmar desbloqueio?') + `\n${message}`
+        )
+      ) {
+        return;
+      }
+    } else {
+      if (
+        !window.confirm(
+          t('slots.confirm_block', 'Confirmar bloqueio deste horário?') +
+            `\n${message}`
+        )
+      ) {
+        return;
+      }
+      reason = window.prompt(
+        t('slots.block_reason_prompt', 'Motivo do bloqueio (opcional):'),
+        ''
+      );
+      if (reason === null) return;
+    }
+    try {
+      setBusyId(slot.id);
+      if (isBlocked) {
+        await unblockSlot(slot.id, { slug });
+      } else {
+        await blockSlot(slot.id, { reason, slug });
+      }
+      triggerRefresh();
+    } catch (toggleError) {
+      setError(
+        parseApiError(
+          toggleError,
+          isBlocked
+            ? t('slots.unblock_error', 'Falha ao desbloquear horário.')
+            : t('slots.block_error', 'Falha ao bloquear horário.')
+        )
+      );
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const clearFilters = () => {
     setSelectedDate('');
     setSortOption('-start_time');
@@ -411,6 +470,15 @@ function AvailableSlots() {
           >
             <Zap className="h-4 w-4" />
             {t('slots.bulk.open', 'Gerar horários')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsFormModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-border bg-brand-light/50 px-4 py-2 text-sm font-semibold text-brand-surfaceForeground/80 transition hover:bg-brand-light"
+          >
+            <Plus className="h-4 w-4" />
+            {t('slots.create.show', 'Novo horário')}
           </button>
 
           <button
@@ -680,7 +748,7 @@ function AvailableSlots() {
                     </span>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {items.map((slot) => {
                       const profName = selectedProfessional
                         ? ''
@@ -688,14 +756,33 @@ function AvailableSlots() {
                       return (
                         <div
                           key={slot.id}
-                          className="flex min-h-[100px] flex-col justify-between rounded-2xl border border-brand-border bg-brand-surface px-4 py-4 shadow-sm"
+                          className="flex flex-col justify-between gap-2 rounded-xl border border-brand-border bg-brand-surface px-3 py-2.5 shadow-sm"
                         >
-                          <div className="space-y-1.5">
-                            <div className="inline-flex items-center gap-2 rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-primary">
-                              <Clock3 className="h-3.5 w-3.5" />
-                              {t('slots.list.slot_label', 'Intervalo')}
-                            </div>
-                            <div className="text-xl font-semibold text-brand-surfaceForeground sm:text-2xl">
+                          <div className="space-y-1">
+                            {(() => {
+                              const status = slot.status || 'available';
+                              const badgeClass =
+                                status === 'blocked'
+                                  ? 'bg-amber-500/10 text-amber-600'
+                                  : status === 'booked'
+                                    ? 'bg-brand-surfaceForeground/10 text-brand-surfaceForeground/60'
+                                    : 'bg-brand-primary/10 text-brand-primary';
+                              const badgeLabel =
+                                status === 'blocked'
+                                  ? t('slots.status.blocked', 'Bloqueado')
+                                  : status === 'booked'
+                                    ? t('slots.status.booked', 'Reservado')
+                                    : t('slots.status.available', 'Disponível');
+                              return (
+                                <div
+                                  className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${badgeClass}`}
+                                >
+                                  <Clock3 className="h-3 w-3" />
+                                  {badgeLabel}
+                                </div>
+                              );
+                            })()}
+                            <div className="text-base font-semibold text-brand-surfaceForeground sm:text-lg">
                               {formatTimeRangeOnly(
                                 slot.start_time,
                                 slot.end_time
@@ -706,21 +793,54 @@ function AvailableSlots() {
                                 {profName}
                               </p>
                             ) : null}
+                            {slot.status === 'blocked' &&
+                            slot.blocked_reason ? (
+                              <p className="truncate text-xs text-brand-surfaceForeground/60">
+                                {slot.blocked_reason}
+                              </p>
+                            ) : null}
                           </div>
 
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            <span className="text-xs text-brand-surfaceForeground/40">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[11px] text-brand-surfaceForeground/40">
                               #{slot.id}
                             </span>
-                            <button
-                              type="button"
-                              disabled={busyId === slot.id}
-                              onClick={() => handleDelete(slot)}
-                              className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              {t('common.delete', 'Excluir')}
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              {slot.status !== 'booked' ? (
+                                <button
+                                  type="button"
+                                  disabled={busyId === slot.id}
+                                  onClick={() => handleBlockToggle(slot)}
+                                  title={
+                                    slot.status === 'blocked'
+                                      ? t('slots.unblock', 'Desbloquear')
+                                      : t('slots.block', 'Bloquear')
+                                  }
+                                  aria-label={
+                                    slot.status === 'blocked'
+                                      ? t('slots.unblock', 'Desbloquear')
+                                      : t('slots.block', 'Bloquear')
+                                  }
+                                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-500 transition hover:bg-amber-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {slot.status === 'blocked' ? (
+                                    <Unlock className="h-4 w-4" />
+                                  ) : (
+                                    <Lock className="h-4 w-4" />
+                                  )}
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                disabled={busyId === slot.id}
+                                onClick={() => handleDelete(slot)}
+                                title={t('common.delete', 'Excluir')}
+                                aria-label={t('common.delete', 'Excluir')}
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 text-red-400 transition hover:bg-red-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -764,6 +884,17 @@ function AvailableSlots() {
         professionals={professionals}
         slug={slug}
         businessHoursPreset={businessHoursPreset}
+      />
+
+      <SlotFormModal
+        open={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onCreated={() => {
+          setOffset(0);
+          triggerRefresh();
+        }}
+        professionals={professionals}
+        slug={slug}
       />
     </FullPageLayout>
   );
