@@ -305,11 +305,32 @@
       "today": "Hoje"
     },
     "create": {
-      "show": "Criar horário",
+      "show": "Novo horário",
       "hide": "Fechar criação",
       "title": "Criar novo horário",
       "description": "Defina a data e o intervalo do horário para o profissional selecionado. Depois da criação, a lista é atualizada automaticamente."
     },
+    "form": {
+      "professional": "Profissional",
+      "date": "Data",
+      "errors": {
+        "professional_required": "Selecione um profissional.",
+        "date_required": "Selecione uma data.",
+        "range_invalid": "O horário de término deve ser depois do horário de início."
+      }
+    },
+    "status": {
+      "available": "Disponível",
+      "blocked": "Bloqueado",
+      "booked": "Reservado"
+    },
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "confirm_block": "Confirmar bloqueio deste horário?",
+    "confirm_unblock": "Confirmar desbloqueio?",
+    "block_reason_prompt": "Motivo do bloqueio (opcional):",
+    "block_error": "Falha ao bloquear horário.",
+    "unblock_error": "Falha ao desbloquear horário.",
     "filters": {
       "show": "Filtros",
       "hide": "Fechar filtros",
@@ -320,7 +341,9 @@
       "date_active": "Data: {{date}}",
       "order_active": "Ordenação: mais antigos",
       "clear_professional": "Limpar profissional",
-      "select_professional": "Selecionar profissional"
+      "select_professional": "Selecionar profissional",
+      "status": "Status",
+      "status_all": "Todos"
     },
     "list": {
       "title": "Horários cadastrados",

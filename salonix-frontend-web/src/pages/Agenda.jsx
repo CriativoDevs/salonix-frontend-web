@@ -53,7 +53,7 @@ function Agenda() {
     setLoading(true);
     setError(null);
     try {
-      const payload = await fetchSlotsWithMeta({ professionalId: selectedProfessional, slug, params: { limit, offset, ordering: '-start_time' } });
+      const payload = await fetchSlotsWithMeta({ professionalId: selectedProfessional, slug, params: { limit, offset, ordering: '-start_time', is_available: true } });
       const list = Array.isArray(payload?.results) ? payload.results : (Array.isArray(payload) ? payload : []);
       setSlotsPayload({ results: list, meta: payload?.meta || {} });
       const tc = payload?.meta?.totalCount ?? payload?.count ?? list.length;
