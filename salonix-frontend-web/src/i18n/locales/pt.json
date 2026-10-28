@@ -384,9 +384,32 @@
       "interval": "Duração por slot",
       "preview_count": "{{count}} horários serão criados",
       "preview_empty": "Configure o período para ver uma prévia",
-      "creating": "{{done}}/{{total}}",
+      "creating": "Gerando {{total}} horários...",
       "create_btn": "Gerar {{count}} horários",
       "create_btn_empty": "Gerar horários"
+    },
+    "bulk_block": {
+      "open": "Bloquear em massa",
+      "title": "Bloqueio em massa de horários",
+      "professional": "Profissional",
+      "period": "Período",
+      "period_today": "Hoje",
+      "period_week": "Esta semana",
+      "period_month": "Este mês",
+      "date_from": "De",
+      "date_to": "Até",
+      "interval": "Granularidade",
+      "reason": "Motivo (opcional)",
+      "reason_placeholder": "Ex.: Férias, manutenção, feriado...",
+      "blocking": "Bloqueando...",
+      "block_btn": "Bloquear horários",
+      "error": "Falha ao bloquear horários em massa.",
+      "result": {
+        "title": "Bloqueio concluído",
+        "blocked": "Horários existentes bloqueados: {{count}}",
+        "created": "Novos horários bloqueados criados: {{count}}",
+        "skipped_booked": "Ignorados por já estarem reservados: {{count}}"
+      }
     }
   },
   "bookings": {

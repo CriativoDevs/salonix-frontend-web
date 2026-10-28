@@ -4,7 +4,7 @@ import { ChevronDown, Loader2, Zap } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Label from '../ui/Label';
 import Dropdown from '../ui/Dropdown';
-import { createSlot } from '../../api/slots';
+import { bulkGenerateSlots } from '../../api/slots';
 
 const DURATIONS = [15, 20, 30, 45, 60, 90, 120];
 const WEEKDAYS = [
@@ -225,18 +225,18 @@ function SlotBulkModal({
     if (!professionalId || previewSlots.length === 0) return;
     setCreating(true);
     setError(null);
-    setProgress({ done: 0, total: previewSlots.length });
+    setProgress({ total: previewSlots.length });
     try {
-      for (const slot of previewSlots) {
-        // eslint-disable-next-line no-await-in-loop
-        await createSlot({
-          professionalId,
-          startTime: slot.startISO,
-          endTime: slot.endISO,
-          slug,
-        });
-        setProgress((prev) => ({ ...prev, done: prev.done + 1 }));
-      }
+      // Uma única chamada ao bulk-generate real do backend (respeita o
+      // TenantBusinessHours configurado), em vez de 1 POST por slot. A
+      // prévia client-side (previewSlots) continua só para exibição visual.
+      await bulkGenerateSlots({
+        professionalId,
+        dateFrom,
+        dateTo,
+        intervalMinutes: duration,
+        slug,
+      });
       onCreated?.();
       handleClose();
     } catch (e) {
@@ -305,8 +305,7 @@ function SlotBulkModal({
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   {t('slots.bulk.creating', {
-                    defaultValue: '{{done}}/{{total}}',
-                    done: progress?.done ?? 0,
+                    defaultValue: 'Gerando {{total}} horários...',
                     total: progress?.total ?? 0,
                   })}
                 </>

@@ -82,6 +82,73 @@ export async function createSlot({ professionalId, startTime, endTime, slug }) {
   return data;
 }
 
+export async function bulkGenerateSlots({
+  professionalId,
+  dateFrom,
+  dateTo,
+  startTime,
+  endTime,
+  intervalMinutes,
+  slug,
+} = {}) {
+  const payload = {
+    professional_id: Number.parseInt(professionalId, 10),
+    date_from: dateFrom,
+    date_to: dateTo,
+    interval_minutes: intervalMinutes,
+  };
+  // start_time/end_time não fazem parte do formato novo do backend
+  // (bulk-generate usa TenantBusinessHours), mas aceitamos os params para
+  // manter a assinatura prevista e permitir uso futuro sem quebrar chamadores.
+  if (startTime) payload.start_time = startTime;
+  if (endTime) payload.end_time = endTime;
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('slots/bulk-generate/', payload, {
+    headers,
+    params,
+  });
+  return data;
+}
+
+export async function bulkBlockSlots({
+  professionalId,
+  dateFrom,
+  dateTo,
+  startTime,
+  endTime,
+  intervalMinutes,
+  reason,
+  slug,
+} = {}) {
+  const payload = {
+    professional_id: Number.parseInt(professionalId, 10),
+    date_from: dateFrom,
+    date_to: dateTo,
+    start_time: startTime,
+    end_time: endTime,
+    interval_minutes: intervalMinutes,
+  };
+  if (typeof reason === 'string' && reason.trim() !== '') {
+    payload.reason = reason.trim();
+  }
+  const headers = {};
+  const params = {};
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    params.tenant = slug;
+  }
+  const { data } = await client.post('slots/bulk-block/', payload, {
+    headers,
+    params,
+  });
+  return data;
+}
+
 export async function deleteSlot(id, { slug } = {}) {
   const headers = {};
   const params = {};

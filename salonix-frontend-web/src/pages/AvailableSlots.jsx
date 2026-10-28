@@ -10,6 +10,7 @@ import {
   Lock,
   Plus,
   Settings,
+  ShieldAlert,
   Trash2,
   Unlock,
   Zap,
@@ -22,6 +23,7 @@ import Dropdown from '../components/ui/Dropdown';
 import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import SlotBulkModal from '../components/slots/SlotBulkModal';
+import SlotBulkBlockModal from '../components/slots/SlotBulkBlockModal';
 import SlotFormModal from '../components/slots/SlotFormModal';
 import { fetchProfessionals } from '../api/professionals';
 import {
@@ -61,6 +63,7 @@ function AvailableSlots() {
   const [sortOption, setSortOption] = useState('-start_time');
   const [statusFilter, setStatusFilter] = useState('');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [isBulkBlockModalOpen, setIsBulkBlockModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [filtersPanelOpen, setFiltersPanelOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -485,6 +488,15 @@ function AvailableSlots() {
           >
             <Zap className="h-4 w-4" />
             {t('slots.bulk.open', 'Gerar horários')}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsBulkBlockModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-600 transition hover:bg-amber-500/15"
+          >
+            <ShieldAlert className="h-4 w-4" />
+            {t('slots.bulk_block.open', 'Bloquear em massa')}
           </button>
 
           <button
@@ -927,6 +939,17 @@ function AvailableSlots() {
         professionals={professionals}
         slug={slug}
         businessHoursPreset={businessHoursPreset}
+      />
+
+      <SlotBulkBlockModal
+        open={isBulkBlockModalOpen}
+        onClose={() => setIsBulkBlockModalOpen(false)}
+        onBlocked={() => {
+          setOffset(0);
+          triggerRefresh();
+        }}
+        professionals={professionals}
+        slug={slug}
       />
 
       <SlotFormModal

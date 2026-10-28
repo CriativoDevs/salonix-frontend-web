@@ -1,6 +1,11 @@
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import SlotBulkModal from '../SlotBulkModal';
+import { bulkGenerateSlots } from '../../../api/slots';
+
+jest.mock('../../../api/slots', () => ({
+  bulkGenerateSlots: jest.fn(),
+}));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -90,5 +95,52 @@ describe('SlotBulkModal - sincronização de dia da semana no período "Hoje"', 
     expect(
       screen.getByText(/horários serão criados/i)
     ).toBeInTheDocument();
+  });
+});
+
+describe('SlotBulkModal - submissão via bulk-generate (1 chamada)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-07-02T10:00:00'));
+    bulkGenerateSlots.mockReset();
+    bulkGenerateSlots.mockResolvedValue({ created: 10 });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('faz 1 única chamada ao bulk-generate em vez de N POSTs por slot', async () => {
+    const onCreated = jest.fn();
+    render(
+      <SlotBulkModal
+        open={true}
+        onClose={jest.fn()}
+        onCreated={onCreated}
+        professionals={PROFESSIONALS}
+        slug="default"
+        businessHoursPreset={MON_TUE_WED_PRESET}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Selecione...' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Alice' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Hoje' }));
+
+    const submitBtn = screen.getByRole('button', { name: /Gerar \d+ horários/ });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => expect(bulkGenerateSlots).toHaveBeenCalledTimes(1));
+
+    expect(bulkGenerateSlots).toHaveBeenCalledWith(
+      expect.objectContaining({
+        professionalId: '1',
+        dateFrom: '2026-07-02',
+        dateTo: '2026-07-02',
+        intervalMinutes: 60,
+        slug: 'default',
+      })
+    );
+
+    await waitFor(() => expect(onCreated).toHaveBeenCalledTimes(1));
   });
 });
