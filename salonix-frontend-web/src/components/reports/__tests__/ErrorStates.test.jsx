@@ -140,7 +140,7 @@ describe('Error and Loading States', () => {
 
     it('mostra texto correto baseado na tradução', () => {
       render(<ExportButton filters={{}} disabled={false} />);
-      expect(screen.getByText('reports.export.csv')).toBeInTheDocument();
+      expect(screen.getByText('Exportar CSV')).toBeInTheDocument();
     });
   });
 

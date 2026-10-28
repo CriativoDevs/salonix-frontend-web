@@ -143,7 +143,7 @@ describe('AvailableSlots page', () => {
 
     mockSlots([{ ...AVAILABLE_SLOT, status: 'blocked' }]);
 
-    fireEvent.click(screen.getByRole('button', { name: /Bloquear/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Bloquear' }));
 
     await waitFor(() => expect(blockSlot).toHaveBeenCalledWith(10, {
       reason: '',
@@ -181,7 +181,7 @@ describe('AvailableSlots page', () => {
     );
 
     expect(
-      screen.queryByRole('button', { name: /Bloquear/i })
+      screen.queryByRole('button', { name: 'Bloquear' })
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: /Desbloquear/i })

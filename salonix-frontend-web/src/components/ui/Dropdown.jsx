@@ -40,11 +40,15 @@ export default function Dropdown({
 
       document.addEventListener('mousedown', handleClickOutside);
       // Focus search input when opened
+      let focusTimeoutId = null;
       if (searchable && searchInputRef.current) {
-        setTimeout(() => searchInputRef.current.focus(), 50);
+        focusTimeoutId = setTimeout(() => {
+          searchInputRef.current?.focus();
+        }, 50);
       }
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
+        if (focusTimeoutId) clearTimeout(focusTimeoutId);
       };
     } else {
       setSearchTerm(''); // Reset search when closed

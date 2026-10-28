@@ -60,18 +60,17 @@ describe('ExportButton', () => {
   });
 
   it('trata erro na exportação', async () => {
-    const consoleError = jest.spyOn(console, 'error').mockImplementation();
     exportBasicReportsCSV.mockRejectedValueOnce(new Error('Export failed'));
 
-    const { container } = render(<ExportButton filters={defaultFilters} disabled={false} />);
-    
+    const { container, getByText } = render(<ExportButton filters={defaultFilters} disabled={false} />);
+
     const exportLink = container.querySelector('a');
     fireEvent.click(exportLink);
 
     await waitFor(() => {
-      expect(consoleError).toHaveBeenCalledWith('Erro ao exportar CSV:', expect.any(Error));
+      expect(getByText('Export failed')).toBeInTheDocument();
     });
 
-    consoleError.mockRestore();
+    expect(getByText('Tentar novamente')).toBeInTheDocument();
   });
 });

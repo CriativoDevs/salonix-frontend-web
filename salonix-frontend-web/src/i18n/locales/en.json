@@ -383,9 +383,32 @@
       "interval": "Slot duration",
       "preview_count": "{{count}} slots will be created",
       "preview_empty": "Configure the period to see a preview",
-      "creating": "{{done}}/{{total}}",
+      "creating": "Generating {{total}} slots...",
       "create_btn": "Generate {{count}} slots",
       "create_btn_empty": "Generate slots"
+    },
+    "bulk_block": {
+      "open": "Bulk block",
+      "title": "Bulk slot blocking",
+      "professional": "Professional",
+      "period": "Period",
+      "period_today": "Today",
+      "period_week": "This week",
+      "period_month": "This month",
+      "date_from": "From",
+      "date_to": "To",
+      "interval": "Granularity",
+      "reason": "Reason (optional)",
+      "reason_placeholder": "E.g.: Vacation, maintenance, holiday...",
+      "blocking": "Blocking...",
+      "block_btn": "Block slots",
+      "error": "Failed to bulk block slots.",
+      "result": {
+        "title": "Blocking complete",
+        "blocked": "Existing slots blocked: {{count}}",
+        "created": "New blocked slots created: {{count}}",
+        "skipped_booked": "Skipped because already booked: {{count}}"
+      }
     }
   },
   "bookings": {
