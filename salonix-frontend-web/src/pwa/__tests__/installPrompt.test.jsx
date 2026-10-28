@@ -21,6 +21,9 @@ describe('PWA install prompt on Landing', () => {
     window.dispatchEvent(evt);
 
     await new Promise((r) => setTimeout(r, 0));
+    const menuButtons = screen.getAllByLabelText(/Abrir menu/i);
+    fireEvent.click(menuButtons[0]);
+
     const btn = screen.getAllByText(/Instalar/i)[0];
     fireEvent.click(btn);
 
@@ -33,6 +36,9 @@ describe('PWA install prompt on Landing', () => {
         <Landing />
       </MemoryRouter>
     );
+
+    const menuButtons = screen.getAllByLabelText(/Abrir menu/i);
+    fireEvent.click(menuButtons[0]);
 
     const btn = screen.getAllByText(/Instalar/i)[0];
     fireEvent.click(btn);

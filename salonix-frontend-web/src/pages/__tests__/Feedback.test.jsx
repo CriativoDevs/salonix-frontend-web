@@ -2,6 +2,15 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Feedback from '../Feedback.jsx';
 import * as api from '../../api/feedback';
+import { ThemeProvider } from '../../contexts/ThemeContext';
+
+function renderWithProviders(children) {
+  return render(
+    <ThemeProvider>
+      <MemoryRouter>{children}</MemoryRouter>
+    </ThemeProvider>
+  );
+}
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -66,11 +75,7 @@ describe('Feedback page', () => {
   it('exibe erros de validação ao enviar vazio', async () => {
     api.submitFeedback.mockResolvedValueOnce({ ok: true });
 
-    render(
-      <MemoryRouter>
-        <Feedback />
-      </MemoryRouter>
-    );
+    renderWithProviders(<Feedback />);
 
     const form = screen.getByRole('form', { name: 'feedback-form' });
     fireEvent.submit(form);
@@ -87,11 +92,7 @@ describe('Feedback page', () => {
   it('envia com sucesso e mostra estado de sucesso', async () => {
     api.submitFeedback.mockResolvedValueOnce({ id: 1 });
 
-    render(
-      <MemoryRouter>
-        <Feedback />
-      </MemoryRouter>
-    );
+    renderWithProviders(<Feedback />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Excelente' }));
 
@@ -112,11 +113,7 @@ describe('Feedback page', () => {
   it('mostra erro quando envio falha', async () => {
     api.submitFeedback.mockRejectedValueOnce(new Error('Network error'));
 
-    render(
-      <MemoryRouter>
-        <Feedback />
-      </MemoryRouter>
-    );
+    renderWithProviders(<Feedback />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Bom' }));
 
