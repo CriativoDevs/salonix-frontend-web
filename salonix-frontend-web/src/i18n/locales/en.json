@@ -980,7 +980,7 @@
     },
     "pwa_client": {
       "title": "Client PWA",
-      "description": "Allows customers to access via a salon-customized PWA.",
+      "description": "Allows customers to access via a business-customized PWA.",
       "status_enabled": "Enabled",
       "status_disabled": "Disabled",
       "accessible_label": "Toggle Client PWA",
@@ -989,6 +989,15 @@
       "error": "Could not update Client PWA.",
       "auto_invite_label": "Auto-invites:",
       "auto_invite_toggle_label": "Toggle auto-invites"
+    },
+    "auto_generate_slots": {
+      "title": "Generate time slots automatically every month",
+      "description": "Automatically generates next month's available time slots based on the configured business hours.",
+      "toggle_label": "Toggle automatic slot generation",
+      "success_enabled": "Automatic slot generation enabled.",
+      "success_disabled": "Automatic slot generation disabled.",
+      "error": "Could not update automatic slot generation.",
+      "hours_required_notice": "Configure your business hours above before enabling automatic generation."
     },
     "auto_renewal": {
       "title": "Automatic Credit Top-up",

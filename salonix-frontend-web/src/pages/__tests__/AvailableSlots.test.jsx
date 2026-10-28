@@ -189,6 +189,46 @@ describe('AvailableSlots page', () => {
     expect(screen.getByText('Reservado')).toBeInTheDocument();
   });
 
+  it('esconde "Gerar horários" mas mantém "Novo horário" e "Bloquear em massa" quando auto_generate_slots_enabled é true', async () => {
+    useTenant.mockReturnValue({
+      slug: 'default',
+      tenant: { auto_generate_slots_enabled: true },
+    });
+    mockSlots([AVAILABLE_SLOT]);
+    render(<AvailableSlots />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/09:00 - 10:00/)).toBeInTheDocument()
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'Gerar horários' })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Novo horário/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Bloquear em massa/i })
+    ).toBeInTheDocument();
+  });
+
+  it('mostra "Gerar horários" quando auto_generate_slots_enabled é false ou ausente', async () => {
+    useTenant.mockReturnValue({
+      slug: 'default',
+      tenant: { auto_generate_slots_enabled: false },
+    });
+    mockSlots([AVAILABLE_SLOT]);
+    render(<AvailableSlots />);
+
+    await waitFor(() =>
+      expect(screen.getByText(/09:00 - 10:00/)).toBeInTheDocument()
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Gerar horários' })
+    ).toBeInTheDocument();
+  });
+
   it('filtra por status ao selecionar no painel de filtros', async () => {
     mockSlots([AVAILABLE_SLOT]);
     render(<AvailableSlots />);

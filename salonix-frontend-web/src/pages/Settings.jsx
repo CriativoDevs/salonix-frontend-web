@@ -25,6 +25,7 @@ import {
   updateTenantBranding,
   updateTenantAutoInvite,
   updateTenantModules,
+  updateTenantAutoGenerateSlots,
   updateTenantContact,
   fetchTenantBusinessHours,
   updateTenantBusinessHours,
@@ -339,6 +340,14 @@ function Settings() {
     Boolean(tenant?.auto_invite_enabled)
   );
   const [autoInviteSaving, setAutoInviteSaving] = useState(false);
+  const [autoGenerateSlotsEnabled, setAutoGenerateSlotsEnabled] = useState(
+    Boolean(tenant?.auto_generate_slots_enabled)
+  );
+  const [autoGenerateSlotsSaving, setAutoGenerateSlotsSaving] =
+    useState(false);
+  const [autoGenerateSlotsError, setAutoGenerateSlotsError] = useState(null);
+  const [autoGenerateSlotsSuccess, setAutoGenerateSlotsSuccess] =
+    useState('');
   const [pwaClientEnabled, setPwaClientEnabled] = useState(false);
   // FIX-PWA-CLIENT-TOGGLE: depois de um toggle manual bem-sucedido, o valor
   // confirmado pelo PATCH (`resp.pwa_client_enabled`) é a única fonte de
@@ -389,6 +398,10 @@ function Settings() {
   useEffect(() => {
     setAutoInviteEnabled(Boolean(tenant?.auto_invite_enabled));
   }, [tenant?.auto_invite_enabled]);
+
+  useEffect(() => {
+    setAutoGenerateSlotsEnabled(Boolean(tenant?.auto_generate_slots_enabled));
+  }, [tenant?.auto_generate_slots_enabled]);
 
   // Reseta a trava manual quando trocamos de tenant, para que os dados
   // recém-carregados desse tenant voltem a ser a fonte de verdade.
@@ -603,6 +616,12 @@ function Settings() {
   }, [moduleList, flags, featureFlagsRaw]);
 
   const canToggleAutoInvite = hasCustomerPwa;
+
+  const hasConfiguredBusinessHours = useMemo(() => {
+    const workingHours = settings.business?.workingHours;
+    if (!workingHours) return false;
+    return WEEKDAY_KEYS.some((dayKey) => !workingHours[dayKey]?.closed);
+  }, [settings.business?.workingHours]);
 
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
 
@@ -899,6 +918,52 @@ function Settings() {
     canToggleAutoInvite,
     refreshTenantData,
     tenantLoading,
+  ]);
+
+  const handleAutoGenerateSlotsToggle = useCallback(async () => {
+    if (autoGenerateSlotsSaving || tenantLoading) return;
+
+    const nextValue = !autoGenerateSlotsEnabled;
+    setAutoGenerateSlotsEnabled(nextValue);
+    setAutoGenerateSlotsSaving(true);
+    setAutoGenerateSlotsError(null);
+    setAutoGenerateSlotsSuccess('');
+
+    try {
+      const resp = await updateTenantAutoGenerateSlots(nextValue);
+      const ok = Boolean(resp?.auto_generate_slots_enabled);
+      setAutoGenerateSlotsEnabled(ok);
+      await refreshTenantData();
+      setAutoGenerateSlotsSuccess(
+        ok
+          ? t(
+              'settings.auto_generate_slots.success_enabled',
+              'Geração automática de horários habilitada.'
+            )
+          : t(
+              'settings.auto_generate_slots.success_disabled',
+              'Geração automática de horários desabilitada.'
+            )
+      );
+    } catch (err) {
+      const parsed = parseApiError(
+        err,
+        t(
+          'settings.auto_generate_slots.error',
+          'Não foi possível atualizar a geração automática de horários.'
+        )
+      );
+      setAutoGenerateSlotsError(parsed);
+      setAutoGenerateSlotsEnabled(!nextValue);
+    } finally {
+      setAutoGenerateSlotsSaving(false);
+    }
+  }, [
+    autoGenerateSlotsEnabled,
+    autoGenerateSlotsSaving,
+    refreshTenantData,
+    tenantLoading,
+    t,
   ]);
 
   const handlePwaClientToggle = useCallback(async () => {
@@ -1853,6 +1918,78 @@ function Settings() {
                   )}
             </button>
           </div>
+        </Card>
+
+        <Card className="p-6 bg-brand-surface text-brand-surfaceForeground">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-brand-surfaceForeground">
+                {t(
+                  'settings.auto_generate_slots.title',
+                  'Gerar horários automaticamente todo mês'
+                )}
+              </h3>
+              <p className="text-sm text-brand-surfaceForeground/80">
+                {t(
+                  'settings.auto_generate_slots.description',
+                  'Gera automaticamente os horários disponíveis do próximo mês com base no horário de funcionamento configurado.'
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span
+                className={`text-sm font-medium ${
+                  autoGenerateSlotsEnabled
+                    ? 'text-emerald-600'
+                    : 'text-brand-surfaceForeground/60'
+                }`}
+              >
+                {autoGenerateSlotsEnabled
+                  ? t('settings.pwa_client.status_enabled', 'Ativo')
+                  : t('settings.pwa_client.status_disabled', 'Inativo')}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoGenerateSlotsEnabled}
+                aria-label={t(
+                  'settings.auto_generate_slots.toggle_label',
+                  'Alternar geração automática de horários'
+                )}
+                onClick={handleAutoGenerateSlotsToggle}
+                disabled={autoGenerateSlotsSaving || tenantLoading}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  autoGenerateSlotsEnabled ? 'bg-brand-primary' : 'bg-gray-300'
+                } ${autoGenerateSlotsSaving || tenantLoading ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    autoGenerateSlotsEnabled ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {!autoGenerateSlotsEnabled && !hasConfiguredBusinessHours ? (
+            <p className="mt-3 text-xs text-brand-surfaceForeground/60">
+              {t(
+                'settings.auto_generate_slots.hours_required_notice',
+                'Configure o horário de funcionamento acima antes de ativar a geração automática.'
+              )}
+            </p>
+          ) : null}
+
+          {autoGenerateSlotsError && (
+            <p className="mt-2 text-sm text-red-600">
+              {autoGenerateSlotsError.message}
+            </p>
+          )}
+          {autoGenerateSlotsSuccess && (
+            <p className="mt-2 text-sm text-emerald-600">
+              {autoGenerateSlotsSuccess}
+            </p>
+          )}
         </Card>
 
         <div className="pt-6 border-t border-brand-border">

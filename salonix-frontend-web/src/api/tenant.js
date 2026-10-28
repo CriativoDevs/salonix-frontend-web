@@ -106,6 +106,13 @@ export async function updateTenantModules({ pwaClientEnabled }) {
   return response.data;
 }
 
+export async function updateTenantAutoGenerateSlots(autoGenerateSlotsEnabled) {
+  const response = await client.patch('users/tenant/modules/', {
+    auto_generate_slots_enabled: Boolean(autoGenerateSlotsEnabled),
+  });
+  return response.data;
+}
+
 export async function updateTenantContact({
   email,
   phone,

@@ -1038,7 +1038,7 @@
     },
     "pwa_client": {
       "title": "PWA Cliente",
-      "description": "Permite acesso dos clientes via PWA personalizado deste salão.",
+      "description": "Permite acesso dos clientes via PWA personalizado deste negócio.",
       "status_enabled": "Ativo",
       "status_disabled": "Inativo",
       "accessible_label": "Alternar PWA Cliente",
@@ -1047,6 +1047,15 @@
       "error": "Não foi possível atualizar o PWA Cliente.",
       "auto_invite_label": "Convites automáticos:",
       "auto_invite_toggle_label": "Alternar convites automáticos"
+    },
+    "auto_generate_slots": {
+      "title": "Gerar horários automaticamente todo mês",
+      "description": "Gera automaticamente os horários disponíveis do próximo mês com base no horário de funcionamento configurado.",
+      "toggle_label": "Alternar geração automática de horários",
+      "success_enabled": "Geração automática de horários habilitada.",
+      "success_disabled": "Geração automática de horários desabilitada.",
+      "error": "Não foi possível atualizar a geração automática de horários.",
+      "hours_required_notice": "Configure o horário de funcionamento acima antes de ativar a geração automática."
     },
     "auto_renewal": {
       "title": "Renovação Automática de Crédito",
