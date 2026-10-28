@@ -48,7 +48,8 @@ const inputStyle = {
 
 function AvailableSlots() {
   const { t, i18n } = useTranslation();
-  const { slug } = useTenant();
+  const { slug, tenant } = useTenant();
+  const autoGenerateSlotsEnabled = Boolean(tenant?.auto_generate_slots_enabled);
   const currentLanguage = i18n?.language || 'pt';
   const [professionals, setProfessionals] = useState([]);
   const [selectedProfessional, setSelectedProfessional] = useState('');
@@ -481,14 +482,16 @@ function AvailableSlots() {
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <button
-            type="button"
-            onClick={() => setIsBulkModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
-          >
-            <Zap className="h-4 w-4" />
-            {t('slots.bulk.open', 'Gerar horários')}
-          </button>
+          {!autoGenerateSlotsEnabled ? (
+            <button
+              type="button"
+              onClick={() => setIsBulkModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-brand-primary/20 bg-brand-primary/10 px-4 py-2 text-sm font-semibold text-brand-primary transition hover:bg-brand-primary/15"
+            >
+              <Zap className="h-4 w-4" />
+              {t('slots.bulk.open', 'Gerar horários')}
+            </button>
+          ) : null}
 
           <button
             type="button"
