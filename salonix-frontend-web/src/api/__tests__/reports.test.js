@@ -3,6 +3,7 @@ import {
   fetchTopServices,
   fetchRevenue,
   fetchRetention,
+  fetchInventoryReport,
   exportTopServicesReport,
 } from '../reports';
 
@@ -104,6 +105,32 @@ describe('api/reports — filtros de profissional/serviço', () => {
         params: expect.objectContaining({ professional_id: '7' }),
       })
     );
+  });
+
+  it('fetchInventoryReport envia from/to/tenant para reports/inventory/', async () => {
+    client.get.mockResolvedValueOnce({
+      data: { stock_active: true },
+      headers: {},
+    });
+
+    const data = await fetchInventoryReport({
+      slug: 'aurora',
+      from: '2026-11-01',
+      to: '2026-11-05',
+    });
+
+    expect(client.get).toHaveBeenCalledWith(
+      'reports/inventory/',
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'X-Tenant-Slug': 'aurora' }),
+        params: expect.objectContaining({
+          tenant: 'aurora',
+          from: '2026-11-01',
+          to: '2026-11-05',
+        }),
+      })
+    );
+    expect(data).toEqual({ stock_active: true });
   });
 
   it('fetchRevenue nunca envia professional_id/service_id (endpoint não suporta)', async () => {

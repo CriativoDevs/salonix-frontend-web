@@ -6,6 +6,7 @@ import FullPageLayout from '../layouts/FullPageLayout';
 import PageHeader from '../components/ui/PageHeader';
 import Card from '../components/ui/Card';
 import BasicReportsMetrics from '../components/reports/BasicReportsMetrics';
+import InventoryReportMetrics from '../components/reports/InventoryReportMetrics';
 import DateFilters from '../components/reports/DateFilters';
 import ExportButton from '../components/reports/ExportButton';
 import AdvancedExportButton from '../components/reports/AdvancedExportButton';
@@ -184,12 +185,19 @@ export default function Reports() {
   const { isLocked: advancedReportsLocked } = useFeatureLock(
     'enableAdvancedReports'
   );
+  // Relatório de estoque (FEW-REPORTS-01, #370): mesmo público que já vê os
+  // relatórios básicos — o backend usa a mesma permissão (RequiresBasicReports)
+  // no endpoint reports/inventory/.
+  const { isLocked: stockReportsLocked } = useFeatureLock(
+    'enableBasicReports'
+  );
 
   // Hook para dados de relatórios
   const reportType = useMemo(() => {
     if (activeTab === 'basic') return 'basic';
     if (activeTab === 'business') return 'business';
     if (activeTab === 'insights') return 'insights';
+    if (activeTab === 'stock') return 'inventory';
     return 'basic';
   }, [activeTab]);
 
@@ -314,6 +322,7 @@ export default function Reports() {
   };
 
   const retention = reportsData?.insightsReports?.retention;
+  const inventoryReport = reportsData?.inventoryReport || null;
   const insightsPeriod = reportsData?.insightsReports?.period;
   const basicReports = reportsData?.basicReports || null;
 
@@ -491,6 +500,30 @@ export default function Reports() {
               >
                 {t('reports.tabs.insights', 'Insights Avançados')}
                 {advancedReportsLocked && <LockIcon className="h-3.5 w-3.5" />}
+              </button>
+
+              {/* Tab Estoque */}
+              <button
+                onClick={() => !stockReportsLocked && setActiveTab('stock')}
+                disabled={stockReportsLocked}
+                className={`shrink-0 border-b-2 px-1 py-2 text-sm font-medium flex items-center gap-1.5 ${
+                  activeTab === 'stock'
+                    ? 'border-brand-primary text-brand-primary'
+                    : stockReportsLocked
+                      ? 'border-transparent text-brand-surfaceForeground/40 cursor-not-allowed'
+                      : 'border-transparent text-brand-surfaceForeground/70 hover:text-brand-surfaceForeground hover:border-brand-surfaceForeground/30'
+                }`}
+                title={
+                  stockReportsLocked
+                    ? t('upgrade.available_in_plan', {
+                        plan: 'Founder',
+                        defaultValue: 'Disponível no plano Founder',
+                      })
+                    : ''
+                }
+              >
+                {t('reports.tabs.stock', 'Estoque')}
+                {stockReportsLocked && <LockIcon className="h-3.5 w-3.5" />}
               </button>
             </nav>
           </div>
@@ -1043,6 +1076,113 @@ export default function Reports() {
                       {/* RetentionMetrics handles both data and empty states */}
                       <RetentionMetrics data={retention} />
                     </div>
+                  )}
+                </>
+              )}
+            </Card>
+          )}
+
+          {activeTab === 'stock' && (
+            <Card className="p-4 sm:p-6">
+              {/* Verificar se tab está bloqueada */}
+              {stockReportsLocked ? (
+                <UpgradePrompt
+                  featureKey="enableBasicReports"
+                  variant="inline"
+                />
+              ) : (
+                <>
+                  <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <h3 className="text-lg font-medium text-brand-surfaceForeground">
+                      {t('reports.inventory.title', 'Relatório de Estoque')}
+                    </h3>
+                    {inventoryReport?.period && (
+                      <span className="text-xs font-medium text-brand-surfaceForeground/50 bg-brand-light/50 px-2 py-1 rounded">
+                        {t(
+                          'reports.insights.period_label',
+                          'Dados de {{start}} até {{end}}',
+                          {
+                            start: new Date(
+                              inventoryReport.period.start
+                            ).toLocaleDateString(i18n.language),
+                            end: new Date(
+                              inventoryReport.period.end
+                            ).toLocaleDateString(i18n.language),
+                          }
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-brand-surfaceForeground/70 mb-4">
+                    {t(
+                      'reports.inventory.description',
+                      'Valor do estoque, giro por item e alertas de reposição'
+                    )}
+                  </p>
+
+                  {/* Loading state */}
+                  {reportsLoading && (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+                      <span className="ml-3 text-brand-surfaceForeground/70">
+                        {t('reports.loading', 'Carregando relatórios...')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Error state */}
+                  {reportsError && !reportsLoading && (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <div className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-red-500 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <p className="text-sm text-brand-surfaceForeground">
+                          {reportsError.message ||
+                            t('reports.error', 'Erro ao carregar relatórios')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={refetchReports}
+                        className="mt-2 text-sm text-brand-primary hover:text-brand-primary/80"
+                      >
+                        {t('reports.retry', 'Tentar novamente')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Forbidden state */}
+                  {reportsForbidden && !reportsLoading && !reportsError && (
+                    <div className="bg-brand-light/50 border border-brand-border rounded-lg p-4">
+                      <p className="text-sm text-brand-surfaceForeground mb-3">
+                        {t(
+                          'reports.business.upgrade_required',
+                          'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
+                        )}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/plans')}
+                        className="text-brand-primary hover:text-brand-primary/80 font-medium transition-colors"
+                      >
+                        {t('reports.upgrade_button', 'Atualizar plano')}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  {!reportsLoading && !reportsError && !reportsForbidden && (
+                    <InventoryReportMetrics data={inventoryReport} />
                   )}
                 </>
               )}

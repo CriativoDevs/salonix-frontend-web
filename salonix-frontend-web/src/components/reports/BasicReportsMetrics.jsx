@@ -119,6 +119,17 @@ export default function BasicReportsMetrics({ data }) {
   );
   const averageTicket = toNumber(data.overview?.avg_ticket ?? data.avg_ticket);
 
+  // BE-REPORTS-01 (#569): custo de produtos (COGS) e margem só existem
+  // quando o tenant já usa o módulo de Estoque (stock_active=true). Quando
+  // false, o backend devolve null — não renderizamos essas métricas.
+  const stockActive = Boolean(data.overview?.stock_active ?? data.stock_active);
+  const productCostTotal = toNumber(
+    data.overview?.product_cost_total ?? data.product_cost_total
+  );
+  const marginTotal = toNumber(
+    data.overview?.margin_total ?? data.margin_total
+  );
+
   const completionRate =
     totalAppointments > 0
       ? `${((completedAppointments / totalAppointments) * 100).toFixed(1)}%`
@@ -237,6 +248,64 @@ export default function BasicReportsMetrics({ data }) {
       color: 'text-violet-700 bg-violet-100',
     },
   ];
+
+  if (stockActive) {
+    metrics.push(
+      {
+        title: t(
+          'reports.metrics.product_cost_total',
+          'Custo de Produtos (COGS)'
+        ),
+        value: formatCurrency(productCostTotal),
+        detail: t(
+          'reports.metrics.product_cost_total_detail',
+          'Custo do estoque consumido no período'
+        ),
+        comparison: null,
+        icon: (
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
+          </svg>
+        ),
+        color: 'text-orange-700 bg-orange-100',
+      },
+      {
+        title: t('reports.metrics.margin_total', 'Margem Total'),
+        value: formatCurrency(marginTotal),
+        detail: t(
+          'reports.metrics.margin_total_detail',
+          'Receita menos o custo de produtos do período'
+        ),
+        comparison: null,
+        icon: (
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+            />
+          </svg>
+        ),
+        color: 'text-teal-700 bg-teal-100',
+      }
+    );
+  }
 
   return (
     <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

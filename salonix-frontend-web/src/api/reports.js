@@ -134,6 +134,32 @@ export async function fetchRetention(params = {}) {
 }
 
 /**
+ * Busca o relatório de estoque isolado (BE-REPORTS-01)
+ * Disponível para o mesmo público que acessa os relatórios básicos.
+ * `stock_active=false` não é erro — significa que o tenant nunca
+ * cadastrou um item de estoque; o resto do payload vem vazio/zerado.
+ */
+export async function fetchInventoryReport(params = {}) {
+  const { from, to, slug } = params;
+  const headers = {};
+  const queryParams = {};
+
+  if (slug) {
+    headers['X-Tenant-Slug'] = slug;
+    queryParams.tenant = slug;
+  }
+
+  if (from) queryParams.from = from;
+  if (to) queryParams.to = to;
+
+  const { data } = await client.get('reports/inventory/', {
+    headers,
+    params: queryParams,
+  });
+  return data;
+}
+
+/**
  * Exporta relatórios básicos em CSV
  * Disponível para todos os planos com reports_enabled=true
  */
