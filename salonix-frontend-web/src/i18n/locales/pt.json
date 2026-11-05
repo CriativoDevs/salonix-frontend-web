@@ -180,7 +180,9 @@
       "title": "Importar serviços",
       "description": "Importe serviços a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
       "success": "Serviços importados com sucesso!",
-      "fields": { "file": "Ficheiro CSV" },
+      "fields": {
+        "file": "Ficheiro CSV"
+      },
       "actions": {
         "download_template": "Baixar modelo CSV",
         "preview": "Pré-visualizar",
@@ -201,7 +203,9 @@
         "template": "Não foi possível baixar o modelo."
       }
     },
-    "export": { "error": "Não foi possível exportar os serviços." }
+    "export": {
+      "error": "Não foi possível exportar os serviços."
+    }
   },
   "inventory": {
     "title": "Estoque",
@@ -1095,7 +1099,9 @@
       "title": "Importar/Exportar tudo",
       "description": "Exporte ou importe clientes, serviços, staff e agendamentos de uma vez, num único ficheiro .zip.",
       "success": "Dados importados com sucesso!",
-      "fields": { "file": "Ficheiro ZIP" },
+      "fields": {
+        "file": "Ficheiro ZIP"
+      },
       "actions": {
         "download_template": "Baixar modelo ZIP",
         "downloading_template": "A preparar...",
@@ -1686,7 +1692,9 @@
       "title": "Importar staff",
       "description": "Importe membros da equipa a partir de um ficheiro CSV. O ficheiro é validado antes de gravar.",
       "success": "Staff importado com sucesso!",
-      "fields": { "file": "Ficheiro CSV" },
+      "fields": {
+        "file": "Ficheiro CSV"
+      },
       "actions": {
         "download_template": "Baixar modelo CSV",
         "preview": "Pré-visualizar",
@@ -1707,7 +1715,9 @@
         "template": "Não foi possível baixar o modelo."
       }
     },
-    "export": { "error": "Não foi possível exportar o staff." }
+    "export": {
+      "error": "Não foi possível exportar o staff."
+    }
   },
   "invite_accept": {
     "title": "Ativar acesso ao painel",
@@ -1863,13 +1873,18 @@
       "basic": "Básicos",
       "advanced": "Avançados",
       "business": "Análise de Negócio",
-      "insights": "Insights Avançados"
+      "insights": "Insights Avançados",
+      "stock": "Estoque"
     },
     "metrics": {
       "total_appointments": "Total de Agendamentos",
       "completed_appointments": "Agendamentos Concluídos",
       "total_revenue": "Receita Total",
-      "average_ticket": "Ticket Médio"
+      "average_ticket": "Ticket Médio",
+      "product_cost_total": "Custo de Produtos (COGS)",
+      "product_cost_total_detail": "Custo do estoque consumido no período",
+      "margin_total": "Margem Total",
+      "margin_total_detail": "Receita menos o custo de produtos do período"
     },
     "basic": {
       "title": "Relatórios Básicos",
@@ -1955,6 +1970,30 @@
     "access_denied": {
       "title": "Acesso restrito",
       "description": "Apenas proprietários têm acesso aos relatórios do negócio."
+    },
+    "inventory": {
+      "title": "Relatório de Estoque",
+      "description": "Valor do estoque, giro por item e alertas de reposição",
+      "empty_title": "Ainda sem dados de estoque",
+      "empty_description": "Este relatório fica disponível assim que você cadastrar o primeiro item no módulo de Estoque.",
+      "go_to_inventory": "Ir para o Estoque",
+      "total_value": "Valor Total em Estoque",
+      "total_value_detail": "Valoração ao custo (quantidade × custo unitário)",
+      "low_stock_count": "Itens com Estoque Baixo",
+      "low_stock_count_detail": "Itens na quantidade mínima ou abaixo dela",
+      "low_stock_list": {
+        "title": "Itens a repor"
+      },
+      "turnover": {
+        "title": "Giro de Estoque no Período",
+        "description": "Quantidade consumida em relação à quantidade atual de cada item",
+        "empty": "Nenhuma movimentação de saída registrada no período selecionado.",
+        "item": "Item",
+        "quantity_out": "Saídas no Período",
+        "current_quantity": "Quantidade Atual",
+        "turnover_rate": "Taxa de Giro",
+        "not_applicable": "N/D"
+      }
     }
   },
   "landing": {

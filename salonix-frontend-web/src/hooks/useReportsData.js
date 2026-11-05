@@ -5,6 +5,7 @@ import {
   fetchTopServices,
   fetchRevenue,
   fetchRetention,
+  fetchInventoryReport,
 } from '../api/reports';
 import { parseApiError } from '../utils/apiError';
 
@@ -13,6 +14,7 @@ const INITIAL_DATA = {
   businessReports: null, // Top Services + Revenue (Pro)
   insightsReports: null, // Retention + Advanced (Pro)
   advancedReports: null, // Legacy/Aggregate (Optional)
+  inventoryReport: null, // Relatório de estoque isolado (BE-REPORTS-01)
 };
 
 // Cache global para evitar re-fetch desnecessário
@@ -192,6 +194,23 @@ export function useReportsData({ slug, type, filters } = {}) {
             },
           },
         };
+        setData(newData);
+
+        setCachedData(cacheKey, {
+          data: newData,
+          error: null,
+          forbidden: false,
+        });
+      } else if (type === 'inventory') {
+        // Relatório de estoque isolado (BE-REPORTS-01): 200 sempre, mesmo
+        // quando o tenant nunca cadastrou estoque (stock_active=false).
+        const result = await fetchInventoryReport({
+          slug,
+          ...memoizedFilters,
+        });
+        if (!mountedRef.current) return;
+
+        const newData = { ...INITIAL_DATA, inventoryReport: result };
         setData(newData);
 
         setCachedData(cacheKey, {

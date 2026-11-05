@@ -65,6 +65,18 @@ jest.mock('../../components/reports/BasicReportsMetrics', () => ({
   default: () => <div>basic-metrics</div>,
 }));
 
+jest.mock('../../components/reports/InventoryReportMetrics', () => ({
+  __esModule: true,
+  default: ({ data }) => (
+    <div>
+      inventory-metrics
+      <span data-testid="inventory-stock-active">
+        {String(Boolean(data?.stock_active))}
+      </span>
+    </div>
+  ),
+}));
+
 jest.mock('../../components/reports/DateFilters', () => ({
   __esModule: true,
   default: ({ fromDate, toDate }) => (
@@ -212,6 +224,25 @@ describe('Reports page', () => {
           loading: false,
           error: null,
           forbidden: true,
+          refetch: jest.fn(),
+        };
+      }
+
+      if (type === 'inventory') {
+        return {
+          data: {
+            inventoryReport: {
+              stock_active: true,
+              total_stock_value: 480,
+              low_stock_items_count: 0,
+              low_stock_items: [],
+              turnover: [],
+              period: { start: '2026-04-01', end: '2026-04-28' },
+            },
+          },
+          loading: false,
+          error: null,
+          forbidden: false,
           refetch: jest.fn(),
         };
       }
@@ -426,5 +457,78 @@ describe('Reports page', () => {
     expect(lastInsightsCall.filters).not.toHaveProperty('service_id');
     expect(lastInsightsCall.filters).not.toHaveProperty('interval');
     expect(lastInsightsCall.filters).not.toHaveProperty('limit');
+  });
+
+  it('exibe o relatório de estoque com dados quando stock_active é true', () => {
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Estoque' }));
+
+    expect(screen.getByText('inventory-metrics')).toBeInTheDocument();
+    expect(screen.getByTestId('inventory-stock-active')).toHaveTextContent(
+      'true'
+    );
+  });
+
+  it('esconde o conteúdo do relatório de estoque e mostra upgrade quando a feature está bloqueada', () => {
+    // enableBasicReports bloqueado -> tanto a aba Básicos quanto a de Estoque
+    // usam a mesma permissão no backend (RequiresBasicReports).
+    useFeatureLock.mockReturnValue({
+      isLocked: true,
+      requiredTier: 'Founder',
+    });
+
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    const stockTabButton = screen.getByRole('button', { name: /Estoque/ });
+    expect(stockTabButton).toBeDisabled();
+
+    fireEvent.click(stockTabButton);
+
+    expect(screen.queryByText('inventory-metrics')).not.toBeInTheDocument();
+  });
+
+  it('respeita 403 do backend no relatório de estoque mostrando upgrade', () => {
+    useReportsData.mockImplementation(({ type }) => {
+      if (type === 'inventory') {
+        return {
+          data: { inventoryReport: null },
+          loading: false,
+          error: null,
+          forbidden: true,
+          refetch: jest.fn(),
+        };
+      }
+      return {
+        data: { basicReports: null },
+        loading: false,
+        error: null,
+        forbidden: false,
+        refetch: jest.fn(),
+      };
+    });
+
+    render(
+      <MemoryRouter>
+        <Reports />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Estoque' }));
+
+    expect(
+      screen.getByText(
+        'Esta secção não está disponível na sua conta. Contacte o suporte se precisar de acesso.'
+      )
+    ).toBeInTheDocument();
+    expect(screen.queryByText('inventory-metrics')).not.toBeInTheDocument();
   });
 });

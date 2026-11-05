@@ -179,7 +179,9 @@
       "title": "Import services",
       "description": "Import services from a CSV file. The file is validated before saving.",
       "success": "Services imported successfully!",
-      "fields": { "file": "CSV file" },
+      "fields": {
+        "file": "CSV file"
+      },
       "actions": {
         "download_template": "Download CSV template",
         "preview": "Preview",
@@ -200,7 +202,9 @@
         "template": "Could not download the template."
       }
     },
-    "export": { "error": "Could not export services." }
+    "export": {
+      "error": "Could not export services."
+    }
   },
   "inventory": {
     "title": "Inventory",
@@ -1095,7 +1099,9 @@
       "title": "Import/Export all",
       "description": "Export or import customers, services, staff and appointments all at once, in a single .zip file.",
       "success": "Data imported successfully!",
-      "fields": { "file": "ZIP file" },
+      "fields": {
+        "file": "ZIP file"
+      },
       "actions": {
         "download_template": "Download ZIP template",
         "downloading_template": "Preparing...",
@@ -1686,7 +1692,9 @@
       "title": "Import staff",
       "description": "Import team members from a CSV file. The file is validated before saving.",
       "success": "Staff imported successfully!",
-      "fields": { "file": "CSV file" },
+      "fields": {
+        "file": "CSV file"
+      },
       "actions": {
         "download_template": "Download CSV template",
         "preview": "Preview",
@@ -1707,7 +1715,9 @@
         "template": "Could not download the template."
       }
     },
-    "export": { "error": "Could not export staff." }
+    "export": {
+      "error": "Could not export staff."
+    }
   },
   "invite_accept": {
     "title": "Activate dashboard access",
@@ -1863,13 +1873,18 @@
       "basic": "Basic",
       "advanced": "Advanced",
       "business": "Business Analysis",
-      "insights": "Advanced Insights"
+      "insights": "Advanced Insights",
+      "stock": "Stock"
     },
     "metrics": {
       "total_appointments": "Total Appointments",
       "completed_appointments": "Completed Appointments",
       "total_revenue": "Total Revenue",
-      "average_ticket": "Average Ticket"
+      "average_ticket": "Average Ticket",
+      "product_cost_total": "Cost of Products (COGS)",
+      "product_cost_total_detail": "Cost of stock consumed in the period",
+      "margin_total": "Total Margin",
+      "margin_total_detail": "Revenue minus product cost for the period"
     },
     "basic": {
       "title": "Basic Reports",
@@ -1955,6 +1970,30 @@
     "export": {
       "csv": "Export CSV",
       "exporting": "Exporting..."
+    },
+    "inventory": {
+      "title": "Stock Report",
+      "description": "Stock value, turnover per item and restock alerts",
+      "empty_title": "No stock data yet",
+      "empty_description": "This report becomes available once you add the first item in the Stock module.",
+      "go_to_inventory": "Go to Stock",
+      "total_value": "Total Stock Value",
+      "total_value_detail": "Valuation at cost (quantity × unit cost)",
+      "low_stock_count": "Items with Low Stock",
+      "low_stock_count_detail": "Items at or below the minimum quantity",
+      "low_stock_list": {
+        "title": "Items to restock"
+      },
+      "turnover": {
+        "title": "Stock Turnover for the Period",
+        "description": "Quantity consumed relative to the current quantity of each item",
+        "empty": "No outgoing stock movement recorded for the selected period.",
+        "item": "Item",
+        "quantity_out": "Outgoing in Period",
+        "current_quantity": "Current Quantity",
+        "turnover_rate": "Turnover Rate",
+        "not_applicable": "N/A"
+      }
     }
   },
   "landing": {

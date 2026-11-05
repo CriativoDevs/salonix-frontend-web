@@ -6,6 +6,7 @@ import {
   fetchTopServices,
   fetchRevenue,
   fetchRetention,
+  fetchInventoryReport,
 } from '../../api/reports';
 
 // Mock das funções da API
@@ -15,6 +16,7 @@ jest.mock('../../api/reports', () => ({
   fetchTopServices: jest.fn(),
   fetchRevenue: jest.fn(),
   fetchRetention: jest.fn(),
+  fetchInventoryReport: jest.fn(),
 }));
 
 // Mock do parseApiError
@@ -67,6 +69,67 @@ describe('useReportsData', () => {
 
     expect(result.current.data.advancedReports).toEqual(mockData);
     expect(result.current.loading).toBe(false);
+  });
+
+  it('carrega relatório de estoque (BE-REPORTS-01) com sucesso', async () => {
+    const mockData = {
+      stock_active: true,
+      total_stock_value: 480,
+      low_stock_items_count: 1,
+      low_stock_items: [
+        { id: 1, name: 'Shampoo', quantity: 2, minimum_quantity: 5 },
+      ],
+      turnover: [],
+      period: { start: '2026-11-01', end: '2026-11-05' },
+    };
+    fetchInventoryReport.mockResolvedValueOnce(mockData);
+    const filters = { from: '2026-11-01', to: '2026-11-05' };
+
+    const { result } = renderHook(() =>
+      useReportsData({
+        slug: 'test-salon',
+        type: 'inventory',
+        filters,
+      })
+    );
+
+    await waitFor(() => {
+      expect(fetchInventoryReport).toHaveBeenCalledWith({
+        slug: 'test-salon',
+        from: '2026-11-01',
+        to: '2026-11-05',
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.data.inventoryReport).toEqual(mockData);
+    });
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+    expect(result.current.forbidden).toBe(false);
+  });
+
+  it('nunca trata stock_active=false como erro no relatório de estoque', async () => {
+    const mockData = {
+      stock_active: false,
+      total_stock_value: 0,
+      low_stock_items_count: 0,
+      low_stock_items: [],
+      turnover: [],
+      period: { start: '2026-11-01', end: '2026-11-05' },
+    };
+    fetchInventoryReport.mockResolvedValueOnce(mockData);
+
+    const { result } = renderHook(() =>
+      useReportsData({ slug: 'test-salon', type: 'inventory' })
+    );
+
+    await waitFor(() => {
+      expect(result.current.data.inventoryReport).toEqual(mockData);
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.forbidden).toBe(false);
   });
 
   it('não carrega dados quando slug é null', async () => {

@@ -74,4 +74,55 @@ describe('BasicReportsMetrics', () => {
     // 80/100 = 80.0%
     expect(screen.getByText(/taxa de conclusão: 80\.0%/i)).toBeInTheDocument();
   });
+
+  describe('custo de produtos (COGS) e margem — BE-REPORTS-01', () => {
+    it('não exibe os cards de custo/margem quando stock_active é false', () => {
+      render(
+        <BasicReportsMetrics
+          data={{
+            ...mockData,
+            overview: {
+              ...mockData.overview,
+              stock_active: false,
+              product_cost_total: null,
+              margin_total: null,
+            },
+          }}
+        />
+      );
+
+      expect(
+        screen.queryByText('Custo de Produtos (COGS)')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Margem Total')).not.toBeInTheDocument();
+    });
+
+    it('não exibe os cards de custo/margem quando stock_active está ausente', () => {
+      render(<BasicReportsMetrics data={mockData} />);
+
+      expect(
+        screen.queryByText('Custo de Produtos (COGS)')
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText('Margem Total')).not.toBeInTheDocument();
+    });
+
+    it('exibe custo de produtos e margem quando stock_active é true', () => {
+      render(
+        <BasicReportsMetrics
+          data={{
+            ...mockData,
+            overview: {
+              ...mockData.overview,
+              stock_active: true,
+              product_cost_total: 32.5,
+              margin_total: 4967.5,
+            },
+          }}
+        />
+      );
+
+      expect(screen.getByText('Custo de Produtos (COGS)')).toBeInTheDocument();
+      expect(screen.getByText('Margem Total')).toBeInTheDocument();
+    });
+  });
 });
