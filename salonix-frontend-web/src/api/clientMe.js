@@ -59,3 +59,21 @@ export async function createClientAppointment(payload) {
   const { data } = await client.post('clients/me/appointments/', payload);
   return data;
 }
+
+// Vouchers do próprio cliente (BE-VOUCHER-06, #573) — JWT de cliente,
+// escopado a tenant+cliente do token no backend.
+export async function fetchClientVouchers() {
+  const { data } = await client.get('clients/me/vouchers/');
+  return Array.isArray(data) ? data : [];
+}
+
+export async function applyClientVoucherToAppointment(
+  appointmentId,
+  clientVoucherId
+) {
+  const { data } = await client.post(
+    `clients/me/appointments/${appointmentId}/apply-voucher/`,
+    { client_voucher_id: clientVoucherId }
+  );
+  return data;
+}

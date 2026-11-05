@@ -17,6 +17,7 @@ jest.mock('../../api/clientMe', () => ({
     phone_number: '+351911111111',
     marketing_opt_in: false,
   }),
+  fetchClientVouchers: jest.fn().mockResolvedValue([]),
 }));
 
 const mockNavigate = jest.fn();

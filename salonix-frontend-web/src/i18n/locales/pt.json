@@ -339,6 +339,11 @@
       "value_required": "Informe um valor válido.",
       "max_uses_invalid": "Informe um número de usos válido.",
       "delete_failed": "Não foi possível remover o voucher."
+    },
+    "benefit": {
+      "percent": "{{value}}% de desconto",
+      "fixed": "Desconto de {{value}}",
+      "free_service": "Serviço grátis"
     }
   },
   "professionals": {
@@ -2430,6 +2435,12 @@
       "save_failed": "Falha ao salvar perfil.",
       "photo_too_large": "A imagem deve ter no máximo 2MB.",
       "photo_failed": "Falha ao enviar a foto. Verifique o formato e as dimensões."
+    },
+    "vouchers": {
+      "title": "Meus vouchers",
+      "loading": "Carregando vouchers…",
+      "empty": "Você ainda não tem vouchers atribuídos.",
+      "code": "Código {{code}}"
     }
   },
   "client_booking": {
@@ -2445,6 +2456,15 @@
     "submitting": "Agendando…",
     "errors": {
       "generic": "Não foi possível agendar."
+    },
+    "voucher": {
+      "title": "Usar voucher",
+      "none_available": "Nenhum voucher ativo disponível.",
+      "select_placeholder": "Não usar voucher",
+      "applying": "Aplicando voucher…",
+      "errors": {
+        "apply_failed": "O agendamento foi criado, mas não foi possível aplicar o voucher."
+      }
     }
   },
   "client_appointments": {

@@ -338,6 +338,11 @@
       "value_required": "Enter a valid value.",
       "max_uses_invalid": "Enter a valid number of uses.",
       "delete_failed": "Could not remove the voucher."
+    },
+    "benefit": {
+      "percent": "{{value}}% off",
+      "fixed": "{{value}} off",
+      "free_service": "Free service"
     }
   },
   "professionals": {
@@ -2430,6 +2435,12 @@
       "save_failed": "Failed to save profile.",
       "photo_too_large": "The image must be at most 2MB.",
       "photo_failed": "Failed to upload the photo. Check the format and dimensions."
+    },
+    "vouchers": {
+      "title": "My vouchers",
+      "loading": "Loading vouchers…",
+      "empty": "You don't have any vouchers assigned yet.",
+      "code": "Code {{code}}"
     }
   },
   "client_booking": {
@@ -2445,6 +2456,15 @@
     "submitting": "Booking…",
     "errors": {
       "generic": "Could not book the appointment."
+    },
+    "voucher": {
+      "title": "Use a voucher",
+      "none_available": "No active vouchers available.",
+      "select_placeholder": "Don't use a voucher",
+      "applying": "Applying voucher…",
+      "errors": {
+        "apply_failed": "The booking was created, but the voucher could not be applied."
+      }
     }
   },
   "client_appointments": {
