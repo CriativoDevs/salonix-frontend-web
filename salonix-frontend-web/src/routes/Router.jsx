@@ -6,6 +6,7 @@ import RoleProtectedRoute from './RoleProtectedRoute';
 import Dashboard from '../pages/Dashboard';
 import Landing from '../pages/Landing';
 import Rgpd from '../pages/Rgpd';
+import Terms from '../pages/Terms';
 import PwaInfo from '../pages/PwaInfo';
 import CmsPage from '../pages/CmsPage';
 import CmsPageDetail from '../pages/CmsPageDetail';
@@ -103,6 +104,8 @@ function Router() {
         }
       />
       <Route path="/rgpd" element={<Rgpd />} />
+      <Route path="/termos" element={<Terms />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="/pwa-info" element={<PwaInfo />} />
       <Route
         path="/como-funciona"

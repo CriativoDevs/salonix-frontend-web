@@ -1248,6 +1248,54 @@
     },
     "back_home": "Voltar para a Página Inicial"
   },
+  "terms": {
+    "title": "Termos de Serviço",
+    "last_updated": "Última atualização: {{date}}",
+    "intro": "Estes Termos de Serviço regulam o acesso e uso da plataforma TimelyOne, operada pela CriativoDevs. Ao criar uma conta ou utilizar a plataforma, concorda com os termos abaixo.",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceitação dos Termos",
+        "content": "Ao aceder ou utilizar a TimelyOne, concorda em ficar vinculado a estes Termos de Serviço e à nossa Política de Privacidade e RGPD. Se não concordar com algum destes termos, não deve utilizar a plataforma."
+      },
+      "service": {
+        "title": "2. Descrição do Serviço",
+        "content": "A TimelyOne é uma plataforma de gestão de agendamentos, clientes e operações para negócios de serviços. As funcionalidades disponíveis dependem do plano contratado e podem ser alteradas, adicionadas ou descontinuadas a qualquer momento, com aviso prévio razoável quando aplicável."
+      },
+      "account": {
+        "title": "3. Conta e Responsabilidades do Utilizador",
+        "content": "É responsável por manter a confidencialidade das suas credenciais de acesso e por todas as atividades realizadas na sua conta. Compromete-se a fornecer informações verdadeiras e a não utilizar a plataforma para fins ilegais ou que violem direitos de terceiros."
+      },
+      "subscriptions": {
+        "title": "4. Assinaturas e Pagamentos",
+        "content": "Alguns planos são pagos e cobrados de forma recorrente, conforme o ciclo escolhido no momento da contratação. Os preços podem ser alterados mediante aviso prévio. O cancelamento pode ser feito a qualquer momento, aplicando-se as condições de reembolso descritas no momento da contratação."
+      },
+      "intellectual_property": {
+        "title": "5. Propriedade Intelectual",
+        "content": "A plataforma, a sua marca, design e código são propriedade da CriativoDevs. Os dados inseridos pelo utilizador (clientes, agendamentos, conteúdos) permanecem propriedade do utilizador, que concede à TimelyOne apenas a licença necessária para prestar o serviço."
+      },
+      "liability": {
+        "title": "6. Limitação de Responsabilidade",
+        "content": "A plataforma é fornecida \"tal como está\", sem garantias de disponibilidade ininterrupta. Na medida permitida por lei, a CriativoDevs não se responsabiliza por danos indiretos decorrentes do uso ou impossibilidade de uso da plataforma. Nada nestes termos limita direitos que não possam ser limitados por lei, incluindo direitos de consumidor aplicáveis na União Europeia e Reino Unido."
+      },
+      "termination": {
+        "title": "7. Suspensão e Encerramento",
+        "content": "Podemos suspender ou encerrar contas que violem estes termos, com notificação prévia sempre que razoavelmente possível. O utilizador pode encerrar a sua conta a qualquer momento através das definições da plataforma ou contactando o suporte."
+      },
+      "changes": {
+        "title": "8. Alterações a Estes Termos",
+        "content": "Podemos atualizar estes Termos periodicamente. Alterações materiais serão comunicadas através da plataforma ou por e-mail, com antecedência razoável antes de entrarem em vigor."
+      },
+      "law": {
+        "title": "9. Lei Aplicável",
+        "content": "Estes Termos regem-se pela lei portuguesa. Para utilizadores na União Europeia e Reino Unido, aplicam-se também as proteções de consumidor da jurisdição de residência do utilizador, quando aplicável."
+      },
+      "contact": {
+        "title": "10. Contacto",
+        "content": "Para questões sobre estes Termos, contacte-nos através do email: support@timelyone.today"
+      }
+    },
+    "back_home": "Voltar para a Página Inicial"
+  },
   "account": {
     "title": "Configurações da Conta",
     "subtitle": "Gerencie informações da conta e ações críticas",

@@ -1248,6 +1248,54 @@
     },
     "back_home": "Back to Home"
   },
+  "terms": {
+    "title": "Terms of Service",
+    "last_updated": "Last updated: {{date}}",
+    "intro": "These Terms of Service govern access to and use of the TimelyOne platform, operated by CriativoDevs. By creating an account or using the platform, you agree to the terms below.",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By accessing or using TimelyOne, you agree to be bound by these Terms of Service and our Privacy Policy and GDPR notice. If you do not agree with any of these terms, you must not use the platform."
+      },
+      "service": {
+        "title": "2. Description of Service",
+        "content": "TimelyOne is a platform for managing appointments, clients, and operations for service businesses. Available features depend on the contracted plan and may be changed, added, or discontinued at any time, with reasonable prior notice where applicable."
+      },
+      "account": {
+        "title": "3. Account and User Responsibilities",
+        "content": "You are responsible for keeping your login credentials confidential and for all activity under your account. You agree to provide truthful information and not to use the platform for unlawful purposes or in violation of third-party rights."
+      },
+      "subscriptions": {
+        "title": "4. Subscriptions and Payments",
+        "content": "Some plans are paid and billed on a recurring basis, according to the cycle chosen at signup. Prices may change with prior notice. Cancellation can be requested at any time, subject to the refund conditions described at the time of signup."
+      },
+      "intellectual_property": {
+        "title": "5. Intellectual Property",
+        "content": "The platform, its brand, design, and code are the property of CriativoDevs. Data you input (clients, appointments, content) remains your property; you grant TimelyOne only the license necessary to provide the service."
+      },
+      "liability": {
+        "title": "6. Limitation of Liability",
+        "content": "The platform is provided \"as is\", without guarantees of uninterrupted availability. To the extent permitted by law, CriativoDevs is not liable for indirect damages arising from use or inability to use the platform. Nothing in these terms limits rights that cannot be limited by law, including consumer rights applicable in the European Union and the United Kingdom."
+      },
+      "termination": {
+        "title": "7. Suspension and Termination",
+        "content": "We may suspend or terminate accounts that violate these terms, with prior notice whenever reasonably possible. You may close your account at any time through the platform settings or by contacting support."
+      },
+      "changes": {
+        "title": "8. Changes to These Terms",
+        "content": "We may update these Terms periodically. Material changes will be communicated through the platform or by email, with reasonable notice before they take effect."
+      },
+      "law": {
+        "title": "9. Governing Law",
+        "content": "These Terms are governed by Portuguese law. For users in the European Union and United Kingdom, consumer protections of the user's jurisdiction of residence also apply, where applicable."
+      },
+      "contact": {
+        "title": "10. Contact",
+        "content": "For questions about these Terms, contact us at: support@timelyone.today"
+      }
+    },
+    "back_home": "Back to Home"
+  },
   "account": {
     "title": "Account Settings",
     "subtitle": "Manage account information and critical actions",

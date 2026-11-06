@@ -1463,6 +1463,9 @@ function Landing() {
             <Link to="/rgpd" className="transition hover:text-slate-800">
               {t('rgpd.title', 'Privacidade e RGPD')}
             </Link>
+            <Link to="/termos" className="transition hover:text-slate-800">
+              {t('terms.title', 'Termos de Serviço')}
+            </Link>
           </div>
         </div>
       </footer>
