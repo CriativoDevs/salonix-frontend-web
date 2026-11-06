@@ -13,11 +13,14 @@ import {
   updateVoucher,
   deleteVoucher,
   assignVoucher,
+  assignVoucherBulk,
   sendVoucherEmail,
 } from '../api/vouchers';
 import { fetchServices } from '../api/services';
 import { parseApiError } from '../utils/apiError';
 import { useTenant } from '../hooks/useTenant';
+import useToast from '../hooks/useToast';
+import ToastContainer from '../components/ui/ToastContainer';
 
 function ActionButton({ children, tone = 'secondary', className = '', ...props }) {
   const toneClass =
@@ -88,6 +91,7 @@ function Vouchers() {
   const [assignVoucherTarget, setAssignVoucherTarget] = useState(null);
   const [assignBusy, setAssignBusy] = useState(false);
   const [assignError, setAssignError] = useState(null);
+  const { toasts, showSuccess, showWarning, showError, hideToast } = useToast();
 
   const [busyId, setBusyId] = useState(null);
 
@@ -220,6 +224,63 @@ function Vouchers() {
           err,
           t('vouchers.assign.errors.generic', 'Não foi possível atribuir o voucher.')
         )
+      );
+    } finally {
+      setAssignBusy(false);
+    }
+  };
+
+  const skipReasonLabel = (reason) => {
+    if (reason === 'already_assigned') {
+      return t('vouchers.assign.skip_already_assigned', 'já tinha o voucher');
+    }
+    if (reason === 'max_uses_exceeded') {
+      return t('vouchers.assign.skip_max_uses', 'limite de atribuições atingido');
+    }
+    return t('vouchers.assign.skip_not_found', 'cliente não encontrado');
+  };
+
+  const handleAssignBulkSubmit = async (clients) => {
+    if (!assignVoucherTarget) return;
+    setAssignBusy(true);
+    try {
+      const result = await assignVoucherBulk(
+        assignVoucherTarget.id,
+        clients.map((client) => client.id),
+        { slug }
+      );
+      const assignedCount = result?.assigned?.length || 0;
+      const skipped = result?.skipped || [];
+      if (assignedCount > 0) {
+        showSuccess(
+          t('vouchers.assign.bulk_success', '{{count}} clientes receberam o voucher.', {
+            count: assignedCount,
+          })
+        );
+      }
+      if (skipped.length > 0) {
+        const detail = skipped
+          .map((item) => {
+            const client = clients.find((c) => c.id === item.client_id);
+            const name = client?.name || `#${item.client_id}`;
+            return `${name} (${skipReasonLabel(item.reason)})`;
+          })
+          .join(', ');
+        showWarning(
+          t('vouchers.assign.bulk_skipped', '{{count}} não receberam: {{detail}}', {
+            count: skipped.length,
+            detail,
+          })
+        );
+      }
+      closeAssignModal();
+      loadVouchers();
+    } catch (err) {
+      showError(
+        parseApiError(
+          err,
+          t('vouchers.assign.errors.generic', 'Não foi possível atribuir o voucher.')
+        ).message
       );
     } finally {
       setAssignBusy(false);
@@ -390,7 +451,10 @@ function Vouchers() {
         error={assignError}
         onClose={closeAssignModal}
         onSubmit={handleAssignSubmit}
+        onSubmitBulk={handleAssignBulkSubmit}
       />
+
+      <ToastContainer toasts={toasts} onClose={hideToast} />
     </FullPageLayout>
   );
 }

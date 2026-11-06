@@ -47,6 +47,17 @@ export async function assignVoucher(id, clientId, { slug } = {}) {
   return data;
 }
 
+// Atribuição em massa (BE-VOUCHER-07, #575) — retorna
+// { assigned: [ClientVoucher, ...], skipped: [{ client_id, reason }] }.
+export async function assignVoucherBulk(id, clientIds, { slug } = {}) {
+  const { data } = await client.post(
+    `vouchers/${id}/assign-bulk/`,
+    { client_ids: clientIds },
+    { headers: withTenantHeaders(slug) }
+  );
+  return data;
+}
+
 export async function sendVoucherEmail(id, clientId, { slug } = {}) {
   const { data } = await client.post(
     `vouchers/${id}/send-email/`,
