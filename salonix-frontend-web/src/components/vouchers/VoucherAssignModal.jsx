@@ -40,7 +40,7 @@ function VoucherAssignModal({
     setSelected(new Map());
     setSendEmail(false);
     setSearchError(null);
-  }, [open, voucher]);
+  }, [open, voucher, slug]);
 
   // Pré-carrega os primeiros clientes (ordenados por nome pelo backend) ao
   // abrir o modal, pra não depender só de digitar uma busca pra ver algo.
@@ -103,6 +103,7 @@ function VoucherAssignModal({
     results.length > 0 && results.every((customer) => selected.has(customer.id));
 
   const toggleCustomer = (customer) => {
+    setSendEmail(false);
     setSelected((prev) => {
       const next = new Map(prev);
       if (next.has(customer.id)) {
@@ -115,6 +116,7 @@ function VoucherAssignModal({
   };
 
   const toggleSelectAllVisible = () => {
+    setSendEmail(false);
     setSelected((prev) => {
       const next = new Map(prev);
       if (allVisibleSelected) {
@@ -126,20 +128,26 @@ function VoucherAssignModal({
     });
   };
 
-  const clearSelection = () => setSelected(new Map());
+  const clearSelection = () => {
+    setSendEmail(false);
+    setSelected(new Map());
+  };
+
+  const dropdownOpen = searching || !!searchError || results.length > 0;
+  const singleSelected = selectedCount === 1 ? selectedList[0] : null;
+  // Nunca confiar em sendEmail isolado do cliente atual — só vale quando
+  // exatamente um cliente está selecionado e ele tem e-mail cadastrado.
+  const effectiveSendEmail = Boolean(sendEmail && singleSelected?.email);
 
   const handleSubmit = async (event) => {
     event?.preventDefault();
     if (selectedCount === 0) return;
     if (selectedCount === 1) {
-      await onSubmit?.({ client: selectedList[0], sendEmail });
+      await onSubmit?.({ client: selectedList[0], sendEmail: effectiveSendEmail });
       return;
     }
     await onSubmitBulk?.(selectedList);
   };
-
-  const dropdownOpen = searching || !!searchError || results.length > 0;
-  const singleSelected = selectedCount === 1 ? selectedList[0] : null;
 
   const footer = (
     <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
