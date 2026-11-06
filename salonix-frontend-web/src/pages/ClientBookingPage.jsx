@@ -7,8 +7,14 @@ import PageHeader from '../components/ui/PageHeader';
 import FormButton from '../components/ui/FormButton';
 import client from '../api/client';
 import { fetchServices } from '../api/services';
-import { createClientAppointment } from '../api/clientMe';
+import {
+  createClientAppointment,
+  fetchClientVouchers,
+  applyClientVoucherToAppointment,
+} from '../api/clientMe';
 import { useTenant } from '../hooks/useTenant';
+import { describeVoucherBenefit } from '../utils/voucherBenefit';
+import { parseApiError } from '../utils/apiError';
 
 export default function ClientBookingPage() {
   const { t } = useTranslation();
@@ -22,9 +28,12 @@ export default function ClientBookingPage() {
   const [professionalId, setProfessionalId] = useState('');
   const [slotId, setSlotId] = useState('');
   const [notes, setNotes] = useState('');
+  const [vouchers, setVouchers] = useState([]);
+  const [voucherId, setVoucherId] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [voucherError, setVoucherError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const loadServices = useCallback(async () => {
@@ -83,6 +92,22 @@ export default function ClientBookingPage() {
   }, [loadServices]);
 
   useEffect(() => {
+    fetchClientVouchers()
+      .then((data) => {
+        const active = Array.isArray(data)
+          ? data.filter((v) => v.status === 'active')
+          : [];
+        setVouchers(active);
+      })
+      .catch(() => setVouchers([]));
+  }, []);
+
+  const activeVoucher = useMemo(
+    () => vouchers.find((v) => String(v.id) === String(voucherId)) || null,
+    [vouchers, voucherId]
+  );
+
+  useEffect(() => {
     setError(null);
     setProfessionals([]);
     setProfessionalId('');
@@ -112,6 +137,7 @@ export default function ClientBookingPage() {
       if (!canSubmit) return;
       setSubmitting(true);
       setError(null);
+      setVoucherError(null);
       try {
         const payload = {
           service: Number(serviceId),
@@ -119,14 +145,39 @@ export default function ClientBookingPage() {
           slot: Number(slotId),
           notes: String(notes || ''),
         };
-        await createClientAppointment(payload);
+        const appointment = await createClientAppointment(payload);
+
+        if (voucherId && appointment?.id) {
+          try {
+            await applyClientVoucherToAppointment(
+              appointment.id,
+              Number(voucherId)
+            );
+          } catch (voucherErr) {
+            // O agendamento já foi criado com sucesso — não navegamos
+            // automaticamente para que o cliente veja o aviso antes de
+            // seguir para a lista de agendamentos.
+            setVoucherError(
+              parseApiError(
+                voucherErr,
+                t(
+                  'client_booking.voucher.errors.apply_failed',
+                  'O agendamento foi criado, mas não foi possível aplicar o voucher.'
+                )
+              )
+            );
+            setSubmitting(false);
+            return;
+          }
+        }
+
         window.location.replace('/client/appointments');
       } catch (err) {
         setError(err);
         setSubmitting(false);
       }
     },
-    [canSubmit, serviceId, professionalId, slotId, notes]
+    [canSubmit, serviceId, professionalId, slotId, notes, voucherId, t]
   );
 
   return (
@@ -263,6 +314,42 @@ export default function ClientBookingPage() {
             </select>
           </div>
 
+          {vouchers.length > 0 ? (
+            <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
+              <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
+                {t('client_booking.voucher.title', 'Usar voucher')}
+              </label>
+              <select
+                value={voucherId}
+                onChange={(e) => setVoucherId(e.target.value)}
+                className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-primary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-primary)',
+                }}
+              >
+                <option value="">
+                  {t(
+                    'client_booking.voucher.select_placeholder',
+                    'Não usar voucher'
+                  )}
+                </option>
+                {vouchers.map((voucher) => (
+                  <option key={voucher.id} value={voucher.id}>
+                    {voucher.voucher_code} —{' '}
+                    {describeVoucherBenefit(voucher, t)}
+                  </option>
+                ))}
+              </select>
+              {activeVoucher ? (
+                <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                  {describeVoucherBenefit(activeVoucher, t)}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="rounded-lg border border-brand-border bg-brand-surface p-4">
             <label className="block text-xs font-medium uppercase tracking-wide text-brand-surfaceForeground/60">
               {t('client_booking.notes', 'Observações')}
@@ -298,6 +385,20 @@ export default function ClientBookingPage() {
               </p>
             )}
           </div>
+          {voucherError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800"
+            >
+              {voucherError.message}
+              <NavLink
+                to="/client/appointments"
+                className="ml-2 underline font-medium"
+              >
+                {t('client_booking.back', 'Voltar')}
+              </NavLink>
+            </div>
+          )}
         </form>
       )}
     </ClientLayout>

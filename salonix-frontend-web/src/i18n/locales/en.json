@@ -267,6 +267,84 @@
       "description": "These items are at or below their minimum stock level. Consider restocking soon."
     }
   },
+  "vouchers": {
+    "title": "Vouchers",
+    "subtitle": "Create discount or free-service vouchers and assign them to your customers.",
+    "confirm_delete": "Remove voucher {{code}}?",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "used": "Used"
+    },
+    "types": {
+      "percent": "Percentage discount",
+      "fixed": "Fixed amount discount",
+      "free_service": "Free service",
+      "percent_short": "{{value}}% off",
+      "fixed_short": "{{value}} off",
+      "free_service_short": "Free service"
+    },
+    "list": {
+      "title": "Vouchers",
+      "subtitle": "Track code, benefit, validity and status of each voucher.",
+      "max_uses": "Assignment limit",
+      "valid_until": "Valid until",
+      "empty_title": "No vouchers created yet",
+      "empty_description": "Create your first voucher to offer discounts or free services to your customers."
+    },
+    "actions": {
+      "assign": "Assign to customer"
+    },
+    "form": {
+      "add": "Create voucher",
+      "code": "Code",
+      "code_placeholder": "Leave blank to generate automatically",
+      "type": "Voucher type",
+      "service": "Service",
+      "service_placeholder": "Select a service",
+      "value_percent": "Discount percentage (%)",
+      "value_fixed": "Discount amount",
+      "max_uses": "Maximum assignments",
+      "valid_until": "Valid until",
+      "notes": "Notes (optional)"
+    },
+    "editor": {
+      "create_title": "Create voucher",
+      "edit_title": "Edit voucher",
+      "description": "Set the benefit, validity and usage limit of the voucher."
+    },
+    "assign": {
+      "title": "Assign to customer",
+      "description": "Search for the customer by name or email to assign voucher {{code}}.",
+      "search_label": "Customer",
+      "search_placeholder": "Customer name or email",
+      "selected": "Selected: {{name}}",
+      "send_email": "Send by email",
+      "no_email": "This customer has no email on file.",
+      "confirm": "Assign voucher",
+      "errors": {
+        "search_failed": "Failed to search customers.",
+        "generic": "Could not assign the voucher."
+      }
+    },
+    "customer_section": {
+      "title": "Customer vouchers",
+      "empty": "No vouchers assigned to this customer.",
+      "assigned_at": "Assigned on {{date}}",
+      "used_at": "Used on {{date}}"
+    },
+    "errors": {
+      "service_required": "Select the free service.",
+      "value_required": "Enter a valid value.",
+      "max_uses_invalid": "Enter a valid number of uses.",
+      "delete_failed": "Could not remove the voucher."
+    },
+    "benefit": {
+      "percent": "{{value}}% off",
+      "fixed": "{{value}} off",
+      "free_service": "Free service"
+    }
+  },
   "professionals": {
     "title": "professionals",
     "name": "Name",
@@ -1774,6 +1852,7 @@
     "customers": "Customers",
     "inventory": "Inventory",
     "team": "Team",
+    "vouchers": "Vouchers",
     "go_to_dashboard": "Go to dashboard",
     "theme": {
       "light": "Light",
@@ -2356,6 +2435,12 @@
       "save_failed": "Failed to save profile.",
       "photo_too_large": "The image must be at most 2MB.",
       "photo_failed": "Failed to upload the photo. Check the format and dimensions."
+    },
+    "vouchers": {
+      "title": "My vouchers",
+      "loading": "Loading vouchers…",
+      "empty": "You don't have any vouchers assigned yet.",
+      "code": "Code {{code}}"
     }
   },
   "client_booking": {
@@ -2371,6 +2456,15 @@
     "submitting": "Booking…",
     "errors": {
       "generic": "Could not book the appointment."
+    },
+    "voucher": {
+      "title": "Use a voucher",
+      "none_available": "No active vouchers available.",
+      "select_placeholder": "Don't use a voucher",
+      "applying": "Applying voucher…",
+      "errors": {
+        "apply_failed": "The booking was created, but the voucher could not be applied."
+      }
     }
   },
   "client_appointments": {

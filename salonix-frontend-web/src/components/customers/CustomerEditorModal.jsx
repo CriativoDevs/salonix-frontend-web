@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Camera, ImagePlus } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Avatar from '../ui/Avatar';
+import { fetchCustomerVouchers } from '../../api/vouchers';
+import { useTenant } from '../../hooks/useTenant';
 
 function CustomerEditorModal({
   open,
@@ -13,6 +15,9 @@ function CustomerEditorModal({
   onSubmit,
 }) {
   const { t } = useTranslation();
+  const { slug } = useTenant();
+  const [vouchers, setVouchers] = useState([]);
+  const [vouchersLoading, setVouchersLoading] = useState(false);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -41,6 +46,28 @@ function CustomerEditorModal({
     setPhotoPreview(customer.photo || '');
     setLocalError(null);
   }, [open, customer]);
+
+  useEffect(() => {
+    if (!open || !customer?.id) {
+      setVouchers([]);
+      return undefined;
+    }
+    let cancelled = false;
+    setVouchersLoading(true);
+    fetchCustomerVouchers(customer.id, { slug })
+      .then((data) => {
+        if (!cancelled) setVouchers(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setVouchers([]);
+      })
+      .finally(() => {
+        if (!cancelled) setVouchersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, customer?.id, slug]);
 
   useEffect(() => {
     if (!photoFile) {
@@ -256,6 +283,50 @@ function CustomerEditorModal({
         {error?.message || localError ? (
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
             {error?.message || localError}
+          </div>
+        ) : null}
+
+        {customer?.id ? (
+          <div className="rounded-2xl border border-brand-border bg-brand-light/10 p-4">
+            <h3 className="text-sm font-semibold text-brand-surfaceForeground">
+              {t('vouchers.customer_section.title', 'Vouchers do cliente')}
+            </h3>
+            {vouchersLoading ? (
+              <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                {t('common.loading', 'Carregando...')}
+              </p>
+            ) : vouchers.length === 0 ? (
+              <p className="mt-2 text-xs text-brand-surfaceForeground/60">
+                {t(
+                  'vouchers.customer_section.empty',
+                  'Nenhum voucher atribuído a este cliente.'
+                )}
+              </p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {vouchers.map((cv) => (
+                  <li
+                    key={cv.id}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand-border bg-brand-surface/80 px-3 py-2 text-xs"
+                  >
+                    <span className="font-medium text-brand-surfaceForeground">
+                      {cv.voucher_code}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${
+                        cv.status === 'used'
+                          ? 'bg-brand-light text-brand-surfaceForeground/70'
+                          : cv.status === 'expired'
+                            ? 'bg-rose-100 text-rose-700'
+                            : 'bg-emerald-100 text-emerald-700'
+                      }`}
+                    >
+                      {t(`vouchers.status.${cv.status}`, cv.status)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ) : null}
       </form>

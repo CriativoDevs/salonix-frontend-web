@@ -268,6 +268,84 @@
       "description": "Estes itens estão na quantidade mínima ou abaixo dela. Considere repor em breve."
     }
   },
+  "vouchers": {
+    "title": "Vouchers",
+    "subtitle": "Crie vouchers de desconto ou serviço grátis e atribua-os aos seus clientes.",
+    "confirm_delete": "Remover o voucher {{code}}?",
+    "status": {
+      "active": "Ativo",
+      "expired": "Expirado",
+      "used": "Usado"
+    },
+    "types": {
+      "percent": "Desconto percentual",
+      "fixed": "Desconto em valor fixo",
+      "free_service": "Serviço grátis",
+      "percent_short": "{{value}}% de desconto",
+      "fixed_short": "Desconto de {{value}}",
+      "free_service_short": "Serviço grátis"
+    },
+    "list": {
+      "title": "Vouchers cadastrados",
+      "subtitle": "Acompanhe código, benefício, validade e status de cada voucher.",
+      "max_uses": "Limite de atribuições",
+      "valid_until": "Válido até",
+      "empty_title": "Nenhum voucher criado",
+      "empty_description": "Crie o primeiro voucher para oferecer descontos ou serviços grátis aos seus clientes."
+    },
+    "actions": {
+      "assign": "Atribuir a cliente"
+    },
+    "form": {
+      "add": "Criar voucher",
+      "code": "Código",
+      "code_placeholder": "Deixe em branco para gerar automaticamente",
+      "type": "Tipo de voucher",
+      "service": "Serviço",
+      "service_placeholder": "Selecione um serviço",
+      "value_percent": "Percentual de desconto (%)",
+      "value_fixed": "Valor do desconto",
+      "max_uses": "Máximo de atribuições",
+      "valid_until": "Válido até",
+      "notes": "Notas (opcional)"
+    },
+    "editor": {
+      "create_title": "Criar voucher",
+      "edit_title": "Editar voucher",
+      "description": "Defina o benefício, a validade e o limite de utilizações do voucher."
+    },
+    "assign": {
+      "title": "Atribuir a cliente",
+      "description": "Busque o cliente pelo nome ou e-mail para atribuir o voucher {{code}}.",
+      "search_label": "Cliente",
+      "search_placeholder": "Nome ou e-mail do cliente",
+      "selected": "Selecionado: {{name}}",
+      "send_email": "Enviar por e-mail",
+      "no_email": "Este cliente não tem e-mail cadastrado.",
+      "confirm": "Atribuir voucher",
+      "errors": {
+        "search_failed": "Falha ao buscar clientes.",
+        "generic": "Não foi possível atribuir o voucher."
+      }
+    },
+    "customer_section": {
+      "title": "Vouchers do cliente",
+      "empty": "Nenhum voucher atribuído a este cliente.",
+      "assigned_at": "Atribuído em {{date}}",
+      "used_at": "Usado em {{date}}"
+    },
+    "errors": {
+      "service_required": "Selecione o serviço gratuito.",
+      "value_required": "Informe um valor válido.",
+      "max_uses_invalid": "Informe um número de usos válido.",
+      "delete_failed": "Não foi possível remover o voucher."
+    },
+    "benefit": {
+      "percent": "{{value}}% de desconto",
+      "fixed": "Desconto de {{value}}",
+      "free_service": "Serviço grátis"
+    }
+  },
   "professionals": {
     "title": "Profissionais",
     "name": "Nome",
@@ -1787,7 +1865,8 @@
     "go_to_dashboard": "Ir para o dashboard",
     "roadmap": "Roadmap",
     "install_app": "Instala a app",
-    "marketing": "Marketing"
+    "marketing": "Marketing",
+    "vouchers": "Vouchers"
   },
   "install_app": {
     "back": "Voltar ao painel",
@@ -2356,6 +2435,12 @@
       "save_failed": "Falha ao salvar perfil.",
       "photo_too_large": "A imagem deve ter no máximo 2MB.",
       "photo_failed": "Falha ao enviar a foto. Verifique o formato e as dimensões."
+    },
+    "vouchers": {
+      "title": "Meus vouchers",
+      "loading": "Carregando vouchers…",
+      "empty": "Você ainda não tem vouchers atribuídos.",
+      "code": "Código {{code}}"
     }
   },
   "client_booking": {
@@ -2371,6 +2456,15 @@
     "submitting": "Agendando…",
     "errors": {
       "generic": "Não foi possível agendar."
+    },
+    "voucher": {
+      "title": "Usar voucher",
+      "none_available": "Nenhum voucher ativo disponível.",
+      "select_placeholder": "Não usar voucher",
+      "applying": "Aplicando voucher…",
+      "errors": {
+        "apply_failed": "O agendamento foi criado, mas não foi possível aplicar o voucher."
+      }
     }
   },
   "client_appointments": {

@@ -10,6 +10,7 @@ import {
   BookOpenIcon,
   SmartphoneIcon,
   MailIcon,
+  TicketIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
@@ -117,6 +118,13 @@ export default function HeaderNav() {
         to: '/marketing',
         label: t('nav.marketing', 'Marketing'),
         icon: MailIcon,
+        roles: ['owner', 'manager'],
+        featureKey: null,
+      },
+      {
+        to: '/vouchers',
+        label: t('nav.vouchers', 'Vouchers'),
+        icon: TicketIcon,
         roles: ['owner', 'manager'],
         featureKey: null,
       },

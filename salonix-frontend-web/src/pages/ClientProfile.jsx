@@ -9,9 +9,11 @@ import {
   fetchClientProfile,
   updateClientProfile,
   updateClientProfilePhoto,
+  fetchClientVouchers,
 } from '../api/clientMe';
 import { clearClientTokens } from '../utils/clientAuthStorage';
 import { clearTokens } from '../utils/authStorage';
+import { describeVoucherBenefit } from '../utils/voucherBenefit';
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
@@ -33,6 +35,8 @@ export default function ClientProfile() {
   const photoInputRef = useRef(null);
   const [saved, setSaved] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  const [vouchers, setVouchers] = useState([]);
+  const [vouchersLoading, setVouchersLoading] = useState(true);
 
   useEffect(() => {
     if (saved) {
@@ -76,6 +80,24 @@ export default function ClientProfile() {
       cancelled = true;
     };
   }, [t]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVouchersLoading(true);
+    fetchClientVouchers()
+      .then((data) => {
+        if (!cancelled) setVouchers(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!cancelled) setVouchers([]);
+      })
+      .finally(() => {
+        if (!cancelled) setVouchersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onPhotoChange = async (e) => {
     const file = e.target.files?.[0];
@@ -268,6 +290,55 @@ export default function ClientProfile() {
           </div>
         </form>
       )}
+
+      <div className="mt-8 max-w-xl">
+        <h2 className="text-sm font-semibold text-brand-surfaceForeground">
+          {t('client_profile.vouchers.title', 'Meus vouchers')}
+        </h2>
+        {vouchersLoading ? (
+          <p className="mt-2 text-sm text-brand-surfaceForeground/60">
+            {t('client_profile.vouchers.loading', 'Carregando vouchers…')}
+          </p>
+        ) : vouchers.length === 0 ? (
+          <p className="mt-2 text-sm text-brand-surfaceForeground/60">
+            {t(
+              'client_profile.vouchers.empty',
+              'Você ainda não tem vouchers atribuídos.'
+            )}
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {vouchers.map((voucher) => (
+              <li
+                key={voucher.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium text-brand-surfaceForeground">
+                    {t('client_profile.vouchers.code', 'Código {{code}}', {
+                      code: voucher.voucher_code,
+                    })}
+                  </p>
+                  <p className="text-xs text-brand-surfaceForeground/60">
+                    {describeVoucherBenefit(voucher, t)}
+                  </p>
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                    voucher.status === 'used'
+                      ? 'bg-brand-light text-brand-surfaceForeground/70'
+                      : voucher.status === 'expired'
+                        ? 'bg-rose-100 text-rose-700'
+                        : 'bg-emerald-100 text-emerald-700'
+                  }`}
+                >
+                  {t(`vouchers.status.${voucher.status}`, voucher.status)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <div className="mt-8 flex items-center justify-center">
         <button
