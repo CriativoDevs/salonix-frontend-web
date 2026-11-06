@@ -9,6 +9,7 @@ import {
   updateVoucher,
   deleteVoucher,
   assignVoucher,
+  assignVoucherBulk,
   sendVoucherEmail,
 } from '../../api/vouchers';
 import { fetchServices } from '../../api/services';
@@ -52,6 +53,7 @@ jest.mock('../../api/vouchers', () => ({
   updateVoucher: jest.fn(),
   deleteVoucher: jest.fn(),
   assignVoucher: jest.fn(),
+  assignVoucherBulk: jest.fn(),
   sendVoucherEmail: jest.fn(),
 }));
 
@@ -231,6 +233,7 @@ describe('Vouchers page', () => {
     const searchInput = await screen.findByPlaceholderText(
       'Nome ou e-mail do cliente'
     );
+    fireEvent.focus(searchInput);
     fireEvent.change(searchInput, { target: { value: 'Ana' } });
 
     const customerButton = await screen.findByText('Ana Souza');
@@ -240,6 +243,86 @@ describe('Vouchers page', () => {
 
     await waitFor(() => {
       expect(assignVoucher).toHaveBeenCalledWith(1, 42, { slug: 'default' });
+    });
+  });
+
+  it('assigns a voucher to several customers at once via bulk assign', async () => {
+    fetchCustomers.mockResolvedValue({
+      results: [
+        { id: 42, name: 'Ana Souza', email: 'ana@example.com' },
+        { id: 43, name: 'Bruno Lima', email: null },
+      ],
+    });
+    assignVoucherBulk.mockResolvedValue({
+      assigned: [{ id: 1, client: 42 }, { id: 2, client: 43 }],
+      skipped: [],
+    });
+
+    render(
+      <MemoryRouter>
+        <Vouchers />
+      </MemoryRouter>
+    );
+
+    await screen.findByText('PROMO2026');
+
+    const assignButtons = screen.getAllByRole('button', {
+      name: /Atribuir a cliente/i,
+    });
+    fireEvent.click(assignButtons[0]);
+
+    await screen.findByText('Ana Souza');
+    fireEvent.click(screen.getByText('Ana Souza'));
+    fireEvent.click(screen.getByText('Bruno Lima'));
+
+    await screen.findByText('2 clientes selecionados');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Atribuir a 2 clientes/i })
+    );
+
+    await waitFor(() => {
+      expect(assignVoucherBulk).toHaveBeenCalledWith(1, [42, 43], {
+        slug: 'default',
+      });
+    });
+  });
+
+  it('selects all visible customers via the select-all toggle', async () => {
+    fetchCustomers.mockResolvedValue({
+      results: [
+        { id: 42, name: 'Ana Souza', email: 'ana@example.com' },
+        { id: 43, name: 'Bruno Lima', email: null },
+      ],
+    });
+    assignVoucherBulk.mockResolvedValue({ assigned: [], skipped: [] });
+
+    render(
+      <MemoryRouter>
+        <Vouchers />
+      </MemoryRouter>
+    );
+
+    await screen.findByText('PROMO2026');
+
+    const assignButtons = screen.getAllByRole('button', {
+      name: /Atribuir a cliente/i,
+    });
+    fireEvent.click(assignButtons[0]);
+
+    await screen.findByText('Ana Souza');
+    fireEvent.click(screen.getByText('Selecionar todos'));
+
+    await screen.findByText('2 clientes selecionados');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Atribuir a 2 clientes/i })
+    );
+
+    await waitFor(() => {
+      expect(assignVoucherBulk).toHaveBeenCalledWith(1, [42, 43], {
+        slug: 'default',
+      });
     });
   });
 });
