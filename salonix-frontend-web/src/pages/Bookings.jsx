@@ -169,8 +169,7 @@ function addCalendarDays(value, days) {
 function startOfCalendarWeek(value) {
   const date = startOfCalendarDay(value);
   const day = date.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  return addCalendarDays(date, diffToMonday);
+  return addCalendarDays(date, -day);
 }
 
 function startOfCalendarMonth(value) {
@@ -2570,6 +2569,7 @@ function Bookings() {
               <div className="mt-5">
                 <MonthGrid
                   days={monthGridDaysWithDots}
+                  locale={i18n?.language}
                   onSelectDay={(dayKey) => {
                     setCalendarSelectedDate(dayKey);
                     setCalendarCursor(startOfCalendarDay(new Date(dayKey)));

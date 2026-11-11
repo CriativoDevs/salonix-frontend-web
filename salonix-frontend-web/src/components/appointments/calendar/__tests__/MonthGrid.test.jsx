@@ -46,4 +46,20 @@ describe('MonthGrid', () => {
     fireEvent.click(screen.getByText('1').closest('button'));
     expect(onSelectDay).toHaveBeenCalledWith('2026-07-01');
   });
+
+  it('renders weekday header starting on Sunday (pt)', () => {
+    render(<MonthGrid days={days} onSelectDay={jest.fn()} locale="pt-BR" />);
+    const labels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const headerSpans = labels.map((label) => screen.getByText(label));
+    headerSpans.forEach((el) => expect(el).toBeInTheDocument());
+    expect(headerSpans[0].textContent).toBe('Dom');
+  });
+
+  it('renders weekday header translated when locale is English', () => {
+    render(<MonthGrid days={days} onSelectDay={jest.fn()} locale="en-US" />);
+    const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const headerSpans = labels.map((label) => screen.getByText(label));
+    headerSpans.forEach((el) => expect(el).toBeInTheDocument());
+    expect(headerSpans[0].textContent).toBe('Sun');
+  });
 });
