@@ -6,6 +6,7 @@ import { TenantProvider } from './contexts/TenantContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { RateLimitProvider } from './contexts/RateLimitContext';
 import { useAuth } from './hooks/useAuth';
+import { canViewBilling } from './utils/permissions';
 import { useTenant } from './hooks/useTenant';
 import { usePwaManifest } from './hooks/usePwaManifest';
 import useBillingOverview from './hooks/useBillingOverview';
@@ -386,9 +387,11 @@ export default App;
 export { TenantThemeManager };
 
 function BillingSyncManager() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  // Cobrança só para owner/manager: o BE devolve 403 para colaborador
+  // (BE-SEC-01); sem isto cada foco da janela geraria uma chamada negada.
   const { overview, refresh } = useBillingOverview({
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && canViewBilling(user),
   });
   const { plan, refetch, loading: tenantLoading } = useTenant();
   const lastSyncRef = useRef(0);

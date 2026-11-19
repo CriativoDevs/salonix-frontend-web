@@ -19,6 +19,7 @@ function ClientLogin() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [tenantSlug, setTenantSlug] = useState('');
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -177,15 +178,25 @@ function ClientLogin() {
           required
         />
 
-        <FormInput
-          type="password"
-          label={t('client_login.password', 'Senha')}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder={t('client_login.password_placeholder', 'Sua senha')}
-          error={errors.password}
-          required
-        />
+        <div>
+          <FormInput
+            type={showPassword ? 'text' : 'password'}
+            label={t('client_login.password', 'Senha')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t('client_login.password_placeholder', 'Sua senha')}
+            error={errors.password}
+            required
+          />
+          <label className="mt-2 flex items-center gap-2 text-xs text-brand-surfaceForeground/70">
+            <input
+              type="checkbox"
+              checked={showPassword}
+              onChange={(e) => setShowPassword(e.target.checked)}
+            />
+            {t('client_login.show_password', 'Mostrar caracteres')}
+          </label>
+        </div>
 
         <div>
           <FormInput

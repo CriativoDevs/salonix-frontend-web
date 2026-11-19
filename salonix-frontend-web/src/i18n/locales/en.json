@@ -267,6 +267,67 @@
       "description": "These items are at or below their minimum stock level. Consider restocking soon."
     }
   },
+  "forms": {
+    "title": "Client forms",
+    "subtitle": "Create forms with the fields your team needs to record for each client.",
+    "confirm_delete": "Remove the form \"{{title}}\"? All clients' answers will also be deleted.",
+    "actions": {
+      "create": "Create form"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "list": {
+      "empty_title": "No forms yet",
+      "empty_description": "Create the first form to record extra client information.",
+      "fields_count": "{{count}} fields",
+      "client_editable": "Client can edit"
+    },
+    "field_types": {
+      "text": "Text",
+      "textarea": "Long text",
+      "number": "Number",
+      "boolean": "Yes/No",
+      "select": "Selection",
+      "date": "Date"
+    },
+    "editor": {
+      "title_new": "New form",
+      "title_edit": "Edit form",
+      "description": "Define the fields the client fills in. Fields already in use keep their answers when you edit.",
+      "form_title": "Form title",
+      "active": "Active form",
+      "client_editable": "Let the client edit their own answers",
+      "fields": "Fields",
+      "add_field": "Add field",
+      "no_fields": "No fields yet. Add the first field.",
+      "field_label": "Field name",
+      "field_type": "Type",
+      "options": "Options (one per line)",
+      "required": "Required",
+      "move_up": "Move field up",
+      "move_down": "Move field down",
+      "remove_field": "Remove field",
+      "remove_warning": "Removing a field deletes the answers already given to it."
+    },
+    "errors": {
+      "title_required": "Enter the form title.",
+      "label_required": "Every field needs a name.",
+      "options_required": "Selection fields need at least one option.",
+      "delete_failed": "Could not remove the form."
+    },
+    "fill": {
+      "title": "Client forms",
+      "empty": "No active forms. Create one under Forms.",
+      "select_placeholder": "Select...",
+      "required_error": "Fill in the required field: {{label}}",
+      "save": "Save form",
+      "saved": "Form saved.",
+      "load_error": "Could not load the forms.",
+      "save_error": "Could not save the form."
+    }
+  },
   "vouchers": {
     "title": "Vouchers",
     "subtitle": "Create discount or free-service vouchers and assign them to your customers.",
@@ -1911,6 +1972,7 @@
     "inventory": "Inventory",
     "team": "Team",
     "vouchers": "Vouchers",
+    "forms": "Forms",
     "go_to_dashboard": "Go to dashboard",
     "theme": {
       "light": "Light",
@@ -2467,7 +2529,8 @@
       "tenant_invalid": "Business not found. Check the identifier you entered.",
       "feature_disabled": "This business does not have client area enabled.",
       "too_many_attempts": "Too many attempts. Please wait a few minutes."
-    }
+    },
+    "show_password": "Show characters"
   },
   "client_profile": {
     "title": "Client Profile",

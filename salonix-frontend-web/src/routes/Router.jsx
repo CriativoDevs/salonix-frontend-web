@@ -24,6 +24,7 @@ import Agenda from '../pages/Agenda';
 
 import Customers from '../pages/Customers';
 import Vouchers from '../pages/Vouchers';
+import Forms from '../pages/Forms';
 import Marketing from '../pages/Marketing';
 import Inventory from '../pages/Inventory';
 import Team from '../pages/Team';
@@ -228,6 +229,17 @@ function Router() {
         element={
           <PrivateRoute>
             <Customers />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/forms"
+        element={
+          <PrivateRoute>
+            <RoleProtectedRoute allowedRoles={['owner', 'manager']}>
+              <Forms />
+            </RoleProtectedRoute>
           </PrivateRoute>
         }
       />
