@@ -325,7 +325,8 @@
       "save": "Save form",
       "saved": "Form saved.",
       "load_error": "Could not load the forms.",
-      "save_error": "Could not save the form."
+      "save_error": "Could not save the form.",
+      "required_sr": "required"
     }
   },
   "vouchers": {
@@ -819,7 +820,9 @@
     "loading_data": "Loading plan data...",
     "active": "Active",
     "inactive": "Inactive",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "yes": "Yes",
+    "no": "No"
   },
   "feedback": {
     "title": "Feedback",
@@ -2846,5 +2849,18 @@
       "cta_title": "Want early access to upcoming features?",
       "cta_button": "Get started (14 days free)"
     }
+  },
+  "client_forms": {
+    "title": "My forms",
+    "load_error": "Could not load your forms.",
+    "required_error": "Fill in the required field: {{label}}",
+    "save": "Save form",
+    "saved": "Form saved.",
+    "save_error": "Could not save the form.",
+    "read_only": "This form can only be changed by the business.",
+    "badge_editable": "Editable",
+    "badge_read_only": "Read only",
+    "badge_pending": "To fill in",
+    "updated_at": "Updated on {{date}}"
   }
 }

@@ -5,6 +5,7 @@ import { ThemeProvider } from '../../contexts/ThemeContext';
 import ClientProfile from '../ClientProfile';
 
 jest.mock('../../api/clientMe', () => ({
+  fetchClientFormResponses: jest.fn().mockResolvedValue([]),
   fetchClientProfile: jest.fn().mockResolvedValue({
     name: 'Alice',
     email: 'alice@example.com',

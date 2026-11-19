@@ -6,6 +6,7 @@ import ClientProfile from '../ClientProfile';
 import { fetchClientVouchers } from '../../api/clientMe';
 
 jest.mock('../../api/clientMe', () => ({
+  fetchClientFormResponses: jest.fn().mockResolvedValue([]),
   fetchClientProfile: jest.fn().mockResolvedValue({
     name: 'Alice',
     email: 'alice@example.com',

@@ -132,3 +132,12 @@
 - Sensitive data: answers are never put in URLs, logs or storage; labels/answers render as plain text.
 - Billing fix (from BE-SEC-01): `BillingSyncManager` (`App.jsx`) only requests `payments/stripe/overview/` for owner/manager (`utils/permissions.js#canViewBilling`); the BE now returns 403 for collaborators.
 - Not in this task: client-side (PWA client) answering, covered by FEW-CLIENT-ANAMNESE-01.
+
+## FEW-CLIENT-ANAMNESE-01 — Fichas no portal do cliente
+
+- Seção "Minhas fichas" em `/client/profile` (`components/clientForms/ClientFormsSection.jsx`); não aparece se o cliente não tem fichas.
+- Ficha com `form_client_editable` → campos editáveis + "Guardar ficha" (`PUT clients/me/form-responses/:id/`, valida obrigatórios); caso contrário → só leitura.
+- Definição dos campos vem de `form_fields` na resposta (BE: serializer de resposta ganhou `form_client_editable` e `form_fields`; branch `be-client-anamnese-01-form-definition`).
+- `components/forms/FormFieldInput.jsx` extraído e partilhado com `CustomerFormsSection` (lado tenant).
+- Cliente não cria nem apaga fichas: só o estabelecimento cria a resposta.
+- Respostas só em estado do componente (sem storage/URL/log); texto puro, sem HTML.

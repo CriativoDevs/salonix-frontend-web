@@ -13,6 +13,7 @@ import {
 } from '../api/clientMe';
 import { clearClientTokens } from '../utils/clientAuthStorage';
 import { clearTokens } from '../utils/authStorage';
+import ClientFormsSection from '../components/clientForms/ClientFormsSection';
 import { describeVoucherBenefit } from '../utils/voucherBenefit';
 
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
@@ -290,6 +291,8 @@ export default function ClientProfile() {
           </div>
         </form>
       )}
+
+      <ClientFormsSection />
 
       <div className="mt-8 max-w-xl">
         <h2 className="text-sm font-semibold text-brand-surfaceForeground">
