@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Camera, ImagePlus } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Avatar from '../ui/Avatar';
+import CustomerFormsSection from './CustomerFormsSection';
 import { fetchCustomerVouchers } from '../../api/vouchers';
 import { useTenant } from '../../hooks/useTenant';
 
@@ -284,6 +285,10 @@ function CustomerEditorModal({
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
             {error?.message || localError}
           </div>
+        ) : null}
+
+        {customer?.id ? (
+          <CustomerFormsSection customerId={customer.id} slug={slug} />
         ) : null}
 
         {customer?.id ? (

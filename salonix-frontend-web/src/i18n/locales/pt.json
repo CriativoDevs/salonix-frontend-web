@@ -268,6 +268,67 @@
       "description": "Estes itens estão na quantidade mínima ou abaixo dela. Considere repor em breve."
     }
   },
+  "forms": {
+    "title": "Fichas de cliente",
+    "subtitle": "Crie fichas com os campos que a sua equipa precisa registar de cada cliente.",
+    "confirm_delete": "Remover a ficha \"{{title}}\"? As respostas de todos os clientes também serão apagadas.",
+    "actions": {
+      "create": "Criar ficha"
+    },
+    "status": {
+      "active": "Ativa",
+      "inactive": "Inativa"
+    },
+    "list": {
+      "empty_title": "Nenhuma ficha criada",
+      "empty_description": "Crie a primeira ficha para registar informações adicionais dos clientes.",
+      "fields_count": "{{count}} campos",
+      "client_editable": "Cliente pode editar"
+    },
+    "field_types": {
+      "text": "Texto",
+      "textarea": "Texto longo",
+      "number": "Número",
+      "boolean": "Sim/Não",
+      "select": "Seleção",
+      "date": "Data"
+    },
+    "editor": {
+      "title_new": "Nova ficha",
+      "title_edit": "Editar ficha",
+      "description": "Defina os campos que o cliente preenche. Campos já usados mantêm as respostas ao editar.",
+      "form_title": "Título da ficha",
+      "active": "Ficha ativa",
+      "client_editable": "Permitir que o cliente edite as próprias respostas",
+      "fields": "Campos",
+      "add_field": "Adicionar campo",
+      "no_fields": "Nenhum campo ainda. Adicione o primeiro campo.",
+      "field_label": "Nome do campo",
+      "field_type": "Tipo",
+      "options": "Opções (uma por linha)",
+      "required": "Obrigatório",
+      "move_up": "Subir campo",
+      "move_down": "Descer campo",
+      "remove_field": "Remover campo",
+      "remove_warning": "Remover um campo apaga as respostas já dadas a ele."
+    },
+    "errors": {
+      "title_required": "Informe o título da ficha.",
+      "label_required": "Todos os campos precisam de um nome.",
+      "options_required": "Campos de seleção precisam de pelo menos uma opção.",
+      "delete_failed": "Não foi possível remover a ficha."
+    },
+    "fill": {
+      "title": "Fichas do cliente",
+      "empty": "Nenhuma ficha ativa. Crie uma em Fichas.",
+      "select_placeholder": "Selecione...",
+      "required_error": "Preencha o campo obrigatório: {{label}}",
+      "save": "Salvar ficha",
+      "saved": "Ficha salva.",
+      "load_error": "Não foi possível carregar as fichas.",
+      "save_error": "Não foi possível salvar a ficha."
+    }
+  },
   "vouchers": {
     "title": "Vouchers",
     "subtitle": "Crie vouchers de desconto ou serviço grátis e atribua-os aos seus clientes.",
@@ -1924,7 +1985,8 @@
     "roadmap": "Roadmap",
     "install_app": "Instala a app",
     "marketing": "Marketing",
-    "vouchers": "Vouchers"
+    "vouchers": "Vouchers",
+    "forms": "Fichas"
   },
   "install_app": {
     "back": "Voltar ao painel",
@@ -2467,7 +2529,8 @@
       "tenant_invalid": "Estabelecimento não encontrado. Verifique o identificador digitado.",
       "feature_disabled": "Este estabelecimento não possui área de clientes habilitada.",
       "too_many_attempts": "Muitas tentativas. Aguarde alguns minutos."
-    }
+    },
+    "show_password": "Mostrar caracteres"
   },
   "client_profile": {
     "title": "Perfil do Cliente",

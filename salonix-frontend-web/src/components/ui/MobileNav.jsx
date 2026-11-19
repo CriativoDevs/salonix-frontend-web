@@ -18,6 +18,7 @@ import {
   PackageIcon,
   MailIcon,
   TicketIcon,
+  ClipboardListIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import { useAuth } from '../../hooks/useAuth';
@@ -140,6 +141,13 @@ function MobileNav() {
         to: '/vouchers',
         icon: TicketIcon,
         label: t('nav.vouchers', 'Vouchers'),
+        roles: ['owner', 'manager'],
+        featureKey: null,
+      },
+      {
+        to: '/forms',
+        icon: ClipboardListIcon,
+        label: t('nav.forms', 'Fichas'),
         roles: ['owner', 'manager'],
         featureKey: null,
       },

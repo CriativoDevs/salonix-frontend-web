@@ -123,3 +123,12 @@
   - On logout, slug returns to `DEFAULT_TENANT_META.slug`, keeping institutional login theme.
 - Pending:
   - Adjust Landing/Login to apply theme even without authentication (when UX makes sense) and document smoke tests in FEW-215.
+
+## Client forms / anamnesis builder (FEW-ANAMNESE-01, #376)
+
+- Backend: BE-ANAMNESE-01 (`salon/forms/`, `salon/form-responses/`). Read: any active staff; write: owner/manager (enforced by the BE).
+- Builder: page `/forms` (owner/manager, menu "Fichas"). Multiple forms per tenant; fields of type text, textarea, number, boolean, select, date; required flag; reorder (up/down); toggle active and "client can edit". Editing keeps field `id` so existing answers survive; removing a field deletes its answers (warning shown).
+- Filling answers: section "Fichas do cliente" inside the customer editor modal. Collapsed by default: forms and answers are only fetched when expanded, and state is dropped when the modal closes. Booleans are sent as `"true"`/`"false"`.
+- Sensitive data: answers are never put in URLs, logs or storage; labels/answers render as plain text.
+- Billing fix (from BE-SEC-01): `BillingSyncManager` (`App.jsx`) only requests `payments/stripe/overview/` for owner/manager (`utils/permissions.js#canViewBilling`); the BE now returns 403 for collaborators.
+- Not in this task: client-side (PWA client) answering, covered by FEW-CLIENT-ANAMNESE-01.

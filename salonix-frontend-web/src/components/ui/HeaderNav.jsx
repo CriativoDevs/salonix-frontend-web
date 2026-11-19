@@ -11,6 +11,7 @@ import {
   SmartphoneIcon,
   MailIcon,
   TicketIcon,
+  ClipboardListIcon,
 } from 'lucide-react';
 import useFeatureLock from '../../hooks/useFeatureLock';
 import BrandLogo from './BrandLogo';
@@ -125,6 +126,13 @@ export default function HeaderNav() {
         to: '/vouchers',
         label: t('nav.vouchers', 'Vouchers'),
         icon: TicketIcon,
+        roles: ['owner', 'manager'],
+        featureKey: null,
+      },
+      {
+        to: '/forms',
+        label: t('nav.forms', 'Fichas'),
+        icon: ClipboardListIcon,
         roles: ['owner', 'manager'],
         featureKey: null,
       },
