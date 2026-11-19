@@ -326,7 +326,8 @@
       "save": "Salvar ficha",
       "saved": "Ficha salva.",
       "load_error": "Não foi possível carregar as fichas.",
-      "save_error": "Não foi possível salvar a ficha."
+      "save_error": "Não foi possível salvar a ficha.",
+      "required_sr": "obrigatório"
     }
   },
   "vouchers": {
@@ -806,7 +807,9 @@
     "delete_error": "Falha ao excluir.",
     "refresh": "Atualizar",
     "select": "Selecione",
-    "optional": "opcional"
+    "optional": "opcional",
+    "yes": "Sim",
+    "no": "Não"
   },
   "feedback": {
     "title": "Feedback",
@@ -2846,5 +2849,18 @@
       "cta_title": "Quer acesso antecipado às próximas funcionalidades?",
       "cta_button": "Começar agora (14 dias grátis)"
     }
+  },
+  "client_forms": {
+    "title": "Minhas fichas",
+    "load_error": "Não foi possível carregar as suas fichas.",
+    "required_error": "Preencha o campo obrigatório: {{label}}",
+    "save": "Salvar ficha",
+    "saved": "Ficha salva.",
+    "save_error": "Não foi possível salvar a ficha.",
+    "read_only": "Esta ficha só pode ser alterada pelo estabelecimento.",
+    "badge_editable": "Editável",
+    "badge_read_only": "Só leitura",
+    "badge_pending": "Por preencher",
+    "updated_at": "Atualizada em {{date}}"
   }
 }

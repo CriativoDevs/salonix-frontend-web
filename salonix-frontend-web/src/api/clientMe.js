@@ -77,3 +77,16 @@ export async function applyClientVoucherToAppointment(
   );
   return data;
 }
+
+export async function fetchClientFormResponses() {
+  const { data } = await client.get('clients/me/form-responses/');
+  return Array.isArray(data) ? data : [];
+}
+
+export async function updateClientFormResponse(responseId, { answers }) {
+  const { data } = await client.put(
+    `clients/me/form-responses/${responseId}/`,
+    { answers }
+  );
+  return data;
+}
