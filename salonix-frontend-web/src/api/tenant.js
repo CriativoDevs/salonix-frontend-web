@@ -29,6 +29,7 @@ export async function fetchPublicTenant(slug) {
 export async function updateTenantBranding({
   logoFile,
   logoUrl,
+  businessType,
   addressStreet,
   addressNumber,
   addressComplement,
@@ -49,6 +50,8 @@ export async function updateTenantBranding({
   if (logoFile instanceof File) {
     const formData = new FormData();
     formData.append('logo', logoFile);
+    if (typeof businessType === 'string' && businessType)
+      formData.append('business_type', businessType);
     if (typeof addressStreet === 'string')
       formData.append('address_street', addressStreet);
     if (typeof addressNumber === 'string')
@@ -76,6 +79,8 @@ export async function updateTenantBranding({
   if (validUrl) {
     payload.logo_url = logoUrl.trim();
   }
+  if (typeof businessType === 'string' && businessType)
+    payload.business_type = businessType;
   if (typeof addressStreet === 'string') payload.address_street = addressStreet;
   if (typeof addressNumber === 'string') payload.address_number = addressNumber;
   if (typeof addressComplement === 'string')

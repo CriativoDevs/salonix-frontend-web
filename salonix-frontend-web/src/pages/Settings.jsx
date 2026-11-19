@@ -239,6 +239,17 @@ function formatPostalCodePT(value) {
   return `${digits.slice(0, 4)}-${digits.slice(4, 7)}`;
 }
 
+const BUSINESS_TYPE_OPTIONS = [
+  { value: 'salon', fallback: 'Salão' },
+  { value: 'tattoo', fallback: 'Tatuagem' },
+  { value: 'psychology', fallback: 'Psicologia' },
+  { value: 'nail_tech', fallback: 'Pedicure/Manicure' },
+  { value: 'aesthetics', fallback: 'Esteticista' },
+  { value: 'physiotherapy', fallback: 'Fisioterapia' },
+  { value: 'nutrition', fallback: 'Nutricionista' },
+  { value: 'other', fallback: 'Outro' },
+];
+
 function buildInitialSettings(profile, channels, branding, tenant) {
   const safeProfile = { ...DEFAULT_TENANT_META.profile, ...(profile || {}) };
   const safeChannels = { ...DEFAULT_TENANT_META.channels, ...(channels || {}) };
@@ -272,6 +283,7 @@ function buildInitialSettings(profile, channels, branding, tenant) {
     },
     branding: {
       logoUrl: safeBranding.logoUrl || '',
+      businessType: tenant?.business_type || 'other',
     },
     brandingAddress: {
       street: tenant?.address_street || '',
@@ -851,6 +863,7 @@ function Settings() {
       await updateTenantBranding({
         logoFile: brandingFile,
         logoUrl: brandingFile ? undefined : settings.branding.logoUrl,
+        businessType: settings.branding.businessType,
         addressStreet: settings.brandingAddress.street,
         addressNumber: settings.brandingAddress.number,
         addressComplement: settings.brandingAddress.complement,
@@ -880,6 +893,7 @@ function Settings() {
     brandingFile,
     refreshTenantData,
     settings.branding.logoUrl,
+    settings.branding.businessType,
     settings.brandingAddress,
     t,
   ]);
@@ -1199,6 +1213,38 @@ function Settings() {
   const renderBrandingSettings = () => (
     <div className="space-y-6">
       {/* Campos de cor removidos (FEW-BRAND-01) */}
+
+      <div className="space-y-2">
+        <label
+          htmlFor="settings-business-type"
+          className="block text-sm font-medium text-brand-surfaceForeground"
+        >
+          {t('settings.business_type.label', 'Tipo de negócio')}
+        </label>
+        <select
+          id="settings-business-type"
+          value={settings.branding.businessType}
+          onChange={(e) =>
+            setSettings((prev) => ({
+              ...prev,
+              branding: { ...prev.branding, businessType: e.target.value },
+            }))
+          }
+          className="w-full rounded border border-brand-border bg-brand-surface px-2 py-2 text-sm sm:max-w-xs"
+        >
+          {BUSINESS_TYPE_OPTIONS.map(({ value, fallback }) => (
+            <option key={value} value={value}>
+              {t(`settings.business_type.options.${value}`, fallback)}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-brand-surfaceForeground/60">
+          {t(
+            'settings.business_type.help',
+            'Ajuda a adaptar a plataforma ao seu tipo de atividade.'
+          )}
+        </p>
+      </div>
 
       <div className="space-y-3">
         <label className="block text-sm font-medium text-brand-surfaceForeground">

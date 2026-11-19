@@ -1275,6 +1275,20 @@
         "preview": "Could not validate the .zip file.",
         "confirm": "Could not import the data."
       }
+    },
+    "business_type": {
+      "label": "Business type",
+      "help": "Helps tailor the platform to your type of activity.",
+      "options": {
+        "salon": "Salon",
+        "tattoo": "Tattoo",
+        "psychology": "Psychology",
+        "nail_tech": "Nail technician",
+        "aesthetics": "Aesthetics",
+        "physiotherapy": "Physiotherapy",
+        "nutrition": "Nutrition",
+        "other": "Other"
+      }
     }
   },
   "rgpd": {

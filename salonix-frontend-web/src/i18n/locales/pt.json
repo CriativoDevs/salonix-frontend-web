@@ -1275,6 +1275,20 @@
         "preview": "Não foi possível validar o ficheiro .zip.",
         "confirm": "Não foi possível importar os dados."
       }
+    },
+    "business_type": {
+      "label": "Tipo de negócio",
+      "help": "Ajuda a adaptar a plataforma ao seu tipo de atividade.",
+      "options": {
+        "salon": "Salão",
+        "tattoo": "Tatuagem",
+        "psychology": "Psicologia",
+        "nail_tech": "Pedicure/Manicure",
+        "aesthetics": "Esteticista",
+        "physiotherapy": "Fisioterapia",
+        "nutrition": "Nutricionista",
+        "other": "Outro"
+      }
     }
   },
   "rgpd": {
